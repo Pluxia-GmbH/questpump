@@ -232,12 +232,20 @@ jobs:
         with:
           toolchain: 1.99.1
           targets: ${{ matrix.target }}
-      # the Xcode that builds the installed app on David's Mac; actool, codesign and notarytool all follow DEVELOPER_DIR
-      - name: Xcode 27.2
+      # the Xcode that builds the installed app on David's Mac; actool, codesign and notarytool all follow DEVELOPER_DIR.
+      # The bundler runs `actool` from PATH with the CLI's own stdin, which tauri-action leaves closed, and Xcode 27.2's
+      # actool then fails on any .icon ("Bad file descriptor ... Failed to create a catalog from the Icon Studio
+      # document", rehearsal 41729242334, 2026-11-03): the shim ahead on PATH gives it /dev/null instead
+      - name: Xcode 27.2, and actool with a stdin
         if: runner.os == 'macOS'
         run: |
           echo "DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer" >> "$GITHUB_ENV"
-          DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer xcrun actool --version --output-format human-readable-text
+          mkdir -p "$RUNNER_TEMP/actool"
+          printf '#!/bin/sh\nexec xcrun actool "$@" < /dev/null\n' > "$RUNNER_TEMP/actool/actool"
+          chmod +x "$RUNNER_TEMP/actool/actool"
+          echo "$RUNNER_TEMP/actool" >> "$GITHUB_PATH"
+          DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer "$RUNNER_TEMP/actool/actool" --version \
+            --output-format human-readable-text <&-
       - name: The Tauri CLI, pinned to the tauri crate's version
         run: npm install -g @tauri-apps/cli@2.12.4
       - name: The notarisation key file

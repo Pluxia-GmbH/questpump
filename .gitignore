@@ -17,6 +17,11 @@ android/**/.gradle/
 android/**/.kotlin/
 android/**/build/
 android/local.properties
+# fastlane's run report and Bundler's local settings (apple/fastlane, android/fastlane; the questpump-release skill)
+apple/fastlane/report.xml
+android/fastlane/report.xml
+apple/.bundle/
+android/.bundle/
 **/xcuserdata/
 **/*.xcworkspace/xcshareddata/
 site/node_modules/
