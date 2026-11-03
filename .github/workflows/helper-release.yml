@@ -202,12 +202,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-26
+          # the xcode-27 image (macOS 27, a preview): macos-26's Xcode 26 actool throws on icons/AppIcon.icon, which
+          # Icon Composer of Xcode 27 wrote ("attempt to insert nil object", rehearsal 41721307414, 2026-11-03)
+          - os: xcode-27
             target: aarch64-apple-darwin
             args: --target aarch64-apple-darwin --bundles app,dmg --config tauri.release.conf.json -- --locked
             symbols: helper/target/aarch64-apple-darwin/release/questpump-helper.dSYM
           # cross-built on the arm64 runner: screencapturekit's build script builds its Swift bridge for the target
-          - os: macos-26
+          - os: xcode-27
             target: x86_64-apple-darwin
             args: --target x86_64-apple-darwin --bundles app,dmg --config tauri.release.conf.json -- --locked
             symbols: helper/target/x86_64-apple-darwin/release/questpump-helper.dSYM
@@ -230,6 +232,12 @@ jobs:
         with:
           toolchain: 1.99.1
           targets: ${{ matrix.target }}
+      # the Xcode that builds the installed app on David's Mac; actool, codesign and notarytool all follow DEVELOPER_DIR
+      - name: Xcode 27.2
+        if: runner.os == 'macOS'
+        run: |
+          echo "DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer" >> "$GITHUB_ENV"
+          DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer xcrun actool --version --output-format human-readable-text
       - name: The Tauri CLI, pinned to the tauri crate's version
         run: npm install -g @tauri-apps/cli@2.12.4
       - name: The notarisation key file

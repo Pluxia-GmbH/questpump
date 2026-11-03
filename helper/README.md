@@ -386,7 +386,8 @@ tag. Both tags may sit on the same commit.
 4. **Tag the helper** `helper-vX.Y.Z` on the exported commit and push the tag. The jobs run in this order: `check` (the
    tag equals both versions, the updater's public key and feed are set, every secret and variable below is set, Google
    Play's licensing key is in `contract/store.json`, `cargo deny`), `draft` (a draft release for the tag), `build`
-   (macOS Apple silicon and Intel, both on the arm64 `macos-26` runner, Developer ID signed and notarised; Windows x64
+   (macOS Apple silicon and Intel, both on the arm64 `xcode-27` runner with Xcode 27.2, since the `macos-26` image's
+   Xcode 26 cannot compile `icons/AppIcon.icon`, Developer ID signed and notarised; Windows x64
    on `windows-2025`, NSIS, signed through Artifact Signing; the updater files and `latest.json`; each build's symbols,
    the release profile's line tables split out of the program, a dSYM on macOS and a PDB on Windows, kept as the run's
    artifact `symbols-<version>-<target>` for 90 days, the longest a public repository keeps one, so a crash report's
