@@ -1,0 +1,69 @@
+{
+  "move": "chair_hamstring",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 8},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "chair", "f": -27, "back": "-f"}],
+  "poses": {
+    "sit": {
+      "pelvis": [-14, 60.5, 0],
+      "trunk": [-1, 0, 0],
+      "arm_near": {"ik": [16, 70, 22], "pole": [-0.3, -0.4, 1], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [20, 64, 30], "pole": [-0.3, 0.8, 1], "hand": [1, -0.4, -0.1]},
+      "leg_near": {"foot": [24, 12], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [18, 36], "turn": 28, "knee_out": 30},
+      "contacts": ["pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "leg_out": {
+      "from": "sit",
+      "leg_near": {"foot": [65.9, 12], "turn": 2, "lift": -60, "knee_out": 0},
+      "contacts": ["pelvis", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "hinge": {
+      "from": "leg_out",
+      "trunk": [38, 0, 0],
+      "head": [-8, 0, 0],
+      "arm_near": {"ik": [34, 47, 22], "pole": [-0.3, -0.4, 1], "hand": [0.8, -0.6, 0]},
+      "arm_far": {"ik": [34, 58, 14], "pole": [-0.3, 0.8, 0.8], "hand": [0.8, -0.6, -0.1]}
+    },
+    "reach": {
+      "from": "leg_out",
+      "trunk": [48, 0, 0],
+      "chest": [48, 0, -10],
+      "head": [14, 0, 6],
+      "arm_near": {"ik": [46, 27, 22], "pole": [-0.3, -0.2, 1], "hand": [0.6, -0.8, 0.05]},
+      "arm_far": {"ik": [48, 27, 0], "pole": [-0.3, 0.2, 0.6], "hand": [0.6, -0.8, -0.1]}
+    },
+    "reach_in": {"from": "reach", "trunk": [49.5, 0, 0]},
+    "bent": {
+      "from": "reach",
+      "leg_near": {"foot": [56, 12], "turn": 2, "lift": -60, "knee_out": 0},
+      "arm_near": {"ik": [40, 27, 22], "pole": [-0.3, -0.2, 1], "hand": [0.6, -0.8, 0.05]},
+      "arm_far": {"ik": [42, 27, 0], "pole": [-0.3, 0.2, 0.6], "hand": [0.6, -0.8, -0.1]}
+    }
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.5, "phase": "sit_tall"},
+    {"to": "leg_out", "s": 1.2, "phase": "heel_down", "effort": 0.3},
+    {"to": "hinge", "s": 1.0, "ease": "in", "phase": "back_flat", "effort": 0.5},
+    {"to": "reach", "s": 1.2, "ease": "out", "phase": "hands_slide_down", "effort": 0.65},
+    {"to": "reach_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "reach", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "hinge", "s": 0.9, "ease": "in", "phase": "sit_up", "effort": 0.4},
+    {"to": "leg_out", "s": 0.9, "ease": "out", "phase": "sit_up", "effort": 0.4},
+    {"to": "sit", "s": 1.0, "phase": "release", "effort": 0.2}
+  ],
+  "key": "reach",
+  "fault": {
+    "pose": "bent",
+    "caption": "long_knee_lifts",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "reach", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "reach", "check": "height", "joint": "hand_tip_near", "max": 16}
+  ],
+  "note": "Seated near the chair's front edge, the near leg slides out straight, heel down and toes up; the body hinges from the hips with a flat back, then the back rounds and the hands slide down the leg until the fingertips touch the ankle, the knee straight. The fault: the long leg bends and its knee lifts. The desk is not drawn: it would hide the straight leg."
+}

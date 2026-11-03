@@ -1,0 +1,96 @@
+{
+  "move": "desk_planche_press",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 10},
+  "working": ["forearm", "pauldron", "chest"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": 36, "angle": 65.5, "width": 14, "lift": 10, "gap": 0.05},
+      "head": [4, 0, 0],
+      "arms": {"ik": [104, 77.3, 26], "pole": [-1, 0.2, 0.7], "hand": [0.92, -0.14, 0.36]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 36, "angle": 58.6, "width": 14, "lift": 40, "gap": 0.1},
+      "chest": [5, 0, 0],
+      "head": [6, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean1": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 36, "angle": 61.8, "width": 14, "lift": 28, "gap": 0.1},
+      "chest": [3, 0, 0],
+      "head": [5, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean2": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 36, "angle": 59.8, "width": 14, "lift": 36, "gap": 0.1},
+      "chest": [4, 0, 0],
+      "head": [6, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean1_press": {
+      "from": "lean1",
+      "line": {"pivot": "toes", "at": 36, "angle": 63.4, "width": 14, "lift": 30, "gap": 0.1},
+      "chest": [13, 0, 0],
+      "head": [12, 0, 0]
+    },
+    "lean2_press": {
+      "from": "lean2",
+      "line": {"pivot": "toes", "at": 36, "angle": 62.0, "width": 14, "lift": 36, "gap": 0.1},
+      "chest": [14, 0, 0],
+      "head": [13, 0, 0]
+    },
+    "lean_press": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 36, "angle": 60.2, "width": 14, "lift": 42, "gap": 0.1},
+      "chest": [15, 0, 0],
+      "head": [14, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.4, "phase": "arms_straight"},
+    {"to": "lean1", "s": 1.4, "phase": "lean_forward", "effort": 0.5},
+    {"to": "lean1_press", "s": 0.8, "phase": "press", "effort": 0.7},
+    {"hold": 0.6, "phase": "press", "effort": 0.7},
+    {"to": "lean2", "s": 1.0, "phase": "sink", "effort": 0.4},
+    {"to": "lean2_press", "s": 0.8, "phase": "press", "effort": 0.7},
+    {"hold": 0.6, "phase": "press", "effort": 0.7},
+    {"to": "lean", "s": 1.0, "phase": "sink", "effort": 0.4},
+    {"to": "lean_press", "s": 0.8, "phase": "press", "effort": 0.7},
+    {"hold": 0.6, "phase": "press", "effort": 0.7},
+    {"to": "lean", "s": 0.8, "phase": "sink", "effort": 0.4},
+    {"to": "top", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {
+      "at": "lean",
+      "check": "offset",
+      "joint": "shoulder_near",
+      "from": "hand_tip_near",
+      "axis": "f",
+      "min": -3,
+      "max": 3
+    },
+    {"at": "lean1", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "lean2", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ],
+  "note": "The planche lean at the desk pressed and sunk: palms flat on the top, fingers turned out a little, the body one line on the toes. Three rounds: a gentle press of the fingers into the desk, then the shoulders ease further forward, ending over the fingertips with the arms straight."
+}

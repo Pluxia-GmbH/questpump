@@ -1,0 +1,135 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+	<!-- The toast (docs/plan.md slice 3, docs/ui.md "Toasts"): a record, a star, a rung, a title, a level, a vault goal,
+	     Welcome back. Built like Blizzard's MoneyWonAlertFrameTemplate on build 69913 (Blizzard_FrameXML/Mainline/
+	     AlertFrameSystems.xml, forever branch, read 2026-09-24): it inherits AlertFrameTemplate (right-click dismisses,
+	     hover pauses the fade) and carries the animIn and waitAndAnimOut groups the alert system plays. Registered once
+	     with AlertFrame:AddQueuedAlertFrameSubSystem in Sheet.lua; the raid-warning line stands in if the client refuses
+	     it. -->
+	<ContainedAlertFrame name="QuestPumpToastTemplate" parent="UIParent" hidden="true" virtual="true"
+		inherits="AlertFrameTemplate">
+		<Size x="276" y="71"/>
+		<Animations>
+			<AnimationGroup parentKey="animIn">
+				<Alpha fromAlpha="1" toAlpha="0" duration="0" order="1"/>
+				<Alpha fromAlpha="0" toAlpha="1" duration="0.2" order="2"/>
+			</AnimationGroup>
+			<AnimationGroup parentKey="waitAndAnimOut">
+				<Alpha startDelay="4.05" fromAlpha="1" toAlpha="0" duration="1.5" parentKey="animOut">
+					<Scripts>
+						<OnFinished>
+							self:GetRegionParent():Hide();
+						</OnFinished>
+					</Scripts>
+				</Alpha>
+			</AnimationGroup>
+		</Animations>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Background" file="Interface\LootFrame\LootToast" setAllPoints="true">
+					<TexCoords left="0.56347656" right="0.80664063" top="0.28906250" bottom="0.56640625"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Icon">
+					<Size x="38" y="38"/>
+					<Anchors>
+						<Anchor point="LEFT" x="16" y="0"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture parentKey="IconBorder" file="Interface\LootFrame\LootToast">
+					<Size x="45" y="45"/>
+					<Anchors>
+						<Anchor point="CENTER" relativeKey="$parent.Icon" relativePoint="CENTER" x="0" y="0"/>
+					</Anchors>
+					<TexCoords left="0.73242188" right="0.78906250" top="0.57421875" bottom="0.80078125"/>
+				</Texture>
+				<FontString parentKey="Headline" inherits="GameFontNormal" justifyH="LEFT">
+					<Size x="200" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.IconBorder" relativePoint="TOPRIGHT" x="7" y="-1"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Subline" inherits="GameFontHighlight" justifyH="LEFT" maxLines="2">
+					<Size x="200" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Headline" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</ContainedAlertFrame>
+	<!-- The Legendary unlock's toast (docs/plan.md slice 22, docs/ui.md "Toasts"): the layout of Blizzard's legendary
+	     loot toast (LegendaryItemAlertFrameTemplate, AlertFrameSystems.xml, forever branch 70205, read 2026-10-04),
+	     which itself takes an item link and so is not inherited. Its four art pieces are atlases set through
+	     ns.Style.SetAtlas when the toast is filled (Sheet.lua setUpToast), so a client without one draws the rest; the
+	     subsystem is registered only where the background atlas exists, and the plain toast stands in otherwise. -->
+	<ContainedAlertFrame name="QuestPumpLegendToastTemplate" parent="UIParent" hidden="true" virtual="true"
+		inherits="AlertFrameTemplate">
+		<Size x="302" y="119"/>
+		<Animations>
+			<AnimationGroup parentKey="animIn">
+				<Alpha fromAlpha="1" toAlpha="0" duration="0" order="1"/>
+				<Alpha fromAlpha="0" toAlpha="1" duration="0.4" order="2"/>
+			</AnimationGroup>
+			<AnimationGroup parentKey="waitAndAnimOut">
+				<Alpha startDelay="6.05" fromAlpha="1" toAlpha="0" duration="1.5" parentKey="animOut">
+					<Scripts>
+						<OnFinished>
+							self:GetRegionParent():Hide();
+						</OnFinished>
+					</Scripts>
+				</Alpha>
+			</AnimationGroup>
+		</Animations>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Ring">
+					<Anchors>
+						<Anchor point="CENTER" x="-80" y="-4"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="Particles">
+					<Anchors>
+						<Anchor point="CENTER" x="-80" y="0"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="Starglow" alphaMode="ADD">
+					<Size x="230" y="230"/>
+					<Anchors>
+						<Anchor point="CENTER" x="-80" y="0"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Background">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon">
+					<Size x="52" y="52"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="48" y="-32"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="Headline" inherits="GameFontNormal" justifyH="LEFT" maxLines="2">
+					<Size x="170" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="110" y="-31"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Subline" inherits="GameFontHighlight" justifyH="LEFT" maxLines="2">
+					<Size x="170" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Headline" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</ContainedAlertFrame>
+</Ui>

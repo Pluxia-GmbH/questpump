@@ -1,0 +1,63 @@
+{
+  "move": "knee_over_toe_hover",
+  "view": "side",
+  "camera": {"yaw": 25, "pitch": 12},
+  "working": ["shin_near", "thigh_near"],
+  "props": [{"kind": "desk", "l": 62}],
+  "poses": {
+    "stand": {
+      "pelvis": [-50, 78, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [10, 8, 12]},
+      "leg_near": {"foot": [0, 12], "turn": 4, "knee_out": 2},
+      "leg_far": {"foot": [-114, 11], "turn": 0, "lift": 55, "knee_out": 0},
+      "contacts": ["toe_far", "toe_near", "ankle_near"]
+    },
+    "mid": {
+      "from": "stand",
+      "pelvis": [-30, 58, 0],
+      "trunk": [2, 0, 0],
+      "arm_near": {"fk": [30, 8, 14]},
+      "arm_far": {"ik": [-6, 90, 54], "pole": [0, -0.3, 1], "hand": [1, -0.2, 0]}
+    },
+    "hover": {
+      "from": "stand",
+      "pelvis": [-15, 37, 0],
+      "trunk": [4, 0, 0],
+      "arm_near": {"ik": [6, 52.5, 14], "pole": [-0.3, -0.3, 1], "hand": [1, -0.35, 0]},
+      "arm_far": {"ik": [6, 77.6, 64], "pole": [0, -0.3, 1], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_far", "toe_near", "ankle_near", "wrist_far", "hand_tip_far"]
+    },
+    "hover_in": {"from": "hover", "pelvis": [-14.5, 36.6, 0]},
+    "heel_up": {
+      "from": "hover",
+      "pelvis": [-17, 40, 0],
+      "leg_near": {"foot": [0, 12], "turn": 4, "knee_out": 2, "lift": 26, "y": 1},
+      "contacts": ["toe_far", "toe_near", "ankle_near", "wrist_far", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.5, "phase": "stand"},
+    {"to": "mid", "s": 1.2, "phase": "lower", "effort": 0.5},
+    {"to": "hover", "s": 1.4, "phase": "lower", "effort": 0.6},
+    {"to": "hover_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "hover", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "mid", "s": 1.4, "phase": "stand_up", "effort": 0.6},
+    {"to": "stand", "s": 1.2, "phase": "stand_up", "effort": 0.4}
+  ],
+  "key": "hover",
+  "fault": {
+    "pose": "heel_up",
+    "caption": "heel_lifts",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "hover", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2},
+    {"at": "hover", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 45},
+    {"at": "hover", "check": "height", "joint": "knee_far", "min": 13, "max": 24}
+  ],
+  "note": "A long step forward beside the desk, then both knees bend until the front thigh rests on the calf and the front knee is far past the toes: the front heel flat, the back knee a hand's width off the floor on the back toes, the body upright, the hands free (the ATG split squat's bottom held)."
+}

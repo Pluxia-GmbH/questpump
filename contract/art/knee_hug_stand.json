@@ -1,0 +1,65 @@
+{
+  "move": "knee_hug_stand",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 6},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "shift": {
+      "from": "tall",
+      "pelvis": [1, 94.2, -3],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "knee": {
+      "from": "tall",
+      "pelvis": [0, 94.0, -3],
+      "leg_far": {"fk": [80, 3, 85, 10]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "hug": {
+      "from": "knee",
+      "pelvis": [-1, 94.3, -3],
+      "leg_far": {"fk": [130, -8, 126, 15]},
+      "arm_near": {"ik": [42, 112, 8], "pole": [-0.2, -0.3, 1], "hand": [0.7, -0.1, -1]},
+      "arm_far": {"ik": [43, 114, 12], "pole": [-0.2, -0.3, 1], "hand": [0.7, -0.1, -1]},
+      "trunk": [-1, 0, 0]
+    },
+    "hug_in": {"from": "hug", "pelvis": [-1, 94.6, -3], "chest": [-2, 0, 0]},
+    "hunched": {"from": "hug", "trunk": [10, 0, 0], "chest": [26, 0, 0], "head": [-10, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "shift", "s": 0.6, "phase": "one_leg", "effort": 0.3},
+    {"to": "knee", "s": 0.9, "phase": "knee_up", "effort": 0.4},
+    {"to": "hug", "s": 1.1, "phase": "knee_to_chest", "effort": 0.6},
+    {"to": "hug_in", "s": 1.3, "phase": "stand_tall", "effort": 0.7},
+    {"to": "hug", "s": 1.3, "phase": "breathe", "effort": 0.7},
+    {"to": "hug_in", "s": 1.3, "phase": "breathe", "effort": 0.7},
+    {"to": "hug", "s": 1.3, "phase": "breathe", "effort": 0.7},
+    {"to": "knee", "s": 0.9, "phase": "lower", "effort": 0.4},
+    {"to": "shift", "s": 0.6, "phase": "lower", "effort": 0.3},
+    {"to": "tall", "s": 0.6, "phase": "foot_down", "effort": 0.2}
+  ],
+  "key": "hug",
+  "fault": {
+    "pose": "hunched",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "hug", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "hug", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165},
+    {"at": "hug", "check": "height", "joint": "knee_far", "min": 112}
+  ],
+  "note": "The near leg stands straight (the desk beside it stays out of the picture); the far knee lifts and both arms wrap the shin below the knee, hugging the knee in to the chest while the body stays tall."
+}

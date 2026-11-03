@@ -1,0 +1,94 @@
+{
+  "move": "narrow_squat",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 8},
+  "working": ["thigh", "shin"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 10], "turn": 3, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "squat": {
+      "from": "tall",
+      "pelvis": [-14, 34, 0],
+      "trunk": [32, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-18, 0, 0],
+      "arms": {"fk": [124, 6, 6, 0, 0]},
+      "legs": {"foot": [0, 10], "turn": 3, "knee_out": 5}
+    },
+    "squat_in": {"from": "squat", "pelvis": [-14, 33.6, 0], "chest": [-2, 0, 0]},
+    "down": {
+      "from": "squat",
+      "pelvis": [-15, 36, 0],
+      "trunk": [48, 0, 0],
+      "chest": [32, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [36, 4.3, 10], "pole": [0, 1, 0.6], "hand": [1, -0.1, 0]},
+      "legs": {"foot": [0, 10], "turn": 22, "knee_out": 44},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {
+      "from": "squat",
+      "pelvis": [-14, 72, 0],
+      "trunk": [100, 0, 0],
+      "chest": [26, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [34, 4.3, 8], "pole": [-0.3, 0, 1], "hand": [1, -0.1, 0]},
+      "legs": {"foot": [0, 10], "turn": 22, "knee_out": 48},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "heels_up": {
+      "from": "squat",
+      "pelvis": [-14, 39, 0],
+      "legs": {"foot": [0, 10], "turn": 3, "knee_out": 5, "lift": 30},
+      "trunk": [28, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "squat", "s": 2.4, "phase": "squat_deep", "effort": 0.5},
+    {"to": "squat_in", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "squat", "s": 1.6, "phase": "heels_down", "effort": 0.5},
+    {"to": "down", "s": 0.9, "phase": "hands_down", "effort": 0.4},
+    {"to": "fold", "s": 1.0, "phase": "hips_up", "effort": 0.5},
+    {"to": "tall", "s": 1.8, "phase": "rise_slowly", "effort": 0.4}
+  ],
+  "key": "squat",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "squat", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "squat", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "squat", "check": "height", "joint": "wrist_near", "min": 60},
+    {"at": "squat", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  ],
+  "note": "The deep squat with the feet a fist apart and the toes straight ahead: the knees travel forward over the toes, the heels stay down, the arms reach forward for balance and no hand touches down until the hold ends."
+}

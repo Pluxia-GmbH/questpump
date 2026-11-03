@@ -1,0 +1,67 @@
+{
+  "move": "wide_chair_stretch",
+  "view": "side",
+  "camera": {"yaw": 28, "pitch": 16},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "chair", "f": -28, "back": "-f"}],
+  "poses": {
+    "sit": {
+      "pelvis": [-14, 60.5, 0],
+      "trunk": [-1, 0, 0],
+      "arms": {"ik": [12, 63, 22], "pole": [-0.3, -0.4, 1], "hand": [1, -0.3, 0]},
+      "legs": {"ik": [45, 8.7, 50], "pole": [0.3, 1, 0.2], "toe": [0.35, 0.85, 0.35]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far"]
+    },
+    "lean": {
+      "from": "sit",
+      "trunk": [36, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [9, 51, 28], "pole": [0.2, 0.1, 1], "hand": [0.8, -0.35, 0.45]}
+    },
+    "lean_in": {
+      "from": "lean",
+      "trunk": [38, 0, 0],
+      "head": [-11, 0, 0],
+      "arms": {"ik": [10.5, 50, 28.6], "pole": [0.2, 0.1, 1], "hand": [0.8, -0.35, 0.45]}
+    },
+    "rounded": {
+      "from": "lean",
+      "trunk": [30, 0, 0],
+      "chest": [42, 0, 0],
+      "head": [8, 0, 0],
+      "arms": {"ik": [35, 38.5, 46], "pole": [0.2, 0.1, 1], "hand": [0.63, -0.66, 0.41]}
+    },
+    "mid": {
+      "from": "lean",
+      "trunk": [18, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [0, 61, 22], "pole": [0.2, 0.1, 1], "hand": [0.8, -0.4, 0.4]}
+    }
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.2},
+    {"to": "mid", "s": 1.2, "phase": "lean_forward", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "lean_forward", "effort": 0.6},
+    {"to": "lean_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "lean", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "lean_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "lean", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "mid", "s": 1.1, "phase": "sit_tall", "effort": 0.3},
+    {"to": "sit", "s": 1.1, "phase": "sit_tall", "effort": 0.3}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "lean", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "lean", "check": "offset", "joint": "ankle_near", "from": "ankle_far", "axis": "l", "min": 95},
+    {"at": "lean", "check": "height", "joint": "wrist_near", "min": 46}
+  ],
+  "note": "Sitting on the front of a chair, the legs straight and wide, heels down about four foot-lengths apart and toes up; from sitting tall the body leans forward from the hips with a flat back, the hands sliding down the thighs until they rest on the knees."
+}

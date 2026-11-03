@@ -1,0 +1,29 @@
+{
+  "move": "db_hammer_curl",
+  "view": "side",
+  "camera": {"yaw": 34, "pitch": 6},
+  "working": ["upper_arm", "forearm"],
+  "items": [{"kind": "dumbbell", "hand": "both", "grip": "neutral"}],
+  "poses": {
+    "down": {
+      "pelvis": [3, 94.4, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"fk": [2, 9, 8, 0, 0]},
+      "legs": {"foot": [0, 13], "turn": 8, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "up": {"from": "down", "arms": {"fk": [8, 9, 130, 0, 0]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "up", "s": 1.1, "phase": "curl", "effort": 1.0},
+    {"hold": 0.2, "phase": "squeeze", "effort": 0.9},
+    {"to": "down", "s": 1.8, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": 0.95,
+  "targets": [
+    {"at": "up", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 55},
+    {"at": "up", "check": "angle", "joints": ["hip_near", "shoulder_near", "elbow_near"], "max": 12}
+  ]
+}

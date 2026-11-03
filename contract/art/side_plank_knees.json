@@ -1,0 +1,52 @@
+{
+  "move": "side_plank_knees",
+  "view": "front",
+  "camera": {"yaw": -24, "pitch": 16},
+  "working": ["abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -55, "f1": 55, "l0": -75, "l1": 85}],
+  "poses": {
+    "lie": {
+      "from": "in",
+      "pelvis": [0, 21, 1.6],
+      "trunk": [0, 57, 0],
+      "chest": [0, -25, 0],
+      "arm_near": {"ik": [2, 44, 8], "pole": [-0.6, 0.8, 0], "hand": [0.2, -0.5, 1]},
+      "leg_near": {"fk": [0, 32, 90, -90]},
+      "leg_far": {"ik": [-42.95, 8.0, -35.2], "pole": [0, -2.2, -69.2], "toe": [-1, -0.03, 0]},
+      "contacts": ["hip_far", "knee_far", "ankle_far", "toe_far", "elbow_far", "wrist_far", "hand_tip_far"]
+    },
+    "in": {
+      "pelvis": [0, 40.11, 0],
+      "trunk": [0, 63.2, 0],
+      "head": [0, -8, 0],
+      "arm_far": {"ik": [26, 5.5, 50], "pole": [0, -1, 0.2], "hand": [1, -0.05, 0]},
+      "arm_near": {"ik": [2, 61.5, 5.5], "pole": [-0.6, 0.8, 0], "hand": [0.2, -0.5, 1]},
+      "leg_near": {"fk": [0, 0, 90, -90]},
+      "leg_far": {"ik": [-42.95, 8.0, -35.2], "pole": [0, -20.3, -40.2], "toe": [-1, -0.03, 0]},
+      "contacts": ["knee_far", "ankle_far", "toe_far", "elbow_far", "wrist_far", "hand_tip_far"]
+    },
+    "out": {"from": "in", "pelvis": [0, 40.71, 0], "trunk": [0, 62.7, 0]},
+    "sag": {
+      "from": "in",
+      "pelvis": [0, 27, 1.5],
+      "trunk": [0, 48, 0],
+      "head": [0, -2, 0],
+      "arm_near": {"ik": [2, 46.8, 6.4], "pole": [-0.6, 0.8, 0], "hand": [0.2, -0.5, 1]},
+      "leg_near": {"ik": [-42.95, 27, 45.1], "pole": [0, -8.2, 39.2], "toe": [-1, 0, 0]},
+      "leg_far": {"ik": [-42.95, 8.0, -35.2], "pole": [0, -8.8, -44.1], "toe": [-1, -0.03, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "onto_side"},
+    {"to": "in", "s": 1.0, "phase": "hips_up", "effort": 0.7},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "lie", "s": 1.0, "phase": "hips_down", "effort": 0.4}
+  ],
+  "key": "in",
+  "fault": {"caption": "hips_sag", "breaks": {"check": "height", "joint": "pelvis", "min": 34}, "pose": "sag"}
+}

@@ -1,0 +1,77 @@
+{
+  "move": "wide_childs_pose",
+  "view": "side",
+  "camera": {"yaw": -55, "pitch": 38},
+  "working": ["thigh", "back"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -75, "f1": 85, "l0": -55, "l1": 55}],
+  "poses": {
+    "kneel": {
+      "pelvis": [-10, 47, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "arms": {"fk": [4, 8, 10]},
+      "legs": {"foot": [-46, 12], "y": -2, "turn": 212, "lift": 0, "knee_out": 0, "pole": [0.45, 0, 1]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"],
+      "fit": {"joint": "knee_near", "u": 10}
+    },
+    "heels": {
+      "from": "kneel",
+      "pelvis": [-42, 24, 0],
+      "trunk": [12, 0, 0],
+      "chest": [-4, 0, 0],
+      "arms": {"fk": [18, 14, 28]}
+    },
+    "reach": {
+      "from": "heels",
+      "pelvis": [-42, 23, 0],
+      "trunk": [50, 0, 0],
+      "chest": [12, 0, 0],
+      "head": [8, 0, 0],
+      "arms": {"ik": [26, 4.3, 26], "pole": [0, -1, 0.6], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {
+      "from": "reach",
+      "pelvis": [-41, 20, 0],
+      "trunk": [84, 0, 0],
+      "chest": [16, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [56.5, 4.3, 26], "pole": [0, -1, 1.2], "hand": [1, -0.05, 0]}
+    },
+    "fold_in": {"from": "fold", "trunk": [82.5, 0, 0], "chest": [16.5, 0, 0], "head": [1.5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "heels"},
+    {"hold": 0.5, "phase": "sit_tall", "effort": 0.2},
+    {"to": "reach", "s": 1.4, "phase": "fold_forward", "effort": 0.3},
+    {"to": "fold", "s": 1.6, "phase": "reach_long", "effort": 0.4},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.4},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.4},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.4},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.4},
+    {"to": "reach", "s": 1.4, "phase": "walk_hands_back", "effort": 0.3},
+    {"to": "heels", "s": 1.2, "phase": "sit_up", "effort": 0.2}
+  ],
+  "key": "fold",
+  "targets": [
+    {"at": "fold", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": -6, "max": 6},
+    {"at": "fold", "check": "height", "joint": "pelvis", "max": 30},
+    {"at": "fold", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 155},
+    {"at": "fold", "check": "height", "joint": "neck", "max": 28},
+    {"at": "fold", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "l", "min": 30},
+    {"at": "fold", "check": "offset", "joint": "toe_near", "from": "pelvis", "axis": "l", "max": 5}
+  ],
+  "note": "Kneeling on a mat, big toes together and knees wide: the seat sinks back to the heels and the chest lowers between the thighs, the arms long and the forehead down."
+}

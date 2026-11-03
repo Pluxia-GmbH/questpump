@@ -1,0 +1,50 @@
+{
+  "move": "wrist_lean",
+  "view": "side",
+  "camera": {"yaw": -30, "pitch": 8},
+  "working": ["forearm"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": 47.6, "angle": 69, "width": 14, "lift": 0},
+      "head": [4, 0, 0],
+      "arms": {"ik": [104, 77.3, 24], "pole": [-1, 0, 0.7], "hand": [1, -0.15, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 47.6, "angle": 61.5, "width": 14, "lift": 23},
+      "head": [8, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean_in": {"from": "lean", "chest": [-1.5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.4, "phase": "arms_straight"},
+    {"to": "lean", "s": 1.6, "phase": "lean_in", "effort": 0.5},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "top", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 170},
+    {"at": "lean", "check": "angle", "joints": ["hand_tip_near", "wrist_near", "shoulder_near"], "max": 88},
+    {"at": "top", "check": "angle", "joints": ["hand_tip_near", "wrist_near", "shoulder_near"], "min": 93, "max": 110},
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  ],
+  "note": "A step back from the desk, palms flat on its top just past the edge, fingers forward, the body one line from the feet. The lean carries the shoulders about a fist past the wrists with the arms straight (the wrists past 90 degrees of extension) as the heels lift; the hips stay clear of the desk's edge."
+}

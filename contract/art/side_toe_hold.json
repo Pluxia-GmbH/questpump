@@ -1,0 +1,67 @@
+{
+  "move": "side_toe_hold",
+  "view": "front",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "items": [{"kind": "band", "strands": [["grip_far", {"at": "toe_far", "off": [4, 0, 0]}]]}],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arm_near": {"fk": [4, 4, 10]},
+      "arm_far": {"fk": [4, 8, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "shift": {
+      "from": "tall",
+      "pelvis": [1, 94.2, -6],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "knee": {
+      "from": "tall",
+      "pelvis": [1, 94.3, -8],
+      "trunk": [6, 0, 0],
+      "leg_far": {"fk": [90, 10, 95, 0]},
+      "arm_near": {"ik": [1, 100, 33], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "arm_far": {"fk": [40, 12, 20]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "side": {
+      "from": "knee",
+      "pelvis": [1, 93.8, -9],
+      "trunk": [0, 0, 0],
+      "chest": [0, -8, 0],
+      "head": [0, 8, 0],
+      "leg_far": {"fk": [10, 64, 0, 0]},
+      "arm_far": {"fk": [2, 40, 4]}
+    },
+    "side_in": {"from": "side", "pelvis": [1, 94.0, -9], "chest": [-2, -8, 0]},
+    "low": {"from": "side", "leg_far": {"fk": [8, 38, 0, 0]}, "arm_far": {"fk": [2, 26, 4]}}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "shift", "s": 0.5, "phase": "one_leg", "effort": 0.3},
+    {"to": "knee", "s": 1.0, "phase": "knee_up", "effort": 0.5},
+    {"to": "side", "s": 1.6, "phase": "open_out", "effort": 0.8},
+    {"to": "side_in", "s": 1.3, "phase": "breathe", "effort": 0.9},
+    {"to": "side", "s": 1.3, "phase": "breathe", "effort": 0.9},
+    {"to": "side_in", "s": 1.3, "phase": "breathe", "effort": 0.9},
+    {"to": "side", "s": 1.3, "phase": "breathe", "effort": 0.9},
+    {"to": "knee", "s": 1.3, "phase": "lower", "effort": 0.5},
+    {"to": "shift", "s": 0.7, "phase": "lower", "effort": 0.3},
+    {"to": "tall", "s": 0.5, "phase": "foot_down", "effort": 0.2}
+  ],
+  "key": "side",
+  "fault": {"pose": "low", "caption": "leg_drops", "breaks": {"check": "height", "joint": "ankle_far", "min": 45}},
+  "targets": [
+    {"at": "side", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "side", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "side", "check": "height", "joint": "ankle_far", "min": 45, "max": 60}
+  ],
+  "note": "Seen from behind: the near leg stands straight, the near hand on the hip; the far knee lifts in front, then the far leg straightens out to the side, the foot at knee height, the far hand holding a towel looped round the foot (the big toe out of the figure's reach), the hips level and the body leaning a little the other way over the standing foot."
+}

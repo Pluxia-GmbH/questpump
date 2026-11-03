@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The talent trees (Book's Tree | List button, slice 40): three ladders side by side, each a column of two tile
+       plates on its rail ending in a diamond, as a tree's board draws its columns (Starter at the top, the limit in
+       the diamond); lit from the top left, a ridge runs down each column, so its right half is in shadow. One colour,
+       never mirrored (the trees keep their order in every language): the caller tints it (text2 in a round button on
+       card). -->
+  <path data-token="tint" fill="currentColor" d="
+    M2.75 2 H6.25 L7 2.75 V6.25 L6.25 7 H2.75 L2 6.25 V2.75 Z
+    M3.75 7 H5.25 V9.5 H3.75 Z
+    M2.75 9.5 H6.25 L7 10.25 V13.75 L6.25 14.5 H2.75 L2 13.75 V10.25 Z
+    M3.75 14.5 H5.25 V16.5 H3.75 Z
+    M4.5 16.5 L7.25 19.25 L4.5 22 L1.75 19.25 Z
+    M10.25 2 H13.75 L14.5 2.75 V6.25 L13.75 7 H10.25 L9.5 6.25 V2.75 Z
+    M11.25 7 H12.75 V9.5 H11.25 Z
+    M10.25 9.5 H13.75 L14.5 10.25 V13.75 L13.75 14.5 H10.25 L9.5 13.75 V10.25 Z
+    M11.25 14.5 H12.75 V16.5 H11.25 Z
+    M12 16.5 L14.75 19.25 L12 22 L9.25 19.25 Z
+    M17.75 2 H21.25 L22 2.75 V6.25 L21.25 7 H17.75 L17 6.25 V2.75 Z
+    M18.75 7 H20.25 V9.5 H18.75 Z
+    M17.75 9.5 H21.25 L22 10.25 V13.75 L21.25 14.5 H17.75 L17 13.75 V10.25 Z
+    M18.75 14.5 H20.25 V16.5 H18.75 Z
+    M19.5 16.5 L22.25 19.25 L19.5 22 L16.75 19.25 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M4.5 2 H6.25 L7 2.75 V6.25 L6.25 7 H4.5 Z
+    M4.5 7 H5.25 V9.5 H4.5 Z
+    M4.5 9.5 H6.25 L7 10.25 V13.75 L6.25 14.5 H4.5 Z
+    M4.5 14.5 H5.25 V16.5 H4.5 Z
+    M4.5 16.5 L7.25 19.25 L4.5 22 Z
+    M12 2 H13.75 L14.5 2.75 V6.25 L13.75 7 H12 Z
+    M12 7 H12.75 V9.5 H12 Z
+    M12 9.5 H13.75 L14.5 10.25 V13.75 L13.75 14.5 H12 Z
+    M12 14.5 H12.75 V16.5 H12 Z
+    M12 16.5 L14.75 19.25 L12 22 Z
+    M19.5 2 H21.25 L22 2.75 V6.25 L21.25 7 H19.5 Z
+    M19.5 7 H20.25 V9.5 H19.5 Z
+    M19.5 9.5 H21.25 L22 10.25 V13.75 L21.25 14.5 H19.5 Z
+    M19.5 14.5 H20.25 V16.5 H19.5 Z
+    M19.5 16.5 L22.25 19.25 L19.5 22 Z"/>
+</svg>

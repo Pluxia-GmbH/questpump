@@ -1,0 +1,33 @@
+# The desktop helper (docs/plan.md slice 5; rules: .claude/skills/rust-helper): questpump-core holds every rule and
+# decoder with no platform code, questpump-helper is the Tauri tray shell with the capture backends.
+[workspace]
+members = ["crates/questpump-core", "crates/questpump-engine", "crates/questpump-web", "src-tauri"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.99"
+license = "MIT"
+authors = ["Pluxia GmbH"]
+
+[workspace.lints.rust]
+unsafe_code = "allow" # the capture backend reads a locked pixel buffer; questpump-core forbids it and takes &[u8]
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+undocumented_unsafe_blocks = "deny"
+allow_attributes_without_reason = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+
+# Release builds keep line tables, split out of the program (contract/crash-api.yaml, "The desktop app", "Symbols"): a
+# dSYM beside it on macOS, a PDB on Windows, which helper-release.yml keeps as each release's workflow artifacts, so a
+# crash's frame (a function's name, a module and its offset) can be named later. The program ships without them: on
+# macOS dsymutil writes the dSYM before the strip takes the debug map out (35.6 MB instead of 39.7, the size it had
+# without line tables; its symbol table stays for a panic's function names), and MSVC's linker writes the PDB whatever
+# the strip says (rustc's MsvcLinker ignores it).
+[profile.release]
+debug = "line-tables-only"
+split-debuginfo = "packed"
+strip = "debuginfo"

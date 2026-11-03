@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- A mountain (the Outdoors, no gear template, slice 51): a high peak, a lower one behind it rising from its slope,
+       the ground's line and the sun over the lower; one stroke weight, round caps and joins, no shading. One colour,
+       never mirrored: the caller tints it (text2 in a Row's KindTile). -->
+  <path data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" d="
+    M2 20 L9 7.5 L16 20 M12.64 13.57 L15.5 10 L22 20 M2 20 H22"/>
+  <circle data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" cx="19" cy="5" r="2"/>
+</svg>

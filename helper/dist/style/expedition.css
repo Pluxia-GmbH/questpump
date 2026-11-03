@@ -1,0 +1,146 @@
+/* Away Mode on the computer (docs/ui.md, "Away Mode"; slice 51): the places' windows (desk.expedition.places,
+ * desk.places.edit, desk.places.place, and since 2026-11-03 desk.places.schedule and desk.places.time). The breather
+ * and the Result's own parts are the pump's (views/pump/pump.css), the ExpeditionBar the kit's. */
+
+/* The places' windows: Add a place or the list's most at the foot; Edit places' rows with their drag handle and
+   Delete; a place's icons */
+.qp-places-add {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-places-full {
+	text-align: center;
+	color: var(--qp-color-text2);
+}
+
+.qp-place-edit {
+	display: flex;
+	align-items: center;
+}
+
+.qp-place-edit qp-row {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Home has no handle: its row starts where the others' handles do */
+.qp-place-edit:not([data-id]) {
+	padding-inline-start: calc(var(--qp-layout-space24) + var(--qp-layout-space4));
+}
+
+.qp-place-grip {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	justify-content: center;
+	gap: var(--qp-layout-space4);
+	width: var(--qp-layout-space24);
+	height: var(--qp-layout-row-height);
+	margin-inline-start: var(--qp-layout-space4);
+	padding-inline: var(--qp-layout-space4);
+	cursor: grab;
+	touch-action: none;
+}
+
+.qp-place-grip i {
+	height: var(--qp-layout-hairline);
+	border-radius: var(--qp-layout-hairline);
+	background: var(--qp-color-text3);
+}
+
+.qp-place-edit.qp-dragging {
+	position: relative;
+	z-index: 1;
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-color-raised);
+	box-shadow: var(--qp-surface-tooltip-shadow);
+}
+
+.qp-place-edit.qp-dragging .qp-place-grip {
+	cursor: grabbing;
+}
+
+.qp-place-delete {
+	flex: none;
+	min-height: var(--qp-layout-quiet-height);
+	padding-inline: var(--qp-layout-space12);
+	border-radius: var(--qp-layout-button-radius);
+	font: var(--qp-type-label-font);
+	color: var(--qp-color-stop);
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-place-delete:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-place-icons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-place-icon {
+	display: grid;
+	place-items: center;
+	width: var(--qp-surface-kind-tile-size);
+	height: var(--qp-surface-kind-tile-size);
+	border-radius: var(--qp-layout-tile-radius-small);
+	background: var(--qp-color-card);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	color: var(--qp-color-text2);
+	transition: background-color var(--qp-motion-chip), box-shadow var(--qp-motion-chip);
+}
+
+.qp-place-icon:hover {
+	background: var(--qp-color-raised);
+}
+
+/* the icon chosen: raised with a lineStrong edge and its glyph in text, as a chosen ChoiceChip */
+.qp-place-icon[aria-pressed="true"] {
+	background: var(--qp-surface-kind-tile-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-tile-edge) var(--qp-color-line-strong);
+	color: var(--qp-color-text);
+}
+
+.qp-place-icon qp-art {
+	width: var(--qp-layout-glyph-small);
+	height: var(--qp-layout-glyph-small);
+}
+
+/* a time's days (2026-11-03): seven round chips in a row, Monday first, each its weekday's letter, chosen filled gold
+   with the letter in goldInk (gold for what is chosen; the phones' letter ChoiceChip) */
+.qp-day-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-day-chip {
+	display: grid;
+	place-items: center;
+	width: var(--qp-layout-round-button);
+	height: var(--qp-layout-round-button);
+	border-radius: 50%;
+	background: var(--qp-color-card);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	font: var(--qp-type-label-font);
+	color: var(--qp-color-text2);
+	transition: background-color var(--qp-motion-chip), box-shadow var(--qp-motion-chip);
+}
+
+.qp-day-chip:hover {
+	background: var(--qp-color-raised);
+}
+
+.qp-day-chip[aria-pressed="true"] {
+	background: var(--qp-color-gold);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-gold);
+	color: var(--qp-color-gold-ink);
+}
+
+.qp-day-chip[aria-pressed="true"]:hover {
+	background: var(--qp-color-gold-hi);
+}

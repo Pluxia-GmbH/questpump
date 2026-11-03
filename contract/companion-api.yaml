@@ -1,0 +1,2425 @@
+openapi: 3.1.1
+info:
+  title: QuestPump companion link
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    The link between the QuestPump helper on the player's computer and the phone or watch app (docs/companion.md,
+    "The protocol" and "Countdown sync"; docs/plan.md slice 7). The helper serves it; the apps call it. Every
+    implementation replays `contract/fixtures/seal.json` (the keys and the seal) and `contract/fixtures/wire.json`
+    (every body below as the plaintext JSON), and since slice 43 the helper and both phone cores
+    `contract/fixtures/ble.json` (the Bluetooth link below), so the Rust helper, the Swift apps and the Kotlin apps read
+    one another.
+
+    Plain HTTP on the home network, port 8787. The helper listens on every address of the computer, IPv4 and IPv6, so
+    a device reaches it at the address the pair link carries, at its `.local` name's addresses and at whatever address
+    it moved to, without a new bind. Four values come from the 32-byte pairing key with HKDF-SHA256 (salt empty), and
+    the pairing key itself never travels:
+
+    - the bearer, info `questpump bearer v1`, 32 bytes, sent base64url without padding as `Authorization: Bearer <b>`
+      on every request but `GET /v1/hello`;
+    - the seal key, info `questpump seal v1`, 32 bytes: every request and response body is sealed with AES-256-GCM as
+      one `application/octet-stream` blob, a fresh random 12-byte nonce, then the ciphertext, then the 16-byte tag
+      (CryptoKit's `SealedBox.combined`). A body is JSON before sealing, UTF-8, snake_case. Its associated data is its
+      route (since the release security review of 2026-10-31, L1): the ASCII bytes of `questpump route v1 <way>
+      <METHOD> <path>`, single spaces and nothing after, `<way>` `request` for a body a device sends and `answer` for
+      one the helper sends back (a sealed refusal included), `<METHOD>` the request's method in capitals (`GET`,
+      `POST`, `PUT`) and `<path>` its path without the query (`/v1/ping`'s answer is sealed for `/v1/ping` whatever
+      its `t0`). So a body opens only as the route and the way it was sealed for: one recorded on a route and posted at
+      another, or an answer sent back as a request, opens nowhere (`contract/fixtures/seal.json` `sealed`, `refused`);
+    - the hello key, info `questpump hello v1`, 32 bytes, which keys a hello's proof of the key on the LAN
+      (`GET /v1/hello`) and on Bluetooth (below), so a device tells the key it holds from a new pairing code before its
+      bearer goes out, and a hello tells nobody without the key anything;
+    - the key's id `kid`, info `questpump id v1`, 8 bytes, base64url without padding: the name a phone keeps for its
+      pairing on the device. Nothing sends it since 2026-11-01 (the hello and the Bonjour record showed it).
+
+    Every sealed request says when it was sent on the helper's clock (`sent_at`, the device's clock plus its offset),
+    so a device pings before its first sealed request. The helper closes at once a connection from outside the home
+    network's private ranges, refuses a request whose `Host` does not name the computer at the port the connection
+    reached (421, no body, before the bearer is checked, on every route, the hello's included; since 2026-11-01, so a
+    web page whose name an attacker points at the computer's address reaches nothing): an IPv4 literal, a bracketed
+    IPv6 one (a zone allowed), `localhost` or the computer's own `.local` name (the `helper` block's `mdns`, in any
+    case, a trailing dot allowed), each with that port. The phones send the address they hold or the `.local` name
+    they found the computer by, and the Bonjour browse resolves to an address; over Bluetooth no `Host` travels and
+    none is checked. It refuses a wrong bearer (401, no body; ten within a minute from one peer make it
+    answer 429 for a minute), a body larger than 256 KiB (413) or slower than 10 s to arrive (408), a body that fails
+    to open, whose `sent_at` lies more than 60 s from the helper's clock or before the helper started, or that repeats
+    the nonce of a request of the last two minutes (400), a body that opens but does not read (422), and any request
+    while its loop cannot take it (503; the device keeps what it sent). At most 32 connections are open, 8 from one
+    address. A client drops a response that fails to open, or whose `t0` is not its request's. After a 400 a device
+    pings before its next sealed request (its clock may have stepped); after a 422 it drops what that request carried,
+    which will never read, rather than send it again, but for app rows sent beside events or samples, which stay
+    unconfirmed and go again (slice 26: the helper drops a bad row row by row, so rows alone never make a body
+    unreadable, and rows that were all a refused request carried count as sent). `POST /v1/sync`'s 422 drops only when
+    it is the helper's: since the release security review of 2026-10-31 its body is `RefusedResponse`, sealed, naming
+    the refused request's nonce (`contract/fixtures/seal.json` `refusals`), and a 422 that does not open under the
+    pairing's seal key or names another nonce is no answer, so the device keeps everything and sends it again. Every
+    other route's 422 is bare (`Unreadable`), and a sync body posted at another route does not open there. A sealed
+    request whose JSON holds a field the helper does not know is refused 422 (since 2026-11-01), all but the sync's:
+    a newer app adds fields and event types to `POST /v1/sync`, which an older desktop app ignores, since a 422 there
+    would make the phone drop what it sent for good; the pair, unpair, body and account requests carry nothing a newer
+    app adds alone (a body request's `body` is the shared `Body`, whose fields only add, and takes one it does not
+    know).
+
+    Every instant is integer milliseconds on the helper's wall clock, except a request's `t0` (the device's own
+    clock, echoed back), `locked_until` (unix seconds), `/v1/history`'s `proofs_since` (unix seconds), the history rows
+    and the sheets, which keep `rows.jsonl`'s and `sheets.jsonl`'s own units, `game_offer_at` (unix seconds) and a body
+    field's `changed_at` (unix milliseconds on the clock of the device that made the change). A device converts through
+    its clock offset (docs/companion.md, "Countdown sync"; `ClockOffset` in each phone core): the offset of the
+    smallest round trip among its pings of the last 60 s, a fresh window after a clock step, with offset = helper minus
+    device, so a helper instant is local as `t - offset` and a device instant reaches the helper as `t + offset`; the
+    helper keeps no offset of its own.
+
+    Every response carries `helper`, the helper's current name and address, so a device follows a DHCP change, and
+    the computer's `.local` name (`mdns`) and the install's id (`hid`) when the helper has them, which a device keeps in
+    its pair link, so it follows a renamed computer too. Since 2026-10-09 it also says what the computer knows of World
+    of Warcraft (`wow`) and what the helper reads of it (`sight`), so the phones and the watches tell the same story as
+    the computer: the pairing window's next step, the chip's and the watch's "QuestPump can't see the game", and the
+    phones' card that adds QuestPump to the game.
+
+    When the saved address stops answering, a phone looks for its helper (`contract/fixtures/find.json`, the decision
+    every app replays): the `.local` name, a Bonjour browse for `_questpump._tcp` and, in the foreground, `GET
+    /v1/hello` to every address of its own Wi-Fi /24. Only a Windows helper registers the Bonjour service (through
+    Windows' DNS Client): instance `QuestPump` (Windows renames it on a clash, `QuestPump (2)`), host the computer's
+    `.local` name with its IPv4 address, port 8787, TXT `txtvers=2` alone (since 2026-11-01; until then the instance was
+    the computer's name and `txtvers=1` also carried `hid` and `kid`, which let any device on the network follow the
+    computer). No phone reads the instance: each resolves every record to its address and asks its hello. A Mac helper
+    never advertises, since that needs the Local Network privilege, whose answer can never be reset, and its `.local`
+    name finds it anyway. Each candidate gets a hello under a challenge of the phone's, and the bearer only after that
+    hello proved the pairing's install (`h`; a pairing made before the install id skips it) and the key the phone holds
+    (`k`); the pairing's install with another key is the phone's helper with a new pairing code. Its sealed pong
+    confirms it, and the pong's `helper.host` moves the pairing. The watch never looks: it asks its phone.
+
+    **The Bluetooth link** (slice 43, docs/plan.md "Slice 43: the Bluetooth link", with its fixes after the review of
+    2026-10-17; `contract/fixtures/ble.json` holds every value named here and the cases the helper and both phone cores
+    replay): a second transport for the same routes, so a phone follows the game with its screen locked and links where
+    the LAN cannot reach it (a guest Wi-Fi, client isolation, mobile data, Local Network refused, a Windows firewall
+    without its rule). The computer is a GATT peripheral and the phones are centrals; the watches keep HTTP, and a phone
+    relays nothing for them. One primary service (`uuids.service`) holds three characteristics: `hello` (read, plain,
+    made for the central that reads it), `rx` (phone to helper: write without response, or write) and `tx` (helper to
+    phone: notify only, each message to the central that asked for it alone). No characteristic asks for encryption and
+    nothing bonds: a fourth value from the pairing key does that work, the ble key (HKDF-SHA256, salt empty, info
+    `questpump ble v1`, 32 bytes).
+
+    The hello (`ble.json` `gatt`) is the compact JSON `{"v":3,"k":…,"c":…}`: `v` the Bluetooth layout's version (3
+    since 2026-11-01; 2 keyed its hashes with the install's id, which the pair link and every answer carry, so anyone
+    who once saw it could follow the computer); `k` the first 8 bytes of HMAC-SHA256 keyed with the hello key over
+    `questpump ble hello key`, the epoch (the UTC hour, floor(unix seconds / 3600)) as 8 bytes big-endian and `c`,
+    base64url without padding, so nothing on the air names the computer and no stranger links one hello to another;
+    and `c` the connection's challenge, 16 random bytes the helper draws
+    whenever a central reads the hello from its start and keeps for that central's connection (a read at a later offset,
+    part of a long read, gets the bytes kept; a read from the start again ends that central's calls as an unsubscribe
+    does). A phone reads the hello once at each connection, after it discovered the service anew and before it
+    subscribes or sends anything, and checks it at the epoch before, the current one and the one after on its own clock:
+    `k` of one epoch the pairing key's, it links; else another computer, the pairing's own with a new pairing code
+    (which nothing on the air tells apart) or a hello it does not read. A read that fails judges nothing (the phone
+    lets the connection go and tries again). The link is up once a sealed ping on that connection answered, so a copied
+    hello that never answers links nothing.
+
+    Each call is the HTTP request the phone would send, sealed again whole: one envelope, AES-256-GCM under the ble key
+    as a body is sealed (nonce, ciphertext, tag), its associated data 36 bytes: the direction's label (`questpump ble v1
+    rx` toward the helper, `questpump ble v1 tx` toward the phone), the message's id (one byte, which the phone picks,
+    0-255, never two of its calls in flight under one id, and the helper's answer repeats) and the connection's
+    challenge. The helper opens a central's writes only under the challenge it keeps for that central and seals each
+    answer under its request's id and challenge, so an envelope opens only on the connection it was sealed for: one
+    captured and written again from another central, or on a later connection, opens nowhere. A request's plain text is
+    its method (1 GET, 2 POST), its path with the query (`/v1/…`, 1-1024 bytes of visible ASCII), its User-Agent (0-255
+    bytes) and its body as the LAN carries it (a POST's sealed under the seal key for its route, a GET's empty); a
+    response's is the HTTP status and the body as the LAN answers it (sealed for its route's answer); an envelope
+    carries no route of its own, since the body inside is the LAN's and opens only for the route its head names. No
+    bearer travels: the helper adds its own and calls the routes the LAN serves, so the held sync, its holder rule, the
+    re-offer, the receipts, `sent_at`'s freshness and the replay window are the LAN's, and the routes answer as they do
+    on the LAN (never `401`). An envelope travels in chunks of at most min(ATT MTU − 3, 512) bytes, each a 4-byte header
+    (the id, then the chunk's index from 0 in 3 bytes, big-endian) and its part, the first part starting with the
+    envelope's length (4 bytes, big-endian).
+
+    Limits (`ble.json` `limits`): an envelope of at most 288 KiB toward the helper and 2 MiB toward the phone, refused
+    at its first chunk; a message's next chunk within 10 s of the one before; 4 messages put together at once by a
+    receiver (a whole message in its first chunk takes no place among them); 4 calls a central at the helper, each from
+    its envelope's opening until its answer's last chunk went to the radio (an answer queued and not yet sent counts), a
+    request that opens beyond them answered `503` with no body under its id, which counts toward no throttle and which a
+    phone takes as the LAN's 503 (it keeps what it sent and tries again); a phone keeps at most 4 calls of its own in
+    flight, a fifth waiting for a free one within its own deadline rather than failing at once. The helper takes a
+    central's writes only while its `tx` subscription stands (another central's chunks call no route) and keeps the
+    LAN's throttle by central: 10 failures within a minute, each an envelope that does not open or a message its
+    reassembly dropped while no envelope of that central had opened on its connection, have its writes ignored until a
+    minute after the last, with one log line a minute for each central, its subscriptions and unsubscriptions included;
+    once an envelope of it opened, its dropped messages count for nothing (the radio loses chunks). The helper answers
+    nothing that does not open (a stranger's writes change nothing), `400` with no body to an envelope that opens but
+    whose head does not read, `500` with no body when an answer's envelope would pass 2 MiB, and `503` as above. A phone
+    drops an answer that does not open or read, or whose id names none of its calls in flight; it reads a call for as
+    long as on the LAN.
+
+    The computer advertises only while its Bluetooth link is on (the switch on its Phones page) and a phone is paired or
+    the pairing code shows (the Phones page, or the pairing window the desktop app opens over a page; either asks
+    macOS's Bluetooth grant in context): a Mac the service UUID and the local name `QuestPump` (`CBPeripheralManager`,
+    which advertises nothing else), a Windows PC the service UUID and the service data `QP` 3 on it
+    (`GattServiceProvider`, where its adapter has the peripheral role); neither carries an id of the computer. On a
+    Windows PC without its firewall rule the code shows beside the firewall card while the Bluetooth link serves, so a
+    phone pairs by Bluetooth. A new pairing code lets every central go (their calls end, their challenges and throttles
+    with them) and publishes the service again, so a connected phone hears its services changed (iOS's
+    `didModifyServices`, Android's `onServiceChanged`), reads the hello again and finds the new code; a phone whose call
+    over Bluetooth heard no chunk by its deadline also reads the hello again before its next call. The `helper` block's
+    `ble` says on every response how the link stands there. An iPhone links through AccessorySetupKit (two display
+    items, the Mac's by the service UUID and the name, the PC's by the service UUID and the service data, so no
+    Bluetooth prompt; the Settings app's Accessories row removes the link), an Android phone inside its foreground
+    service from Android 12 with Nearby devices, never location, and a companion-device association where it can.
+
+    Which way each call goes (one rule in each phone core, `ble.json`'s `route`): the held sync, the plain posts, the
+    ping, the sheet, the body and the unpair go over Bluetooth while it links (connected, `tx` subscribed, the hello
+    judged the pairing's and a sealed ping on that connection answered), else over the LAN; the pages (`/v1/history`,
+    `/v1/sheets`, `/v1/app_rows`) go over the LAN when it answered in the last minute, else over Bluetooth with `limit`
+    (`limits.pages`: 500, 50 and 500), never from a locked iPhone; a pairing goes over the LAN first and over Bluetooth
+    once that failed. A call that fails over Bluetooth fails as itself: it never starts a look for the helper on the
+    LAN. A phone's held request on Bluetooth may wait up to 10 minutes (`wait` up to 600,000, `ble_wait_max_ms`): the
+    helper counts that client alive, and the link's holder, past the LAN's 25 s only while a held request of it is
+    pending at the helper (from its arrival until its answer went to the radio), and for 25 s after its last one was
+    answered; a disconnect or an unsubscribe ends that at once, so the link passes to the next device, and a watch that
+    syncs still holds the link first. A phone that steps back for its watch's play session while linked keeps one
+    standing request over Bluetooth instead (since the review of 2026-10-17: `hold: false` with `wait`, `/v1/sync`),
+    its `tx` on: it holds nothing, and the helper answers it the moment no device holds the link (`unheld`), so a
+    locked phone whose watch app died hears it within the 25 s the watch's link lapses in and takes the link. Bluetooth
+    has no other way to call a request off, so a phone that stops both while linked (the player stopped following, or
+    nothing holds the phone to the computer any more) turns `tx`'s notifications off, which ends its calls at the
+    helper, and on again before its next call; until either runs again they go off whenever no call of it is under
+    way, after each call and on each new connection. A request of either kind ends the other at the helper as it
+    arrives. A client that stays linked for hours has its `link` line written to `helper.log` at least once an hour,
+    not only when it goes quiet. The LAN link stays as it is, and nothing of the game, the strip, the mirror or an
+    exercise rule changes.
+
+    The felt-unwell lock reaches every device (docs/plan.md slice 17; `contract/fixtures/lock.json`): the helper's
+    `locked_until` in every sync and sheet response, a device's own stop (a catch-up's `pump_done` with `unwell`,
+    which the helper turns into rows, or an app pump's stop row among its app rows, a phone's since slice 26 and a
+    watch's since slice 31; both reach `locked_until`), and the phone and the watch telling each other the lock they
+    hold,
+    without the helper: on Apple the key `locked_until` (unix seconds) in each side's WatchConnectivity application
+    context, beside what each already carries there, and on Android the data item `/questpump/lock` with
+    `locked_until`, which each side writes under its own node. Each device obeys the latest end it has heard while it
+    lies ahead, and never lifts a lock because a response or the other device leaves it out.
+    Since slice 32's third review the Apple Watch also sends a lock later than the last the phone told it by
+    `sendMessage` under the same key (`locked_until`, no Pro gate), beside its context, which wakes the iPhone's app
+    (`session(_:didReceiveMessage:)`), so the phone plans its reminders again at once rather than at its next wake; with
+    the phone out of reach the message is owed (kept across a relaunch) and goes once the phone is reachable, while the
+    lock still lies ahead.
+
+    The offer after a match on the computer (slice 35, docs/plan.md "The offer after a match"): when a game QuestPump on
+    the computer watches ends a match (since slice 56 every game it finds, the Riot games too since 2026-10-28,
+    each match or at its close; a game the player turned on until then), or a program the player added closes, the
+    helper decides one offer under its own gate and shows its card on the computer. Since slice 48's double-check the computer asks first:
+    it queues `match_end` (`Command`) for the device that holds the link, which raises it as its own notice, only when
+    the computer cannot ask, at a look after the card's chance while the offer stands, its card's time holds and
+    nothing answered it on the computer (a held offer once its hold ended), nothing holds offers back there, no watched
+    game is in a match, and the card could not show (the game in front on its one screen) or has shown to no input for
+    `match_away_s`; an offer answered on the computer first never reaches a device. Whichever device starts the pump an
+    offer opened names the offer in `offer_taken`, kept and sent again in every request until a response arrives, as an
+    event is; the helper takes the queued command back, closes the computer's card and lists the id in
+    `offer_withdrawn` in every response to every device (held, superseded and plain) while the offer had not expired,
+    as it does for an offer that went out and was then put off with the computer card's Later or ×, or answered by a
+    move done since on any device, so a device that raised it takes its notice back, and a device that never hears the
+    withdrawal loses its notice at the command's `expires_at`. `game_offer_at` keeps `link_gap_min` between
+    the phones' game links' offers across the devices: each request names the device's latest posted game offer, every
+    response the latest the helper knows on any device (its own match offers and every device's), and each device gates
+    its next link offer on the later of its own and the one it heard. Since slice 48 (`docs/computer-games.md`) the
+    computer's match offers keep no gap, no quiet hours and no daily cap, and since slice 57 every match asks, a
+    match's floor spacing them (its run's `match_min_s`, League's `match_min_league_s`, a feed's match from its
+    start); the computer's sitting clock (`match_sat_min`; it spaced them from slice 48 to slice 57) decides only
+    whether the pump opens on its warm move, restarted by a performed move on any device and by a 5-minute pause in the
+    computer's input (a watched game counting as input only while its window is in front or a match runs), and at 04:00
+    only on a computer whose input idle time never reads (since slice 48's double-check); the latest game offer on any
+    device (this same `game_offer_at`) restarts it for the computer's sitting cue alone since slice 57, never for the
+    warm move, so an offer let pass keeps the next one's warm move; a phone's notice of a computer match
+    keeps the phone's quiet hours and takes no place under the phone's cap. `playing`, in every response, says while it is true that a
+    watched game on the computer is in a match (the Android phone's off-screen hold counted it as word from the helper
+    until 2026-10-13, when that hold began to last while the phone is paired; no device acts on it since), and
+    `arms`, since slice 48's double-check, that an aim game resting the arms runs on the computer now.
+
+    One body on every app device (slice 35): the free mode's engine profile's Body switches (`no_jump`, `no_strain`,
+    `no_head_down`), its `experience`, its moves (`exclude` and `include`), since 2026-10-09 its `favourites` and its
+    `title`, and since slice 48 its `match_pace` (Moves per match, which the game has none of) travel between the helper and every paired phone through the sealed `POST /v1/body` (`Body`), each
+    field with its own `changed_at`; the later change wins field by field, and a tie goes to the helper's. A field a
+    device never changed (a default, a profile restored from a file without times) never travels. Since 2026-10-30 the
+    same fields with their times travel between a player's phones in their book too (the backup file's `body`, and
+    since slice 60 the sync's `device` batch's `stamps`: `contract/fixtures/backup.json`), merged the same way, a tie to
+    the book's, and a field taken from one keeps its time. The game's Body switches and, since 2026-10-09,
+    its Exercises page's list (`moves`), which the helper reads off the profile the strip paints and the files it takes
+    in, join at the time the game changed each (the profile's `bodyAt`), or, for a field from before those times, as a
+    change at the helper's time whenever the game's value differs from the last one the helper saw within the same
+    profile (by its install and its name, so another character's profile or another install's is never a change; the
+    first it sees of a profile counts against the addon's defaults, every switch off, nothing left out); one body
+    everywhere, the game included (2026-10-09): the mirror carries the switches and the moves back (`QuestPumpMirror`'s
+    `body`), and the game takes each one that changed later than its own change of it at its next load. The pain
+    flags and the focus stay rows. Since slice 51 (Away Mode; `contract/places.json`) a device keeps a list of places,
+    Home first, and one in use: Home's equipment and three switches (Floor moves, Room to move, Quiet mode) travel as
+    the field `home` between the game, the computer and the phones (the game's one setup is Home: its own changes join
+    at the profile's `bodyAt.home`, as the Body switches join at `bodyAt`, and the mirror's `body` carries `home` back, which
+    the game takes at its next load with its chat line), and the other places as the field `places`, the whole list
+    without Home, between the phones and the computer only (the game shows no other place); two fields, so a change to
+    Home in the game and a rename of a hotel on a phone never overwrite each other. The place in use stays each
+    device's own and never travels: a device whose place in use left the list takes Home. A device that does not know
+    `home` or `places` ignores them, and a helper that does not keeps neither, which is harmless: each device keeps
+    its own list until both sides know them. Until 2026-10-21 the place (the equipment, the space, quiet, the floor)
+    stayed each device's own.
+    A watch never calls the route:
+    its phone relays its whole profile to it. An instant on a device's own clock that lies more than a day past the
+    helper's clock (a clock set ahead) never counts: the helper drops a body field whose `changed_at` does, and leaves
+    out a request's `game_offer_at` that does, so neither wins every later change or gates every game offer until then.
+
+    The phone and its watch share the app's rows (docs/plan.md slice 31), so the watch composes its own app pumps from
+    the player's records with the phone in reach or not, and never from synced state: records come from rows.
+    Phone to watch, the latest value: the free mode's engine profile (`EngineProfile` JSON: the gear, the floor, the
+    space, quiet, the Body switches, the exclusions, include, the favourites, the experience, the title, since slice 48
+    the match pace; since slice 51 the place in use's gear and switches), the app's
+    pain rows (the newest 64; a flag's latest set or clear wins in the fold), the figure's colour of the sheet it shows
+    (0xRRGGBB, absent when none names one) and that sheet's focus (absent when it names none; never the demo's), which
+    the watch's fold takes as the phone's does (`sheetFocus`); on Apple the application context keys `profile`, `pain`,
+    `tint` and `sheet_focus` beside `coach`, `pair_link` and `locked_until`, on Android the data item
+    `/questpump/phone` with the same names beside `coach`. Since slice 51 both also carry `place`, the place in use's
+    name as the phone shows it (the player's own, or its template's words in the phone's language; at most 24 Unicode
+    scalars), which the watch's pick page shows as its place line and never edits; without it (an older phone) the
+    watch shows no place line.
+    Since slice 32 the same context and item carry `pro` (a boolean: Pro holds on the phone or its demo), which the
+    watch keeps as it last heard it for its complications, tiles and widget (the glance is free): the iPhone leaves it
+    out until its first StoreKit read at launch has ended, Android puts the last answer Play gave until Play answers
+    the launch, and a context or item without it (a phone build before it sends none) leaves the kept value standing.
+    Watch to phone on Apple, the Live Activity's state of the pump on the wrist (`LiveState`: its moves' names in
+    order, how many are done, the one on screen with its goal, when a running hold or timed move started and when a
+    timed move or a countdown ends, the next move's name, whether the pump ended; under 4 KB) under the key `live`, by
+    `sendMessage` while the phone is reachable (for every player since 2026-10-13: the Live Activity is free, Pro
+    keeps its next move's line), and the latest in the watch's application context under the same key beside the play
+    flag (`session`, `session_at` and since 2026-10-13 `linked`, true while the watch's link answers, the phone holding
+    the helper's link itself while it is false, as Android's `linked`; absent from an older watch, read as true),
+    which it waits for as the lock does. The context
+    carries only a pump told since the play flag's `running` last changed: the watch drops `live` from it at a
+    session's start and end, and the phone takes each context whole, so a context without `live` means no pump told
+    since and a new session never opens on the last session's state. At a session's end the watch also sends its play flag by `sendMessage`
+    (the phone reachable), which wakes the phone's app, so its Live Activity ends without the phone in front.
+    On Android the watch's play flag is the data item `/questpump/session` (`DataLayer.WATCH_SESSION`: `running`,
+    `linked`, `at`), which the phone reads as a `WatchSession`; since slice 32's third review it carries `pumping` (a
+    boolean, written again whenever it changes: true while a move runs or an app or game pump is on the wrist; absent,
+    from an older watch, reads as false), which the phone's reminders count as a pump running (a streak reminder takes
+    its retry), while the watch holds the phone's bridged reminders back through `BridgingManager` (every reminder
+    carries the bridge tag) and lets them through again after. The Apple Watch holds a mirrored reminder in its own
+    notification delegate, so its context carries no such key.
+    Phone to watch, a snapshot of rows (`WatchRows`
+    below), replaced whole: every app row the phone holds (its own, its watch's and other phones' synced ones, body
+    notes included, as stored: the watch's with bit 4) and the game's kept rows as text (since slice 32's third review
+    with `sheet`, the game's summary while the phone's Hero shows it, and since 2026-10-30 with `char`, the character
+    that summary is, and `held_days`, the game days of the phone's catch-ups no game row holds yet, so the wrist shows
+    the phone's character and counts the phone's streak days), sent 2 s after the phone's own
+    rows (or another phone's), the game's kept rows, the character its Hero shows or those days changed
+    (`WatchRelay.rowsAfterMs`, `DataLayer.ROWS_AFTER_MS`),
+    2 min after a change that brought only its watch's rows (by the rows' content, a row with bit 4 being the watch's,
+    `AppRows.isWatch`; `watchRowsAfterMs`, `WATCH_ROWS_AFTER_MS`), since the watch holds those already and the snapshot
+    only acknowledges them, a change of the phone's own bringing a waiting one forward, and at once right before a
+    start ask, for the watch's rows ask (below), when the app starts and when the watch app appears or the paired watch
+    changes (Android after 2 s for a new watch node with the app); on Apple a `WCSession` file transfer (metadata `kind`
+    `rows`, `made_at`), an older one still outstanding cancelled, on Android the data item `/questpump/rows` with the
+    asset `rows` and `made_at`. Watch to phone, the rows ask (since 2026-10-07): a watch that holds no snapshot while
+    its phone's app is there (Apple `isCompanionAppInstalled`; Android once the phone's item or a snapshot has been
+    heard) composes no pump from nothing, since an empty state writes start rungs and placement rows the fold applies
+    as absolute rungs: before its first pump, or for a start ask, it asks its phone (on Apple `sendMessage` with
+    `rows_ask: true` and no reply handler, which wakes the iOS app, when reachable, else at activation or when the phone
+    comes in reach, never within 20 s of a start ask not met yet; on Android a `MessageClient` message on
+    `/questpump/rows_ask` with no body to the phone's node, whose listener's manifest filter takes it with the app
+    closed), the phone sends a snapshot at once, and the watch composes as it lands, else after
+    `WatchRelay.rowsAskWaitMs` / `DataLayer.ROWS_ASK_WAIT_MS` (20 s) tells the player to open the phone's app; a watch
+    whose phone never had the app composes from nothing. Watch to phone, the watch's own rows, bit 4 set by the watch
+    as it writes them: each write's rows with every copy the watch keeps of their texts and, at each start of the watch
+    app, those the latest snapshot lacks (by text and copy number; a row its reset floor drops is done with) less those
+    still on their way (Apple's outstanding user-info transfers; on Android its pending `/rows/` items, and only once a
+    phone has been heard), in parts of about 200 rows that
+    keep every copy of a text in one part, since the phone's union counts a part's copies from its first (the cores'
+    `WristRows.outgoing` and `WatchRelay.parts` / `DataLayer.parts`), on Apple `transferUserInfo` key `rows`, on
+    Android the data
+    item `/rows/<uuid>` with the string array `rows`, which the phone deletes once kept; the phone takes them in as a
+    union with its own (by text and copy number, then its floor), and its own paths carry them on: to the helper in
+    `rows`, into its book and the cloud (body notes never). The watch's app pump so far as each of its moves' rows are
+    written and again as its card settles (`AppPumpRelay` below), which the phone keeps as one pump of its Log, so a
+    watch app ended mid-pump leaves the moves it wrote there: on Apple `transferUserInfo` key `app_pump`,
+    on Android the data item `/app_pump/<pump id>`. Watch to phone, each card of a game pump's move or of a catch-up
+    the wrist ran, as it settles and again where it changes (`RelayedPump` below; since slice 44 a game move's card
+    names its move, `gameMove`), which the phone keeps in its history: on Apple `transferUserInfo` key `pump`, on
+    Android the data item `/pump/<pump id>` or `/pump/<pump id>/<slot>`. Start on my watch (both phones' Start a pump
+    window): a fresh
+    snapshot, then the start ask (`StartAsk` below; on Apple the application context key `start` before
+    `startWatchApp(toHandle:)`, on Android `questpump://start?kind=<key>&tier=<1-3>&rows=<made_at>&at=<ms>` through
+    `RemoteActivityHelper`, `at` the ask's own time, which a link without it takes from `rows`); a game offer's tap
+    (slice 33) leaves the size to the player: the iPhone's notification on the Apple Watch opens the watch's size page
+    for the offer's kind, and Android's watch action Pump on my watch sends the ask without `tier` and with `&link=`,
+    which opens it too, the pump started there recording the link; the phone holds the
+    window's Start and Start on my watch from the tap until the window closes, so one finish never starts two pumps
+    (both come back after a failed ask); the watch composes
+    once it holds a snapshot made at or after `rows`, or after 10 s (`StartAsk.rowsWait`) with an older one it holds,
+    and holding none waits for one as for its rows ask above, never composing from nothing (a phone whose snapshot
+    could not go asks over the last one it sent, or none), takes an ask once (newer than the last it took, at most
+    2 min old), logs and drops one of a kind it does not know, and
+    drops one that comes while a pump is on the wrist, or one with `tier` while a game pump is open, between its moves
+    too (opened by this session's `pump_offered` or countdown, closed by its `pump_done`, `session_end` or 15 min
+    without a command of it); one without `tier` opens its page between a game pump's moves as the session's Pump does.
+    A reminder's watch action on Android (Pump on my watch, slice 32's third review) sends
+    `questpump://start?pump=quick` through `RemoteActivityHelper`, which the watch answers by starting its session when
+    none runs and opening the Quick pump's Ready view (`session.openPump()` with the Quick pump), as the Apple Watch
+    answers a tap on a mirrored reminder in its notification delegate; while the felt-unwell lock holds, neither starts
+    anything. A match offer's (slice 35) sends the start ask of "A match" without `tier`, as a game offer's does, and
+    for one that names no kind (a program's close from a desktop app before 2026-10-28), `questpump://start?pump=pick`,
+    which the watch answers as the Quick one but on the pick of its own app pump (`session.openPump()`), as the Apple
+    Watch opens the pick on a tap on the mirrored offer. Since slice 48 both carry the offer's facts, `chosen`, `arms`
+    and `sat` (Start on my watch's
+    fields below; since its double-check `game` beside `arms`), the pick as
+    `questpump://start?pump=pick[&chosen=<1-3>][&arms=1][&sat=<n>[&warm=<0|1>]][&game=<name>]` (core's `PickAsk`; `warm`
+    since slice 57, as the start ask's), each
+    refused as the start ask refuses it. An older watch ignores the query and starts a session; the bare
+    `questpump://start` (the Start tile and complications) still starts a play session.
+    Nothing of this passes the helper or Pluxia: WatchConnectivity and the Data Layer only,
+    whose files and items stay out of the device's backup on both sides.
+servers:
+  - url: http://{host}:{port}
+    variables:
+      host:
+        default: 192.168.1.20
+        description: the computer's private LAN address, from the pair link
+      port:
+        default: "8787"
+security:
+  - bearer: []
+paths:
+  /v1/hello:
+    get:
+      operationId: hello
+      summary: Who answers on this address, with no bearer and no seal, for a device looking for its helper
+      description: |
+        The one route without a bearer: plain JSON, never sealed, so a device checks an address before its bearer goes
+        out. Since 2026-11-01 (the release security review of 2026-10-31, L3) it names nothing of the computer, no id,
+        name or port: the device sends a challenge `c` it drew for this request, and the answer proves over `c` and 16
+        random bytes `n` of the helper's own the install's id (`h`) and the pairing key (`k`), which only a device
+        holding them can check (`contract/fixtures/find.json`), so answers to one device or to many link nothing; the
+        names reach a paired device in the sealed answers' `helper` block. Under the same per-address throttle as every
+        route. A helper with no install id yet answers 404, as it does any unknown route.
+      security: []
+      parameters:
+        - name: c
+          in: query
+          required: true
+          description: 16 random bytes the device drew for this request, base64url without padding
+          schema: { type: string }
+      responses:
+        "200":
+          description: The proofs of the install and the key over the challenge, nothing else
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HelloResponse" }
+        "404": { description: The helper has no install id yet; a looking device skips the address }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "422": { description: No challenge, or one that is not 16 bytes of base64url; no body }
+        "429": { $ref: "#/components/responses/Throttled" }
+  /v1/pair:
+    post:
+      operationId: pair
+      summary: A phone pairs after scanning the pair link; the bearer proves it holds the key
+      description: |
+        Sets the mirror's `pairing` block (`phone`, `phone_since`), which the addon's setup screen reads at the next
+        `/reload`. Calling it again (a second phone, the same phone again) is accepted. A watch never calls it: the
+        phone pushes the pair link to the watch, and the watch's first sync while a phone is paired sets
+        `pairing.watch`. Since slice 43 a phone pairs over the LAN first and over Bluetooth once that failed (a guest
+        Wi-Fi, client isolation, mobile data, a Windows PC without its firewall rule): the computer advertises while its
+        pairing code shows (the Phones page or a pairing window), the phone finds it by the service
+        UUID (the iPhone through AccessorySetupKit's picker), reads `hello`, goes on only when it judges it the pair
+        link's computer with its key (`ble.json` `gatt`; a new code since is the stale-code failure, as on the LAN),
+        pings and sends this route in an envelope under that connection's challenge; the answer's `helper` block says
+        the same either way.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { $ref: "#/components/schemas/Sealed" }
+            x-plaintext: { $ref: "#/components/schemas/PairRequest" }
+      responses:
+        "200":
+          description: Paired
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/PairResponse" }
+        "400": { $ref: "#/components/responses/Unsealed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "408": { $ref: "#/components/responses/TooSlow" }
+        "413": { $ref: "#/components/responses/TooLarge" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/unpair:
+    post:
+      operationId: unpair
+      summary: A phone unpairs (its Unpair), before it forgets the pairing key (since 2026-10-09)
+      description: |
+        Ends the pairing on the computer: the mirror's `pairing` block loses `phone`, `phone_since`, `watch` and
+        `linked_at` (the phone's watch forgets the helper with its phone), so the game's setup screen asks again at its
+        next load and the computer's Phones page shows the code; the Pro grant of this `client` goes. The pairing key
+        stays: another phone that holds it still links, and its next sync names a phone paired again. A phone sends it
+        once, at most 3 s, and forgets the key whatever comes back (a helper out of reach keeps its side until the
+        Phones page shows the code again, after 14 days without a link). A watch never calls it, and a `client` longer
+        than 64 characters is no install's id (422 for either). Since slice 43 it goes over Bluetooth while that links,
+        and a phone that unpairs also ends its Bluetooth link (the iPhone's accessory, Android's companion-device
+        association), whatever comes back. The helper answers it over Bluetooth as on the LAN: when the unpairing
+        stops its Bluetooth link (no phone paired and no code showing), the link stops only after this answer went to
+        the radio.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { $ref: "#/components/schemas/Sealed" }
+            x-plaintext: { $ref: "#/components/schemas/UnpairRequest" }
+      responses:
+        "200":
+          description: Unpaired
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/UnpairResponse" }
+        "400": { $ref: "#/components/responses/Unsealed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "408": { $ref: "#/components/responses/TooSlow" }
+        "413": { $ref: "#/components/responses/TooLarge" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/ping:
+    get:
+      operationId: ping
+      summary: One clock round trip; three quick ones at a session's start give the first offset
+      parameters:
+        - name: t0
+          in: query
+          required: true
+          description: The device's clock when it sent the request (a GET carries no body)
+          schema: { type: integer, format: int64 }
+      responses:
+        "200":
+          description: The helper's receive and send times
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/PingResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+  /v1/sync:
+    post:
+      operationId: sync
+      summary: The one held exchange; samples, wrist events, the app's rows and receipts up, commands down
+      description: |
+        The device that holds the link keeps one request open at all times and sends the next the moment a response
+        lands. The helper answers at once when a command is waiting for the device, otherwise after holding it for
+        5 s from its arrival (or its `wait`). Since 2026-10-13 it also answers at once while the game a sync response
+        tells (the `helper` block's `wow`, `sight` and `step`, and `game_asks`) differs from what that client's last
+        sync response told, so a change reaches a device within a round trip, an open pairing window and a phone
+        that follows the game included, and at once when it cannot say what that client heard: a client it has not
+        answered since it started, or a request whose `since` is not the `next` of that client's last response (the
+        app started again, or that response lost), so a phone started again hears the game at once. That record is
+        what the helper sent, so a response lost without a new `next` counts as heard (best-effort: the change then
+        comes at the next hold's end). Commands go to the device that holds the link: a watch (`watchos`, `wearos`)
+        that synced within the last 25 s, else the phone that did; another device's held request is answered at the
+        hold's end without commands. A device is one client, the app install's own `client` id: a second held
+        request from the same client while one is held answers the older one at once, without commands (another
+        client of the same kind is another device). The helper keeps a command until the holder acknowledges it (a later request whose
+        `since` is at least the command's `seq`) or until `expires_at`; a device ignores a command whose `seq` it has
+        seen. A request with `hold: false` and no `wait` (a phone's catch-up pump or its app rows while a watch holds
+        the link, a device's last word as its session ends) is answered at once, carries no commands, acknowledges none and leaves the client's
+        held request in place. A response that reaches the device confirms the events its
+        request carried; the device keeps an event and sends it again until then (a catch-up pump is paid once
+        whatever the repeats). The app's rows are confirmed only by a response's `rows_store` (below), never by a
+        response alone, so a helper that does not keep them never loses them.
+
+        A phone sends the rows its app wrote (slice 26: its own pumps, its pain flags and check-in answers, its start
+        rungs, its felt-unwell stops), at most 500 a request, in `rows`, until the helper has every one: one record
+        per move across the game and the app. The first exchange after a pairing, or with a helper whose
+        `rows_store` the phone has not kept, sends them all, so a player's records reach the game whichever came
+        first. The helper keeps each row once in a store of its own (an app row never pays or owes a move), locks
+        on one that felt unwell, and writes them into the mirror, which the game reads at its next login or
+        `/reload`; it never serves them in `/v1/history`, and serves them back to every paired phone in
+        `/v1/app_rows`, the helper's copy (slice 28). Since 2026-10-09 rows that wait go in the background too, so a
+        pump made away from the computer reaches the game without the app opened at home: the iPhone's background
+        refresh posts them and asks for another refresh while some wait, and Android's job, which waits for a network,
+        posts them after a post that left some waiting. A phone's sync, a plain post too, also names a phone paired
+        where the pairing block names none (another phone that holds the key, after one unpaired).
+
+        Since slice 35 a request names the match offer whose pump the device started (`offer_taken`), the device's
+        latest posted game offer (`game_offer_at`) and, from a phone, its Pro proof (`pro_proof`), which never fails
+        the request it rides on; every response, held, superseded or plain, names the offers taken back
+        (`offer_withdrawn`), whether a watched game on the computer is in a match (`playing`), since slice 48's
+        double-check whether an aim game rests the arms there now (`arms`), and the latest game offer on any device
+        (`game_offer_at`). Since slice 48's double-check the helper builds those facts and `locked_until` as it
+        answers, never as the request arrived, and answers a waiting held or standing request at once whenever `arms`
+        or `playing` changes or an offer is withdrawn, so a device's word of them is never older than its request's
+        wait (`SyncResponse.arms`).
+
+        Since the review of 2026-10-17 a request with `hold: false` and a `wait` is a standing request: a phone that
+        steps back for its watch's play session keeps one standing over Bluetooth (`wait` 600000, `ble_wait_max_ms`; its
+        `tx` subscription on), so an answer wakes it while it is locked. It never counts toward holding the link,
+        carries no commands and acknowledges none, as a plain post, and replaces its client's held or standing request
+        as a held one does (the older answers at once; a held request replaces it alike, and a plain post leaves it in
+        place). The helper holds it up to its `wait` whoever holds the link (5000-600000 on Bluetooth, 5000-15000 on the
+        LAN), answers it at once when a newer request of its client arrives or the game it tells changes, as a held
+        request, and at once while no device holds the link: as it arrives, and the moment the holder stops counting (a
+        watch or a LAN phone whose last held request grew older than 25 s, a Bluetooth phone 25 s after its last held
+        answer went, a central gone). That answer says `unheld`. A phone that reads `unheld: true` takes the link at
+        once: it counts its watch's play session as not holding the link until the watch next tells its session (its
+        application context or message, or its Data Layer item), and sends its held request; it follows any other
+        answer with the next standing request while it still steps back, at once but never within a second of the one
+        before, so a helper from before this, which answers it at once as a plain post, costs one exchange a second at
+        most. A standing request carries `since` (the last response's `next`), the battery and the receipts, never
+        `samples`, `events`, `rows`, `offer_taken`, `game_offer_at` or `pro_proof`, which go in plain posts beside it and
+        are confirmed by their answers; the phone reads it for its wait and 10 s more, and a failure waits and retries as
+        a held request's does.
+
+        Since slice 51 a phone that steps back for its watch keeps the game pump on its screen as a mirror: the helper
+        answers a standing request from a paired phone (`ios`, `android`) at once whenever a command of a game pump is
+        queued for the holder (`pump_offered`, `countdown`, `move_end`, `move_counted`, `verdict`, `pump_done` and
+        `session_end`), and every standing answer carries those of them whose `seq` is above the request's `since`, in
+        `seq` order, as `mirror` (left out when there is none), with `next` the highest `seq` among them (the request's
+        own `since` when there is none), so the next standing request asks only what came after. The phone shows the
+        pump from them as it shows the commands it holds the link for (the moves, the countdown, the move's count with
+        the record mark, the verdict, the end) and never acts on them as the holder: it sends no `WristEvent`, starts
+        no Health session for them and acknowledges nothing (a standing request never acknowledges the holder's
+        commands; the helper keeps each until the holder's own `since` passes it). The step-back no longer ends the
+        phone's game pump: a phone that takes the link back (`unheld`) goes on from the mirror's latest state, its
+        held request's `since` being the `next` its last standing answer gave, and the helper sends the pump's
+        `pump_offered` again when that `since` is below its latest one, as for any holder. A helper from before this
+        sends no `mirror`, and the phone shows its own last state of the pump, as before.
+
+        Since slice 43 a phone's held and plain syncs go over Bluetooth while it links (the description above): the
+        same bodies, the same rules, a held request's `wait` up to 600,000 there, and its client counted alive as the
+        link's holder past 25 s only while one of its held requests is pending at the helper, and for 25 s after its
+        last was answered (a watch that synced within 25 s still comes first); a disconnect or an unsubscribe hands the
+        link on at once, and a phone that stops its held sync turns `tx`'s notifications off, Bluetooth's only way to
+        call a request off. A phone whose Bluetooth link drops mid-request sends the next over the LAN, and the helper
+        takes an event or a row sent again over the other transport once, as it takes one sent again on the LAN.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { $ref: "#/components/schemas/Sealed" }
+            x-plaintext: { $ref: "#/components/schemas/SyncRequest" }
+      responses:
+        "200":
+          description: The commands for the holder, the clock times and the lock
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/SyncResponse" }
+        "400": { $ref: "#/components/responses/Unsealed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "408": { $ref: "#/components/responses/TooSlow" }
+        "413": { $ref: "#/components/responses/TooLarge" }
+        "422": { $ref: "#/components/responses/SyncUnreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/sheet:
+    get:
+      operationId: sheet
+      summary: The sheet the addon folded, per character, with the unfinished and held counts and the lock (display only)
+      description: |
+        Each character's latest `sheet` strip event: the game's sheet summary as the addon folded it (version 6 since
+        2026-10-26, 5 from slice 27, docs/plan.md slice 5's definition; its words are `contract/sheet.json`'s). A phone shows it as the
+        player's sheet once one has come; the phone pays only its own app pumps, into the app's own sheet of the same
+        shape, which Hero shows a player without the game's, and of the game's rows it keeps only marks the rungs their
+        climbs reached there, unpaid (each sheet pays a rung once, at its first reach from any source).
+      responses:
+        "200":
+          description: The latest sheet of every character the helper knows
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/SheetResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/history:
+    get:
+      operationId: history
+      summary: The rows the helper keeps, as `rows.jsonl` holds them, one page at a time
+      description: |
+        A phone keeps every row it has read, so its Log and charts work without the helper and reach back past the
+        helper's own start, and its own pumps obey the game's pain flags and felt-unwell lock with the helper off
+        (slice 17: the latest pain row of a joint sets or clears its flag, `lock.json`'s `rows` the lock) and follow
+        the game's records, ladders and clocks (slice 26: its fold reads the game's rows from the latest reset on
+        beside its own, every owed, banked and paid move row left to the game). The store holds the game's rows and
+        the catch-up rows; the app's own rows, which the phone sent in `/v1/sync`, are never among them. It pages in the store's order (the order the helper saw the rows), never by a row's time:
+        a save taken in, a late catch-up or a paid row brings rows dated before newer ones, and a page by time would
+        miss them. It asks with `after` = the rows it holds of this `store`, keeps the page, and asks again from `next`
+        while `more` is true. It reads the store whole from `after=0` instead when the response's `store` differs from
+        the one it kept (a reset compacted the store, or the helper started a new data folder), when `next` comes back
+        below the `after` it asked (the store shrank under the same name), or when it keeps rows under no store at all
+        (its last read found the helper's store empty); then it replaces its rows with the new store's, keeping only its
+        own rows dated before the new store's oldest row that carries its own time (a paid row, a correction and a load
+        row carry the time of the row they name) and at or after the new store's latest reset row, when the new store has one,
+        and dropping a kept row the new store holds too (the rows of a deleted save go; history the helper lost stays).
+        Every page carries a pump row's proof once one is out; a device asks `proofs_since` from the oldest pump row it
+        keeps without a verdict, at most 14 days back and at least one day back.
+      parameters:
+        - name: after
+          in: query
+          required: false
+          description: The rows of this store the device holds already (default 0)
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: proofs_since
+          in: query
+          required: false
+          description: |
+            Also send every heart-rate proof the helper holds for a pump row dated at or after this unix second (a
+            verdict comes about a minute after the go, so a device that read the pump row before it asks again from its
+            oldest kept pump row without a verdict, at most 14 days and at least one day back)
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: limit
+          in: query
+          required: false
+          description: |
+            Since slice 43: the most rows this page holds (default and most 5,000). A phone asks 500 on Bluetooth
+            (`contract/fixtures/ble.json` `limits.pages`), so a page's envelope stays far under 2 MiB, and none on the
+            LAN; `next` and `more` count as for any page. A helper before it ignores it.
+          schema: { type: integer, minimum: 1, maximum: 5000 }
+      responses:
+        "200":
+          description: At most `limit` rows (5,000 when absent) after `after`, in the store's order
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/HistoryResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/app_rows:
+    get:
+      operationId: appRows
+      summary: The helper's copy of the app's rows, every paired phone's, one page at a time
+      description: |
+        Slice 28: the store of app rows the phones sent in `/v1/sync` (slice 26), served back, so a phone that lost its
+        rows (a new phone without a backup, a switch between iPhone and Android) and a second phone paired to the same
+        helper get the app's rows of every phone: one progression on every device. Each row comes as the helper keeps
+        it (stamped: `char` 0, bit 11 with bit 7, bit 4 or bit 12) with its copy number. A phone takes a row in without
+        the stamp (bits 11 and 7 cleared: the text it stores its own rows as), as a union with its own by text and copy
+        number, so a row it sent itself, or holds from its cloud or a backup file, is kept once; the rows a page
+        served count as sent under that `store`, so the phone never sends them back; a watch's row (bit 4) keeps its
+        bit (only 11 is cleared: the text the phone and the watch store it as), so a second phone gets the watch's rows
+        too (slice 31), and so does a row of a pump the desktop app ran (bit 12, slice 35), which a phone that sends it
+        again (to a helper whose store started again) stamps with bit 11 alone, the text the helper keeps. It pages as
+        `/v1/history` does: `after` = the rows of this `store` it has read, again from `next` while `more` is true,
+        and from `after=0` when `store` differs from the one it kept or `next` comes back below `after` (a union takes
+        the store in again harmlessly). A reset row comes only as a phone's Start over in the app (kind 14, `char` 0,
+        bit 11 with bit 7 alone; kept since 2026-10-09 and never written into the mirror, so the game keeps what it
+        has), after which a phone's own history starts again; every row is dated at or after the latest
+        `/qp reset all`.
+      parameters:
+        - name: after
+          in: query
+          required: false
+          description: The rows of this store the device has read already (default 0)
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: limit
+          in: query
+          required: false
+          description: |
+            Since slice 43: the most app rows this page holds (default and most 5,000); a phone asks 500 on Bluetooth
+            and none on the LAN, as for `/v1/history`. A helper before it ignores it.
+          schema: { type: integer, minimum: 1, maximum: 5000 }
+      responses:
+        "200":
+          description: At most `limit` app rows (5,000 when absent) after `after`, in the order the helper took them
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/AppRowsResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/account:
+    get:
+      operationId: accountGet
+      summary: The desktop app's sync account, for the phone's account question after pairing (slice 60)
+      description: |
+        Slice 60 (contract/sync-api.yaml): the desktop app's sync account with its root secret R, sealed under the
+        pairing key as every body here, so only a paired phone reads it. A phone with Sync on asks after pairing and
+        at its first link in each run, having read its own account's devices (`GET /api/sync/v1/devices`), and
+        decides: the same account, nothing; else the account with a linked email wins, then the one with more
+        devices, then the phone's. The phone's winning asks
+        "Add {computer} to your progress?", whose Add sends `PUT /v1/account`; the computer's asks "Join the progress
+        on {computer}?", whose Join makes the phone join that account with this R, its rows going along (slice 60, "Two
+        accounts become one"). Not now is kept for that pair of accounts until either changes. `account` and `r` are
+        null while the desktop app has no account (its Sync off, or no account made yet), and then a phone with one
+        asks Add. A watch has no use for it and never calls it; a GET names no device, so the route cannot refuse
+        one, and the pairing key a watch holds already opens every body here.
+      responses:
+        "200":
+          description: The desktop app's account
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/AccountResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+    put:
+      operationId: accountPut
+      summary: A phone hands the desktop app its sync account, on the player's Add (slice 60)
+      description: |
+        The desktop app joins the account with this R (`POST /api/sync/v1/session` with its auth key), turns its Sync
+        on, sends all it made to the account and leaves its old one, as any device that joins another account does,
+        and answers its account after the join; a join the server refused answers 409, and the phone shows the sync's
+        failed line. Sent only on the player's Add, never by itself.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { $ref: "#/components/schemas/Sealed" }
+            x-plaintext: { $ref: "#/components/schemas/AccountRequest" }
+      responses:
+        "200":
+          description: The desktop app's account after the join
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/AccountResponse" }
+        "400": { $ref: "#/components/responses/Unsealed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "409": { description: "The sync server refused the join (a wrong R, a deleted account, no server)" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/body:
+    post:
+      operationId: body
+      summary: A phone's body fields, each with when it changed; the body every app device shares back (slice 35)
+      description: |
+        One body on every app device (the description above). The phone sends the fields it changed itself or took
+        from a response (those with a change time); the helper drops a field that does not read or check out alone
+        (`Body`), never the request, takes each field that changed later than its own (a tie keeps the helper's), keeps
+        the body in its data folder and answers the merged body. The phone takes each answered field that changed at
+        or after its own (a tie goes to the helper's), keeping the answer's `changed_at`, and never stamps a field it
+        took. It calls the route after a body change (debounced), when it comes to the front and on each 30-s tick in
+        front beside `/v1/sheet`, and after pairing; a watch never does (422).
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { $ref: "#/components/schemas/Sealed" }
+            x-plaintext: { $ref: "#/components/schemas/BodyRequest" }
+      responses:
+        "200":
+          description: The body every app device shares, as the helper keeps it after the merge
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/BodyResponse" }
+        "400": { $ref: "#/components/responses/Unsealed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "408": { $ref: "#/components/responses/TooSlow" }
+        "413": { $ref: "#/components/responses/TooLarge" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /v1/sheets:
+    get:
+      operationId: sheets
+      summary: Every sheet summary the helper has read, one page at a time, for the phone's charts (display only)
+      description: |
+        The addon paints its folded sheet at login and after every pump (`/v1/sheet` serves the latest per character);
+        the helper keeps each one that differs from that character's previous one in `sheets.jsonl`, so the phone's
+        charts plot the stats, the level, the rungs, the records and the muscles as the addon folded them; the phones
+        pay only their own app pumps into the app's own sheet (slice 27), and no chart plots that sheet. Paged as
+        `/v1/history` is, with the same `store` rule: a reset drops the sheets folded (their own `at`) before it, and
+        the `store` changes whenever its first sheet goes.
+      parameters:
+        - name: after
+          in: query
+          required: false
+          description: The sheets of this store the device holds already (default 0)
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: limit
+          in: query
+          required: false
+          description: |
+            Since slice 43: the most sheets this page holds (default and most 1,000); a phone asks 50 on Bluetooth,
+            since a sheet summary runs to kilobytes, and none on the LAN, as for `/v1/history`. A helper before it
+            ignores it.
+          schema: { type: integer, minimum: 1, maximum: 1000 }
+      responses:
+        "200":
+          description: At most `limit` sheets (1,000 when absent) after `after`, in the order the helper read them
+          content:
+            application/octet-stream:
+              schema: { $ref: "#/components/schemas/Sealed" }
+              x-plaintext: { $ref: "#/components/schemas/SheetsResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "421": { $ref: "#/components/responses/Misdirected" }
+        "422": { $ref: "#/components/responses/Unreadable" }
+        "429": { $ref: "#/components/responses/Throttled" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: base64url, no padding, of HKDF-SHA256(pairing key, salt empty, info "questpump bearer v1", 32 bytes)
+  responses:
+    Unsealed:
+      description: The body failed to open (a wrong key, a changed byte, too short), its sent_at lies more than 60 s from the helper's clock or before the helper started, or it repeats a recent nonce
+    Unauthorized:
+      description: No bearer, or not this helper's; no body
+    Misdirected:
+      description: >-
+        The request's Host names no address of the computer, `localhost` or its own `.local` name at the port the
+        connection reached (a DNS rebinding page); no body, before the bearer is checked
+    TooSlow:
+      description: The body took longer than 10 s to arrive
+    TooLarge:
+      description: The body is larger than 256 KiB
+    Unreadable:
+      description: >-
+        The body opened but is not the route's JSON (a missing field, an unknown device, a number out of range), or a
+        route's own check of a body that read refuses it (a watch pairing, a field out of range); no body
+    SyncUnreadable:
+      description: >-
+        The sync's body opened but is not its JSON: the 422 carries the refused request's nonce sealed
+        (`RefusedResponse`, since the release security review of 2026-10-31), sealed for the sync's answer (its route
+        `answer POST /v1/sync`), the one 422 a device drops what its request carried on. Every other route answers
+        Unreadable bare, and a sync body posted at another route does not open there
+      content:
+        application/octet-stream:
+          schema: { $ref: "#/components/schemas/Sealed" }
+          x-plaintext: { $ref: "#/components/schemas/RefusedResponse" }
+    Throttled:
+      description: Too many wrong bearers from this address in the last minute; every route answers 429, the hello too
+    Unavailable:
+      description: The helper's loop cannot take the request (it is quitting); the device keeps what it sent
+  schemas:
+    Sealed:
+      type: string
+      format: binary
+      description: A 12-byte nonce, the AES-256-GCM ciphertext of the plaintext JSON, the 16-byte tag
+    Millis:
+      type: integer
+      format: int64
+      description: Milliseconds on the helper's wall clock
+    Device:
+      type: string
+      enum: [watchos, wearos, ios, android]
+    Helper:
+      type: object
+      required: [name, host, port, version, t]
+      properties:
+        name: { type: string, description: the computer's name }
+        host: { type: string, description: the address to use from now on }
+        port: { type: integer }
+        version: { type: string, description: the helper's version }
+        t: { $ref: "#/components/schemas/Millis" }
+        mdns:
+          type: string
+          description: |
+            the computer's own `.local` host name, as the pair link's `mdns` (absent when the computer has no valid
+            one, and from a helper older than 2026-09-30); a device keeps it in its pair link
+        hid:
+          type: string
+          description: |
+            the helper install's id, base64url without padding of 16 bytes, as the pair link's `hid` (absent from a
+            helper older than 2026-09-30); a device keeps it in its pair link
+        wow:
+          type: string
+          enum: [addon, no_addon, none]
+          description: |
+            Since 2026-10-09: what the computer knows of World of Warcraft. `addon`: an install with QuestPump, the one
+            the helper follows; `no_addon`: the game without QuestPump yet (an install found, or a client running
+            without it); `none`: no game known. Absent from an older helper; a device reads it absent, or a value it
+            does not know, as unknown and says nothing of the game then.
+        sight:
+          type: string
+          enum: [sees, no_grant, stopped]
+          description: |
+            Since 2026-10-09, present only while `wow` is `addon`: what the helper reads of the game, as the mirror's
+            pairing block tells the addon (`sees_game`, `capture`). `sees`: it reads the game's squares, or waits for
+            the game to run; `no_grant`: macOS's Screen Recording grant is missing; `stopped`: its reading stopped, or
+            the squares it sees do not read. For either of the last two the phones' chip and the watches' session line
+            say "QuestPump can't see the game", and a pairing's next step names the grant for `no_grant`.
+        step:
+          type: string
+          enum: [none, check_again, reload, grant, either]
+          description: |
+            Since 2026-10-13, present only while `wow` is `addon`: the one step a pairing still asks of the player,
+            which the phones' pairing window and the desktop app name and nothing else. `grant` while `sight` is
+            `no_grant`; else from the strip's setup word (cell 2's flags, bits 4-7, `contract/fixtures/rows.json`):
+            `check_again` while the running game's setup window asks for its Check again (on screen, or held back
+            by a fight, a pump or a cinematic, since it comes back with the window); `reload` while the running
+            game does not read its own save back (the Forever beta) and its load ran without the helper, so one
+            /reload brings its saved progress back; `none` otherwise, also with no game running (the game reads the
+            pairing at its next start by itself, and its pumps reach the phones through the helper with no reload);
+            `either` while the helper cannot tell (a game running whose strip has carried no setup word since the
+            pairing: an addon older than 2026-10-13, or no square read yet). Absent from an older helper; a device
+            reads it absent, or a value it does not know, as `grant` while `sight` is `no_grant` and as `either`
+            otherwise.
+        ble:
+          type: string
+          enum: ["on", ask, no_grant, "off", no_peripheral, none, stopped]
+          description: |
+            Since slice 43, in every response: how the computer's Bluetooth link stands (the description's "The
+            Bluetooth link"), which the phones' pairing window, follow card and Helper page say and the computer's
+            Phones page shows. `on`: it serves the link (advertising while a phone is paired or the pairing code shows,
+            on the Phones page or in a pairing window); `ask`: macOS has yet to answer QuestPump's
+            Bluetooth grant, which the Phones page or the pairing window asks in context, both before its question
+            shows and while it shows; `no_grant`: the grant is refused (macOS's Privacy & Security, Bluetooth; on
+            Windows, the system's privacy settings or a policy); `off`: the computer's Bluetooth is turned off;
+            `no_peripheral`: its adapter cannot serve phones (a Windows PC without the peripheral role), so phones link
+            on Wi-Fi alone; `none`: the computer has no Bluetooth; `stopped`: the player turned the link off on the
+            Phones page, or it stopped or could not start there (the Phones page says which). Absent
+            from an older helper; a device reads it absent, or a value it does not know, as unknown, and then offers
+            no Bluetooth step and gives no Bluetooth reason.
+    HelloResponse:
+      type: object
+      required: [v, n, h, k]
+      properties:
+        v:
+          type: integer
+          enum: [2]
+          description: the body's version, 2 since 2026-11-01 (1 showed `hid` and `kid` in plain); a later one only adds
+            fields
+        n: { type: string, description: "16 random bytes the helper drew for this answer, base64url without padding" }
+        h:
+          type: string
+          description: |
+            the first 8 bytes of HMAC-SHA256 keyed with the install's id (its 16 bytes, the pair link's `hid`) over
+            `questpump lan hello hid`, the request's `c` and `n`, base64url without padding
+            (`contract/fixtures/find.json`)
+        k:
+          type: string
+          description: |
+            the first 8 bytes of HMAC-SHA256 keyed with the hello key (`contract/fixtures/seal.json` `hello_key_hex`)
+            over `questpump lan hello key`, the request's `c` and `n`, base64url without padding; a new pairing code
+            changes it
+    PairRequest:
+      type: object
+      required: [device, name, sent_at]
+      properties:
+        device: { type: string, enum: [ios, android] }
+        name: { type: string, description: "the phone's name, for the helper's window" }
+        sent_at: { $ref: "#/components/schemas/Millis" }
+    PairResponse:
+      type: object
+      required: [helper]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+    UnpairRequest:
+      type: object
+      required: [device, client, sent_at]
+      properties:
+        device: { type: string, enum: [ios, android] }
+        client: { type: string, maxLength: 64, description: "the app install's own id, the sync's `client`" }
+        sent_at: { $ref: "#/components/schemas/Millis" }
+    UnpairResponse:
+      type: object
+      required: [helper]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+    RefusedResponse:
+      type: object
+      required: [nonce]
+      properties:
+        nonce: { type: string, description: "the refused request's 12-byte nonce, base64url without padding" }
+    PingResponse:
+      type: object
+      required: [helper, t0, t1, t2]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        t0: { type: integer, format: int64, description: "the request's t0, echoed" }
+        t1: { $ref: "#/components/schemas/Millis" }
+        t2: { $ref: "#/components/schemas/Millis" }
+    SyncRequest:
+      type: object
+      required: [device, client, t0, sent_at, since]
+      properties:
+        device: { $ref: "#/components/schemas/Device" }
+        client: { type: string, description: "the app install's own id, a UUID it keeps" }
+        t0: { type: integer, format: int64, description: the device's clock when it sent the request }
+        sent_at: { $ref: "#/components/schemas/Millis" }
+        since: { type: integer, format: int64, minimum: 0, description: "the last response's next, 0 at first" }
+        samples: { type: array, items: { $ref: "#/components/schemas/Sample" } }
+        events: { type: array, items: { $ref: "#/components/schemas/WristEvent" } }
+        rows:
+          type: array
+          maxItems: 500
+          description: |
+            A device's app rows the helper has not confirmed yet (slice 26), at most 500 a request; absent when it has
+            none to send. A phone sends every app row it holds (its own with bit 7, its watch's with bit 4, the desktop
+            app's it took in from the helper's copy with bit 12); a watch holding the link sends its own (bit 4, slice
+            31), which also reach the helper through its phone: the helper keeps a row once, by its text and copy
+            number, whoever sent it.
+          items: { $ref: "#/components/schemas/AppRow" }
+        received:
+          type: array
+          description: When the device received each command of the last responses, for the delivery statistics
+          items: { $ref: "#/components/schemas/Received" }
+        battery: { type: number, minimum: 0, maximum: 1 }
+        hold:
+          type: boolean
+          description: |
+            True when absent: a held request. False for a request that holds nothing: a plain post answered at once
+            without commands, or with `wait` a standing request (since the review of 2026-10-17, `/v1/sync`), held up to
+            its `wait` and answered at once while no device holds the link (`SyncResponse.unheld`).
+        wait:
+          type: integer
+          format: int64
+          minimum: 5000
+          maximum: 600000
+          description: |
+            Since 2026-10-13: milliseconds the helper may hold this held request while no command waits for the device
+            (the request is still answered at once when one does). 5000 when absent; the helper clamps it by the
+            transport the request came on: on the LAN to 5000-15000, inside the 25 s in which a held request keeps its
+            client the link's holder, and since slice 43 on Bluetooth to 5000-600000 (`ble_wait_max_ms`), where the
+            request keeps its client the holder while it is pending at the helper. It holds the request of a client
+            that does not hold the link as it arrives 5 s whatever its `wait`, so a phone that takes the link over from
+            a watch that stopped syncing hears its first command within 5 s. A phone sends 15000 on the LAN, and 600000
+            on Bluetooth, while no pump runs on it and it has no window with a heart rate or a pump, no events and no
+            rows to send (and cuts the wait short to send one that comes up meanwhile), so a phone that follows a game
+            in the background asks a third as often on the LAN and once in ten minutes on Bluetooth, where each answer
+            wakes it; a watch never sends it (its 5-s batches carry heart rate). A client reads a held request for its
+            wait and 10 s more. Since the review of 2026-10-17 a request with `hold: false` and a `wait` is a standing
+            request (`/v1/sync`), whose `wait` the helper honours whoever holds the link; a phone that steps back for its
+            watch sends 600000 with it over Bluetooth.
+        offer_taken:
+          type: string
+          description: |
+            Since slice 35: the `offer` of a `match_end` whose pump this device started (or asked its watch to start),
+            sent again in every request until a response arrives, as an event is; the helper takes the command back and
+            lists the id in `offer_withdrawn`. A helper before slice 35 ignores it.
+        game_offer_at:
+          type: integer
+          format: int64
+          description: |
+            Since slice 35: unix seconds, when this device last posted a game offer (a site's finished game or stream,
+            or a match on the computer it raised: since slice 48's double-check the match's `ended_at`, never the moment
+            the phone posted or stood it, and never later than the phone's clock); absent before its first. The helper
+            keeps the latest it has heard from any device and answers it in `game_offer_at`, leaving out one more than a
+            day past its own clock; since slice 48 it also restarts the computer's sitting clock, since slice 57 for
+            its sitting cue alone, never a match pump's warm move (`docs/computer-games.md` §3).
+        pro_proof: { $ref: "#/components/schemas/ProProof" }
+    ProProof:
+      type: object
+      required: [store]
+      description: |
+        Since slice 35 (docs/plan.md "Pro on the computer"): a phone's proof that Pro holds on it, the store's own
+        signed record, which a phone (never a watch) sends when it changed and at least every 24 hours while it links;
+        the helper checks it offline and keeps one grant per `client`. `store` is the phone's own store (`app_store`
+        from an iPhone, `play` from Android; a store that is not the device's is ignored), or `none` once its store
+        answered without Pro after a proof went (lapsed, refunded, revoked), which drops that client's grant at once.
+        An iPhone sends `transaction`, its Pro entitlement's `VerificationResult<Transaction>.jwsRepresentation`, and
+        `renewal`, that subscription's renewal info's, whose billing grace extends the grant; Android sends `purchase`,
+        `Purchase.getOriginalJson()` verbatim as a string (the signature covers its exact bytes), and `signature`,
+        `Purchase.getSignature()` in standard base64. Apple's grant lasts until the later of the transaction's
+        `expiresDate` and the renewal's `gracePeriodExpiresDate`, Play's until 30 days after the helper last received
+        that proof from that client, each with a grace week (7 days) more. A proof never fails the request it rides
+        on: one that does not read, of an unknown store or refused is ignored (the helper logs the store and the
+        reason, never the proof), and the rest of the request is taken as without it.
+      properties:
+        store: { type: string, enum: [app_store, play, none] }
+        transaction: { type: string, maxLength: 16384 }
+        renewal: { type: string, maxLength: 16384 }
+        purchase: { type: string, maxLength: 16384 }
+        signature: { type: string, maxLength: 1024 }
+    AppRow:
+      type: object
+      required: [row, n]
+      description: |
+        One row the app wrote, as the addon's grammar has it (docs/plan.md slice 1, "the row grammar";
+        `contract/fixtures/rows.json`): `ts|char|questID|tier|slot|ladder|rung|move|kind|reps|seconds|outcome|flags`,
+        `ts` in unix seconds on the phone's own clock (never shifted by the offset: the row reads the same on the phone,
+        in the helper and in the game), `char` 0 (the app has no character), and the source in the flags: bit 11 (app)
+        with exactly one device's bit, bit 7 (phone), bit 4 (watch, slice 31: the watch writes the bit as it keeps the
+        row, and the phone stamps such a row with bit 11 alone) or bit 12 (computer, slice 35: a row of a pump the
+        desktop app ran, which the helper keeps itself and a phone sends back only as its copy brought it, stamped with
+        bit 11 alone). A row's identity is its text and `n`, the n-th copy of that
+        text among the device's rows, so a row sent again is kept once and two rows alike (the same second) stay two:
+        the rule the addon's merge, the backup and the helper's take-in already count by. The helper drops a row that
+        does not read, names a character, lacks the app bit, names no device or more than one (11|7|12 would be a
+        second text of one pump), is a reset row other than a phone's Start over in the app (kind 14 with bit 11 and
+        bit 7 alone, kept since 2026-10-09 and served back by `/v1/app_rows`, never written into the mirror: only the
+        game's `/qp reset all` resets the game) or is dated before the latest `/qp reset all`
+        (the player's, everywhere). Every other kind is kept and served as it came, from any device: since 2026-10-08
+        a clear row among them (kind 17, docs/plan.md slice 26: `reps` 1 one move's record cleared, its `move`; 2 one
+        ladder started over, its `ladder`, a strength or hold ladder: one of cardio or a pose family changes nothing),
+        the account's, which every fold reads (the game's, both cores', the
+        desktop app's engine) and the store keeps and serves as it keeps a focus or a pain row; and since 2026-10-09 a
+        load row (kind 18, docs/plan.md slice 2, "Real weights take the place of makeshift ones, and loaded sets count
+        kg"): the weight one set of a loaded move was done with, in tenths of a kg in `reps`, written just before its set
+        row with that row's `ts`, `questID`, `slot` and `move`, which every fold reads with the set and every history
+        list leaves out as it leaves out a correction row.
+
+        Since slice 44 (docs/plan.md slice 44, "One correction, from any device") a phone and the desktop app also
+        write corrections, from "Correct a count" on a move's page; a watch writes none and folds the phone's as its
+        snapshot brings them. Until then an app wrote no correction, no correcting load row and no undo; the helper
+        keeps and serves them as every other row.
+        - A correction row (kind 7) repeats the corrected set row's `ts`, `questID`, `tier`, `slot`, `ladder`, `rung`
+          and `move`, of a game set as of an app set, with `char` 0 and the writer's own app and device bits, never
+          the set's. It carries the value as typed right: a rep or counted set's count in `reps`, a hold's seconds in
+          `seconds` with `reps` 0, a pose's answer to "How close to the goal pose?" in `reps` (`rows.json`
+          `codes.mark`; the pose's outcome stays as it was), and its round in `outcome`.
+        - The round is one more than the highest `outcome` among the correction and load rows naming that set that the
+          writer holds, at most 255. A set's own load row, and every correction or load row written before slice 44,
+          is round 0.
+        - A correction that changes a loaded set's weight writes a load row just before its correction row, with the
+          same round, `char` 0 and the writer's bits (a weight of 0 takes the weight off); so does one that saves on
+          the set's own side the weight another device's correction gave it, where that side reads another (the
+          entry's `ownSide`; 2026-10-19, `engine.json` flow 112), so its own side reads the weight its steps follow.
+        - Every fold (the game's, both cores' with their history reads, the desktop app's engine and history) takes for
+          each set (its `ts`, `questID`, `slot` and `move` as the fold reads it, whatever the row's character or
+          source) the correction row and the load row of the highest round. A tie goes to the smaller value (the lower
+          weight, a pose's lower answer); among round-0 rows the last in the log wins. So one set corrected on two
+          devices before they synced ends at the smaller value everywhere, and a later correction on either wins.
+        - A device offers only a set of the last `correct_days` game days dated after the window's reach (DB.lua
+          `ns.CorrectReach`; slice 44's review, 2026-10-18; `engine.json` flow 102), never an owed, banked, paid or
+          skipped row, a timed cardio row, a pose that was not answered (`reps` 0 beside the mark bit, which every flow
+          row carries since the ask; `engine.json` flow 96), or a set before its move's or its ladder's latest clear
+          row. The reach keeps a margin past the game's ring horizon (the largest `rh` among the newest sheets of all
+          the characters the device knows; absent reads as 0), counted among the rows the device holds dated after it
+          (the game's rows and the app rows alike, the game's owed, banked and paid move rows among them, which no fold
+          reads but the game's ring holds; slice 44's last review, `engine.json` flow 104), by time: once `rh` is above
+          0, the time of the row 2 x `ring_batch` rows past it (the game's ring holds `ring_rows` to `ring_rows +
+          ring_batch` rows and a trim cuts it back to `ring_rows`, so a set past that row outlasts at least `ring_batch`
+          more rows before a trim can fold it, and its correction reaches the game's next load; a set the game folded
+          meanwhile, its correction dropped at the merge, would read corrected on the device alone); fewer such rows
+          held, no set (the device has not caught up with the ring); with `rh` 0, the rows past `ring_rows -
+          ring_batch`, none while fewer (a log far from its first trim). The game's own window keeps the same margin in
+          its ring.
+        - The step rules are asked again only on the set's own side, an app set's on a phone or the desktop app (a
+          game or catch-up set's only in the game), and only while no later rung or mastered row stands on the set's
+          ladder (and step) since it, of any character (slice 44's review: `engine.json` flow 100), the set's own
+          being the latest of character 0. The set's changes as they stand are its step rows in the log: those dated
+          at its own time, and those its own side's latest correction wrote (a replay whose corrections and
+          correcting load rows are its own side's alone, with the set's own character's profile; flows 98 and 99).
+          Then the app writes, dated when written and with `char` 0, an undo row for each change the corrected value
+          no longer calls for (a rung row, kind 8, `reps` 7 for `ns.RungCause.undo`, `rung` the rung its ladder goes
+          back to; a mastered row, kind 19, `reps` 7, its `ladder` and `rung`), each naming the row it reverses: that
+          row's `ts` in its `questID` (2026-10-19, the program's double-check, which decided slice 44's open note), then
+          the rung and mastered rows it now calls for. Every fold (DB.lua `pairing` and `ns.UndoPairs`, both cores'
+          folds and Saga reads, the desktop app's engine and desk/saga.rs) pairs a named undo with the row it names
+          alone: the newest rung row of its own character on that ladder at that `ts` and at another rung (a mastered
+          undo: the mastered row of its own character on that ladder and step at that `ts`), wherever it stands among
+          the rows, so a watch's later climb that reaches the phone after the phone's undo stays a climb; both fold as
+          never written (DB.lua `undone`), and a named undo whose row no fold holds (a log that never held it) is
+          undone alone. An undo with `questID` 0 (every undo written before 2026-10-19) pairs with the latest rung or
+          mastered row of its own character before it on that ladder (and step), as before. A save's trimmed baseline
+          (`baseline.pairing`) keeps, beside each key's latest rung and mastered row, the other open step rows of the
+          last `correct_days` game days before its edge (`kept`), so a named undo after a trim still finds its row
+          (`rows.json`; `engine.json`).
+      properties:
+        row: { type: string, pattern: "^[0-9]+(\\|[0-9]+){12}$" }
+        n: { type: integer, minimum: 1, maximum: 65535 }
+    Sample:
+      type: object
+      description: |
+        One 5-s window (contract/fixtures/batching.json), its times converted to the helper's clock. A watch's windows
+        are the heart rate the helper scores each pump's verdict from (docs/plan.md slice 8): a watch that sent windows
+        from five minutes before a move's go to the end of its minute is a source for it, readings or none, so a stream
+        that dropped makes the move unproven, never "no HR", and windows that come late (a stalled sync) are waited
+        for up to a minute past the move's window. A window sent again keeps the `sample_end` it was first sent with,
+        so it counts once; a `bpm` outside 25-250 counts as a window without a reading. A phone's windows carry no
+        heart rate.
+      required: [sample_end, steps]
+      properties:
+        sample_end: { $ref: "#/components/schemas/Millis" }
+        sent_at: { $ref: "#/components/schemas/Millis" }
+        bpm: { type: integer, minimum: 0, maximum: 65535, description: the latest heart rate in the window }
+        steps: { type: integer, minimum: 0, maximum: 4294967295, description: cumulative since the pump's start; 0 between pumps }
+        metres: { type: number }
+        cadence: { type: number, description: steps per second }
+        pump_id: { type: string }
+    WristEvent:
+      type: object
+      required: [type, pump_id, start_at]
+      description: |
+        A pump on the device. For a game pump (`g-…`, from a countdown command) `pump_start` comes at its go and
+        `pump_done` once its card settled, with what the wrist measured. A catch-up pump (`w-<uuid>` from a watch,
+        `p-<uuid>` from a phone, started from the unfinished list; since slice 61 also the riders of a phone's match
+        pump, under a `p-<uuid>` made with the pump, and each rider a watch's match pump runs after its own moves, under
+        a `w-<uuid>` of its own) sends one `pump_done` with `moves`, each move it ran
+        with its seconds and the owed move id it ran (`move`): each pays the owed row its `ts` names while that row is
+        still owed, else (or without `ts`) the oldest row of that move still owed (a move the game paid meanwhile pays
+        nothing), every all-out window it ran among them (since 2026-10-14; at most one a pump until then, a second
+        waiting in the list); none while a World of Warcraft client with QuestPump runs (the response's
+        `game_asks`), whose next pump asks them (the response's `game_held` names such a catch-up). Since 2026-10-12
+        a move whose count the player saved carries its `set`, so a catch-up records the count as the game's own
+        catch-up does (David, 2026-10-12: it "did not ask me how many I could do"); since slice 42's fix round
+        (2026-10-17) so does a counted set saved with no count or Form slipped, and a steady cardio move whose pace the
+        device asked, and a set carries the steps it mastered, so a catch-up counts its clean day, its ready day and its
+        Mastered as the game's own pump does.
+        An app pump (`f-<uuid>` on a phone, `w-<uuid>` on a watch, a pump the app composed itself) sends no event: its
+        rows, its felt-unwell stop among them, go in `rows` (a phone's since slice 26, a watch's since slice 31; until
+        then a watch's own pump sent its stop as a `pump_done` with `unwell` and no `moves`, which the helper still
+        takes). A `skip` (since 2026-10-09; David, 2026-10-04: "the skip should be per unfinished move without a
+        confirm") is the player's one click on an unfinished move of a device's list or a catch-up's Ready view (since
+        slice 61 a rider's in a match's pump too), under
+        an id of its own (`w-<uuid>`, `p-<uuid>`), `start_at` the click: its `moves` name the move skipped (`seconds` 0)
+        with the `ts` the unfinished list gave it, and the helper writes the game's skipped paid row for that owed row
+        (else the oldest of that move still owed): the paid row with the skipped flag (bit 9) and the device's bit,
+        no move row and no pump row, so it earns nothing and costs nothing, as the game's Skip; none while a World of
+        Warcraft client with QuestPump runs (`game_asks`), which asks the move itself (`game_held` names the skip).
+        A `bank` (since slice 58; David, 2026-10-26: "I miss the bank (and bank the rest) button after I played a
+        round?") is the player's Bank it on the Ready view of a pump a match sized (one a `match_end` or the phone's
+        own game link opened, whatever its pick then took, and the phone's Good game! pump), under that pump's own id,
+        `start_at` its start, with its `tier` and one of `moves` per move of its own not done yet, in the pump's order,
+        each with its `kind`, `ladder`, `rung`, `seconds` (a timed move's, else 0) and `allout`: the helper writes,
+        dated `start_at`'s unix seconds, one game owed row each with outcome banked (9), the device's bit and no app
+        bit, quest 0, the tier, a slot made unique in the owed queue (the addon's `oweSlot`), `reps` 1 on an all-out
+        window and the move's seconds, as the game's Bank it writes a quest's, once a pump id, so the moves show on
+        every unfinished list and ride the next pump, the game's quest pump and, since slice 61, the next match pump
+        after its own moves (from slice 58 until then the device's catch-up after a match pump), whose riders are never
+        among `moves` and stay owed; none after a reset since `start_at` or inside the felt-unwell lock. It writes them
+        even while a World of Warcraft client with QuestPump runs (`game_asks`): that client asks no bank and reads the
+        rows at its next load through the mirror, so `game_held` never names a bank.
+        The helper takes an event of a type it does not know and ignores it (a newer app), and takes an event
+        sent again (the same pump, type, slot and start, its response lost) once.
+      properties:
+        type: { type: string, enum: [pump_start, pump_done, skip, bank] }
+        pump_id: { type: string }
+        tier:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: "on a `bank` only (slice 58): the pump's size, 1 Small, 2 Normal, 3 Big, which its rows carry"
+        start_at: { $ref: "#/components/schemas/Millis" }
+        seconds: { type: integer, minimum: 0, maximum: 4294967295 }
+        steps: { type: integer, minimum: 0, maximum: 4294967295 }
+        metres: { type: number }
+        peak_bpm: { type: integer, minimum: 0, maximum: 65535 }
+        delta_bpm: { type: integer, format: int32, description: the peak over the median of the minute before the go }
+        verdict:
+          type: string
+          enum: [proven, unproven, no_hr]
+          description: |
+            What the wrist measured. The helper scores a game pump's moves itself (its verdict comes back as a
+            `verdict` command); a watch's catch-up pump keeps the better of the watch's verdict and the helper's own.
+        slot: { type: integer, minimum: 0, maximum: 255 }
+        unwell:
+          type: boolean
+          description: |
+            present and true only, on a catch-up pump's `pump_done`: the player stopped for felt unwell (moves may be
+            absent when the stop came before the first; an older watch's own pump sent one without moves). The helper
+            writes one pump row banked with the stop's reason, dated `stopped_at` (`start_at` when it is absent; never
+            before `start_at`), beside the rows of the moves it paid, which keep `start_at`, so the game, the helper and
+            every app lock every pump until the next game day at 04:00 after the stop (docs/safety.md;
+            `contract/fixtures/lock.json`, `catchup`).
+        stopped_at:
+          $ref: "#/components/schemas/Millis"
+          description: |
+            the moment of the felt-unwell stop, on the helper's clock; present when `unwell` is true. A catch-up that
+            starts before 04:00 and stops after it locks the new game day, which `start_at` alone would miss.
+        moves:
+          type: array
+          items:
+            type: object
+            required: [seconds, move]
+            properties:
+              seconds: { type: integer, minimum: 0, maximum: 65535 }
+              move: { type: integer, minimum: 1, maximum: 65535, description: "the owed move it ran, or with `ran` the owed move it paid (a `bank`'s: the move it banks), a Library.lua id" }
+              kind: { type: integer, minimum: 0, maximum: 255, description: "on a `bank` only (slice 58): the move's row kind (`contract/fixtures/rows.json` codes.kind)" }
+              ladder: { type: integer, minimum: 0, maximum: 255, description: "on a `bank` only (slice 58): the ladder its slot names, 0 none" }
+              rung: { type: integer, minimum: 0, maximum: 255, description: "on a `bank` only (slice 58): the rung its slot is dosed at, 0 none" }
+              allout: { type: boolean, description: "on a `bank` only (slice 58), present and true only: an all-out window, owed as its window (`reps` 1)" }
+              ran:
+                type: object
+                description: |
+                  Since 2026-10-26, on a catch-up's `pump_done` only: the move Swap put in place of the owed move `move`
+                  names on its Ready view (Engine.lua `ns.SwapOptions` for an owed slot: its backup at its level, another
+                  move at its level, its easier version, or for an all-out window another form at its finisher rung or
+                  above; "Back to" leaves none), and since 2026-10-29 the move an owed backup of its rung's chain rides as
+                  where the setup leaves it unneeded (Engine.lua `ridesAs`: the move that stands for that rung; "Back to"
+                  returns to it, still sent), which pays that owed row as the game's swapped rider does
+                  (`Lc.WriteResult`: the move row of the move done with the owed flag, then `ns.PaidRow` of the owed
+                  row). `move` and `ts` still name the owed move and its row, which the helper finds as before; it then
+                  writes the move row as this move (its id, kind, ladder and rung, and the easier bit, flags bit 6, where
+                  `easier`), judges the `set` against it and writes `down`'s rung row after the set's. Absent: the owed
+                  move itself ran. A helper from before then ignores it and writes the owed move done, its `set` dropped
+                  where it fits that move's row no more and kept where it does: a phone newer than its desktop app would
+                  book the swapped move's count on the owed move, a skew accepted while the parts ship together (no
+                  public release yet, 2026-10-26).
+                required: [move, kind, ladder, rung]
+                properties:
+                  move: { type: integer, minimum: 1, maximum: 65535, description: "the move run in its place, a Library.lua id" }
+                  kind: { type: integer, minimum: 0, maximum: 255, description: "its row kind (`contract/fixtures/rows.json` codes.kind)" }
+                  ladder: { type: integer, minimum: 0, maximum: 255, description: "the ladder its swapped slot names, 0 none" }
+                  rung: { type: integer, minimum: 0, maximum: 255, description: "the rung its swapped slot is dosed at, 0 none" }
+                  easier: { type: boolean, description: "present and true only: Swap's easier version (the row's easier bit, Progress.lua `ns.ResultRow`)" }
+                  down:
+                    type: object
+                    description: |
+                      On Swap's easier version only, present when its result steps its ladder down (Progress.lua
+                      `ns.EasierDown`: the easier version taken for the attempt at the rung a placed ladder stands on,
+                      above rung 1, and no other rung row of that ladder after the set), with or without a `set`, as the
+                      game's `Lc.WriteResult` writes it after every outcome (a move done with no count too): the ladder
+                      and the rung it steps down to, which the helper writes as a rung row of cause 8 (easier) after the
+                      move's rows, on the owed row's ladder alone.
+                    required: [ladder, rung]
+                    properties:
+                      ladder: { type: integer, minimum: 1, maximum: 255 }
+                      rung: { type: integer, minimum: 1, maximum: 255 }
+              ts:
+                type: integer
+                minimum: 0
+                maximum: 4294967295
+                description: |
+                  The owed row's `ts` as the unfinished list gave it: a skip's names the row it skips; since 2026-10-12
+                  a catch-up move's names the row it was dosed from, which it pays while that row is still owed, else
+                  the oldest of that move (its `set` then goes, and the move is written done). Absent: the oldest.
+              set:
+                type: object
+                description: |
+                  Since 2026-10-12, on a catch-up's `pump_done` only: the set of a rep move, a hold or a counted set
+                  whose count the player saved on the device's count step ("Could not do one" too), never of a pose, nor
+                  of a rep move or a hold done without a count. Since slice 42's fix round (2026-10-17) also, with
+                  `outcome` done (5): a counted set (an owed all-out window of a countable form) saved Yes, to the end
+                  with no count (`reps` 0) or saved Form slipped or, since slice 53, Not all out (its count, or 0), with
+                  the counted bit and its answer in `flags`, as the game's `ns.Judge` and `ns.ResultRow` write a window
+                  saved so (docs/plan.md slice 42, the clean days), and since the program's double-check (2026-10-19) a
+                  window whose pump was ended, or whose app closed, at its count and form ask (or its "Did you do the
+                  whole move?") as one saved Form slipped with no count, as the game's `Lc.OweOpen` writes one at a
+                  logout there (no clean day; it read clean until then); and a steady cardio move (an owed cardio row
+                  that is no all-out window) whose pace the device asked after it ran its time, dosed as the game's
+                  pay-on-demand pump doses one (Engine.lua `riderSlot` through `paceSlot`: since slice 52 where the
+                  Stamina Ledger asks, `ns.LedgerAsk`; the player's own timed cardio step once a game day where a kept
+                  pace counted a ready day until then), `reps` 0, `seconds` its time, its pace answer in `flags` and no
+                  counted bit; and since slice 52 a hold of the Stamina Ledger's ladders (the wall sit, the core, the
+                  side plank, the L-sit: `ns.HOLD_GOAL`) that the device asked "Could you have held longer?" after
+                  (`ns.HoldAsk`), its answer in `reps` (`contract/fixtures/rows.json` codes.longer). The device doses
+                  the owed move as the game doses one (Engine.lua `riderSlot`, at the `ladder` and `rung` the unfinished
+                  list gave), asks the count (or the form, the pace, or whether a hold could have gone longer) with the
+                  game's limits and judges it against the one progression, as the game's `Lc.WriteResult` does
+                  (`ns.Judge`, `ns.ResultRow`, `ns.LoadRow`, `ns.Progression`; each app's engine port), since
+                  2026-10-26 the move Swap put in its place where `ran` names one (and since 2026-10-29 the move an
+                  owed backup of its rung rides as, Engine.lua `ridesAs`), the set then that move's. The helper
+                  writes, dated `at`, the load row (with `load`), the move row with `reps`, `seconds` and `outcome`, the
+                  owed flag, the device's bit and the bits `flags` names, each of `rungs` as a rung row in order, each
+                  of `mastered` as a mastered row after them, `ran.down`'s rung row, then the paid row; a `set` that is none of these (an
+                  outcome done on a rep move or a hold, a counted bit on a steady move, an answer on a rep move, a
+                  hold's `reps` past 3 or above 0 off the Stamina Ledger's ladders) is ignored, and a move without one
+                  is written done with no count, as before 2026-10-12. A helper from before then ignores it, so a device
+                  asks a catch-up's count only from an unfinished list whose entries name their `rung`; a helper from
+                  before slice 42's fix round ignores a set with `outcome` 5 (the move then written done with no count,
+                  its clean or ready day lost, as before) and `mastered`.
+                required: [reps, seconds, outcome, flags, at]
+                properties:
+                  reps:
+                    type: integer
+                    minimum: 0
+                    maximum: 65535
+                    description: "the move row's reps: a rep move's or a counted set's typed count; on a hold its answer to \"Could you have held longer?\" (codes.longer, since slice 52), 0 not asked"
+                  seconds:
+                    type: integer
+                    minimum: 0
+                    maximum: 65535
+                    description: "the move row's seconds: a hold's typed seconds, a rep move's time, a counted set's count_s, a steady cardio move's time"
+                  outcome:
+                    type: integer
+                    enum: [1, 2, 3, 4, 5, 11]
+                    description: |
+                      the judged outcome: beat 1, miss 2, placement 3, censored 4, last beat 11 (a typed count); done 5
+                      on a counted set saved with no count, Form slipped or Not all out (since slice 53) and on a
+                      steady cardio move's pace (since slice 42's fix round, 2026-10-17), never on a rep move or a hold
+                  flags:
+                    type: integer
+                    minimum: 0
+                    maximum: 65535
+                    description: |
+                      the judge's own bits on the move row: confirmed (bit 3, "Is that right?" answered yes), counted
+                      (bit 10, a counted set) and, on a counted set since 2026-10-16, its answer in bits 14-15
+                      (`contract/fixtures/rows.json` codes.answer: 1 Form slipped, since slice 53 2 Not all out, 0 Yes,
+                      to the end), and on a steady cardio move since slice 42's fix round its pace answer in the same
+                      bits (codes.pace since slice 52: 3 Yes, easily, 1 Yes, just, 2 I eased off; 1 Yes, the whole
+                      time until then); the helper keeps these alone, the counted bit and the answer on a
+                      cardio row alone; the easier bit (6) comes from `ran`, never from here
+                  load:
+                    type: integer
+                    minimum: 1
+                    maximum: 65535
+                    description: "a loaded set's weight in tenths of a kg (the load row before the move row)"
+                  at:
+                    $ref: "#/components/schemas/Millis"
+                    description: |
+                      the moment the count was saved, on the helper's clock: the time of the set's rows (the helper keeps
+                      it between the pump's `start_at` and its own now)
+                  rungs:
+                    type: array
+                    description: "the rung rows the judge wrote after the set, in order (`ns.Progression`)"
+                    items:
+                      type: object
+                      required: [ladder, rung, cause]
+                      properties:
+                        ladder: { type: integer, minimum: 1, maximum: 255 }
+                        rung: { type: integer, minimum: 1, maximum: 255 }
+                        cause:
+                          type: integer
+                          minimum: 1
+                          maximum: 65535
+                          description: "Progress.lua ns.RungCause: up 1, plateau 2, down 3, start 4, placement low 5, placement high 6, undo 7, easier 8 (an easier pick's step down, never here: a catch-up's comes in `ran.down`), check 9 (a stretch check's lift; a catch-up carries no pose, so none here)"
+                  mastered:
+                    type: array
+                    description: |
+                      Since slice 42's fix round (2026-10-17): the steps the set mastered, after its rung rows, in order
+                      (`ns.Progression`'s mastered rows: the step of the set's own move once every move the setup offers
+                      there reached its top, and a step a climb of `rungs` reached whose moves all had), each written
+                      as a mastered row (kind 19, `ladder` and `rung`, the device's bit), dated `at`, on a ladder of the
+                      set's own (or one of a retired ladder's successors, as `rungs`); the fold keeps the first of each
+                      step. A helper from before then ignores it, and the step masters at the game's next sweep.
+                    items:
+                      type: object
+                      required: [ladder, rung]
+                      properties:
+                        ladder: { type: integer, minimum: 1, maximum: 255 }
+                        rung: { type: integer, minimum: 1, maximum: 255 }
+    Received:
+      type: object
+      required: [seq, at]
+      properties:
+        seq: { type: integer, format: int64 }
+        at: { $ref: "#/components/schemas/Millis" }
+    SyncResponse:
+      type: object
+      required: [helper, t0, t1, t2, next, commands]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        t0: { type: integer, format: int64, description: "the request's t0, echoed" }
+        t1: { $ref: "#/components/schemas/Millis" }
+        t2: { $ref: "#/components/schemas/Millis" }
+        next:
+          type: integer
+          format: int64
+          description: |
+            The since to send next: for the device that holds the link, the helper's current sequence (it covers
+            exactly the commands this response delivered); for any other device, a superseded request, a plain post and
+            a standing request, the request's own since (0 when it belongs to another run of the helper), except a
+            standing answer that carries `mirror` (since slice 51), whose `next` is the highest `seq` among them. The
+            sequence only grows, across the helper's restarts too.
+        locked_until:
+          type: integer
+          format: int64
+          description: |
+            unix seconds; present while felt unwell locks pumps. A device keeps the latest end it has heard (from here,
+            from its phone or watch, or its own stop) until that end: a response without it lifts no lock the device
+            holds (contract/fixtures/lock.json, `relay`)
+        rows_store:
+          type: string
+          description: |
+            The id of the helper's store of app rows (slice 26), in every response from a helper that keeps them,
+            empty while the store is, and left out of a response whose request carried a row the helper could not
+            write down (its disk full, say), so nothing of that request counts as sent. It confirms every row the
+            request carried: each is kept, was kept already, or was dropped for good (a row that does not read, or
+            from before a reset). A phone keeps the rows confirmed
+            under this id; when a response names another id than the one it kept (a new data folder, a reset that
+            started the store again, another helper), it counts none of its rows as sent and sends them all again,
+            and the helper keeps each once. Without it (an older helper) nothing the request carried is confirmed.
+        offer_withdrawn:
+          type: array
+          items: { type: string }
+          description: |
+            Since slice 35, in every response to every device (held, superseded and plain): the `offer` of each
+            `match_end` a device took (`offer_taken`) while it had not expired yet, and since slice 48's double-check of
+            each that went out and was then put off with the computer card's Later or ×, started on the computer, or
+            answered by a move done since on any device; left out when there is none. A device takes back its notice of
+            each; one taken on this device comes back to it too, harmlessly.
+        playing:
+          type: boolean
+          description: |
+            Since slice 35: present and true only while a game QuestPump on the computer watches (one the player turned
+            on until slice 56) is in a match, for at most 3 hours on end. A game whose feed tells its matches counts
+            from a match's start to its end: Counter-Strike 2 in warmup, live or intermission, Dota 2 up to its game
+            in progress, Rocket League from its match's start to its end and, since slice 48, each newer game's match
+            (Legends of Runeterra's and Elite Dangerous' feeds tell only a match's end, so their feed never counts).
+            League of Legends, a found game and a program the player added count while their process runs, and since
+            slice 56 so does every watched game whose feed told nothing since its process started: one whose file is
+            not set up yet ("Ask after each match" not tapped) and one whose feed has not been heard yet. Once its
+            feed is heard in that run (a post, a connection, an answer, a datagram, a log line or its shared data
+            read), the feed alone tells its matches and the process running no longer counts. Until 2026-10-13 the
+            Android phone's off-screen hold counted a response with it as word from the helper (that hold lasts while
+            the phone is paired since); a watch's play session never did.
+        arms:
+          type: boolean
+          description: |
+            Since slice 48's double-check: present and true only while a game marked `aim` in `contract/links.json`
+            whose "Rest your arms while it runs" switch is on runs on the computer (Counter-Strike 2), left out
+            otherwise. A device composes the pump from a computer offer (`match_end`) with the arms rest when the
+            offer's `arms` holds and either its latest sync response is fresh and carried `arms`, or none is fresh
+            (away from the computer: the offer's `arms` alone). A response is fresh for 60 s after it arrived, and
+            longer while the device's held or standing request sent after it still waits on the same link: then for
+            that request's wait plus 60 s (a held request waits up to 10 minutes on Bluetooth), since the helper
+            answers a waiting request at once when `arms` changes (`/v1/sync`). The computer's own pump rests the arms
+            by the same fact as it starts.
+        game_offer_at:
+          type: integer
+          format: int64
+          description: |
+            Since slice 35: unix seconds, the latest game offer the helper knows on any device (its own match offers
+            and every device's `game_offer_at`); absent before the first. A device gates its next link offer on the
+            later of its own and this (since slice 48 a computer match's notice is no such offer: it keeps no gap).
+        game_asks:
+          type: boolean
+          description: |
+            Since slice 35: present and true only while a World of Warcraft client with QuestPump runs on the computer.
+            The game asks the owed moves itself then, on its next pump, and reads paid rows only at its next load, so
+            a catch-up this request carried paid none of its moves (its felt-unwell stop still locks) and a skip
+            skipped none: the moves stay owed, and the device says the game asks them. While it holds, the phones and
+            the watches offer no catch-up and no Skip and say "The game asks your pumps while it runs." in its place, as
+            the desktop app does, and a phone ends a catch-up under way at once, its moves still owed; a match pump's
+            Bank it still shows, since a `bank` is written all the same (slice 58). Since slice 61 a match pump composed
+            meanwhile carries no riders, and one under way drops the riders not done, its own moves going on (on a
+            rider's Ready view or past it, it ends as a catch-up ends then).
+            Since 2026-10-13 it also keeps a phone following the game: the Android phone holds its link while it is
+            paired (its foreground service, off screen too) and waits with `wait` while no pump runs on it; the iPhone runs a
+            play session of its own (an HKWorkoutSession, discarded at its end) from its first foreground sight of it,
+            so its link holds while locked, until it has been absent for 10 minutes; a `session_end` starts the same 10
+            minutes, and `game_asks` heard again within them keeps the session, so a game restarted meanwhile keeps a
+            locked iPhone following.
+        game_held:
+          type: array
+          items: { type: string }
+          description: |
+            Since slice 35: the `pump_id` of each catch-up (and since 2026-10-09 each skip) this request carried whose
+            moves the helper held for the game as it took the event (`game_asks` then), left out when there is none;
+            never a `bank`'s (slice 58), which the helper writes whether the game runs or not. The helper keeps that
+            with the taken event, so the same event sent again after a lost response is named again (or not) as it was
+            taken, whatever the game does since. A device's end line for that catch-up follows it ("The game runs: its
+            next pump asks these moves."), never the response's `game_asks`.
+        unheld:
+          type: boolean
+          description: |
+            Since the review of 2026-10-17, only on a standing request's answer (`hold: false` with `wait`): present and
+            true when no device holds the link as the answer leaves (no watch synced within 25 s, no phone counts), left
+            out otherwise. A phone that steps back for its watch takes the link at once on it (`/v1/sync`); a helper from
+            before this never sends it.
+        mirror:
+          type: array
+          items: { $ref: "#/components/schemas/Command" }
+          description: |
+            Since slice 51, only on a standing request's answer to a paired phone (`hold: false` with `wait`): the game
+            pump's commands queued for the device that holds the link (`pump_offered`, `countdown`, `move_end`,
+            `move_counted`, `verdict`, `pump_done`, `session_end`) whose `seq` is above the request's `since`, in `seq`
+            order, left out when there is none. The phone shows them and never acknowledges or answers them: no
+            `WristEvent`, no `received`, no Health session (`/v1/sync`, "a phone that steps back for its watch keeps
+            the game pump on its screen as a mirror"). A device that does not know it ignores it.
+        commands: { type: array, items: { $ref: "#/components/schemas/Command" } }
+    Command:
+      type: object
+      required: [seq, type, sent_at, expires_at]
+      description: |
+        What the game did, for the device that holds the link. A device ignores a type it does not know.
+        - `countdown`: the game's Start; `start_at` and `go_at` (= `start_at` + `ticks` s) on the helper's clock.
+          A device told inside the lead shows every digit, one told mid-count joins at the digit on screen, one told
+          after the go runs the move from the go, one told after `expires_at` (30 s after the go) drops it
+          (contract/fixtures/countdown.json). A device already counting or running the pump's slot from a go within
+          250 ms of this one keeps what it runs: a helper that restarted mid-count joined the same Start again. A
+          second `countdown` for a slot whose first side ran (a side move, `side` in contract/moves.json; since
+          2026-10-01) is that move's other side, never a new move: its first side ended at `start_at` less the 0.5-s
+          lead (the game starts the switch's countdown as it starts every countdown, the lead before the digits).
+        - `keep` (slice 52's double-check, 2026-10-24): the game's Keep going on the move that runs (`pump_id`,
+          `slot`): the device that follows it runs its clock on past the plan to `seconds`, the full move's, counting
+          up from the go as on its own pumps, and the game ends the move there by itself (its `move_end`). A device
+          ignores one for a slot it does not run.
+        - `turn_in`: a quest turned in (`quest_id`, `tier`); a pump is coming.
+        - `quest_complete`: the last objective of `quest_id` completed (the Pro coach prepared its countdown line on it
+          until 2026-10-09; no device acts on it since).
+        - `pump_offered`: the pump's moves (`moves`), once every move arrived, and the character's `streak` as its
+          latest sheet says (none before the helper has read a sheet; the coach's countdown line read it until
+          2026-10-09).
+          Sent again, under a new `seq` and ahead of every command still waiting, while the pump is offered or runs,
+          when the device that holds the link has not seen the pump's latest `pump_offered` (its `since` is below
+          that `seq`) and none waits for it (it went to another device or expired, or the device started again
+          mid-pump), so a `countdown` of the pump always reaches the device after its moves. A device takes a repeat
+          for the same pump as the pump composed again.
+        - `move_end`: one move of the pump ended (`pump_id`, `slot`). With `cancelled` the game went back to that
+          move's Ready (Escape, a popup, the game menu, combat, its Back) and the move never counts: a device drops it,
+          counting down or running, and since 2026-10-05 also after a `move_end` without `cancelled`, when the game's
+          Back left the move's result view before its count was saved: the device drops the move it ended (its card,
+          its segment and its summary go; nothing of it counts) and waits for that slot's next `countdown`. A cancel
+          for a slot whose next slot's `countdown` came is ignored. Without it the move was done (its count being
+          typed, or the game went on to the next move: a timed move that ran its time does) or cut by a `/reload` or a
+          logout: a device cancels its countdown or finishes its running move at the command's `sent_at`. Every move
+          of a pump has its own `countdown` (a side move two, one a side), and a Start again after a cancel is a new
+          one, on its first side.
+        - `pump_done`: the game's pump ended; a device ends its view of it, by `ended` (slice 29): `done` shows the
+          pump's result; `banked` (Bank it, Bank the rest before a move of it was done, its moves gone owed: they
+          come back in a later pump), `paused` (the pump's Pause), `unwell` ("I feel unwell") and `skipped` (it
+          ended before a move ran, an instance or a mixed party dropped a stand-up pump before it started, or a reset
+          ended it with the save that held it: nothing of it comes back) show a calm card and no result.
+          Absent from a helper older than slice 29, where it reads as `done`.
+        - `move_counted` (slice 51): the count the player typed in the game for one move of the game's pump
+          (`pump_id`, `slot`), sent the moment the move's row crosses the strip (`session.rs` `on_row`, the pump's own
+          result row of that slot; a side move's once, for its row): `reps` the row's reps (a rep move's or a counted
+          set's typed count, 0 on a hold), `seconds` its seconds (a hold's typed seconds, a rep move's time, a counted
+          set's count_s, a steady cardio move's time) and `outcome` its judged outcome, the row's code (beat 1, miss 2,
+          placement 3, censored 4, done 5, last beat 11; `AppRow`'s). A device shows the count on the move the game
+          ended (its card or its line on the pump's screen and its Result), with the record mark when the count beats
+          the record the device knows for that move (a placement's count is its first record); a count the game's
+          Correct a count changes later reaches the device only through the rows. It comes after the move's `move_end`
+          without `cancelled`; a `move_end` with `cancelled` for that slot after it drops it with the move. Typing a
+          count on a phone for the game stays out (docs/companion.md). An older device ignores the type.
+        - `session_end`: the game quit (after the `move_end` of a move still open).
+        - `verdict`: a move's heart-rate verdict (`pump_id`, `slot`; a catch-up pump's without a slot): `verdict`,
+          and `peak` and `delta` (the window's highest reading and its rise over the median of the minute before the
+          pump's first go) when a source read any. Scored on every source the move had (a watch's windows, a strap on
+          the helper) and proven when either shows the rise. It comes only after the move's `move_end` without
+          `cancelled`: at once when the move is proven, else once its window closed (a minute after the go; 30 s after
+          the set for a push-up or a burpee read from a wrist), 10 s more for late windows, and up to a minute more
+          for a watch whose windows are late, and a game move's only once the game kept it (its row, or the game going
+          on: a move whose count is still being typed waits, since the game's Back takes it back until then). A move
+          cut short (a `/reload`, a logout, the game's quit) or taken back gets none. A device shows it on the move's
+          card, verdict and numbers, instead of its own, so the wrist says what the sheet's check mark and tooltip
+          say. It never blocks anything and changes no XP.
+        - `match_end` (slice 35): a match of a game QuestPump on the computer watches ended (since slice 56 every game
+          it finds, the Riot games too since 2026-10-28; one the player turned on until then), or a game or a
+          program the player added closed: the offer of a pump after it, nothing about the match. `offer` is its id
+          (`m-` and a version-4 UUID), `link` the game's key in `contract/links.json`'s `computer` list (`program`
+          for a found or added one), `name` the game's own name as the computer shows it (a found or added program's
+          own; at most 40 Unicode scalars, the helper cutting a longer one; never translated), `kind` the kind of
+          `contract/kinds.json` its pump opens on (`match` for every game's end and close, a found or added program's
+          too since 2026-10-28, Rapha: "it should directly open and start and not let me select stuff"; absent for a
+          program's close from a desktop app before then, whose pump opens with no kind chosen) and `ended_at` when it
+          ended. Since slice 48 (`docs/computer-games.md`) `tier` is the pump's size (1 Small, 2 Normal, 3 Big; since
+          slice 57 the match's
+          own minutes give it, one step per `match_step_min`, half up: under 18 Small, 18-29 Normal, 30 or more Big
+          since slice 59, under 30, 30-49 and 50 or more until then; the minutes the computer's sitting clock held
+          until slice 57), absent from an older desktop app (Normal, as before); a device takes the tier as sent and
+          never sizes it again from `minutes`. Since slice 57 `minutes` is the match's whole minutes, from its start to
+          its end by the computer's own clock (a feed's match from the start it told in the game's run, a start again
+          within `match_relaunch_s` of a close keeping the match it was in, else from the later of the run's start and
+          its last match's end; a game heard by its close, its run; since slice 59 a League of Legends offer's from
+          `match_lead_league_min` minutes before its game process started, for champion select, never from before
+          League's previous close or the latest move on any device; never from before the player's latest return to
+          the computer), which give the pump's cardio its active minutes, and `warm`, present and true alone and read
+          only beside `minutes`, says the player had sat `match_sat_min` minutes at the computer as the offer was made,
+          counted from the latest move on any device or time away and never from an offer, so the pump opens on its warm
+          move; a `match_end` without `minutes` is from an older desktop app, read as before (its minutes from `tier`,
+          its warm move from them). `arms`, present and true alone, says the game is
+          marked aim in `contract/links.json` and still ran at the match's end (the arms rest: the pump leaves out the
+          moves the wrist, elbow and shoulder pain flags leave out, the push and pull moves and the all-out window); a
+          device keeps `tier` for the offer's life and rests the arms in its pump while the offer's `arms` holds and
+          its latest sync response, while fresh, carried `arms`, or none is fresh (slice 48's double-check,
+          `SyncResponse.arms`: the game still runs at the computer, or the player is away from it). It lives
+          `match_offer_min` minutes (`contract/library.json`) from when it went out, and a newer one replaces one still
+          queued. Since slice 48's double-check it goes out only when the computer cannot ask: at a look after the
+          card's chance, while the offer stands, its hold ended (an offer made at a game's close is held
+          `match_relaunch_s`, a relaunch taking it back), its card's time holds and no Start or Later answered it, no
+          lock, World of Warcraft client, pump on the computer or pause holds and no watched game is in a match, when
+          the card could not show (the game in front on its one screen) or has shown to no input for `match_away_s`.
+          Both phone cores accept it by one rule
+          (`MatchOffer`): a non-empty `offer`, a `link` of lower-case letters (a key the device does not know, a newer
+          helper's game, offers by the command's own `name`) and a non-empty `name`, cut to its first 40 Unicode
+          scalars where it is longer, never dropped for its length; a `tier` outside 1-3 is dropped alone, the offer
+          kept, `arms` counts only when it is true, and `warm` (slice 57) only when true beside `minutes`. The device raises it as its own notice until
+          `expires_at` and takes it back when a response lists its `offer` in `offer_withdrawn`; starting its pump sends
+          `offer_taken`. Neither it nor `playing` moves a watch's play-session idle clock.
+
+        A device ignores a `turn_in` or `session_end` sent before its own session began (a backlog the helper still
+        held for an earlier one); a `match_end` holds until its `expires_at`, whenever the device's session began.
+      properties:
+        seq: { type: integer, format: int64 }
+        type:
+          type: string
+          enum: [countdown, keep, turn_in, quest_complete, pump_offered, move_end, move_counted, pump_done, session_end,
+            verdict, match_end]
+        sent_at: { $ref: "#/components/schemas/Millis" }
+        expires_at: { $ref: "#/components/schemas/Millis" }
+        pump_id: { type: string, description: "g-<load>-<offered unix s> for a game pump" }
+        slot: { type: integer, minimum: 0, maximum: 255 }
+        cancelled: { type: boolean, description: "move_end only: present and true when the game went back to Ready" }
+        ended:
+          type: string
+          enum: [done, banked, paused, unwell, skipped]
+          description: "pump_done only: how the game's pump ended (wow-addon-dev pixel-strip.md, the frame's outcome byte)"
+        start_at: { $ref: "#/components/schemas/Millis" }
+        go_at: { $ref: "#/components/schemas/Millis" }
+        ticks: { type: integer, minimum: 0, maximum: 255 }
+        seconds: { type: integer, minimum: 0, maximum: 65535, description: "keep only: the full move's seconds the clock now runs to" }
+        quest_id: { type: integer, minimum: 0, maximum: 4294967295 }
+        tier:
+          type: integer
+          minimum: 0
+          maximum: 255
+          description: "turn_in and pump_offered: the quest's tier; match_end (slice 48): the pump's size, since slice 57 from the match's own minutes, 1-3, dropped alone outside it"
+        minutes: { type: integer, minimum: 0, maximum: 65535, description: "match_end only (slice 57): the match's whole minutes, from its start to its end on the computer's clock; absent from an older desktop app" }
+        warm: { type: boolean, description: "match_end only (slice 57): present and true when the player had sat match_sat_min at the computer as the offer was made, counted from the latest move on any device or time away, never from an offer (the pump opens on its warm move); read only beside minutes" }
+        arms: { type: boolean, description: "match_end only (slice 48): present and true while a game marked aim in contract/links.json, whose aim switch the player left on (its window on the desktop app's Games tab since slice 56, the Games page until then), ran at the match's end" }
+        moves: { type: array, items: { $ref: "#/components/schemas/OfferedMove" } }
+        streak: { type: integer, minimum: 0, maximum: 65535, description: "pump_offered only: days in a row, from the sheet" }
+        reps: { type: integer, minimum: 0, maximum: 65535, description: "move_counted only: the move row's reps (0 on a hold)" }
+        seconds:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          description: "move_counted only: the move row's seconds (a hold's typed seconds, a rep move's time, a counted set's count_s)"
+        outcome:
+          type: integer
+          enum: [1, 2, 3, 4, 5, 11]
+          description: "move_counted only: the move row's judged outcome (beat 1, miss 2, placement 3, censored 4, done 5, last beat 11)"
+        verdict: { type: string, enum: [proven, unproven, no_hr], description: "verdict only" }
+        peak: { type: integer, minimum: 0, maximum: 65535, description: "verdict only: the window's highest reading" }
+        delta: { type: integer, format: int32, description: "verdict only: the peak over the minute before the go" }
+        offer:
+          type: string
+          pattern: "^m-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          description: "match_end only: the offer's id"
+        link:
+          type: string
+          pattern: "^[a-z]+$"
+          description: "match_end only: the game's key in contract/links.json's `computer` list"
+        name:
+          type: string
+          maxLength: 40
+          description: "match_end only: the game's own name, never translated; at most 40 Unicode scalars"
+        kind:
+          type: string
+          description: "match_end only: the kind of contract/kinds.json its pump opens on (match); absent for a
+            program's close from a desktop app before 2026-10-28"
+        ended_at: { $ref: "#/components/schemas/Millis" }
+    OfferedMove:
+      type: object
+      required: [slot, move, target]
+      description: A move of an offered pump (`pump_offered`), as the Pro coach's ask carries it too (coach-api.yaml).
+      properties:
+        slot: { type: integer, minimum: 0, maximum: 255 }
+        move: { type: integer, minimum: 0, maximum: 65535, description: the Library.lua move id }
+        target: { type: integer, minimum: 0, maximum: 65535, description: reps or seconds to reach; 0 for a max set }
+    SheetResponse:
+      type: object
+      required: [helper, unfinished, characters]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        unfinished: { type: integer, description: "the owed moves a catch-up pump can pay, catch-ups written included" }
+        held:
+          type: integer
+          minimum: 1
+          description: |
+            The owed moves the game holds back now, which `owed` leaves out (the character sheet's `held`): no catch-up
+            pays them, only a pump in the game once it carries them. With `unfinished` it is every owed move the helper
+            knows, the count the game's HUD shows once the game has read the catch-ups. Left out when none is held, and
+            absent from a helper older than 2026-10-04: a device reads an absent `held` as 0.
+        game_asks:
+          type: boolean
+          description: |
+            Since slice 35: present and true only while a World of Warcraft client with QuestPump runs on the computer
+            (the sync response's `game_asks`): the unfinished list is the game's next pump's, and no catch-up pays it
+            meanwhile. A device holds it only as the helper says it now, never kept past its app's run.
+        locked_until:
+          type: integer
+          format: int64
+          description: |
+            unix seconds; present while felt unwell locks pumps. A device keeps the latest end it has heard (from here,
+            from its phone or watch, or its own stop) until that end: a response without it lifts no lock the device
+            holds (contract/fixtures/lock.json, `relay`)
+        owed:
+          type: array
+          description: |
+            The unfinished list in the order a catch-up pump pays it: the plain moves oldest first, spread so that none
+            comes straight after an effort of its own body part (a rep or hold move's region, else its pattern) while
+            another can go there, the first after the player's latest set the helper holds (since 2026-10-28, Engine.lua
+            `spreadRiders`), then the all-out
+            windows oldest first (a pump's all-out windows are its last efforts, and a catch-up pays every one it ran
+            since 2026-10-14, at most one until then), left out when empty. A move the game holds back now is left out,
+            as a pump in the game would not carry it (the character sheet's `held`, Engine.lua `ns.OwedHeld`: a pain
+            flag, a Body switch, the equipment or an excluded move, the rung rule, and every owed move before the
+            player's first move), so the phone never pays an owed move with a painful one (this response's `held` counts
+            them). The apps show each by its name from contract/moves.json and time it, each with a Skip (a `skip`
+            event); since 2026-10-12 they ask the count of a rep move, a hold or a counted set, dosed at the entry's
+            `ladder` and `rung`, and send it as the move's `set` (`WristEvent`). A phone's catch-up runs the plain
+            moves in this order (spread again after the latest set its own state holds where it doses them), then every
+            all-out window, oldest first, each from its own Start, the window of its own move alone,
+            with its build where it is uncounted; a watch's catch-up pays one plain move at a time and leaves
+            the all-out windows to the phone and the game (QuestPumpCore `CatchUp.plan`, `CatchUp.wristNext`).
+            Since slice 61 a phone's or a watch's match pump takes the moves of this list its device may pay into its
+            compose, as the game's quest pump takes its queue (Engine.lua `pickRiders`, `riderSlot`, `spreadRiders`),
+            so none of its own moves is one this list holds and its riders come in the engine's order after its own;
+            a watch's runs them one plain move at a time after its own moves, as its catch-up does.
+          items:
+            type: object
+            required: [move, kind]
+            properties:
+              move: { type: integer, minimum: 1, maximum: 65535, description: the Library.lua move id }
+              kind: { type: integer, minimum: 1, maximum: 4, description: "1 rep, 2 hold, 3 cardio, 4 flow" }
+              ts:
+                type: integer
+                minimum: 0
+                maximum: 4294967295
+                description: |
+                  Since 2026-10-09: the owed row's time (unix seconds, the game's clock), which a skip names back
+                  (`WristEvent`) and from which an app counts the move's game days unfinished: one unfinished for
+                  more than `owed_fresh_days` game days (contract/library.json) stays listed and rides the next game
+                  pump, but no longer puts the dot on the Pump tab or makes Catch up the primary. Absent from an older
+                  helper: the move counts as fresh.
+              seconds:
+                type: integer
+                minimum: 1
+                maximum: 65535
+                description: |
+                  a cardio or flow move's planned seconds; since 2026-10-15 an all-out window's are at most the longest
+                  window, `allout_build_s` + `allout_s` × `p_max` (contract/library.json: 40 s), whatever the row kept
+                  (a closing move's row owed under its jog before then kept the jog's length)
+              ladder:
+                type: integer
+                minimum: 0
+                maximum: 255
+                description: |
+                  Since 2026-10-12: the owed row's ladder (0: a move on none), at which a catch-up doses the move as
+                  the game doses an owed one (Engine.lua `riderSlot`). Absent from an older helper, with `rung`.
+              rung:
+                type: integer
+                minimum: 0
+                maximum: 255
+                description: |
+                  Since 2026-10-12: the owed row's rung, the one its slot was dosed at (an owed anchor at its ladder's
+                  rung now is the rung's attempt). Absent from an older helper: a catch-up then asks no count.
+              allout:
+                type: boolean
+                description: |
+                  present and true only: a cardio move that is an all-out window of its own move, run from its go (a
+                  finisher's or, since 2026-10-15, a closing move's, owed under its own form; a row owed with reps 2
+                  before then, under the jog that led a closing move, is that jog's window). A countable form's window
+                  is a counted set; any other runs its build, then all out, by its time. A helper from before
+                  2026-10-15 may add `closing`, which a device ignores
+        characters:
+          type: array
+          items:
+            type: object
+            required: [index]
+            properties:
+              index:
+                type: integer
+                description: |
+                  the character's place in the helper's own list, from 1: one list across every game install it has
+                  seen (each install numbers its own characters, and the helper keeps them apart, slice 26), the
+                  `char` of the history rows and the sheets
+              guid: { type: string }
+              name: { type: string }
+              realm: { type: string }
+              class: { type: string }
+              sheet:
+                type: object
+                description: |
+                  the addon's `sheet` strip event as it folded it: the sheet summary, version 6 since 2026-10-26
+                  (5 from slice 27; docs/plan.md slice 5), with the character's index, body and figure colour (`char`, `body`, `fig`)
+                  and, since slice 29, which game pump the summary's last pump is, with the titles it earned (`lt`,
+                  contract/sheet.json's `about`): present only while that pump is the session's last game pump that
+                  ended done, so a device takes a game pump's rewards and titles only from a sheet whose `lt.p` is
+                  the time that pump's id ends in; since slice 30 the player's focus (`fc`, the latest focus row's
+                  code, absent before one), the oldest focus a device folds, which any focus row it holds overrides;
+                  since slice 34 the pumps of the sheet's Log that paid XP (`lx`, `[offered time, XP]` each, absent
+                  when none), by which a device's Log shows each pump's XP from the newest sheet that names it;
+                  since 2026-10-09 the weekly vault (`va`, `[pumps, records, embers, the week's turn]`, the week's
+                  embers since slice 55, the cardio minutes until then) and the vault goals the last pump reached
+                  (`lv`, absent when none; 3 an embers tier since slice 55), Hero's vault card and the Result's
+                  Weekly goal reached; since slice 55 the embers lit on `at`'s game day (`em`, up to `embers_day`, 0
+                  on a reader's later game day), the phones' home row while Hero shows the game's sheet; since 2026-10-15 (the Saga) the XP the fold counted on each game day it covers
+                  (`dx`, `["YYYY-MM-DD", XP]` each, ascending, a day with XP alone, absent when no covered day
+                  gained any, the last `dx_days` game days at most, from `dxFrom`, the first game day it covers,
+                  `"YYYY-MM-DD"`, which every addon since sends: a covered day absent from `dx` gained none, a day
+                  before it is unknown, and a sheet without `dxFrom` an older addon's; the save is the account's, so a
+                  day's XP is never one character's sheets less another's) and the game's two best days of all time
+                  (`bd`, `["YYYY-MM-DD", moves]` each, the most first, of two alike the earlier; absent before a
+                  move), by which the Saga's XP tile, level line and week, and its chapters and old best on a device
+                  whose rows begin after the player's first days, read as the game's (contract/fixtures/history.json
+                  `saga` rules 3, 4 and 15); and since slice 44 the ring's horizon (`rh`, unix seconds: the latest row
+                  time the save has folded into its baseline, DB.lua `ns.Trim`'s `through`; 0 or absent while no row
+                  has left the ring, and from an older addon), past which a set must be dated, with a margin of rows
+                  (AppRow's correction rows, "the window's reach"), for a device to offer its correction (docs/plan.md
+                  slice 44, "The window"): a device reads the largest `rh` among the newest sheets of all the
+                  characters it knows, so it never offers a set a save may have folded away, nor one a trim before
+                  the game's next load could fold
+    HistoryResponse:
+      type: object
+      required: [helper, store, next, more, rows]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        store: { $ref: "#/components/schemas/Store" }
+        next:
+          type: integer
+          format: int64
+          minimum: 0
+          description: "`after` plus the rows in this page; the store's length when `after` lies past it (a `next` below
+            `after` means the store shrank: read it again from 0)"
+        more: { type: boolean, description: rows follow this page }
+        proofs:
+          type: array
+          description: present when the request named `proofs_since`
+          items:
+            type: object
+            required: [row_ts, hr_verdict]
+            properties:
+              row_ts: { type: integer, format: int64, description: the pump row's `row_ts` }
+              hr_verdict: { type: string, enum: [proven, unproven, no_hr] }
+              hr_peak: { type: integer }
+              hr_delta: { type: integer }
+        rows:
+          type: array
+          items:
+            type: object
+            description: |
+              A `rows.jsonl` record (rust-helper protocol-and-mirror.md, "The row store"): `char` is the character's
+              place in the helper's own list (`SheetResponse` `characters`), and `source` is `game`, or `watch`,
+              `phone` or `computer` (slice 35: a catch-up the desktop app ran, its rows with bit 12) for a catch-up
+              row, never `app`. A pump row (kind 5 or 6, outcome 7) carries its heart-rate
+              proof once one is out: `hr_verdict` (proven, unproven, no_hr), `hr_peak` and `hr_delta`, the best of its
+              moves.
+    AppRowsResponse:
+      type: object
+      required: [helper, store, next, more, rows]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        store:
+          type: string
+          description: the id of the helper's store of app rows, the same string as `SyncResponse.rows_store`
+        next:
+          type: integer
+          format: int64
+          minimum: 0
+          description: "`after` plus the rows in this page; the store's length when `after` lies past it (a `next` below
+            `after` means the store shrank: read it again from 0)"
+        more: { type: boolean, description: rows follow this page }
+        rows: { type: array, items: { $ref: "#/components/schemas/AppRow" } }
+    AccountResponse:
+      type: object
+      required: [helper, account, r, devices, email]
+      description: The desktop app's sync account (slice 60; contract/sync-api.yaml), null while it has none.
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        account: { type: [string, "null"], description: "the account id, 16 bytes, base64url without padding" }
+        r: { type: [string, "null"], description: "the account's root secret R, 16 bytes, base64url without padding" }
+        devices: { type: integer, minimum: 0, description: "the account's devices as the server last listed them" }
+        email: { type: boolean, description: "whether an email is linked to the account" }
+    AccountRequest:
+      type: object
+      required: [device, sent_at, account, r]
+      description: A phone's sync account, handed to the desktop app on the player's Add (slice 60).
+      properties:
+        device: { type: string, enum: [ios, android] }
+        sent_at: { $ref: "#/components/schemas/Millis" }
+        account: { type: string, description: "the account id, 16 bytes, base64url without padding" }
+        r: { type: string, description: "the account's root secret R, 16 bytes, base64url without padding" }
+    BodyRequest:
+      type: object
+      required: [device, sent_at, body]
+      properties:
+        device: { type: string, enum: [ios, android] }
+        sent_at: { $ref: "#/components/schemas/Millis" }
+        body: { $ref: "#/components/schemas/Body" }
+    BodyResponse:
+      type: object
+      required: [helper, body]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        body: { $ref: "#/components/schemas/Body" }
+    Body:
+      type: object
+      description: |
+        The body every app device shares (slice 35): the free mode's engine profile's (`EngineProfile`: `noJump`,
+        `noStrain`, `noHeadDown`, `experience`, `exclude` and `include`, since 2026-10-09 `favourites` and `title`,
+        and since slice 48 `matchPace`, "Moves per match", which sizes every pump after a game's end on every device),
+        each field present only once a device changed it, as its value and `changed_at`. A field that does not read or
+        check out is dropped alone, never the body: an experience other than the three, a match pace other than the
+        three, moves without `exclude` or
+        either of its lists, a list of more than 512, a move id outside 1-65535, a group not 1-32 lower-case letters,
+        digits or underscores, a title not 0-48 letters, digits or underscores, a `changed_at` not after 0 or (the
+        helper's check) more than a day past the helper's clock. A device ignores a field it does not know. Since
+        slice 51 `home` (Home's equipment and switches, which the game shares) and `places` (the other places, between
+        the phones and the computer), each a field of its own; the place in use is never in the body.
+      properties:
+        no_jump: { $ref: "#/components/schemas/BodySwitch" }
+        no_strain: { $ref: "#/components/schemas/BodySwitch" }
+        no_head_down: { $ref: "#/components/schemas/BodySwitch" }
+        experience:
+          type: object
+          required: [value, changed_at]
+          properties:
+            value: { type: string, enum: [none, some, training], description: "the start rungs 2, 3 or 4" }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        moves:
+          type: object
+          required: [value, changed_at]
+          properties:
+            value:
+              type: object
+              required: [exclude]
+              properties:
+                exclude:
+                  type: object
+                  required: [ids, groups]
+                  description: the moves (Library.lua ids) and the groups unchecked in the Book or on the Exercises page
+                  properties:
+                    ids: { type: array, maxItems: 512, items: { type: integer, minimum: 1, maximum: 65535 } }
+                    groups: { type: array, maxItems: 512, items: { type: string, pattern: "^[a-z0-9_]{1,32}$" } }
+                include:
+                  type: array
+                  maxItems: 512
+                  description: the opt-in moves the player checked (the headstand); left out when there is none
+                  items: { type: integer, minimum: 1, maximum: 65535 }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        favourites:
+          type: object
+          required: [value, changed_at]
+          description: the moves marked favourites (the Book's Favourite), which every device's engine takes first
+          properties:
+            value: { type: array, maxItems: 512, items: { type: integer, minimum: 1, maximum: 65535 } }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        match_pace:
+          type: object
+          required: [value, changed_at]
+          description: "Moves per match (slice 48, docs/computer-games.md §3): the pace of contract/library.json's pace_moves a pump after a game's end sizes by, on the desktop app's Games tab (its Games page until slice 56) and the phones' Your setup; balanced before any device changed it"
+          properties:
+            value: { type: string, enum: [light, balanced, extreme] }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        title:
+          type: object
+          required: [value, changed_at]
+          description: the title chosen for the app's own sheet (a key of contract/sheet.json's `titles`), or empty
+          properties:
+            value: { type: string, pattern: "^[A-Za-z0-9_]{0,48}$" }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        home:
+          type: object
+          required: [value, changed_at]
+          description: |
+            Since slice 51: Home's equipment and switches, the game's one setup (contract/places.json `home`), which the
+            game's Your setup, its Apartment and Office presets and every device's Home change. Dropped alone when its
+            value does not read. The helper also reads the game's Home off the profile the strip paints and the files
+            it takes in (`GameBody::of_profile`), joining at the profile's `bodyAt.home`, and the mirror's `body` carries it
+            back.
+          properties:
+            value: { $ref: "#/components/schemas/PlaceSetup" }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        places:
+          type: object
+          required: [value, changed_at]
+          description: |
+            Since slice 51: every place but Home, in the player's order (Home is always first and never in it), whole:
+            the latest list wins as every field does, so an add, a rename, a delete and a reorder are each a change of
+            the list. Between the phones and the computer only; never in the mirror. Dropped alone when it does not
+            read: more than `places_max` less one (11) places, an id named twice, a place that does not read (`Place`).
+            A device whose place in use is not in the list it takes uses Home.
+          properties:
+            value: { type: array, maxItems: 11, items: { $ref: "#/components/schemas/Place" } }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        place_plan:
+          type: object
+          required: [value, changed_at]
+          description: |
+            Since 2026-11-03: the places' plan (contract/places.json `plan`), the default place and the weekly
+            schedule, whole: the latest wins as every field does. Between the phones and the computer only; never in
+            the mirror. Dropped alone when it does not read: more than `schedule_max` (21) times, a time that does not
+            read (`PlaceTime`). A default or a time naming a place a device's list lacks is kept and passed on, and that
+            device falls through to the next rule for it (places.json). The place in use never travels.
+          properties:
+            value: { $ref: "#/components/schemas/PlacePlan" }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
+    PlaceSetup:
+      type: object
+      required: [gear, floor, space, quiet]
+      description: |
+        A place's equipment and its three switches (slice 51): what the engine's profile reads of a place. `gear` holds
+        keys of contract/sheet.json's `gear` in its `gear_order`, at most 64, each 1-32 lower-case letters, digits or
+        underscores; a key the device does not know (a newer device's equipment) is kept and passed on and filters
+        nothing.
+      properties:
+        gear: { type: array, maxItems: 64, items: { type: string, pattern: "^[a-z0-9_]{1,32}$" } }
+        floor: { type: boolean, description: "Floor moves" }
+        space: { type: boolean, description: "Room to move" }
+        quiet: { type: boolean, description: "Quiet mode" }
+    Place:
+      allOf:
+        - { $ref: "#/components/schemas/PlaceSetup" }
+        - type: object
+          required: [id, glyph]
+          description: |
+            A place but Home (slice 51; contract/places.json): `id` a template's id for a place the seeding made, else
+            `p-` and 8 lower-case hex digits; `template` the template it came from, absent for an empty one; `name`
+            absent while it is the template's words, else the player's own, 1 to `place_name_max` (24) Unicode scalars,
+            trimmed; `glyph` one of contract/places.json's `glyphs` (a device shows one it does not know as the empty
+            place's).
+          properties:
+            id: { type: string, pattern: "^([a-z]{1,16}|p-[0-9a-f]{8})$" }
+            template: { type: string, pattern: "^[a-z]{1,16}$" }
+            name: { type: string, minLength: 1, maxLength: 24 }
+            glyph: { type: string, pattern: "^[a-z_]{1,32}$" }
+    PlacePlan:
+      type: object
+      required: [default, times]
+      description: The default place's id (`home` at first) and the schedule's times in the player's order (2026-11-03).
+      properties:
+        default: { type: string, pattern: "^([a-z]{1,16}|p-[0-9a-f]{8})$" }
+        times: { type: array, maxItems: 21, items: { $ref: "#/components/schemas/PlaceTime" } }
+    PlaceTime:
+      type: object
+      required: [days, from, to, place]
+      description: |
+        One time of the schedule: `days` the ISO weekdays (1 Monday to 7 Sunday), each once, at least one; `from` and
+        `to` minutes after local midnight, never equal, a `to` before `from` running past midnight into the next day
+        (the span belongs to the day it starts); `place` a place's id.
+      properties:
+        days: { type: array, minItems: 1, maxItems: 7, uniqueItems: true, items: { type: integer, minimum: 1, maximum: 7 } }
+        from: { type: integer, minimum: 0, maximum: 1439 }
+        to: { type: integer, minimum: 0, maximum: 1439 }
+        place: { type: string, pattern: "^([a-z]{1,16}|p-[0-9a-f]{8})$" }
+    BodySwitch:
+      type: object
+      required: [value, changed_at]
+      description: A Body switch (no jumping, avoid breath-hold strain, avoid head-down positions), on or off
+      properties:
+        value: { type: boolean }
+        changed_at: { $ref: "#/components/schemas/ChangedAt" }
+    ChangedAt:
+      type: integer
+      format: int64
+      minimum: 1
+      description: |
+        When the field changed: unix milliseconds on the clock of the device that made the change (the helper's for a
+        change the game showed), never shifted by an offset
+    SheetsResponse:
+      type: object
+      required: [helper, store, next, more, sheets]
+      properties:
+        helper: { $ref: "#/components/schemas/Helper" }
+        store: { $ref: "#/components/schemas/Store" }
+        next:
+          type: integer
+          format: int64
+          minimum: 0
+          description: "`after` plus the sheets in this page; the log's length when `after` lies past it (a `next` below
+            `after` means the log shrank: read it again from 0)"
+        more: { type: boolean, description: sheets follow this page }
+        sheets:
+          type: array
+          items:
+            type: object
+            required: [ts_helper, char, sheet]
+            properties:
+              ts_helper: { type: string, description: "when the helper read it (RFC 3339), as `rows.jsonl` stamps a row" }
+              char: { type: integer, description: "the character's place in the helper's own list, as `/v1/sheet` names it" }
+              sheet:
+                type: object
+                description: |
+                  the addon's `sheet` strip event as it folded it, as `/v1/sheet` serves it, of the version its addon
+                  wrote (5 since slice 27; an older kept one lacks the newer keys); its own `at` is when the addon
+                  folded it, unix seconds on the game's clock, the time a chart plots
+    Store:
+      type: string
+      description: |
+        Which row order a page counts in: the helper's first kept record (its `ts_helper` and `row_ts` for a row, its
+        `ts_helper` for a sheet), so it changes whenever the order starts again (a reset compacts the store, a new data
+        folder starts one) and is empty while the store is empty. A device compares it and never reads anything into it.
+    WatchRows:
+      type: object
+      required: [made_at, rows, game]
+      description: |
+        The phone's snapshot of rows for its watch (slice 31; the relay in the description above), never through the
+        helper: the watch folds `rows` with its own as the app's and `game` as the game's kept rows
+        (`AgnosticEngine.fold`), and an own row the snapshot holds (by text and copy number) or its floor drops leaves
+        the rows the watch still sends. A snapshot older than the one the watch holds changes nothing.
+      properties:
+        made_at: { $ref: "#/components/schemas/Millis" }
+        rows:
+          type: array
+          description: "every app row the phone holds, in the addon's grammar (`AppRow.row`), unstamped, as stored"
+          items: { type: string }
+        game:
+          type: array
+          description: "the game's kept rows the phone holds (`HistoryRow.text`, the 13 fields without the proof)"
+          items: { type: string }
+        sheet:
+          type: object
+          description: |
+            since slice 32's third review: the game's sheet summary the phone shows while its Hero shows the game's
+            sheet (the helper's, or an imported `!QP1!` one), as `GET /v1/sheet` serves it (`contract/sheet.json`
+            names its keys); absent while Hero shows the app's own. The watch shows the newer, by the summary's `at`, of
+            it and the helper's sheet it keeps itself while its own pairing stands (the helper's forgotten with the
+            pairing, the phone's following the phone's latest snapshot), the helper's only while it is the character
+            `char` names (below); while it shows the app's own summary, the
+            streak board takes the active and locked days of the app's rows only, never the game's kept rows. A sheet
+            that does not read costs the watch only the sheet, never the snapshot's rows. A watch build before it
+            ignores the key.
+        char:
+          type: integer
+          description: |
+            since 2026-10-30, beside `sheet` alone: the character whose summary `sheet` is, by its place in the helper's
+            own list (`GET /v1/sheet`'s `characters[].index`), the one the phone's tabs show (the player's pick, else
+            the helper's newest); absent for an imported sheet and from an older phone. Of the characters a helper's
+            sheet lists, the watch keeps the one `char` names (else, and without it, the newest by `at`), and shows the
+            helper's sheet it keeps beside `sheet` only while that is the same character, so its glance, its streak
+            and its figure's colour are the phone's character's, never another the player played last.
+        held_days:
+          type: array
+          items: { type: integer }
+          description: |
+            since 2026-10-30: the game days, as day numbers (the days from 1970-01-01 to the game day's date, the date
+            `day_offset_h` hours before the time in the phone's zone), of the catch-ups the phone and its watch ran
+            with a move done that no device pump row of the game's kept rows holds yet (`LogPumps.unheld`: waiting for
+            the helper, its rows not read back, or answered with none, as when the game paid those moves first), which
+            the phone's streak board counts beside the game's sheet; the watch's board counts them too while it shows
+            the game's sheet, so a day whose only moves were such a catch-up counts on the wrist as on the phone.
+            Absent, from an older phone, reads as none.
+        game_read:
+          type: boolean
+          description: |
+            since 2026-10-12: the phone had read the helper's game rows whole when it made the snapshot (it doses its
+            own catch-ups only from then: the iPhone's `GameLog.holdsGameRows` over `Cursor.rowsWhole`, Android's
+            `GameLog.rowsReadFrom`), so `game` holds the game's; a watch doses a catch-up and asks its count only once a
+            fold of such a snapshot is taken. Absent, from an older phone, reads as false: the watch's catch-up then runs
+            timed with no count.
+    StartAsk:
+      type: object
+      required: [kind, at, rows_at]
+      description: |
+        Start on my watch (slice 31): the pump the player chose on the phone, which the watch composes from the same
+        rows: `kind` a key of `contract/kinds.json` (its family is the engine's), `tier` 1 Small, 2 Normal or 3 Big,
+        `at` when the phone asked, `rows_at` the `made_at` of the snapshot it sent right before (or of the last one it
+        sent, or 0, when none could go; a game offer's size-page ask names the last one put, or 0, and a fresh
+        snapshot follows the open). Android's start link carries both (`at`, `rows`):
+        `questpump://start?kind=<key>[&tier=<1-3>]&rows=<ms>&at=<ms>[&link=<key>][&matches=<1-9>][&minutes=<n>][&chosen=<1-3>][&arms=1][&sat=<n>[&warm=<0|1>]][&game=<name>][&banks=1]`.
+        Since slice 33 `tier` may be absent: a game offer's tap (Android's watch action) leaves the size to the player,
+        and the watch opens its size page for the kind instead of composing at once; a tier outside 1-3 is
+        refused. `link`, present only for a game offer, is the key of `contract/links.json` whose finish offered the
+        pump (lower-case letters): the watch keeps it on its app pump's log and relays it (`AppPumpRelay.link`).
+        Since 2026-10-16 (`docs/phone-games.md` B8) `matches` and `minutes`, plain integers present only for a pump
+        the Good game! sheet started on the watch after a game on the phone, are the matches the player answered (1 to
+        `phone_matches_max`; since slice 48 the `tier` comes from them times the game's minutes per match, one step per
+        `match_step_min`, half up, from Small to Big; until then 1 Small, 2 or 3 Normal, 4 or more Big) and the
+        session's minutes (absent after I just played, which knows none); a `matches` outside 1-9 or a negative
+        `minutes` is refused as a tier outside 1-3 is, and that phone game's name never rides the start link. The watch
+        keeps both on its app pump and relays them (`AppPumpRelay`). Since slice 48 (`docs/computer-games.md`) three more,
+        each present only where it applies: `chosen` (1-3), only without `tier`, the size the watch's size page opens
+        with chosen (a computer match's offer's size); `arms`, present and true alone, the arms rest of the offer the
+        pump comes from (`match_end`'s, as the phone's rule gave it: the latest sync response's `arms` while it is
+        fresh, `SyncResponse.arms`, or the offer's alone where none is; the watch applies its own latest response the
+        same way as it composes); and `sat`, the minutes sat the pump composes at (after a game's end: the computer
+        offer's least minutes for its size, 20, 20 or 30 since slice 59 and 20, 30 or 50 until then, or the sheet's
+        matches times the game's minutes per match, or the session's own minutes where they are more), which give
+        its cardio its length and, from `match_sat_min`, its order (a standing leg or cardio move first). Since slice 57
+        `sat` is the active minutes (a computer match's own, `match_end`'s `minutes`, else the offer's least minutes for
+        its size as before), and `warm`, present beside `sat` alone (Android `0` or `1`), says whether the pump opens on
+        its warm move (a computer match's `match_end` `warm`; a game on the phone's from `match_sat_min` of its
+        minutes); without `warm` (a phone before slice 57) the watch takes the order from `sat` as before. A `chosen`
+        outside 1-3, a negative `sat` or a `warm` other than `0` or `1` is refused as a tier outside 1-3 is. Since slice
+        48's double-check `game`, beside `arms` alone, is the aim game's own name (`match_end`'s `name`, at most 40
+        Unicode scalars), which the watch's size page and Ready name in the arms rest's line; Android's link
+        percent-encodes it as the pair link's name (a space `%20`), and a name that does not decode refuses the link.
+        Since slice 58 `banks`, present and true alone (`1` in the start link, which Android's and Swift's `startLink`
+        write and read alike; any other value refuses the link), marks a pump a match sized: a computer match's offer's
+        (its `match_end`, the test offer's too) and the Good game! sheet's (beside `matches`), which the iPhone and
+        Android write on every Start on my watch of one. The watch's Ready view of such a pump, and of a linked game's
+        offer, which banks by its `link` alone, shows Bank it while the watch links the desktop app; a watch before it
+        reads the ask without it.
+      properties:
+        kind: { type: string }
+        tier: { type: integer, minimum: 1, maximum: 3 }
+        at: { $ref: "#/components/schemas/Millis" }
+        rows_at: { $ref: "#/components/schemas/Millis" }
+        link: { type: string, pattern: "^[a-z]+$" }
+        matches: { type: integer, minimum: 1, maximum: 9 }
+        minutes: { type: integer, minimum: 0 }
+        chosen: { type: integer, minimum: 1, maximum: 3 }
+        arms: { type: boolean }
+        sat: { type: integer, minimum: 0 }
+        warm: { type: boolean }
+        game: { type: string, maxLength: 40 }
+        banks: { type: boolean }
+    AppPumpRelay:
+      type: object
+      required: [kind, tier, pump]
+      description: |
+        A watch's own app pump as far as it ran (slice 31), sent as each of its moves' rows are written and again as
+        that move's card settles, with the heart rate: `kind` the key of `contract/kinds.json` the player chose, or
+        `quick` for a Quick pump (2026-10-07: no kind, no family, tier 1), `tier` its size, `pump` in the
+        book's shape (`contract/fixtures/backup.json`'s pump: id `w-<uuid>`, source `free`, its first go, its moves so
+        far with their seconds, the steps, metres and heart rate the wrist measured, its unwell mark), its title empty:
+        the phone writes "{kind} · {moves}" in its own words ("Quick pump · two moves" for `quick`). The phone keeps it
+        as one pump of its Log unless it holds
+        that id with more moves already; the counts come from the rows, as for the phone's own app pumps. `link`
+        (slice 33), present only for a pump a game offer started, is the key of `contract/links.json` whose finish
+        offered it; the phone writes `kind` and `link` on the book's pump (`contract/fixtures/backup.json`). Since
+        2026-10-16 (`docs/phone-games.md` B4) the pump carries `game`, `matches` and `minutes` when present, each
+        written only when present, for a pump after a game on the phone: `matches` and `minutes` as the start ask
+        brought them, `game` (the game's own name, at most 40 Unicode scalars) only where the watch had it, from the
+        Apple Watch's answer to the phone's question, whose notification carries the name; the phone keeps the three on
+        the book's pump as they came, and never sends the name to the helper, a row or any telemetry.
+      properties:
+        kind: { type: string }
+        tier: { type: integer, minimum: 1, maximum: 3 }
+        pump: { type: object }
+        link: { type: string, pattern: "^[a-z]+$" }
+    RelayedPump:
+      type: object
+      required: [id, summary]
+      description: |
+        A card the wrist settled, for the phone's history (QuestPumpCore's `RelayedPump`, `WatchRelay.swift`; the
+        Android core's, `Relay.kt`), from the watch to its own phone alone, never through the helper: on Apple
+        `transferUserInfo` key `pump` (`WatchRelay.pumpKey`), on Android the data item `/pump/<pump id>` or, for a move
+        of a game pump, `/pump/<pump id>/<slot>` (each move's card its own item, since the Data Layer keeps only the
+        newest item per path) with the JSON under `pump` (`DataLayer.PUMP_KEY`). Each pair's own JSON (Swift's
+        `Codable`, kotlinx's), so `summary` carries its core's `PumpSummary` keys (the go, the seconds, steps, metres,
+        the heart rate's peak, average and rise, the verdict; Android's `counted` too), and a reader skips a key it does
+        not know. The phone keeps two kinds, replacing an entry by its id: a move of a game pump the wrist ran (`id`
+        the game pump's `g-<load>-<offered unix s>`, `slot` its slot), kept as `<id>/<slot>` with source `watch` and the
+        title of a game pump of one move in the phone's words; and a catch-up the wrist ran (`id` the watch's
+        `w-<uuid>`, `move` the owed move it paid), kept as a catch-up of that one move (`ran` where it ran another,
+        since 2026-10-29). A card of neither is not kept: a
+        pump of the wrist's own comes whole as `AppPumpRelay`, never by its cards.
+
+        `gameMove` (slice 44, the wrist's game moves; slice 34's finding 9): a game move's card names the move it ran,
+        its Library.lua id as the pump's latest `pump_offered` listed it for that slot (`OfferedMove.move`) when the
+        move's countdown began (the move the wrist showed and judged), kept with the card and never looked up again at
+        its end or a later relay (an offer heard since may list another move or none), on every relay of that card
+        (Android's `dropped` one too), on both watches. Absent where the wrist had no `pump_offered`
+        of the pump (a watch build before it, a helper that never sent it): the card is kept as before, with no move.
+        The phone keeps it as the card's one move (`contract/fixtures/backup.json`'s pump move `{move, kind,
+        seconds}`: its kind by the move's dose in `contract/library.json`, its seconds the card's as the game counts
+        them, Android's `PumpSummary.moveSeconds`, the Apple Watch's summary `seconds`), and `LogPumps.build` lists
+        those moves for a game pump its rows do not hold yet, and for each slot of one they hold that no move row of
+        theirs has yet (its pump row came first; `contract/fixtures/history.json` `log`), so the Saga shows and counts
+        them before the rows land and nothing jumps when they do. A key of its own, never `move`: a
+        phone before slice 44 reads `move` as a catch-up's paid move and skips `gameMove`, so it still files the card
+        as a game pump's move, with no move named.
+      properties:
+        id: { type: string, description: "g-<load>-<offered unix s> for a game pump's move, w-<uuid> for a catch-up" }
+        summary: { type: object, description: "the card as the wrist shows it, in its core's PumpSummary keys" }
+        startMs:
+          $ref: "#/components/schemas/Millis"
+          description: "Android only: the go on the watch's wall clock (the summary's times are its own clock)"
+        slot: { type: integer, minimum: 0, maximum: 255, description: "a game pump's move: its slot" }
+        dropped:
+          type: boolean
+          description: |
+            Android only, written only when true: the game took the move back after its card settled (a cancelled
+            `move_end`); the phone forgets the card it kept, on the same item path
+        move:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          description: "a catch-up's alone: the owed move it paid, its Library.lua id"
+        ran:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          description: |
+            Since 2026-10-29, a catch-up's alone, written only where the wrist ran another move in place of `move`: the
+            move its `pump_done` named as `ran.move` (an owed backup's rung move, Engine.lua `ridesAs`), which the phone
+            keeps as the card's move, as its own catch-up keeps `ran`. A phone before then skips the key and keeps `move`.
+        gameMove:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          description: "since slice 44, a game pump's move alone: the move the wrist ran (taken at its countdown), its
+            Library.lua id"
+        unwell: { type: boolean, description: "written only when true: stopped for felt unwell" }

@@ -1,0 +1,76 @@
+{
+  "move": "one_arm_pullup",
+  "view": "side",
+  "camera": {"yaw": 50, "pitch": 4},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "bar", "f": 8, "u": 222, "ground": true}],
+  "poses": {
+    "hang": {
+      "pelvis": [8, 112.4, 4],
+      "trunk": [0, 4, 0],
+      "head": [-8, -2, 0],
+      "arm_near": {"ik": [8, 215.6, 24], "pole": [-0.2, -1, 0.6], "hand": [0.6, 0.8, 0]},
+      "arm_far": {"ik": [-17, -4, 6], "rel": "waist", "pole": [0, 1, 1], "hand": [0, -0.2, -1]},
+      "legs": {"fk": [4, 2, 8, -30]},
+      "contacts": ["wrist_near", "hand_tip_near"]
+    },
+    "top": {
+      "from": "hang",
+      "pelvis": [-6, 165, -4],
+      "trunk": [-8, 6, 0],
+      "head": [-6, -4, 0],
+      "arm_near": {"ik": [8, 215.6, 24], "pole": [0, -1, 0.4], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [16, 2, 26, -30]}
+    },
+    "spun": {
+      "from": "top",
+      "pelvis": [-7, 164.5, 0],
+      "trunk": [-8, 6, -28],
+      "chest": [0, 0, -12],
+      "head": [-4, -4, 15],
+      "legs": {"fk": [22, 2, 26, -20]}
+    },
+    "mid": {
+      "from": "top",
+      "pelvis": [-7, 147, 0],
+      "trunk": [-9, 5, 0],
+      "head": [-12, -3, 0],
+      "legs": {"fk": [12, 2, 20, -30]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.3, "phase": "dead_hang"},
+    {"to": "mid", "s": 0.6, "phase": "chin_over_bar", "effort": 1.0, "ease": "in"},
+    {"to": "top", "s": 0.6, "phase": "chin_over_bar", "effort": 1.0, "ease": "out"},
+    {"hold": 0.2, "phase": "top", "effort": 0.9},
+    {"to": "mid", "s": 1.5, "phase": "lower_slowly", "effort": 0.7, "ease": "in"},
+    {"to": "hang", "s": 1.5, "phase": "lower_slowly", "effort": 0.7, "ease": "out"}
+  ],
+  "key": "top",
+  "fault": {
+    "pose": "spun",
+    "caption": "body_spins",
+    "breaks": {
+      "check": "offset",
+      "joint": "shoulder_far",
+      "from": "shoulder_near",
+      "axis": "f",
+      "min": -12,
+      "max": 12
+    }
+  },
+  "targets": [
+    {"at": "top", "check": "height", "joint": "head", "min": 230},
+    {"at": "hang", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {
+      "at": "top",
+      "check": "offset",
+      "joint": "shoulder_far",
+      "from": "shoulder_near",
+      "axis": "f",
+      "min": -12,
+      "max": 12
+    }
+  ]
+}

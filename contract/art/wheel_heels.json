@@ -1,0 +1,234 @@
+{
+  "move": "wheel_heels",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["pauldron", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -100, "f1": 66, "l0": -40, "l1": 40}],
+  "poses": {
+    "lie": {
+      "pelvis": [7, 16, 0],
+      "trunk": [-90, 0, 0],
+      "legs": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "contacts": [
+        "pelvis",
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]}
+    },
+    "crown": {
+      "from": "lie",
+      "pelvis": [-4, 56, 0],
+      "trunk": [-105, 0, 0],
+      "chest": [-30, 0, 0],
+      "head": [0, 0, 0],
+      "contacts": [
+        "head",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "tuck": {
+      "from": "lie",
+      "pelvis": [2, 46, 0],
+      "trunk": [-125, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [40, 0, 0],
+      "contacts": [
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel": {
+      "from": "lie",
+      "pelvis": [-18, 78, 0],
+      "trunk": [-95, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-20, 0, 0],
+      "arm_near": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near",
+        "wrist_far",
+        "hand_tip_far"
+      ]
+    },
+    "n1_up": {
+      "from": "lie",
+      "pelvis": [-14.5, 78.6, 0],
+      "trunk": [-99.2, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-18, 0, 0],
+      "arm_near": {"ik": [-46.5, 13, 20], "pole": [-0.3, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "n1": {
+      "from": "lie",
+      "pelvis": [-8, 76.3, 0],
+      "trunk": [-97.4, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-15, 0, 0],
+      "arm_near": {"ik": [-27, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near",
+        "wrist_far",
+        "hand_tip_far"
+      ]
+    },
+    "f1_up": {
+      "from": "lie",
+      "pelvis": [-3, 80.7, 0],
+      "trunk": [-103.1, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_near": {"ik": [-27, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-46.5, 13, 20], "pole": [-0.3, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "both27": {
+      "from": "lie",
+      "pelvis": [4.4, 82.1, 0],
+      "trunk": [-102.7, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-5, 0, 0],
+      "arm_near": {"ik": [-27, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-27, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near",
+        "wrist_far",
+        "hand_tip_far"
+      ]
+    },
+    "n2_up": {
+      "from": "lie",
+      "pelvis": [8.8, 82.9, 0],
+      "trunk": [-104.2, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-2, 0, 0],
+      "arm_near": {"ik": [-8.5, 13, 19], "pole": [-0.3, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-27, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "n2": {
+      "from": "lie",
+      "pelvis": [21, 81, 0],
+      "trunk": [-106.2, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [2, 0, 0],
+      "arm_near": {"ik": [7, 4.3, 18], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-27, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near",
+        "wrist_far",
+        "hand_tip_far"
+      ]
+    },
+    "f2_up": {
+      "from": "lie",
+      "pelvis": [22, 82.5, 0],
+      "trunk": [-107.9, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [6, 0, 0],
+      "arm_near": {"ik": [7, 4.3, 18], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-8.5, 13, 19], "pole": [-0.3, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "heels": {
+      "from": "lie",
+      "pelvis": [26, 86, 0],
+      "trunk": [-110, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [10, 0, 0],
+      "arm_near": {"ik": [7, 4.3, 19], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [7, 4.3, 19], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near",
+        "wrist_far",
+        "hand_tip_far"
+      ]
+    },
+    "heels_in": {"from": "heels", "pelvis": [26, 86.4, 0], "chest": [-41.5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "hands_by_ears", "effort": 0.2},
+    {"to": "crown", "s": 1.0, "phase": "hips_up", "effort": 0.7},
+    {"to": "wheel", "s": 1.0, "phase": "arms_straight", "effort": 0.9},
+    {"to": "n1_up", "s": 0.28, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "n1", "s": 0.32, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "f1_up", "s": 0.28, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "both27", "s": 0.32, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "n2_up", "s": 0.28, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "n2", "s": 0.32, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "f2_up", "s": 0.28, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "heels", "s": 0.32, "phase": "walk_hands_in", "effort": 0.95},
+    {"to": "heels_in", "s": 1.0, "phase": "breathe", "effort": 1.0},
+    {"to": "heels", "s": 1.0, "phase": "breathe", "effort": 1.0},
+    {"to": "f2_up", "s": 0.28, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "n2", "s": 0.32, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "n2_up", "s": 0.28, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "both27", "s": 0.32, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "f1_up", "s": 0.28, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "n1", "s": 0.32, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "n1_up", "s": 0.28, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "wheel", "s": 0.32, "phase": "walk_hands_out", "effort": 0.9},
+    {"to": "tuck", "s": 1.0, "phase": "tuck_chin", "effort": 0.6},
+    {"to": "lie", "s": 1.0, "phase": "lower_slowly", "effort": 0.3}
+  ],
+  "key": "heels",
+  "targets": [
+    {"at": "heels", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "heels", "check": "offset", "joint": "hand_tip_near", "from": "ankle_near", "axis": "f", "min": -12},
+    {"at": "heels", "check": "height", "joint": "head", "min": 20}
+  ],
+  "note": "From the wheel, arms straight and the head free: walk the hands in toward the feet one hand at a time until the fingertips touch the heels, the arms still straight and the hips high; hold and breathe, walk them back out the same way, tuck the chin and come down."
+}

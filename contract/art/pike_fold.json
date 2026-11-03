@@ -1,0 +1,56 @@
+{
+  "move": "pike_fold",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 10},
+  "working": ["thigh", "back"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -40, "f1": 120}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [-2, 0, 0],
+      "arms": {"ik": [24, 27, 19], "pole": [-0.6, 0, 1], "hand": [1, -0.3, 0]},
+      "legs": {"foot": [99.6, 11], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": ["pelvis", "knee_near", "knee_far", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    },
+    "fold": {
+      "from": "tall",
+      "trunk": [48, 0, 0],
+      "chest": [35, 0, 0],
+      "head": [12, 0, 0],
+      "arms": {"ik": [95.8, 14, 14], "pole": [0, -0.4, 1], "hand": [0.2, 0.2, -1]}
+    },
+    "fold_in": {"from": "fold", "trunk": [49, 0, 0], "chest": [36, 0, 0]},
+    "bent": {
+      "from": "fold",
+      "legs": {"foot": [90, 11], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "trunk": [46, 0, 0],
+      "chest": [26, 0, 0],
+      "head": [14, 0, 0],
+      "arms": {"ik": [86.2, 14, 14], "pole": [0, -0.4, 1], "hand": [0.2, 0.2, -1]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.2},
+    {"to": "fold", "s": 2.8, "phase": "fold_forward", "effort": 0.6},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "tall", "s": 2.4, "phase": "sit_up", "effort": 0.3}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "fold", "check": "height", "joint": "knee_near", "max": 12},
+    {"at": "fold", "check": "height", "joint": "neck", "max": 36}
+  ],
+  "note": "Legs straight and together, heels down and toes up; from a tall seat the hands slide down the legs into the full fold: the chest on the thighs, the helm down to the shins and the hands clasped beyond the soles."
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Report: a small flag on a pole with a ball finial, the cloth in one wave with a notched fly; lit from the top
+       left, the cloth's far half, turning away, in shadow. One colour, never mirrored: a FramedIconButton tints it
+       (text on raised). -->
+  <circle data-token="tint" fill="currentColor" cx="6" cy="3.5" r="1.75"/>
+  <path data-token="tint" fill="currentColor" d="M5 21.5 V5 H7 V21.5 Z"/>
+  <path data-token="tint" fill="currentColor" d="
+    M7 5 C9.5 3.5 11.75 3.5 14 5 C16.25 6.5 18.75 6.5 21 5 L19 9 L21 13 C18.75 14.5 16.25 14.5 14 13
+    C11.75 11.5 9.5 11.5 7 13 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M14 5 C16.25 6.5 18.75 6.5 21 5 L19 9 L21 13 C18.75 14.5 16.25 14.5 14 13 Z"/>
+</svg>

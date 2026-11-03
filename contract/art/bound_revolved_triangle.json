@@ -1,0 +1,84 @@
+{
+  "move": "bound_revolved_triangle",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "stance": {
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [0, 10], "turn": 4, "knee_out": 4},
+      "leg_far": {"foot": [-88, 10], "turn": 28, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "stance",
+      "trunk": [86, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_near": {
+        "ik": [2.9, 86.1, 26.0],
+        "orbit": {"r": 54, "deg": -95, "plane": "fu"},
+        "pole": [-0.3, 0, 1],
+        "hand": [0.4, -1, 0]
+      },
+      "arm_far": {"ik": [8, 31, 24], "pole": [-0.3, 0, 1], "hand": [0.4, -1, 0]}
+    },
+    "thread": {
+      "from": "bind",
+      "trunk": [90, 0, -8],
+      "chest": [2, -3, -50],
+      "head": [-4, 0, -18],
+      "arm_near": {
+        "ik": [1.35, 96.35, 27],
+        "orbit": {"r": 54.5, "deg": 69.3, "plane": "fu"},
+        "pole": [-0.3, 0.5, 0.8],
+        "hand": [0.4, 0.9, 0]
+      },
+      "arm_far": {"ik": [6, 30, -26], "pole": [0.4, -0.2, -1], "hand": [0, -1, -0.3]}
+    },
+    "bind": {
+      "from": "stance",
+      "pelvis": [-44, 82.0, 0],
+      "trunk": [93, 0, -14],
+      "chest": [2, -4, -80],
+      "head": [0, 0, -30],
+      "arm_far": {"ik": [-36, 58, -28], "pole": [0.2, -1, -0.8], "hand": [-1, 0, -0.2]},
+      "arm_near": {
+        "ik": [-0.2, 106.6, 28],
+        "orbit": {"r": 55.0, "deg": 233.6, "plane": "fu"},
+        "pole": [-0.3, 1, 0.6],
+        "hand": [-1, -0.3, 0]
+      },
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "bind_in": {"from": "bind", "chest": [8, -4, -82]},
+    "bent": {"from": "bind", "pelvis": [-42.5, 80.2, 0], "trunk": [91, 0, -14]}
+  },
+  "timeline": [
+    {"pose": "stance"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "hinge", "s": 1.2, "phase": "back_flat", "effort": 0.5},
+    {"to": "thread", "s": 1.1, "phase": "hands_together", "effort": 0.7, "ease": "in"},
+    {"to": "bind", "s": 1.1, "phase": "hands_together", "effort": 0.75, "ease": "out"},
+    {"to": "bind_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "bind", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "bind_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "bind", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "thread", "s": 0.9, "phase": "return_slowly", "effort": 0.6, "ease": "in"},
+    {"to": "hinge", "s": 0.9, "phase": "return_slowly", "effort": 0.6, "ease": "out"},
+    {"to": "stance", "s": 1.6, "phase": "rise", "effort": 0.4}
+  ],
+  "key": "bind",
+  "fault": {
+    "pose": "bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "bind", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "bind", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  ],
+  "note": "The twisted triangle bound: front leg the near one, both knees straight, the trunk level over the front leg and the chest turned 80 degrees; the far arm threads under the front thigh near the hip and the near arm reaches behind the back to clasp it (or a towel) at the thigh's outside."
+}

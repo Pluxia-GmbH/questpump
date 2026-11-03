@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Play (a move's figure paused: a tap plays it again): a wedge pointing right with its three corners cut square,
+       set a little right of centre so it sits in the middle to the eye; lit from the top left, a ridge runs from the
+       back to the tip, so its lower face is in shadow. One colour, never mirrored (media controls keep their direction
+       in every language): the caller tints it (text2 in a round button on card). -->
+  <path data-token="tint" fill="currentColor" d="
+    M7.5 4.25 L8.13 3.91 L19.87 11.59 V12.41 L8.13 20.09 L7.5 19.75 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M7.5 12 H19.87 V12.41 L8.13 20.09 L7.5 19.75 Z"/>
+</svg>

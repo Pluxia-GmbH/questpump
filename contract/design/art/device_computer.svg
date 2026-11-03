@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- A laptop (the Sync card's row for the helper on the player's computer): the lid's frame round its screen over a
+       flat base; lit from the top left, the right half in shadow. One colour: the caller tints it. -->
+  <path data-token="tint" fill="currentColor" fill-rule="evenodd" d="
+    M5.5 3.5 H18.5 C19.33 3.5 20 4.17 20 5 V15.75 H4 V5 C4 4.17 4.67 3.5 5.5 3.5 Z
+    M5.75 5.25 H18.25 V14 H5.75 Z"/>
+  <path data-token="tint" fill="currentColor" d="
+    M1.25 17 H22.75 V18.25 C22.75 19.08 22.08 19.75 21.25 19.75 H2.75 C1.92 19.75 1.25 19.08 1.25 18.25 Z"/>
+  <path data-token="void" fill-opacity="0.35" fill-rule="evenodd" d="
+    M12 3.5 H18.5 C19.33 3.5 20 4.17 20 5 V15.75 H12 Z
+    M12 5.25 H18.25 V14 H12 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12 17 H22.75 V18.25 C22.75 19.08 22.08 19.75 21.25 19.75 H12 Z"/>
+</svg>

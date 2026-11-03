@@ -1,0 +1,81 @@
+{
+  "move": "flexed_arm_hang",
+  "view": "side",
+  "camera": {"yaw": 55, "pitch": 4},
+  "working": ["upper_arm", "pauldron"],
+  "breathe": true,
+  "props": [
+    {"kind": "bar", "f": 8, "u": 222, "ground": true},
+    {"kind": "step", "f0": -40, "f1": -4, "u": 46, "l0": -21, "l1": 21}
+  ],
+  "poses": {
+    "stool": {
+      "pelvis": [-14, 139, 0],
+      "trunk": [2, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-0.1, -1, 0.7], "hand": [0.6, 0.8, 0]},
+      "legs": {"foot": [-30, 12], "y": 46, "turn": 8, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "toes": {
+      "from": "stool",
+      "pelvis": [-10, 151, 0],
+      "trunk": [-4, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [0, -1, 0.8], "hand": [0.6, 0.8, 0]},
+      "legs": {"foot": [-30, 12], "y": 46, "turn": 8, "knee_out": 6, "lift": 45},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "in": {
+      "pelvis": [-6, 165, 0],
+      "trunk": [-8, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [0, -1, 0.8], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [18, 2, 30, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "out": {
+      "from": "in",
+      "pelvis": [-6, 163.4, 0],
+      "chest": [-4, 0, 0],
+      "head": [-3, 0, 0],
+      "legs": {"fk": [20, 2, 34, -30]}
+    },
+    "half": {
+      "from": "in",
+      "pelvis": [-5, 152, 0],
+      "trunk": [-7, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [0.5, -1, 0.2], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [20, 2, 45, -25]}
+    }
+  },
+  "timeline": [
+    {"pose": "stool"},
+    {"hold": 0.4, "phase": "stand"},
+    {"to": "toes", "s": 0.7, "phase": "step_up", "effort": 0.5},
+    {"to": "in", "s": 0.8, "phase": "chin_over_bar", "effort": 0.8},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.9},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.9},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "toes", "s": 0.8, "phase": "step_down", "effort": 0.5},
+    {"to": "stool", "s": 0.7, "phase": "step_down", "effort": 0.3}
+  ],
+  "key": "in",
+  "fault": {"pose": "half", "caption": "chin_below_bar", "breaks": {"check": "height", "joint": "head", "min": 228}},
+  "targets": [
+    {"at": "in", "check": "height", "joint": "head", "min": 228},
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 70}
+  ],
+  "note": "The pull-up negative's top held: chin over the bar, elbows tight, the stool behind to step up from."
+}

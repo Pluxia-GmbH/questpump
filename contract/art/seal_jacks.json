@@ -1,0 +1,74 @@
+{
+  "move": "seal_jacks",
+  "view": "front",
+  "camera": {"yaw": 18, "pitch": 24},
+  "working": ["chest", "pauldron", "thigh"],
+  "fast_phase": 0.8,
+  "poses": {
+    "in": {
+      "pelvis": [0, 93, 0],
+      "trunk": [0, 0, 0],
+      "arms": {
+        "ik": [0, -6, 26],
+        "rel": "neck",
+        "orbit": {"r": 55, "deg": -20, "plane": "fl"},
+        "pole": [-0.3, -1, 0],
+        "hand": [1, 0, -0.08]
+      },
+      "legs": {"foot": [0, 11], "turn": 8, "lift": 0, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "rise": {
+      "from": "in",
+      "pelvis": [0, 102, 0],
+      "arms": {
+        "ik": [0, -6, 26],
+        "rel": "neck",
+        "orbit": {"r": 55, "deg": 10, "plane": "fl"},
+        "pole": [-0.3, -1, 0],
+        "hand": [0.85, 0, 0.4]
+      },
+      "legs": {"foot": [0, 19], "turn": 11, "y": 6, "lift": 20, "knee_out": 8},
+      "contacts": []
+    },
+    "spread": {
+      "from": "in",
+      "pelvis": [0, 101, 0],
+      "arms": {
+        "ik": [0, -6, 26],
+        "rel": "neck",
+        "orbit": {"r": 55, "deg": 70, "plane": "fl"},
+        "pole": [-0.3, -1, 0],
+        "hand": [0.3, 0, 0.95]
+      },
+      "legs": {"foot": [0, 32], "turn": 16, "y": 5, "lift": 15, "knee_out": 10},
+      "contacts": []
+    },
+    "out": {
+      "from": "in",
+      "pelvis": [0, 88, 0],
+      "arms": {
+        "ik": [0, -6, 26],
+        "rel": "neck",
+        "orbit": {"r": 55, "deg": 100, "plane": "fl"},
+        "pole": [-0.3, -1, 0],
+        "hand": [-0.1, 0, 1]
+      },
+      "legs": {"foot": [0, 40], "turn": 20, "lift": 0, "knee_out": 12}
+    },
+    "fall": {"from": "spread"},
+    "close": {"from": "rise"}
+  },
+  "timeline": [
+    {"pose": "in"},
+    {"to": "rise", "s": 0.12, "ease": "linear", "phase": "feet_wide", "effort": 0.9},
+    {"to": "spread", "s": 0.12, "ease": "linear", "phase": "feet_wide", "effort": 0.9},
+    {"to": "out", "s": 0.12, "ease": "linear", "phase": "feet_wide", "effort": 0.8},
+    {"hold": 0.08, "phase": "arms_open", "effort": 0.8},
+    {"to": "fall", "s": 0.12, "ease": "linear", "phase": "clap", "effort": 0.8},
+    {"to": "close", "s": 0.12, "ease": "linear", "phase": "clap", "effort": 0.8},
+    {"to": "in", "s": 0.12, "ease": "linear", "phase": "clap", "effort": 0.7},
+    {"hold": 0.08, "phase": "clap", "effort": 0.6}
+  ],
+  "key": "out"
+}

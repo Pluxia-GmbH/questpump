@@ -1,0 +1,407 @@
+openapi: 3.1.1
+info:
+  title: QuestPump coach
+  version: "2"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    The Pro coach of the phone apps (docs/plan.md slice 9, rebuilt 2026-10-09; docs/companion.md, "The live coach
+    (Pro)"): Burnish, an enchanted armour with the app's helm portrait, a tone the player picks and a small memory kept
+    on the phone, who speaks at two moments, in words on the screen (no system voice reads them: David, 2026-10-16, "the
+    only voice we use is the elevenlabs v4"): a short talk right after a set that matters (the debrief) and once a game
+    week a short story of the player's climb (the Chronicle). The countdown's line before a pump went on 2026-10-09: the
+    facts it talked about are the free recorded callouts' now, played at a move's Ready view in the game's own voice on
+    every surface that has one, with no AI at run time. The coach never changes a pump, a target, XP or a record, and
+    nothing it says reaches the helper, the mirror, the desktop app or the game. Both phone apps build it from the same
+    files and follow the cases of `contract/fixtures/coach.json`.
+
+    The files of the contract:
+
+    - this file: the watch's ask and the phone's answer, the facts of a set, the model's inputs and outputs for each
+      moment, the report the player sends and the report route on questpump.com, and the coach's numbers (`x-coach`);
+    - `contract/coach-prompt.md`: the system instruction, its shared rules, then one section per tone (`## tone: warm`,
+      `dry`, `drill`) and per moment (`## debrief`, `## chronicle`); a call sends the shared part, the player's tone's
+      section and its moment's section, in that order, as they stand;
+    - `contract/deny-list.txt` (the health claims, shared with the addon and the quest mapper) and
+      `contract/urge-list.txt` (urging past a safe limit, holding the breath, the body's measures): no text of an answer
+      matches either;
+    - `contract/remote-config.json`: the Firebase Remote Config template, `coach_model` and `coach_daily_lines`; the
+      apps take their defaults from it, and the project serves the same values;
+    - `contract/coach-demo.json`: the demo's talks and its Chronicle;
+    - `contract/moves.json` (a move's English name and dose), `contract/library.json` (a move's ladder, the rungs'
+      steps and colours, `placement_idle_days`, `streak_milestones`), `contract/sheet.json` (the families' and the
+      colours' English names) and `contract/kinds.json` (what a player finishes before an app pump), bundled into both
+      apps.
+
+    **The talk after a set (the debrief).** When a move's count is saved (the phones' Count step on an app pump, a
+    watch's Count on its own app pump; a game pump's counts are typed in the game, which names no coach, and a
+    catch-up's counts, asked since 2026-10-12, are the game's rows, which name none either), the device that saved it measures the set (`CoachSet`) from its engine's state before and
+    after the set's rows, and the phone decides whether it matters, by facts alone, in this order (`moment`):
+
+    1. `step`: the set raised its ladder's best rung (an unlock, or a step earned again);
+    2. `comeback`: the pump came after `comeback_days` days or more without a move, or the set beat a record that
+       stood `comeback_days` days or more;
+    3. `record`: the set beat the move's record, or set the first (a first max set with a count);
+    4. `streak`: the set turned the game day done and its streak reached a milestone (`streak_milestones`);
+    5. `weekly`: the pump's last move, and the pump paid a weekly goal of the app's own sheet while Hero shows it;
+    6. `set`: an ordinary set, every `ordinary_every`th ordinary set since the coach last spoke (counted on the phone,
+       the phone's and the watch's sets alike, kept in the coach's memory), so never two calls in a row on ordinary
+       sets; with Pro only.
+
+    Nothing is asked after a set whose pump had a pain flag set on its Ready view, and a talk is never shown once its
+    pump ended felt unwell or short (its Result is calm). The answer is shown at once on the phone's next Ready view and
+    on the pump's Result (the TalkingHead with Report), or on the watch's card of the move. A talk that comes after its
+    pump left the screen is kept in the log only.
+
+    **The Chronicle.** Once a game week, at the phone's first open after a game week ended (Monday's 04:00 local, the
+    game day's turn), the phone writes the week that ended if the player did a pump in it and its Chronicle is not
+    made yet: the numbers come first, from the cores' readers over the Log's pumps of that week (`LogPumps`), the
+    sheet Hero shows (its ladders, earned steps and next steps) and the streak board, and one call writes a short story
+    of them. The Chronicle of the week that begins on one of a month's first seven days is the `legendary` edition:
+    each family's colour now, the next colour and what it still asks (`unlockProgress`). It shows as a card on Pump
+    home through its week, with Share (the share card's styles), and the Coach page keeps the last
+    `chronicles_kept`.
+
+    **The character.** The coach's name is Burnish (contract/copy/en.json `coach.name`), its face the app's helm
+    portrait, its tone the player's pick on the Coach page: `warm` (the default), `dry` or `drill`. Its memory, kept on
+    the phone only (never in a backup, a sync or a report, and sent only as below): the time of the first record it
+    talked about, the best streak it saw, the last `recent_lines` answers it gave (sent so it never repeats itself),
+    the ordinary sets since it last spoke and the last Chronicle's week. A call's input carries the tone, at most
+    `memory_facts` short plain facts of that memory (`memory`) and the recent answers (`recent`).
+
+    **The consent.** Before the coach's first call the phone's consent window (screens.json `coach.consent`, its words
+    the `coach.consent.*` keys of contract/copy/en.json) names Google Gemini and asks: Allow gives the consent, Not now
+    declines it, and the Coach page's switch turned off withdraws it (a decline). Each answer is kept on the phone, never
+    sent anywhere, with its moment (unix seconds) and the copy version of the window's words (`consent_copy` below,
+    `coach.v1`) beside it, the record the privacy switches keep (telemetry-api.yaml, "The switches and the consent";
+    GDPR Art. 7(1): Pluxia can show when the player consented and to which words): on the iPhone UserDefaults
+    `coach.consent` (Bool) with `coach.consent.at` (Int) and `coach.consent.copy`, on Android the `coach` preferences'
+    `consent` with `consent.at` (Long) and `consent.copy`. An answer given before the record (2026-10-12) stays a bare
+    answer with no moment; none is invented. A change to the window's words moves the version to `coach.v2`; whether a
+    player who consented under an older version is asked again is decided with that change (David's call).
+
+    **The free taste.** A player without Pro who gave the consent gets the first `taste_talks` talks on a set that
+    matters (never an ordinary one) and the first `taste_chronicles` Chronicle, counted on the device as they are shown
+    and kept where a reinstall finds them (the iPhone's Keychain; Android's backed-up preferences, restored with the
+    app's data); then, once, the moment "Keep Burnish" with what Pro adds, on the Result where the next talk would
+    have come. With Pro every moment has its words.
+
+    **Where the answer comes from.** The phone asks for its own sets. A watch asks its phone with a `CoachAsk`, UTF-8
+    JSON bytes: on Apple `WCSession.sendMessageData` with a reply handler, answered with a `CoachAnswer`'s bytes; on
+    Android the Data Layer `MessageClient.sendRequest` on the path `/questpump/coach` (its response the answer's
+    bytes). A watch asks only while the phone's latest application context (Android: the data item
+    `/questpump/phone`) says `coach: true`, which the phone sets while the consent holds and Pro does or the taste's
+    talks are not used up, so a player without the coach never wakes the phone. A reply that does not come is no talk.
+    A report the player sends on the watch goes to the phone to send: on Apple `transferUserInfo` with the key
+    `coach_report` holding the `CoachReport`'s bytes, on Android a persisted data item `/coach_report/<id>` holding
+    them, which the phone deletes once it has kept it to send.
+
+    **The phone's gate, in this order:** no consent is `off`; a set that does not matter is `quiet` (no call, nothing
+    counted; for a player without Pro an ordinary set too); a move the app does not know (its name or dose) is
+    `unknown`; no Pro and the taste of that moment used is `taste`; the day's `coach_daily_lines` used is `cap`, the
+    day being the game day, from 04:00 local time on the Gregorian calendar whatever calendar the phone shows, every
+    call counting, a talk's and a Chronicle's alike, whether or not its answer was used, and the count starting again
+    when the game day moves forward or the kept day lies more than a day ahead. Otherwise one call to the model:
+    Firebase AI Logic on the Agent Platform backend in the `eu` location, the model `coach_model` from Remote Config
+    (default `gemini-3.8-flash`, the latest stable Flash on Firebase's models page on 2026-10-09, since 3.7 Flash may
+    retire from about 2026-10-17), thinking level low, the system instruction from `coach-prompt.md`, the user content
+    the moment's input as JSON, JSON output under the moment's schema, App Check with limited-use tokens, a 15 s timeout
+    for a talk and 30 s for a Chronicle, and one more try a second later when Google answers 429. A call that fails or
+    times out is `failed`; an answer that does not read under its schema, breaks one of its rules or is stopped by
+    Google's own filters is `refused`; one that comes back after the consent was withdrawn during the call is `off`.
+    The phone keeps a log of its answers with their token counts and cost (measured on 2026-09-27 at $0.0012 a line
+    for about 930 tokens in and 110 out, $0.0024 at the 2027 price) and shows every answer with a report button.
+
+    **What leaves the phone.** To Google, while the consent holds and Pro or the taste does: the moment's input. A
+    talk's carries a move's English name and dose, the typed count, the set's goal and its kind, the old record and how
+    many days it stood, the ladder's family, colour and step and what the next step still asks, the streak and its
+    milestone, whether a weekly goal was paid, the days away after a long break, the tone, at most `memory_facts` facts
+    of the coach's memory and its last answers; a Chronicle's carries the week's counts (moves, records, days
+    with a move, steps reached, the streak, the weekly vault's tiers paid), the families trained, the plain kinds the
+    player finished (a match, a work block), the moves with the most records, the families' colours on the monthly
+    edition, the tone, the memory's facts and the last answers. No input carries a quest title or other game text, an
+    identity, the time of day or any health data (no heart rate, pain flag, felt-unwell stop, HealthKit or Health
+    Connect value); and the calls these take (App Check's attestation, Remote Config's fetch with a random installation
+    id). App Check refreshes no token on its own, so without the coach nothing goes. To Pluxia: only a `CoachReport`,
+    when the player sends one, with an App Check token.
+x-coach:
+  description: |
+    The coach's numbers and its consent's copy version, which both cores hold under these names (QuestPumpCore
+    `CoachRules`, the Android core's `CoachRules`).
+  ordinary_every: 4
+  comeback_days: 14
+  taste_talks: 3
+  taste_chronicles: 1
+  recent_lines: 20
+  memory_facts: 3
+  talk_words: 30
+  talk_chars: 200
+  title_words: [2, 6]
+  title_chars: 40
+  story_words: [60, 220]
+  story_chars: 1400
+  report_chars: 1600
+  chronicles_kept: 12
+  consent_copy: coach.v1
+servers:
+  - url: https://questpump.com
+paths:
+  /api/coach-report:
+    post:
+      operationId: coachReport
+      summary: A player reports a coach talk or Chronicle; the site mails it to the support mailbox
+      description: |
+        A Cloudflare Worker on the questpump.com route `/api/coach-report` (`site/report/`; a Pages Function cannot
+        hold the email binding). It checks the App Check token (RS256 against Firebase's JWKS, issued for the
+        `questpump` project to one of its apps), reads the body (its text at most `report_chars` Unicode scalar values,
+        no other field), and mails the moment, the reason, the model id and the text, nothing else, to the support
+        mailbox, at most one report a minute for a token and 20 a minute for all (per Cloudflare location), within the
+        report Worker's 400 mails a UTC day for its routes but the crash reports' (since 2026-10-31), which a body it
+        refuses takes none of (since 2026-11-01). It keeps nothing (Workers Logs off). Only its verdicts on a report's
+        body are final, 400 and 413: a device keeps every other outcome's report (no network, a 401, a 429, a 5xx, a
+        403, 404 or 405 from what answers while the route is not deployed) and sends it again later with a new token,
+        for a week at most.
+      security:
+        - appCheck: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CoachReport" }
+      responses:
+        "204": { description: Mailed }
+        "400": { description: "The body does not read as a CoachReport, or breaks its bounds" }
+        "401": { description: "No App Check token, or one that does not verify" }
+        "405": { description: Not a POST }
+        "413": { description: A body larger than 4 KiB }
+        "429": { description: More reports than the route takes a minute }
+        "502": { description: The mail could not be sent }
+        "503": { description: "Firebase's keys could not be read (or a new key is fetched within a minute): send it again later" }
+components:
+  securitySchemes:
+    appCheck:
+      type: apiKey
+      in: header
+      name: X-Firebase-AppCheck
+      description: A Firebase App Check token of the app (App Attest on iOS, Play Integrity on Android).
+  schemas:
+    CoachAsk:
+      type: object
+      required: [v, set]
+      description: The watch's ask after a count saved on its own app pump (`w-<uuid>`), the set it measured.
+      properties:
+        v: { type: integer, const: 2 }
+        set: { $ref: "#/components/schemas/CoachSet" }
+    CoachSet:
+      type: object
+      required: [pump_id, slot, move, count, beat, last]
+      description: |
+        One saved set of an app pump, as the device that saved it measures it from its engine's state before and after
+        the set's rows (QuestPumpCore `CoachSet.measure`, the Android core's twin). Facts only, ids and numbers: the
+        phone names them. No pain flag, felt-unwell stop or health value is part of it.
+      properties:
+        pump_id: { type: string, description: "the app pump's id: f-<uuid> on a phone, w-<uuid> on a watch" }
+        slot: { type: integer, minimum: 0, maximum: 255 }
+        move: { type: integer, minimum: 0, maximum: 65535, description: the Library.lua move id }
+        count:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          description: the count saved, as typed (reps, a hold's seconds, a counted set's reps)
+        goal: { type: integer, minimum: 0, maximum: 65535, description: "the count the set asked for; absent on a max set" }
+        goal_kind:
+          type: string
+          enum: [record, form, repeat]
+          description: the goal's kind (`EngineSlot.Goal`); absent with `goal`
+        counted:
+          type: integer
+          minimum: 1
+          maximum: 600
+          description: a counted all-out set's window in seconds, whose count to reach is `goal`; absent otherwise
+        record: { type: integer, minimum: 1, maximum: 65535, description: "the move's record before the set; absent before its first" }
+        record_at: { type: integer, minimum: 0, description: "unix seconds the record before the set was set; absent with `record`" }
+        beat: { type: boolean, description: "the set beat the record, or set the first with a count above 0" }
+        away: { type: integer, minimum: 0, description: "whole days from the last move before the pump to the pump's start, when at least `comeback_days`" }
+        ladder: { type: integer, minimum: 1, maximum: 255, description: "the move's ladder; absent off the ladders" }
+        rung: { type: integer, minimum: 1, maximum: 64, description: "the ladder's best rung after the set; absent with `ladder`" }
+        earned: { type: boolean, description: "the set raised the ladder's best rung; absent when it did not" }
+        next:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { type: integer, minimum: 0 }
+          description: the ladder's unlock progress after the set (`unlockProgress`, the sheet summary's `nx` entry); absent with `ladder`
+        streak: { type: integer, minimum: 0, maximum: 65535, description: "the streak's days after the set, as the device's board counts it" }
+        milestone: { type: integer, minimum: 1, maximum: 65535, description: "the streak milestone the set reached; absent for none" }
+        weekly: { type: boolean, description: "the pump's last move, and the pump paid a weekly goal; absent when not" }
+        last: { type: boolean, description: "the pump's last move" }
+    CoachAnswer:
+      type: object
+      required: [pump_id, slot]
+      description: The phone's answer to a set; exactly one of `talk` (with `model`) and `skipped`.
+      properties:
+        pump_id: { type: string }
+        slot: { type: integer, minimum: 0, maximum: 255 }
+        talk: { $ref: "#/components/schemas/CoachTalk" }
+        model: { type: string, description: "the model id the phone asked for (Remote Config's), which a report names" }
+        skipped:
+          type: string
+          enum: [off, quiet, unknown, taste, cap, failed, refused]
+          description: |
+            Why no talk: no consent (`off`), a set that does not matter (`quiet`), a move the app does not know
+            (`unknown`), no Pro and the free taste used (`taste`, where the "Keep Burnish" moment may show), the day's
+            calls used (`cap`), the call failed or timed out (`failed`), the answer broke a rule (`refused`).
+    CoachTalkInput:
+      type: object
+      required: [moment, move, count, unit, last_move, tone, memory, recent]
+      description: The debrief's user content, as JSON, built by the phone from a `CoachSet`, its books and the memory.
+      properties:
+        moment: { type: string, enum: [step, comeback, record, streak, weekly, set] }
+        move:
+          type: object
+          required: [name, dose]
+          properties:
+            name: { type: string, description: "the move's English name, from moves.json" }
+            dose: { type: string, enum: [rep, hold, cardio, flow] }
+        count: { type: integer, minimum: 0, maximum: 65535 }
+        unit: { type: string, enum: [reps, seconds] }
+        goal:
+          type: object
+          required: [kind, target]
+          description: absent on a max set (a first one sets the first record)
+          properties:
+            kind: { type: string, enum: [record, form, repeat, count] }
+            target: { type: integer, minimum: 0, maximum: 65535 }
+            seconds: { type: integer, minimum: 1, maximum: 600, description: "a counted set's window (`count`)" }
+        record:
+          type: object
+          required: [old, days_ago, new]
+          properties:
+            old: { type: integer, minimum: 1 }
+            days_ago: { type: integer, minimum: 0 }
+            new: { type: boolean }
+            by: { type: integer, minimum: 1, description: "how far the count passed the old record, when it did" }
+        away_days: { type: integer, minimum: 0 }
+        step:
+          type: object
+          required: [family, colour, number, earned]
+          properties:
+            family: { type: string, description: "the ladder's English name, from sheet.json" }
+            colour: { type: string, description: "the rung's colour, from sheet.json's qualities" }
+            number: { type: integer, minimum: 1, description: "the rung's step on the one scale (1-14)" }
+            earned: { type: boolean }
+            next:
+              type: object
+              required: [colour, have, need, unit]
+              description: the next step and what it still asks; absent at the top or where no climb is open
+              properties:
+                colour: { type: string }
+                have: { type: integer, minimum: 0 }
+                need: { type: integer, minimum: 1 }
+                unit: { type: string, enum: [days, sets] }
+                second_proof: { type: boolean, description: "true while the next step's climb waits for its proof: a move the step names, or under an orange or gold step another Epic move" }
+        streak:
+          type: object
+          required: [days]
+          properties:
+            days: { type: integer, minimum: 0 }
+            milestone: { type: integer, minimum: 1 }
+        weekly_goal: { type: boolean, const: true }
+        last_move: { type: boolean }
+        tone: { type: string, enum: [warm, dry, drill] }
+        memory: { type: array, maxItems: 3, items: { type: string }, description: "short plain facts of the coach's memory" }
+        recent: { type: array, maxItems: 20, items: { type: string }, description: "the coach's last answers, newest first" }
+    CoachTalk:
+      type: object
+      required: [line]
+      description: |
+        The debrief's output. Used only when `line`, trimmed, is one or two sentences on one line, not empty, at most
+        `talk_words` words and `talk_chars` characters, of printable ASCII and the typographic characters the lists read
+        as ASCII (the curly apostrophe, the no-break, figure, thin and narrow no-break spaces, the hyphens and dashes,
+        the ellipsis), every number in it one the input holds (a run of digits read as a whole number), and with no
+        text that matches `deny-list.txt` or `urge-list.txt`; refused in that order (`fixtures/coach.json`, `talks`).
+      properties:
+        line: { type: string, description: "one or two short sentences, shown after the set" }
+    CoachChronicleInput:
+      type: object
+      required: [edition, week, tone, memory, recent]
+      description: The Chronicle's user content, as JSON, built by the phone from the Log's pumps of the week that ended.
+      properties:
+        edition: { type: string, enum: [week, legendary] }
+        week:
+          type: object
+          required: [moves, records, days, steps, families, kinds]
+          properties:
+            moves: { type: integer, minimum: 0 }
+            records: { type: integer, minimum: 0 }
+            days: { type: integer, minimum: 0, maximum: 7 }
+            steps:
+              type: array
+              items:
+                type: object
+                required: [family, colour]
+                properties:
+                  family: { type: string }
+                  colour: { type: string }
+            streak: { type: integer, minimum: 0 }
+            goals_paid: { type: integer, minimum: 0, maximum: 5, description: "the weekly vault's tiers paid, of 5: moves done, records or stars, and since slice 55 the embers' three" }
+            families: { type: array, items: { type: string }, description: "the families trained, by English name" }
+            kinds: { type: array, items: { type: string }, description: "what the player finished before app pumps, in plain words" }
+        best:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            required: [name, records]
+            properties:
+              name: { type: string }
+              records: { type: integer, minimum: 1 }
+        roads:
+          type: array
+          description: the `legendary` edition's families, each with its colour now and the next
+          items:
+            type: object
+            required: [family, colour]
+            properties:
+              family: { type: string }
+              colour: { type: string }
+              next: { type: string, description: "the next colour up; absent at the family's top colour" }
+              steps: { type: integer, minimum: 1, description: "the steps still to climb to the next colour" }
+              have: { type: integer, minimum: 0, description: "what the next step has of what it asks" }
+              need: { type: integer, minimum: 1 }
+              unit: { type: string, enum: [days, sets] }
+        tone: { type: string, enum: [warm, dry, drill] }
+        memory: { type: array, maxItems: 3, items: { type: string } }
+        recent: { type: array, maxItems: 20, items: { type: string } }
+    CoachChronicle:
+      type: object
+      required: [title, story]
+      description: |
+        The Chronicle's output. Used only when the title, trimmed, is one line of `title_words` words and at most
+        `title_chars` characters, and the story, trimmed, of `story_words` words and at most `story_chars` characters
+        (its paragraphs on lines of their own), both of the characters a talk may hold, every number in them one the
+        input holds, and no text matching either list (`fixtures/coach.json`, `chronicles`).
+      properties:
+        title: { type: string }
+        story: { type: string }
+    CoachReport:
+      type: object
+      required: [moment, text, reason, model]
+      additionalProperties: false
+      description: What a report sends, and all it sends.
+      properties:
+        moment: { type: string, enum: [talk, chronicle], description: "a talk after a set, or a Chronicle" }
+        text:
+          type: string
+          maxLength: 1600
+          description: |
+            The answer reported, as the phone showed it: a talk's line, or a Chronicle's title, an empty line and its
+            story (not blank, at most `report_chars` Unicode scalar values)
+        reason:
+          type: string
+          enum: [unsafe, wrong, offensive, other]
+          description: |
+            The player's choice: unsafe advice (`unsafe`), wrong about the moves or the numbers (`wrong`), offensive
+            (`offensive`), anything else (`other`).
+        model: { type: string, pattern: "^[A-Za-z0-9._-]{1,64}$", description: the model id the answer came from }

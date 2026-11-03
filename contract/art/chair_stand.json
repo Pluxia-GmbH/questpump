@@ -1,0 +1,56 @@
+{
+  "move": "chair_stand",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh", "shin"],
+  "props": [{"kind": "bench", "f0": -72, "f1": -6, "u": 46}],
+  "poses": {
+    "sit": {
+      "pelvis": [-24, 62.5, 0],
+      "trunk": [6, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [78, 4, 10]},
+      "legs": {"foot": [8, 16], "turn": 12, "knee_out": 9},
+      "contacts": ["pelvis", "toe_near", "toe_far"]
+    },
+    "lean": {
+      "from": "sit",
+      "pelvis": [-20, 62.5, 0],
+      "trunk": [42, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-22, 0, 0],
+      "arms": {"fk": [96, 4, 6]}
+    },
+    "stand": {
+      "from": "sit",
+      "pelvis": [11, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [10, 4, 12]},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "toes": {
+      "from": "stand",
+      "pelvis": [17, 105, 0],
+      "legs": {"foot": [8, 16], "turn": 12, "knee_out": 9, "lift": 35}
+    },
+    "hands_push": {"from": "lean", "arms": {"ik": [13, 59, 18], "pole": [-1, 0.2, 0.5], "hand": [1, -0.5, 0]}}
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.4, "phase": "sit"},
+    {"to": "lean", "s": 0.5, "phase": "stand_up", "effort": 0.5},
+    {"to": "stand", "s": 0.8, "phase": "stand_up", "effort": 0.9},
+    {"to": "toes", "s": 0.8, "phase": "onto_toes", "effort": 0.8},
+    {"hold": 0.3, "phase": "onto_toes", "effort": 0.8},
+    {"to": "stand", "s": 0.8, "phase": "heels_down", "effort": 0.4},
+    {"to": "lean", "s": 0.9, "phase": "sit_back", "effort": 0.5},
+    {"to": "sit", "s": 0.4, "phase": "sit_back", "effort": 0.3}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "hands_push",
+    "caption": "hands_push_thighs",
+    "breaks": {"check": "offset", "joint": "wrist_near", "from": "knee_near", "axis": "f", "min": 10}
+  }
+}

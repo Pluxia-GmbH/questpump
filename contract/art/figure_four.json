@@ -1,0 +1,51 @@
+{
+  "move": "figure_four",
+  "view": "side",
+  "camera": {"yaw": 56, "pitch": 14},
+  "working": ["thigh_near", "tasset_near"],
+  "props": [{"kind": "chair", "f": -27, "back": "-f"}],
+  "poses": {
+    "tall": {
+      "pelvis": [-24, 60.5, 0],
+      "trunk": [-2, 0, 0],
+      "arm_near": {"ik": [13, 80.5, 27], "pole": [-0.3, -0.3, 1], "hand": [0.55, -0.8, 0.1]},
+      "arm_far": {"ik": [13, 79.5, 9], "pole": [-0.3, -0.5, 1], "hand": [0.55, -0.8, 0.1]},
+      "leg_near": {"ik": [16, 67, -15], "pole": [0.3, 0.1, 1], "toe": [1, 0.35, -0.3]},
+      "leg_far": {"foot": [10, 12], "turn": 6, "knee_out": 4},
+      "contacts": ["pelvis", "toe_far", "ankle_far"]
+    },
+    "lean": {
+      "from": "tall",
+      "trunk": [34, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_near": {"ik": [13, 80.5, 27], "pole": [-0.3, -0.2, 1], "hand": [0.55, -0.8, 0.1]},
+      "arm_far": {"ik": [13, 79.5, 9], "pole": [-0.3, -0.4, 1], "hand": [0.55, -0.8, 0.1]}
+    },
+    "lean_in": {"from": "lean", "trunk": [36, 0, 0]},
+    "rounded": {
+      "from": "lean",
+      "trunk": [14, 0, 0],
+      "chest": [42, 0, 0],
+      "head": [2, 0, 0],
+      "arm_near": {"ik": [13, 80.5, 27], "pole": [0, -0.3, 1], "hand": [0.55, -0.8, 0.1]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "sit_tall"},
+    {"to": "lean", "s": 2.6, "phase": "lean_forward", "effort": 0.6},
+    {"to": "lean_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "lean", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "lean_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "lean", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "tall", "s": 2.4, "phase": "sit_tall", "effort": 0.3}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [{"at": "lean", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}],
+  "note": "The desk is not drawn: it would hide the crossed shin. The near ankle rests on the far knee (a body contact, not listed)."
+}

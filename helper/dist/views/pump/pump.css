@@ -1,0 +1,573 @@
+/* The pump on the computer (docs/ui.md, "The pump on the computer"): a stage is its head (the steps, the "···"), its
+ * body in the one centred column (Ready's laid out by surface.PumpReady, below), and its foot (the primary, Back last)
+ * held at the window's foot, the body scrolling under it. Big view (the countdown, a running move, the timed ask), read
+ * from the floor 1-3 m away, by the tablets' shares (--qp-wide-big-view-*, tokens.json `wide`): the PumpStage, the
+ * move's figure whole and taking the height, with the move's name, the TimerRing (its dial) and the words around it
+ * (2026-10-23), the words at 5 % of the shorter side, in text on the night ground (well past 7:1), nothing else in the
+ * middle; sized by the window (vh, vw), so the zoom never changes the proportions. The head and the foot keep their
+ * desk size. */
+
+qp-page.qp-pump {
+	position: relative;
+	height: 100%;
+	overflow: hidden;
+}
+
+.qp-pump-stage {
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	height: 100%;
+}
+
+.qp-pump-head, .qp-pump-foot {
+	width: 100%;
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+	padding-inline: var(--qp-layout-margin);
+}
+
+.qp-pump-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	min-height: var(--qp-layout-top-bar);
+	padding-top: var(--qp-layout-space8);
+}
+
+.qp-pump-head qp-steps-bar {
+	flex: 1;
+}
+
+.qp-pump-head:empty {
+	min-height: 0;
+	padding: 0;
+}
+
+.qp-round-room {
+	flex: none;
+	width: var(--qp-layout-round-button-pump);
+	height: var(--qp-layout-round-button-pump);
+}
+
+.qp-pump-full {
+	flex: none;
+}
+
+.qp-pump-body {
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.qp-pump-column {
+	gap: var(--qp-layout-space16);
+	min-height: 100%;
+}
+
+.qp-pump-foot {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	padding-block: var(--qp-layout-space8) var(--qp-layout-space16);
+	background: var(--qp-surface-page-fill);
+}
+
+.qp-pump-foot:empty {
+	padding-block: 0 var(--qp-layout-space16);
+}
+
+.qp-pump-centre {
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+
+/* Big view's foot under its primary: the read-aloud button beside Back, each half the row */
+.qp-pump-ways {
+	display: flex;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-pump-ways > * {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.qp-pump-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space4) var(--qp-layout-space8);
+}
+
+/* the count's figure gives up its room to the words and the stepper (the phones' pose, at most 152) */
+.qp-pump-figure {
+	width: min(calc(var(--qp-layout-space4) * 38), 22vh);
+	margin-inline: auto;
+}
+
+/* a loaded move's count: the reps and the weight box side by side on one line at any width, never one under the other
+   (Rapha, 2026-11-02: "when i add or decrease to .5 it needs to not line break"): their numbers, keys and gaps give
+   way with the line's width (cqi) under their full size, so a half kg's wider "4.5" or a three-digit count still fits */
+.qp-pump-boxes {
+	container-type: inline-size;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	gap: var(--qp-layout-space16);
+}
+
+.qp-pump-boxes .qp-stepper-row {
+	gap: min(var(--qp-surface-stepper-gap), 3cqi);
+}
+
+.qp-pump-boxes .qp-step-key {
+	width: min(var(--qp-surface-stepper-key), 10cqi);
+	height: min(var(--qp-surface-stepper-key), 10cqi);
+	font-size: min(var(--qp-surface-stepper-sign), 5.5cqi);
+}
+
+.qp-pump-boxes .qp-type-num-count {
+	font-size: min(var(--qp-type-num-count-size), 14cqi);
+}
+
+/* Ready (2026-10-24, surface.PumpReady): the move up next in full. On a narrow window the figure on top,
+   figureHeightFraction of the body's height between the head and the pinned foot and at least figureLeast, the words
+   under it in the one column, the body scrolling; from besideFrom wide (below) the figure beside them */
+.qp-ready .qp-pump-body {
+	container-type: size;
+}
+
+.qp-ready-figure {
+	height: max(var(--qp-surface-pump-ready-figure-least),
+		calc(var(--qp-surface-pump-ready-figure-height-fraction) * 100cqh));
+}
+
+.qp-ready-words {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+	width: 100%;
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+	padding: var(--qp-layout-space8) var(--qp-layout-margin) var(--qp-layout-space24);
+}
+
+.qp-ready-words p {
+	margin: 0;
+}
+
+.qp-ready-name {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-ready-name h1 {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+/* the goal over its caps word, the record over its own at the row's end */
+.qp-ready-goal {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--qp-layout-space8) var(--qp-layout-space24);
+}
+
+.qp-ready-cell {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.qp-ready-cell + .qp-ready-cell {
+	align-items: flex-end;
+	text-align: end;
+}
+
+.qp-ready-cell .qp-type-caps {
+	color: var(--qp-color-text2);
+}
+
+.qp-ready-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+/* from surface.PumpReady's besideFrom (a media query reads no custom property: 720px is `besideFrom`): the figure
+   figureWidthFraction of the window's width and its whole height, the head, the words and the foot beside it, the words
+   scrolling on their own in the one column's width */
+@media (min-width: 720px) {
+	.qp-ready {
+		grid-template-columns: calc(var(--qp-surface-pump-ready-figure-width-fraction) * 100%) minmax(0, 1fr);
+	}
+
+	.qp-ready .qp-pump-body {
+		display: contents;
+	}
+
+	.qp-ready-figure {
+		grid-column: 1;
+		grid-row: 1 / -1;
+		height: auto;
+	}
+
+	.qp-ready .qp-pump-head {
+		grid-column: 2;
+		grid-row: 1;
+	}
+
+	.qp-ready-words {
+		grid-column: 2;
+		grid-row: 2;
+		min-height: 0;
+		max-width: none;
+		margin: 0;
+		padding-inline: calc(max(0px, (100% - var(--qp-wide-column)) / 2) + var(--qp-layout-margin));
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
+	.qp-ready .qp-pump-foot {
+		grid-column: 2;
+		grid-row: 3;
+	}
+}
+
+/* The end ---------------------------------------------------------------------------------------------------------- */
+
+.qp-pump-gain {
+	display: flex;
+	justify-content: center;
+	align-items: baseline;
+	gap: var(--qp-layout-space4);
+	margin: 0;
+	font: var(--qp-type-num-large-font);
+}
+
+/* a streak milestone's Share under the banner (slice 45) */
+.qp-pump-banner-share {
+	align-self: center;
+}
+
+qp-card.qp-pump-rows {
+	display: flex;
+	flex-direction: column;
+}
+
+qp-card.qp-pump-calm {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	margin-top: var(--qp-layout-space32);
+	padding: var(--qp-layout-space20);
+}
+
+.qp-pump-calm-head {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-pump-calm-head qp-art {
+	width: var(--qp-layout-glyph);
+	height: var(--qp-layout-glyph);
+	color: var(--qp-color-stop);
+}
+
+/* Big view --------------------------------------------------------------------------------------------------------- */
+
+.qp-big .qp-pump-column {
+	/* the body's own height, so the stage below gives up its height before the line leaves the first view */
+	height: 100%;
+	max-width: none;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	gap: 2vh;
+}
+
+.qp-big-name {
+	margin: 0;
+	max-width: 100%;
+	font: var(--qp-type-display-font);
+	font-size: min(calc(var(--qp-wide-big-view-name-fraction) * 100vh),
+		calc(var(--qp-wide-big-view-name-width-fraction) * 100vw));
+	line-height: 1.1;
+	color: var(--qp-color-text);
+	overflow-wrap: anywhere;
+}
+
+/* a heading the focus lands on for a screen reader (no key answers there) draws no ring: nothing to press */
+.qp-big-name[tabindex="-1"]:focus-visible {
+	outline: none;
+}
+
+.qp-big-line {
+	margin: 0;
+	max-width: 100%;
+	font: var(--qp-type-subtitle-font);
+	font-size: calc(var(--qp-wide-big-view-line-fraction) * 100vmin);
+	line-height: 1.2;
+	color: var(--qp-color-text);
+	overflow-wrap: anywhere;
+}
+
+.qp-big-line:empty {
+	display: none;
+}
+
+/* the PumpStage (2026-10-23, David: "why sprawl so much smaller than push up"): the figure takes the height, since most
+   moves' boxes stand about as high as they are wide. On a window wider than `bigViewStackWidthFraction` (0.8) of its
+   height the figure the whole body high and `bigViewFigureWidthFraction` of the width, and beside it one column, its
+   parts together in its middle (the empty rows take what is left): the name at `bigViewSideName…`, the dial as large as
+   the column's width and the height the name and the words leave it (the track grows to the column's width, its
+   padding included, before the empty rows take any), at least the clock alone's least room (kit.css
+   `--qp-ring-clock-room`: the clock at half its size), which the dial takes under TimerRing's least, so the line
+   stays in the first view and the body scrolls only past that, the words */
+.qp-big-stage {
+	--qp-big-side: calc(100vw - 2 * var(--qp-layout-margin) - var(--qp-wide-big-view-figure-width-fraction) * 100vw - 4vw);
+	display: grid;
+	flex: 1 1 0;
+	grid-template-columns: calc(var(--qp-wide-big-view-figure-width-fraction) * 100vw) minmax(0, 1fr);
+	grid-template-rows: 1fr auto minmax(calc(var(--qp-ring-clock-room) + 4vh), calc(var(--qp-big-side) + 4vh)) auto 1fr;
+	grid-template-areas: "figure ." "figure name" "figure dial" "figure words" "figure .";
+	column-gap: 4vw;
+	width: 100%;
+	min-height: var(--qp-surface-pump-stage-figure-least);
+}
+
+.qp-big-stage .qp-big-name {
+	grid-area: name;
+	font-size: min(calc(var(--qp-wide-big-view-side-name-fraction) * 100vh),
+		calc(var(--qp-wide-big-view-side-name-width-fraction) * 100vw));
+}
+
+.qp-big-figure {
+	grid-area: figure;
+	min-width: 0;
+	min-height: 0;
+}
+
+/* the dial's room: a size container (qp-dial, which TimerRing's clock alone queries), so the dial is the smaller of its
+   width and its height */
+.qp-big-dial {
+	--qp-ring-side: min(100cqw, 100cqh);
+	grid-area: dial;
+	display: grid;
+	place-items: center;
+	min-height: 0;
+	padding-block: 2vh;
+	container: qp-dial / size;
+}
+
+.qp-big-words {
+	grid-area: words;
+	display: flex;
+	flex-direction: column;
+	gap: 1vh;
+	min-width: 0;
+}
+
+/* a tall window (a media query reads no custom property: 4 / 5 is `bigViewStackWidthFraction`): the name on top as
+   on the timed ask, the figure at most `bigViewStackedFigureWidthFraction` of the width and the height the others
+   leave it, at least `surface.PumpStage.figureLeast`, and under it the dial (`bigViewStackedDial…`) with the words
+   beside it */
+@media (max-aspect-ratio: 4 / 5) {
+	.qp-big-stage {
+		--qp-big-dial: min(calc(var(--qp-wide-big-view-stacked-dial-fraction) * 100vh),
+			calc(var(--qp-wide-big-view-stacked-dial-width-fraction) * 100vw));
+		grid-template-columns: var(--qp-big-dial) minmax(0, 1fr);
+		grid-template-rows: auto minmax(var(--qp-surface-pump-stage-figure-least), 1fr) auto;
+		grid-template-areas: "name name" "figure figure" "dial words";
+		gap: 2vh 4vw;
+		min-height: auto;
+	}
+
+	.qp-big-stage .qp-big-name {
+		font-size: min(calc(var(--qp-wide-big-view-name-fraction) * 100vh),
+			calc(var(--qp-wide-big-view-name-width-fraction) * 100vw));
+	}
+
+	.qp-big-figure {
+		justify-self: center;
+		width: min(calc(var(--qp-wide-big-view-stacked-figure-width-fraction) * 100vw), 100%);
+	}
+
+	/* the dial's square, or the clock alone's least room where that is higher, centred on the words beside it */
+	.qp-big-dial {
+		align-self: center;
+		height: max(var(--qp-big-dial), var(--qp-ring-clock-room));
+		padding-block: 0;
+	}
+
+	.qp-big-words {
+		align-self: center;
+		text-align: start;
+	}
+}
+
+/* a hold's pour (slice 65, `desk.pump.saved`): the figure dimmed and the HoldBar under the dial beside it; the
+   StepReveal over the figure's room; the move's rows in place of the dial and the line once they come in on a wide
+   window, of the figure on a tall one; the grains fly over everything, the window's own px */
+.qp-big-stage.qp-saved {
+	grid-template-rows: 1fr auto minmax(calc(var(--qp-ring-clock-room) + 4vh), calc(var(--qp-big-side) + 4vh)) auto auto
+		1fr;
+	grid-template-areas: "figure ." "figure name" "figure dial" "figure bar" "figure ." "figure .";
+	cursor: pointer;
+}
+
+.qp-saved .qp-big-figure {
+	opacity: 0.3;
+	transform: scale(0.96);
+}
+
+.qp-saved-bar {
+	grid-area: bar;
+	padding-block: 2vh;
+}
+
+.qp-saved-rows {
+	grid-area: dial;
+	align-self: center;
+	display: flex;
+	flex-direction: column;
+	gap: 1vh;
+	min-width: 0;
+}
+
+.qp-saved-rows[hidden], .qp-saved-rows-in .qp-big-dial, .qp-saved .qp-big-words {
+	display: none;
+}
+
+.qp-saved-room {
+	grid-area: figure;
+	position: relative;
+	min-width: 0;
+	min-height: 0;
+	pointer-events: none;
+}
+
+.qp-pour-layer {
+	position: fixed;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.qp-pour-grain {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 6px;
+	height: 12px;
+	margin: -6px -3px;
+	border-radius: 3px;
+	background: var(--qp-color-gold-hi);
+	box-shadow: 0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-color-gold);
+}
+
+@media (max-aspect-ratio: 4 / 5) {
+	.qp-big-stage.qp-saved {
+		grid-template-rows: auto minmax(var(--qp-surface-pump-stage-figure-least), 1fr) auto;
+		grid-template-areas: "name name" "figure figure" "dial bar";
+	}
+
+	.qp-saved-bar {
+		align-self: center;
+	}
+
+	.qp-saved-rows {
+		grid-area: figure;
+	}
+
+	.qp-saved-rows-in .qp-big-dial {
+		display: grid;
+	}
+
+	.qp-saved-rows-in .qp-big-figure {
+		visibility: hidden;
+	}
+}
+
+/* a pump's figure stands on the page's own ground inside its square (the page's glow fixed to the window over its
+   fill), so the canvas's lighten never leaves a square the compositor blends to black (2026-10-23) */
+.qp-big-figure .qp-figure-square, .qp-ready-figure .qp-figure-square, .qp-pump-figure .qp-figure-square {
+	background: var(--qp-surface-page-glow) fixed no-repeat, var(--qp-surface-page-fill);
+}
+
+.qp-big qp-card.qp-big-card {
+	width: 100%;
+	max-width: var(--qp-wide-column);
+	text-align: start;
+}
+
+/* The Legendary moment over the Result (2026-10-09): the quality word in its tone, the figure in its light */
+.qp-legend .qp-window-head h2 {
+	color: var(--qp-tone, var(--qp-color-text));
+}
+
+.qp-legend-figure {
+	width: min(calc(var(--qp-layout-space4) * 52), 32vh);
+	margin-inline: auto;
+	filter: drop-shadow(0 0 var(--qp-layout-space16) var(--qp-tone, transparent));
+}
+
+/* An expedition (slice 51): its bar over each round's stages and the breather, in the column's width; the breather's
+   ring at ExpeditionRest's size and the next round's MoveTiles in a row with their names under them, at most four in
+   a row; the Result's standard-bearer over the Fanfare and the muscles the expedition worked */
+.qp-pump-stage.qp-expedition-stage {
+	grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.qp-expedition-bar-row {
+	width: 100%;
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+	padding: var(--qp-layout-space12) var(--qp-layout-margin) 0;
+}
+
+.qp-expedition-ring .qp-ring {
+	width: min(var(--qp-surface-expedition-rest-ring-size), 100%);
+}
+
+.qp-expedition-tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(0, var(--qp-layout-tile-quest)));
+	justify-content: center;
+	gap: var(--qp-surface-expedition-rest-tile-gap);
+	max-width: calc(var(--qp-layout-tile-quest) * 4 + var(--qp-surface-expedition-rest-tile-gap) * 3);
+	margin-inline: auto;
+}
+
+.qp-expedition-tile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	min-width: 0;
+	text-align: center;
+	color: var(--qp-color-text2);
+}
+
+.qp-expedition-figure {
+	width: min(var(--qp-surface-streak-page-figure-height), 100%);
+	margin-inline: auto;
+}
+
+.qp-expedition-muscles {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+/* the map at the body map's card height, as a move's Trains card draws it */
+.qp-expedition-muscles qp-muscle-map {
+	height: var(--qp-surface-body-map-card-height);
+}
+

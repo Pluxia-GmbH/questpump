@@ -1,0 +1,58 @@
+{
+  "move": "camel",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -78, "f1": 30}],
+  "poses": {
+    "kneel": {
+      "pelvis": [0, 55, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "arms": {"fk": [4, 6, 10]},
+      "legs": {"foot": [-42.7, 12], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "back": {
+      "from": "kneel",
+      "pelvis": [1, 55, 0],
+      "arms": {"ik": [-17.0, 67.0, 9], "pole": [-1, -0.3, 0.6], "hand": [0, -1, -0.25]}
+    },
+    "lean": {
+      "from": "kneel",
+      "pelvis": [4, 54.8, 0],
+      "trunk": [-18, 0, 0],
+      "chest": [-22, 0, 0],
+      "head": [-15, 0, 0],
+      "arms": {"ik": [-16.8, 60.7, 9], "pole": [-1, -0.3, 0.6], "hand": [0.31, -1, -0.25]}
+    },
+    "camel": {
+      "from": "kneel",
+      "pelvis": [6, 54.8, 0],
+      "trunk": [-40, 0, 0],
+      "chest": [-60, 0, 0],
+      "head": [8, 0, 0],
+      "arms": {"ik": [-37.5, 15.3, 12], "pole": [0, 0.2, 1], "hand": [-1, -0.1, 0]}
+    },
+    "camel_in": {"from": "camel", "pelvis": [7.2, 55, 0], "chest": [-61.5, 0, 0], "head": [11, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "kneel"},
+    {"hold": 0.5, "phase": "kneel_tall"},
+    {"to": "back", "s": 1.0, "phase": "hands_on_back", "effort": 0.3},
+    {"to": "lean", "s": 1.8, "phase": "chest_up", "effort": 0.5},
+    {"to": "camel", "s": 1.5, "phase": "hands_to_heels", "effort": 0.7},
+    {"to": "camel_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "camel", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "lean", "s": 1.5, "phase": "hands_on_back", "effort": 0.5},
+    {"to": "kneel", "s": 1.8, "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "camel",
+  "targets": [
+    {"at": "camel", "check": "height", "joint": "pelvis", "min": 52},
+    {"at": "camel", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 88, "max": 110},
+    {"at": "camel", "check": "height", "joint": "wrist_near", "max": 18},
+    {"at": "camel", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 150}
+  ]
+}

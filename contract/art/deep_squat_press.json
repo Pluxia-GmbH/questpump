@@ -1,0 +1,6 @@
+{
+  "move": "deep_squat_press",
+  "variant_of": "deep_squat",
+  "phases": {"knees_out": 2.4, "heels_down": 2.4},
+  "note": "The deep squat's frames with its press and its sink held longer: the knees press in against the elbows at half effort, then relax, breathe out and sink."
+}

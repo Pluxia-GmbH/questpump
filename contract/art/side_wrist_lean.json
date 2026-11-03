@@ -1,0 +1,60 @@
+{
+  "move": "side_wrist_lean",
+  "view": "side",
+  "camera": {"yaw": -60, "pitch": 12},
+  "working": ["forearm"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "centre": {
+      "line": {"pivot": "toes", "at": 53, "angle": 67, "width": 14, "lift": 12, "gap": 1.3},
+      "head": [4, 0, 0],
+      "arms": {"ik": [106, 77.3, 28], "pole": [-1, 0, 0.7], "hand": [0, -0.15, 1]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "shift": {
+      "pelvis": [80, 91.0, 18.0],
+      "trunk": [32, -4, 0],
+      "head": [4, 0, 0],
+      "legs": {"foot": [53, 14], "y": 0, "turn": 0, "lift": 12, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [106, 77.3, 26.0], "pole": [-1, 0, 0.7], "hand": [0, -0.15, 1]},
+      "arm_far": {"ik": [106, 77.3, 30.0], "pole": [-1, 0, 0.7], "hand": [0, -0.15, 1]}
+    },
+    "shift_in": {"from": "shift", "pelvis": [80, 90.5, 19.0], "trunk": [32, -4.5, 0]}
+  },
+  "timeline": [
+    {"pose": "centre"},
+    {"hold": 0.4, "phase": "arms_straight"},
+    {"to": "shift", "s": 1.6, "phase": "lean_in", "effort": 0.5},
+    {"to": "shift_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "shift", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "shift_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "shift", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "centre", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "shift",
+  "targets": [
+    {"at": "shift", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 168},
+    {"at": "shift", "check": "offset", "joint": "shoulder_far", "from": "wrist_far", "axis": "l", "min": 8}
+  ],
+  "note": "A step back from the desk, palms flat on it a little wider than the shoulders, fingers turned out to the sides, the body one line from the feet. The shoulders shift sideways until the far one passes a fist beyond its wrist, both arms straight, the far wrist taking the weight and the stretch; the clock times each side."
+}

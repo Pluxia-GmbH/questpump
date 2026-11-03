@@ -1,0 +1,46 @@
+{
+  "move": "half_kneel_ankle",
+  "view": "side",
+  "camera": {"yaw": 25, "pitch": 14},
+  "working": ["shin_near"],
+  "items": [{"kind": "towel", "under": "knee_far"}],
+  "poses": {
+    "tall": {
+      "pelvis": [-28, 56, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [2, 12], "turn": 4, "knee_out": 2},
+      "leg_far": {"foot": [-68, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": ["knee_far", "toe_far", "ankle_far", "toe_near", "ankle_near"]
+    },
+    "lean": {"from": "tall", "pelvis": [-18.5, 55.3, 0], "trunk": [4, 0, 0]},
+    "lean_in": {"from": "lean", "pelvis": [-17.5, 55, 0]},
+    "heel_up": {
+      "from": "lean",
+      "pelvis": [-22, 55.5, 0],
+      "leg_near": {"foot": [2, 12], "turn": 4, "knee_out": 2, "lift": 26, "y": 1}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "kneel_tall"},
+    {"to": "lean", "s": 2.0, "phase": "shift_forward", "effort": 0.6},
+    {"to": "lean_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "lean", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "tall", "s": 1.8, "phase": "release", "effort": 0.3}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "heel_up",
+    "caption": "heel_lifts",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "lean", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2},
+    {"at": "lean", "check": "offset", "joint": "knee_near", "from": "toe_near", "axis": "f", "min": 4, "max": 11},
+    {"at": "lean", "check": "angle", "joints": ["knee_far", "pelvis", "neck"], "min": 160}
+  ],
+  "note": "Half kneeling on a folded towel, hands on the hips, the body upright: from kneeling tall, the weight shifts forward until the front knee travels about a fist past the toes (the kneecap about 10 cm past the sabaton's tip), the front heel flat."
+}

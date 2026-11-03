@@ -1,0 +1,53 @@
+{
+  "move": "curtsy_lunge",
+  "view": "side",
+  "camera": {"yaw": 64, "pitch": 10},
+  "working": ["thigh_near"],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.4, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [0, 14], "turn": 6, "knee_out": 6},
+      "leg_far": {"foot": [0, 14], "turn": 6, "knee_out": 6, "pole": [1, 0, 0.1]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-4, 91, -9],
+      "trunk": [4, 0, 0],
+      "leg_far": {"foot": [-44, -8], "turn": 0, "y": 10, "lift": 30, "knee_out": 0, "pole": [0.8, -0.6, 0]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "land": {
+      "from": "tall",
+      "pelvis": [-22, 77, -9],
+      "trunk": [8, 0, 0],
+      "leg_far": {"foot": [-85, -21], "turn": 0, "lift": 58, "knee_out": 0, "pole": [0.4, -1, -0.3]},
+      "contacts": ["toe_near", "ankle_near", "toe_far"],
+      "leg_near": {"foot": [0, 14], "turn": 6, "knee_out": 0}
+    },
+    "bottom": {
+      "from": "land",
+      "pelvis": [-31, 57, -9],
+      "trunk": [10, 0, 0],
+      "leg_far": {"foot": [-85, -21], "turn": 0, "lift": 66, "knee_out": 0, "pole": [0.2, -1, -0.3]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "reach", "s": 0.5, "ease": "in", "phase": "step_back", "effort": 0.4},
+    {"to": "land", "s": 0.5, "ease": "out", "phase": "step_back", "effort": 0.45},
+    {"to": "bottom", "s": 1.3, "phase": "knee_down", "effort": 0.6},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.85},
+    {"to": "land", "s": 1.0, "ease": "in", "phase": "rise", "effort": 1.0},
+    {"to": "reach", "s": 0.4, "phase": "rise", "effort": 0.7},
+    {"to": "tall", "s": 0.4, "ease": "out", "phase": "rise", "effort": 0.5}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 78, "max": 115},
+    {"at": "bottom", "check": "height", "joint": "knee_far", "max": 22}
+  ]
+}

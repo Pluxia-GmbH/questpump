@@ -1,0 +1,366 @@
+{
+  "move": "inchworm",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 6},
+  "working": ["abdomen", "pauldron"],
+  "poses": {
+    "stand": {
+      "line": {"pivot": "toes", "at": 0, "angle": 90.0, "width": 12.0, "hips": -1.0, "gap": 0.4, "lift": 0.0},
+      "arms": {"fk": [6, 6, 10]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "fold": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 84, "hips": -123.2, "gap": 0.3, "lift": 0.0},
+      "head": [-10, 0, 0],
+      "arm_near": {"ik": [36.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [36.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "wrist_near",
+        "hand_tip_near",
+        "wrist_far",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far"
+      ],
+      "chest": [24, 0, 0]
+    },
+    "plank": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 16.5, "hips": 0.0, "gap": 1.0, "lift": 73.5},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [150.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [150.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "om1": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 83, "hips": -122.1, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [43.12, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [36.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"],
+      "chest": [24, 0, 0]
+    },
+    "os1": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 81.5, "hips": -121.0, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [50.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [36.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "chest": [24, 0, 0]
+    },
+    "om2": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 79, "hips": -116.05, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [50.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [50.25, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"],
+      "chest": [24, 0, 0]
+    },
+    "os2": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 74, "hips": -111.1, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [50.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [64.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "chest": [18, 0, 0]
+    },
+    "om3": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 71.4, "hips": -109.65, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [64.5, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [64.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"],
+      "chest": [10, 0, 0]
+    },
+    "os3": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 68.8, "hips": -108.2, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [78.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [64.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "chest": [6, 0, 0]
+    },
+    "om4": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 66.2, "hips": -105.65, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [78.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [78.75, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"],
+      "chest": [3, 0, 0]
+    },
+    "os4": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 63.582, "hips": -103.1, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [78.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [93.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "om5": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 59.279, "hips": -93.781, "gap": 0.4, "lift": 4.395},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [93.0, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [93.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "os5": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 54.826, "hips": -86.335, "gap": 0.4, "lift": 11.588},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [107.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [93.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "om6": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 50.33, "hips": -78.741, "gap": 0.4, "lift": 18.851},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [107.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [107.25, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "os6": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 45.866, "hips": -70.476, "gap": 0.4, "lift": 26.063},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [107.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [121.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "om7": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 41.329, "hips": -61.392, "gap": 0.4, "lift": 33.392},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [121.5, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [121.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "os7": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 36.59, "hips": -51.215, "gap": 0.4, "lift": 41.047},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [135.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [121.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "om8": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 31.444, "hips": -39.401, "gap": 0.4, "lift": 49.359},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [135.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [135.75, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "os8": {
+      "line": {
+        "pivot": "toes",
+        "at": 0,
+        "width": 12.0,
+        "angle": 25.296,
+        "hips": -24.125,
+        "gap": 0.609,
+        "lift": 59.292
+      },
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [135.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [150.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "om9": {
+      "line": {
+        "pivot": "toes",
+        "at": 0,
+        "width": 12.0,
+        "angle": 21.376,
+        "hips": -13.748,
+        "gap": 0.783,
+        "lift": 65.624
+      },
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [142.88, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [150.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "bm1": {
+      "line": {
+        "pivot": "toes",
+        "at": 0,
+        "width": 12.0,
+        "angle": 21.376,
+        "hips": -13.748,
+        "gap": 0.783,
+        "lift": 65.624
+      },
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [150.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [142.88, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "bs1": {
+      "line": {
+        "pivot": "toes",
+        "at": 0,
+        "width": 12.0,
+        "angle": 25.296,
+        "hips": -24.125,
+        "gap": 0.609,
+        "lift": 59.292
+      },
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [150.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [135.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "bm2": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 31.444, "hips": -39.401, "gap": 0.4, "lift": 49.359},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [135.75, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [135.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "bs2": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 36.59, "hips": -51.215, "gap": 0.4, "lift": 41.047},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [121.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [135.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "bm3": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 41.329, "hips": -61.392, "gap": 0.4, "lift": 33.392},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [121.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [121.5, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "bs3": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 45.866, "hips": -70.476, "gap": 0.4, "lift": 26.063},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [121.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [107.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "bm4": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 50.33, "hips": -78.741, "gap": 0.4, "lift": 18.851},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [107.25, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [107.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "bs4": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 54.826, "hips": -86.335, "gap": 0.4, "lift": 11.588},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [93.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [107.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "bm5": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 59.279, "hips": -93.781, "gap": 0.4, "lift": 4.395},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [93.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [93.0, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "bs5": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 63.582, "hips": -103.1, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [93.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [78.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "bm6": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 66.2, "hips": -105.65, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [78.75, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [78.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"],
+      "chest": [3, 0, 0]
+    },
+    "bs6": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 68.8, "hips": -108.2, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [64.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [78.75, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "chest": [6, 0, 0]
+    },
+    "bm7": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 71.4, "hips": -109.65, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [64.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [64.5, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"],
+      "chest": [10, 0, 0]
+    },
+    "bs7": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 74, "hips": -111.1, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [64.5, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [50.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "chest": [18, 0, 0]
+    },
+    "bm8": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 79, "hips": -116.05, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [50.25, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "arm_far": {"ik": [50.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"],
+      "chest": [24, 0, 0]
+    },
+    "bs8": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 81.5, "hips": -121.0, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [36.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [50.25, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "chest": [24, 0, 0]
+    },
+    "bm9": {
+      "line": {"pivot": "toes", "at": 0, "width": 12.0, "angle": 83, "hips": -122.1, "gap": 0.3, "lift": 0.0},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [36.0, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [43.12, 12.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.4, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"],
+      "chest": [24, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "fold", "s": 1.2, "phase": "hands_down", "effort": 0.5},
+    {"to": "om1", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os1", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om2", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os2", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om3", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os3", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om4", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os4", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om5", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os5", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om6", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os6", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om7", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os7", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om8", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "os8", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "om9", "s": 0.2, "ease": "out", "phase": "walk_hands_out", "effort": 0.7},
+    {"to": "plank", "s": 0.2, "ease": "in", "phase": "walk_hands_out", "effort": 0.7},
+    {"hold": 0.4, "phase": "plank", "effort": 0.8},
+    {"to": "bm1", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs1", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm2", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs2", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm3", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs3", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm4", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs4", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm5", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs5", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm6", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs6", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm7", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs7", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm8", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bs8", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "bm9", "s": 0.2, "ease": "out", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "fold", "s": 0.2, "ease": "in", "phase": "walk_hands_back", "effort": 0.7},
+    {"to": "stand", "s": 1.4, "phase": "stand_up", "effort": 0.6}
+  ],
+  "key": "os5",
+  "targets": [{"at": "plank", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}]
+}

@@ -1,0 +1,290 @@
+{
+ "about": "The app icon's manifest (docs/plan.md slice 35), read by tools/ledger.py as it reads figures.json: each icon QuestPump ships with its files' sha256 and the sources in contract/design/icon/ it is drawn from (the iPhone's control symbol from contract/design/art/action_pump.svg; `sources` holds each one's sha256, its first 16 hex digits). tools/icons.py writes the vector icons' entries; tools/helper-icons.py writes the raster icons' on the Mac, each with `drawn`, the digest of the drawings and sizes it rasterised, which tools/icons.py --check compares with what the sources draw now. Never edit by hand: make icons.",
+ "sources": {
+  "contract/design/art/action_pump.svg": "939c1f6780b963eb",
+  "contract/design/icon/apple.json": "1fb393647014ca98",
+  "contract/design/icon/ground.svg": "4c052fa638fa9df5",
+  "contract/design/icon/ground_watch.svg": "c470ba05fe298864",
+  "contract/design/icon/mark.svg": "01232078c1e5d7ec",
+  "contract/design/icon/mono.svg": "547c610e07245c3a",
+  "contract/design/icon/rim.svg": "701a6692aaae74c5"
+ },
+ "icons": [
+  {
+   "id": "iphone",
+   "title": "The iPhone app's icon",
+   "what": "an Icon Composer document: the mark in one glass group over the night ground's fill; the system masks the square and lights it (default, dark, tinted and clear looks)",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/apple.json"
+   ],
+   "files": [
+    {
+     "path": "apple/iOS/AppIcon.icon/Assets/mark.svg",
+     "sha256": "4ebc2638f1fa598f45485f8efca585018ce29ccc572b549469d91e05e60dc4ce"
+    },
+    {
+     "path": "apple/iOS/AppIcon.icon/icon.json",
+     "sha256": "00e994e1a2fa49438224e4c98d0357f222f09be1fd3dd1d9f3628fe2861d183f"
+    }
+   ]
+  },
+  {
+   "id": "watch",
+   "title": "The Apple Watch app's icon",
+   "what": "an Icon Composer document: the mark and the gold rim in two groups over the lifted ground's fill, under watchOS's circular mask",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground_watch.svg",
+    "contract/design/icon/apple.json",
+    "contract/design/icon/rim.svg"
+   ],
+   "files": [
+    {
+     "path": "apple/Watch/AppIcon.icon/Assets/mark.svg",
+     "sha256": "7641015e21b33fee9708a52c3eab0fccfb26ac0d9f3d50ca1fed293a2aff556e"
+    },
+    {
+     "path": "apple/Watch/AppIcon.icon/Assets/rim.svg",
+     "sha256": "967f87e8395a5f1de5baaf7a7344960772906fc5f9a51324b422dbcf7e00a469"
+    },
+    {
+     "path": "apple/Watch/AppIcon.icon/icon.json",
+     "sha256": "617e3b92dbb659b4382c82191c3c12d78380ac55e5c54c63782599e869ddb4d9"
+    }
+   ]
+  },
+  {
+   "id": "mac",
+   "title": "The desktop app's icon on macOS 26 and later",
+   "what": "the iPhone's Icon Composer document again (its squares are shared with macOS), which tauri-bundler compiles into the bundle's Assets.car; the .icns stays the icon of macOS 14 and 15",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/apple.json"
+   ],
+   "files": [
+    {
+     "path": "helper/src-tauri/icons/AppIcon.icon/Assets/mark.svg",
+     "sha256": "4ebc2638f1fa598f45485f8efca585018ce29ccc572b549469d91e05e60dc4ce"
+    },
+    {
+     "path": "helper/src-tauri/icons/AppIcon.icon/icon.json",
+     "sha256": "00e994e1a2fa49438224e4c98d0357f222f09be1fd3dd1d9f3628fe2861d183f"
+    }
+   ]
+  },
+  {
+   "id": "android",
+   "title": "The Android phone app's launcher icon",
+   "what": "an adaptive icon in vector drawables: the night ground, the mark well inside the 66-dp safe zone, and its silhouette as the monochrome layer for themed icons",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/mono.svg"
+   ],
+   "files": [
+    {
+     "path": "android/phone/src/main/res/drawable/ic_launcher_background.xml",
+     "sha256": "699e93f8a692560b20d36c8b9bc5fe5da9c48fa98b44a823041d8e89d4782328"
+    },
+    {
+     "path": "android/phone/src/main/res/drawable/ic_launcher_foreground.xml",
+     "sha256": "1036f77973f392229c6ba7a4f139618c51028c4b3a8ed79d9b4dadff9446f990"
+    },
+    {
+     "path": "android/phone/src/main/res/drawable/ic_launcher_monochrome.xml",
+     "sha256": "a71cee9fe5fc050519b975c5535a3f935d0f43b6c0caf22beedf8dee6ef02565"
+    },
+    {
+     "path": "android/phone/src/main/res/mipmap-anydpi/ic_launcher.xml",
+     "sha256": "e767d345a31643d5c3c2dc1ce2e838aa348a21ac7f6cb2dcbfc8cba791ce91bf"
+    }
+   ]
+  },
+  {
+   "id": "wear",
+   "title": "The Wear OS app's launcher icon",
+   "what": "a 48-dp disc in a vector drawable: the mark on the lifted ground inside the gold rim (also the streak widget's picker icon)",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground_watch.svg",
+    "contract/design/icon/rim.svg"
+   ],
+   "files": [
+    {
+     "path": "android/wear/src/main/res/drawable/ic_launcher.xml",
+     "sha256": "a8d17707ff4fe10efffbbba0bf6a3bfbb3d6e40503ce21eb8ebdbf0a20e89ff4"
+    }
+   ]
+  },
+  {
+   "id": "site",
+   "title": "questpump.com's favicon and mark",
+   "what": "favicon.svg, the rounded square with the mark on the night ground inside the gold rim, and mark.svg, the mark alone, cropped to it, for the header",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/rim.svg"
+   ],
+   "files": [
+    {
+     "path": "site/public/favicon.svg",
+     "sha256": "f78132403ed3e66f630a7382a41f0ddcc3d2bc0919089bde09ca5b6d0b4b6570"
+    },
+    {
+     "path": "site/public/mark.svg",
+     "sha256": "261ac49e529c1ec29add129514ab73c72f18d8007933855255a69c0819d0ca29"
+    }
+   ]
+  },
+  {
+   "id": "control",
+   "title": "The iPhone's Follow the game control's symbol",
+   "what": "an SF Symbols template with one variant, Regular-M: the pump glyph's plate (the kettlebell of contract/design/art/action_pump.svg), which Control Center, the Lock Screen and the Action button tint as they draw it",
+   "by": "tools/icons.py",
+   "sources": [
+    "contract/design/art/action_pump.svg"
+   ],
+   "files": [
+    {
+     "path": "apple/Widgets/Symbols.xcassets/Contents.json",
+     "sha256": "4bddfd9b3da4f012c9a0eea219ac6a7d0565a0062ff2c46725673ccca7647b56"
+    },
+    {
+     "path": "apple/Widgets/Symbols.xcassets/pump.symbolset/Contents.json",
+     "sha256": "e70f03c0284cdae8ff0945a6188c5a3821af36efbb08efcb160c2603917467a1"
+    },
+    {
+     "path": "apple/Widgets/Symbols.xcassets/pump.symbolset/pump.svg",
+     "sha256": "80de89a703936b26bc86f8b38acbe83dba71c4c5ede1827f18179dbd4f3cf7e5"
+    }
+   ]
+  },
+  {
+   "id": "desktop",
+   "title": "The desktop app's program icons",
+   "what": "the rounded square with the mark on the night ground inside the gold rim: the PNGs, icon.ico (the Windows program and its installer, entries 32, 16, 24, 48, 64 and 256 px, 32 first as Tauri asks) and icon.icns on macOS's grid before 26 (an 824-px body in 1024) for macOS 14 and 15",
+   "by": "tools/helper-icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/rim.svg"
+   ],
+   "drawn": "e8a1585820655556",
+   "files": [
+    {
+     "path": "helper/src-tauri/icons/32x32.png",
+     "sha256": "7e09e35427bc59f2d5a34d0c4148954fba9f71558012e10c500b52435785ac2f"
+    },
+    {
+     "path": "helper/src-tauri/icons/128x128.png",
+     "sha256": "cd22154a37e659d398f727fe00e4bf648b20bc8d3a49e53df846309540f29aa6"
+    },
+    {
+     "path": "helper/src-tauri/icons/128x128@2x.png",
+     "sha256": "984293372aaa023277dd81495345b2ce6835caa2d998a917a81fd9c48756d01a"
+    },
+    {
+     "path": "helper/src-tauri/icons/icon.ico",
+     "sha256": "6de467677f22499879f2d0de3f422d79d95ad4ab69811f55ff8871980abe0c4b"
+    },
+    {
+     "path": "helper/src-tauri/icons/icon.icns",
+     "sha256": "0c646a11d4d6d4263dffbf7db4e9bfd49b81a602817e29e4d7f942fdaef6e98c"
+    }
+   ]
+  },
+  {
+   "id": "tray",
+   "title": "The desktop app's menu bar and tray icons",
+   "what": "the mark's silhouette with a dark edge in each state's colour (grey: no game, amber: no strip, green: live, red: a grant lost), 44 px for macOS's menu bar and 32 px for Windows' tray",
+   "by": "tools/helper-icons.py",
+   "sources": [
+    "contract/design/icon/mono.svg"
+   ],
+   "drawn": "ec396e8ee9b0c3f7",
+   "files": [
+    {
+     "path": "helper/src-tauri/icons/tray-grey.png",
+     "sha256": "dbd25fded60f745d54e2849ef9abfc6b53dffc772f0efb7cbe0dc3effb9e980e"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-amber.png",
+     "sha256": "a5886acff59335562f17f40eaafbc96f279ebb19847376df3b92a3249f71f987"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-green.png",
+     "sha256": "ae36166ad228e73b75859aaa93f21b35827b73aa8a8e169825fa2545bf47af36"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-red.png",
+     "sha256": "687049640c44b543b03bc0b6e63dbff4a0eeb2cb86220a7966fa71b0a3d23031"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-grey-32.png",
+     "sha256": "68fd4721d2f5cc4bf0f31ea7f81604bd77b983c4597e3e440998ce16d86e58a3"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-amber-32.png",
+     "sha256": "def0228924a0c08b1e1fe569f48e81cc7aa03563ba13f13da5956ca9a12ea78e"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-green-32.png",
+     "sha256": "fe92941a0b9189eba95e43dfb31d0ac1aaf42b57fc74db9b39c427e6e683a552"
+    },
+    {
+     "path": "helper/src-tauri/icons/tray-red-32.png",
+     "sha256": "52833bea4013ef7964bc676db7fb3fca767380b19fc6537180f47817d9877522"
+    }
+   ]
+  },
+  {
+   "id": "site-raster",
+   "title": "questpump.com's favicon.ico and touch icon",
+   "what": "favicon.ico (32 and 16 px) from the favicon's rounded square, and apple-touch-icon.png, the iPhone's square at 180 px, opaque, which iOS masks itself",
+   "by": "tools/helper-icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/rim.svg"
+   ],
+   "drawn": "3f4bdb8447002125",
+   "files": [
+    {
+     "path": "site/public/favicon.ico",
+     "sha256": "81f2f8eb23db682d0d72aabbc3fd7c1fb55de8d879ae61773c19d846d9a623e1"
+    },
+    {
+     "path": "site/public/apple-touch-icon.png",
+     "sha256": "282ff7dae7f79409a22277c5c25aef37657eb2690fa119a448ef27efa97ba37a"
+    }
+   ]
+  },
+  {
+   "id": "addon",
+   "title": "The addon's icon in the game's AddOns list",
+   "what": "Media/Icon.tga, the favicon's rounded square (the mark on the night ground inside the gold rim) at 64 px as a 32-bit TGA with alpha (run-length coded, bottom-left first like the body-map atlases, by macOS's sips from the PNG): the IconTexture of QuestPump.toc, of its load-on-demand folders' TOCs and of the mirror's, which the AddOns list draws 20 units square and the Addon Compartment's menu shows",
+   "by": "tools/helper-icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg",
+    "contract/design/icon/rim.svg"
+   ],
+   "drawn": "9482663e6f52ba15",
+   "files": [
+    {
+     "path": "Media/Icon.tga",
+     "sha256": "b9310ac8d118b906b889bf9eb9b26231217d6cd1f52a21ff557eb830015dc89b"
+    }
+   ]
+  }
+ ]
+}

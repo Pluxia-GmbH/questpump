@@ -1,0 +1,35 @@
+{
+  "move": "desk_one_arm_slow",
+  "view": "side",
+  "camera": {"yaw": 28, "pitch": 14},
+  "working": ["chest", "upper_arm"],
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -43, "angle": 44.6, "width": 16, "gap": 1.2},
+      "trunk": [0, -6, 0],
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [102, 77.3, 12], "pole": [-1, -0.2, 1.0], "hand": [1, -0.15, 0.15]},
+      "arm_far": {"ik": [-16, 4, 5], "rel": "pelvis", "pole": [0, 1, 0.8], "hand": [0, -0.3, -1]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "bottom": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": -43, "angle": 33, "width": 16, "gap": 1.2},
+      "trunk": [0, -7, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "arm_straight"},
+    {"to": "bottom", "s": 3.0, "phase": "lower_slowly", "effort": 0.8},
+    {"hold": 1.0, "phase": "hold", "effort": 0.95},
+    {"to": "top", "s": 1.0, "phase": "push_away", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "top", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "bottom", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "top", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ]
+}

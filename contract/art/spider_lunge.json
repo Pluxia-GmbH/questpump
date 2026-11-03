@@ -1,0 +1,47 @@
+{
+  "move": "spider_lunge",
+  "view": "side",
+  "camera": {"yaw": 44, "pitch": 26},
+  "working": ["thigh_near"],
+  "poses": {
+    "plank": {
+      "line": {"pivot": "toes", "at": -70, "angle": 16.5, "width": 12, "y": 1},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 22], "pole": [-1, 0.2, 0.2], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "knee_in": {
+      "pelvis": [34, 54, 0],
+      "trunk": [84, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 22], "pole": [-1, 0.2, 0.2], "hand": [1, -0.14, 0]},
+      "leg_near": {"foot": [36, 50], "y": 6, "turn": 0, "lift": 20, "knee_out": 0, "pole": [0.3, 0.4, 1]},
+      "leg_far": {"foot": [-70, 12], "y": 1, "turn": 0, "lift": 80, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lunge": {
+      "from": "knee_in",
+      "pelvis": [37, 36, 0],
+      "trunk": [64, 0, 0],
+      "head": [-16, 0, 0],
+      "leg_near": {"foot": [58, 50], "y": 1, "turn": 6, "lift": 0, "knee_out": 0, "pole": [0.8, 0.6, 0.75]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "leg_far": {"foot": [-70, 12], "y": 1, "turn": 0, "lift": 73.5, "knee_out": 0, "pole": [0, -1, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "plank"},
+    {"hold": 0.3, "phase": "plank", "effort": 0.5},
+    {"to": "knee_in", "s": 0.5, "ease": "in", "phase": "step_forward", "effort": 0.6},
+    {"to": "lunge", "s": 0.55, "ease": "out", "phase": "step_forward", "effort": 0.7},
+    {"hold": 0.4, "phase": "bottom", "effort": 0.8},
+    {"to": "knee_in", "s": 0.45, "ease": "in", "phase": "step_back", "effort": 0.8},
+    {"to": "plank", "s": 0.45, "ease": "out", "phase": "step_back", "effort": 0.6}
+  ],
+  "key": "lunge",
+  "targets": [
+    {"at": "plank", "check": "angle", "joints": ["ankle_far", "pelvis", "neck"], "min": 170},
+    {"at": "lunge", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 150}
+  ],
+  "props": [{"kind": "mat", "f0": -96, "f1": 102, "l0": -58, "l1": 58}]
+}

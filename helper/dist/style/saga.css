@@ -1,0 +1,1276 @@
+/* The Saga on the computer (the Saga, 2026-10-15; views/log, views/home's today's chapter, the best-day moment; board
+ * A-Day, A-Home, A-Best), from the tokens only: the SlantTag, the DayStrip, the KindBar, the WeekStrip, the body map's
+ * day state, the hero, the tiles, the earlier chapters' rows, Pump home's chapter card and the moment. */
+
+/* SlantTag ----------------------------------------------------------------------------------------------------------- */
+
+qp-slant-tag {
+	--qp-slant: calc(atan(var(--qp-surface-slant-tag-slant-fraction)) * -1);
+	--qp-tag: var(--qp-color-gold);
+	display: inline-block;
+	flex: none;
+	padding: var(--qp-surface-slant-tag-pad-v) var(--qp-surface-slant-tag-pad-h);
+	border-radius: var(--qp-surface-slant-tag-radius);
+	box-shadow: inset 0 0 0 var(--qp-surface-slant-tag-edge-width) var(--qp-tag);
+	transform: skewX(var(--qp-slant));
+}
+
+qp-slant-tag[data-tone="dim"] {
+	--qp-tag: var(--qp-color-text3);
+}
+
+qp-slant-tag[filled] {
+	background: var(--qp-tag);
+	box-shadow: none;
+}
+
+.qp-slant-words {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	font: 700 var(--qp-type-caps-size) / var(--qp-type-caps-line-height) var(--qp-type-caps-family);
+	letter-spacing: var(--qp-type-caps-tracking);
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--qp-tag);
+	transform: skewX(calc(var(--qp-slant) * -1));
+}
+
+qp-slant-tag[filled] .qp-slant-words {
+	color: var(--qp-color-gold-ink);
+}
+
+.qp-slant-words qp-art {
+	width: var(--qp-surface-slant-tag-star-size);
+	height: var(--qp-surface-slant-tag-star-size);
+}
+
+/* DayStrip ----------------------------------------------------------------------------------------------------------- */
+
+qp-day-strip {
+	display: block;
+	width: 100%;
+}
+
+qp-day-strip svg {
+	display: block;
+	overflow: visible;
+}
+
+.qp-strip-grid {
+	stroke: var(--qp-surface-day-strip-grid);
+	stroke-dasharray: var(--qp-surface-day-strip-grid-dash) var(--qp-surface-day-strip-grid-gap);
+}
+
+.qp-strip-axis {
+	stroke: var(--qp-surface-day-strip-axis);
+}
+
+.qp-strip-total {
+	font: 700 var(--qp-surface-day-strip-total-size) var(--qp-type-num-row-family);
+	fill: var(--qp-surface-day-strip-total);
+}
+
+.qp-strip-part {
+	font: 600 var(--qp-surface-day-strip-label-size) var(--qp-type-caps-family);
+	letter-spacing: calc(var(--qp-surface-day-strip-label-tracking-fraction) * 1em);
+	fill: var(--qp-color-text2);
+}
+
+.qp-strip-end {
+	font: 500 var(--qp-surface-day-strip-end-size) var(--qp-type-meta-family);
+	fill: var(--qp-color-text3);
+}
+
+.qp-kind-strength {
+	fill: var(--qp-surface-kinds-strength);
+	background: var(--qp-surface-kinds-strength);
+}
+
+.qp-kind-cardio {
+	fill: var(--qp-surface-kinds-cardio);
+	background: var(--qp-surface-kinds-cardio);
+}
+
+.qp-kind-mobility {
+	fill: var(--qp-surface-kinds-mobility);
+	background: var(--qp-surface-kinds-mobility);
+}
+
+.qp-kind-yoga {
+	fill: var(--qp-surface-kinds-yoga);
+	background: var(--qp-surface-kinds-yoga);
+}
+
+/* the first open each game day: each bar grows from the axis, one after another (sagaReveal) */
+.qp-strip-bar.qp-growing {
+	transform-box: fill-box;
+	transform-origin: bottom;
+	animation: qp-strip-grow var(--qp-motion-saga-reveal) both;
+}
+
+@keyframes qp-strip-grow {
+	from {
+		transform: scaleY(0);
+	}
+}
+
+/* KindBar ------------------------------------------------------------------------------------------------------------ */
+
+qp-kind-bar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space6);
+}
+
+.qp-kind-bar {
+	position: relative;
+	height: var(--qp-surface-kinds-tick-height);
+}
+
+.qp-kind-track {
+	position: absolute;
+	inset: calc((var(--qp-surface-kinds-tick-height) - var(--qp-surface-kinds-bar-height)) / 2) 0;
+	display: flex;
+	gap: var(--qp-surface-kinds-bar-gap);
+	border-radius: calc(var(--qp-surface-kinds-bar-height) / 2);
+	overflow: hidden;
+}
+
+.qp-kind-part {
+	flex: 1 1 0;
+	min-width: var(--qp-layout-space2);
+}
+
+.qp-kind-tick {
+	position: absolute;
+	top: 0;
+	width: var(--qp-surface-kinds-tick-width);
+	height: var(--qp-surface-kinds-tick-height);
+	border-radius: calc(var(--qp-surface-kinds-tick-width) / 2);
+	background: var(--qp-surface-kinds-tick);
+	box-shadow: 0 0 0 var(--qp-surface-kinds-tick-ring-width) var(--qp-surface-kinds-tick-ring-color);
+	transform: translateX(-50%);
+}
+
+/* the words in one row, each placed at its part's start by the element (kit/qp-kind-bar.js); wrapped, a whole word to
+   the next row, only where the row cannot hold them all */
+.qp-kind-words {
+	position: relative;
+	height: 1.5em;
+	font: var(--qp-type-meta-font);
+}
+
+.qp-kind-words.qp-kind-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: var(--qp-layout-space12);
+	height: auto;
+}
+
+.qp-kind-word {
+	position: absolute;
+	top: 0;
+	white-space: nowrap;
+	color: var(--qp-color-text2);
+}
+
+.qp-kind-wrap .qp-kind-word {
+	position: static;
+}
+
+.qp-kind-count, .qp-saga-count {
+	font: 700 1.125em var(--qp-type-num-row-family);
+	font-variant-numeric: tabular-nums;
+	color: var(--qp-color-text);
+}
+
+/* WeekStrip ---------------------------------------------------------------------------------------------------------- */
+
+qp-week-strip {
+	display: block;
+}
+
+.qp-week-strip {
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	gap: var(--qp-layout-space4);
+	padding-top: var(--qp-layout-space4);
+}
+
+.qp-week-col {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	width: var(--qp-surface-week-strip-bar-width);
+}
+
+.qp-week-well {
+	position: relative;
+	display: flex;
+	align-items: flex-end;
+	height: var(--qp-surface-week-strip-height);
+}
+
+.qp-week-bar {
+	display: block;
+	width: var(--qp-surface-week-strip-bar-width);
+	height: max(var(--qp-surface-week-strip-bar-least), calc(var(--qp-week-share, 0) * var(--qp-surface-week-strip-height)));
+	border-radius: var(--qp-surface-week-strip-radius);
+	background: var(--qp-surface-week-strip-bar);
+}
+
+/* a day a rest token kept */
+.qp-week-bar.qp-rest {
+	height: var(--qp-surface-week-strip-rest-height);
+	background: var(--qp-surface-week-dots-rest);
+	opacity: var(--qp-surface-week-strip-rest-opacity);
+}
+
+.qp-week-bar.qp-ringed {
+	background: var(--qp-color-gold);
+	box-shadow: 0 0 0 var(--qp-surface-week-strip-ring-gap) var(--qp-color-card),
+		0 0 0 calc(var(--qp-surface-week-strip-ring-gap) + var(--qp-surface-week-strip-ring-width)) var(--qp-color-gold-hi);
+}
+
+.qp-week-initial {
+	font: 600 var(--qp-type-caps-size) var(--qp-type-caps-family);
+	color: var(--qp-color-text3);
+}
+
+.qp-week-col:has(.qp-ringed) .qp-week-initial {
+	color: var(--qp-color-gold-hi);
+}
+
+/* the dashed Old best line across the bars at its share of their height */
+.qp-week-best {
+	position: absolute;
+	left: calc(var(--qp-layout-space2) * -1);
+	right: calc(var(--qp-layout-space2) * -1);
+	top: calc(var(--qp-layout-space4) + (1 - var(--qp-week-share, 0)) * var(--qp-surface-week-strip-height));
+	border-top: var(--qp-layout-hairline) dashed var(--qp-surface-week-strip-old-best);
+}
+
+/* The body map's day state: Most in gold, Some in gold at its share ------------------------------------------------- */
+
+.qp-body-muscle.qp-day-most, .qp-body-muscle.qp-day-some {
+	fill: var(--qp-surface-body-map-day-most);
+	fill-opacity: 1;
+}
+
+.qp-body-muscle.qp-day-some {
+	fill-opacity: var(--qp-surface-body-map-day-some-opacity);
+}
+
+.qp-body-muscle.qp-day-dark {
+	fill: var(--qp-surface-body-map-untrained);
+	transition: none;
+}
+
+/* The bars' compact primary (with_primary) ------------------------------------------------------------------------- */
+
+qp-primary-button[compact] {
+	flex: none;
+}
+
+/* a bar with its action keeps its one row: on a narrow bar (a large zoom) the action shrinks to its glyph first, its
+   words still its name, and the title ends in "…" rather than break a word or run under the action (a chapter's page
+   says its chapter in its hero's tag too) */
+qp-top-bar:has(> qp-primary-button), qp-detail-bar:has(> qp-primary-button) {
+	container-type: inline-size;
+}
+
+qp-top-bar:has(> qp-primary-button) h1, qp-detail-bar:has(> qp-primary-button) h1 {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+qp-primary-button[compact] .qp-primary {
+	width: auto;
+	min-height: var(--qp-surface-primary-button-compact-height);
+	padding: 0 var(--qp-surface-primary-button-compact-pad);
+	border-radius: var(--qp-surface-primary-button-compact-radius);
+}
+
+/* 416px: --qp-desktop-bar-glyph-below */
+@container (width < 416px) {
+	qp-primary-button[compact] .qp-words {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+}
+
+/* The hero ----------------------------------------------------------------------------------------------------------- */
+
+/* the chapter's tag and date over the number, Moves and the day's word beside its top and the knight under them beside
+   its foot, the line under the number kept left of the knight; the hero as tall as its words and the knight under
+   Moves (the last row takes what the knight leaves), so nothing of it reaches the tiles, the knight never taller than
+   the number and the line */
+.qp-saga-hero {
+	position: relative;
+	isolation: isolate;
+	container-type: inline-size;
+	display: grid;
+	grid-template-columns: max-content minmax(0, 1fr);
+	grid-template-rows: auto auto auto 1fr;
+	column-gap: var(--qp-layout-space12);
+	padding-bottom: var(--qp-layout-space8);
+}
+
+/* the hero's ground: the faint stripes across the window, the warm and gold light over the column, each fading out at
+   the hero's foot and the light at its sides too, under the top bar as on the phones (the page clips what passes the
+   window) */
+qp-page.qp-saga-page {
+	overflow-x: hidden;
+}
+
+/* numSaga's leading, its box cut to the digits: the number's and its unit's (Pump home's card too) */
+.qp-saga-hero, .qp-saga-unit {
+	--qp-saga-leading: 0.86;
+}
+
+/* the line's height under the number: its caps' line, the space between, the move's heading line and the space over it */
+.qp-saga-hero:has(.qp-saga-highlight) {
+	--qp-saga-line: calc(var(--qp-type-caps-size) * var(--qp-type-caps-line-height) + var(--qp-layout-space2)
+		+ var(--qp-type-heading-size) * var(--qp-type-heading-line-height) + var(--qp-layout-space8));
+}
+
+.qp-saga-hero::before, .qp-saga-hero::after {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	top: calc(var(--qp-layout-top-bar) * -1);
+	bottom: 0;
+	pointer-events: none;
+	-webkit-mask-image: linear-gradient(180deg, #000 calc(var(--qp-surface-saga-hero-ground-fade-fraction) * 100%),
+		transparent);
+	mask-image: linear-gradient(180deg, #000 calc(var(--qp-surface-saga-hero-ground-fade-fraction) * 100%),
+		transparent);
+}
+
+.qp-saga-hero::before {
+	left: calc(50% - 50vw);
+	right: calc(50% - 50vw);
+	background: repeating-linear-gradient(118deg, var(--qp-surface-saga-hero-stripe-color) 0
+		var(--qp-surface-saga-hero-stripe-width), transparent var(--qp-surface-saga-hero-stripe-width)
+		var(--qp-surface-saga-hero-stripe-pitch));
+}
+
+.qp-saga-hero::after {
+	left: calc(var(--qp-layout-margin) * -1);
+	right: calc(var(--qp-layout-margin) * -1);
+	background: var(--qp-surface-saga-hero-glow), var(--qp-surface-saga-hero-warm);
+	-webkit-mask-image: linear-gradient(180deg, #000 calc(var(--qp-surface-saga-hero-ground-fade-fraction) * 100%),
+		transparent), linear-gradient(90deg, transparent, #000 var(--qp-layout-margin),
+		#000 calc(100% - var(--qp-layout-margin)), transparent);
+	-webkit-mask-composite: source-in;
+	mask-image: linear-gradient(180deg, #000 calc(var(--qp-surface-saga-hero-ground-fade-fraction) * 100%),
+		transparent), linear-gradient(90deg, transparent, #000 var(--qp-layout-margin),
+		#000 calc(100% - var(--qp-layout-margin)), transparent);
+	mask-composite: intersect;
+}
+
+.qp-saga-head {
+	grid-column: 1 / -1;
+	grid-row: 1;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space10);
+	margin-bottom: var(--qp-layout-space8);
+}
+
+.qp-saga-date {
+	color: var(--qp-color-text2);
+}
+
+/* numSaga, smaller for three or four digits and on a hero too narrow for it (the number and its words side by side;
+   its container units are the hero's) */
+.qp-saga-number, .qp-saga-aside, .qp-saga-highlight {
+	--qp-saga-size: min(calc(var(--qp-type-num-saga-size) * max(var(--qp-surface-saga-hero-number-least-fraction),
+		min(1, 2.2 / var(--qp-digits, 2)))), calc(120cqi / (var(--qp-digits, 2) + 1.4)));
+}
+
+/* the knight: SagaHero.figureFraction of the hero's width, at most --qp-desktop-saga-figure-most and the number's
+   height with the line's under it, so the hero ends near its words' foot, never its canvas's */
+.qp-saga-aside, .qp-saga-highlight {
+	--qp-saga-knight: min(calc(var(--qp-surface-saga-hero-figure-fraction) * 100cqi),
+		var(--qp-desktop-saga-figure-most), calc(var(--qp-saga-size) * var(--qp-saga-leading) + var(--qp-saga-line, 0px)));
+}
+
+.qp-saga-number {
+	grid-column: 1;
+	grid-row: 2;
+	align-self: start;
+	font: var(--qp-type-num-saga-weight) var(--qp-saga-size) / var(--qp-saga-leading) var(--qp-type-num-saga-family);
+	letter-spacing: var(--qp-type-num-saga-tracking);
+	font-variant-numeric: tabular-nums;
+	background: var(--qp-surface-saga-hero-number);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.qp-saga-number.qp-pop, .qp-best-number.qp-pop {
+	animation: qp-digit-pop var(--qp-motion-digit-pop);
+}
+
+@keyframes qp-digit-pop {
+	from {
+		transform: scale(var(--qp-motion-digit-pop-scale-from));
+	}
+}
+
+/* beside the number: its words over the knight, which takes the rest of the hero's height */
+.qp-saga-aside {
+	grid-column: 2;
+	grid-row: 2 / -1;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.qp-saga-side {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--qp-layout-space10);
+	padding-top: calc(var(--qp-saga-size, var(--qp-type-num-saga-size)) * 0.08);
+}
+
+.qp-saga-unit {
+	font: 700 calc(var(--qp-saga-size, var(--qp-type-num-saga-size)) * var(--qp-surface-saga-hero-moves-fraction)) /
+		var(--qp-saga-leading)
+		var(--qp-type-num-saga-family);
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: var(--qp-color-text);
+}
+
+/* the knight cut out on the dark page under the words: a soft round mask on its canvas, no well; no stacking context
+   of its own, so the canvas's lighten reaches the hero's ground and the still's own floor shows no box */
+.qp-saga-knight {
+	align-self: flex-end;
+	width: min(100%, var(--qp-saga-knight));
+	margin-top: var(--qp-layout-space8);
+	pointer-events: none;
+}
+
+.qp-saga-knight .qp-figure-canvas {
+	-webkit-mask-image: radial-gradient(closest-side, #000 calc(var(--qp-surface-saga-hero-mask-fraction) * 100%), transparent);
+	mask-image: radial-gradient(closest-side, #000 calc(var(--qp-surface-saga-hero-mask-fraction) * 100%), transparent);
+}
+
+.qp-saga-knight .qp-plinth {
+	display: none;
+}
+
+/* the line under the number, wrapping between words left of the knight */
+.qp-saga-highlight {
+	grid-column: 1 / -1;
+	grid-row: 3;
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space2);
+	margin-top: var(--qp-layout-space8);
+}
+
+.qp-saga-hero:has(.qp-saga-knight) .qp-saga-highlight {
+	padding-inline-end: calc(var(--qp-saga-knight) + var(--qp-layout-space12));
+}
+
+/* a hero too narrow for the number and its words side by side (a large zoom): the words under the number in a row, no
+   knight. 280px: --qp-desktop-saga-hero-stack */
+@container (width < 280px) {
+	.qp-saga-aside {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		margin-top: var(--qp-layout-space8);
+	}
+
+	.qp-saga-side {
+		flex-flow: row wrap;
+		align-items: center;
+		padding-top: 0;
+	}
+
+	.qp-saga-knight {
+		display: none;
+	}
+
+	.qp-saga-highlight {
+		grid-row: 4;
+		padding-inline-end: 0;
+	}
+
+	.qp-saga-hero:has(.qp-saga-knight) .qp-saga-highlight {
+		padding-inline-end: 0;
+	}
+}
+
+.qp-saga-rule-line {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	color: var(--qp-color-gold);
+}
+
+.qp-saga-rule-line .qp-type-caps {
+	color: var(--qp-color-gold);
+}
+
+/* a record's caps (Record today, New record) in text2; an unlock's stay gold */
+.qp-saga-rule-record .qp-type-caps {
+	color: var(--qp-color-text2);
+}
+
+.qp-saga-rule {
+	width: var(--qp-surface-saga-hero-rule-width);
+	height: var(--qp-surface-saga-hero-rule-height);
+	background: var(--qp-color-gold);
+}
+
+.qp-saga-what {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--qp-layout-space4) var(--qp-layout-space10);
+	font: var(--qp-type-heading-font);
+}
+
+.qp-saga-move {
+	color: var(--qp-color-text);
+}
+
+.qp-saga-quality {
+	--qp-tag: var(--qp-color-text2);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	font: var(--qp-type-caps-font);
+	letter-spacing: var(--qp-type-caps-tracking);
+	text-transform: uppercase;
+	color: var(--qp-tag);
+}
+
+/* the quality's gem before its word in the hero's highlight, in its tone: a diamond space10 across, the word space4
+   after it (the cards' gem; the earlier chapters' rows) */
+.qp-saga-what .qp-saga-quality {
+	gap: var(--qp-layout-space4);
+}
+
+.qp-saga-what .qp-saga-quality::before {
+	content: "";
+	flex: none;
+	width: var(--qp-layout-space10);
+	height: var(--qp-layout-space10);
+	background: currentColor;
+	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* a record's best in numRow, gold */
+.qp-saga-best {
+	font: var(--qp-type-num-row-font);
+	font-variant-numeric: tabular-nums;
+	color: var(--qp-color-gold);
+}
+
+.qp-saga-none {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space6);
+}
+
+.qp-saga-none .qp-saga-head {
+	margin-bottom: var(--qp-layout-space2);
+}
+
+/* The tiles ---------------------------------------------------------------------------------------------------------- */
+
+.qp-saga-tile {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	min-width: 0;
+	padding: var(--qp-layout-space12) var(--qp-layout-space14);
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge);
+}
+
+.qp-saga-tile-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space4) var(--qp-layout-space12);
+}
+
+.qp-saga-counted {
+	display: inline-flex;
+	align-items: baseline;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-saga-counted .qp-saga-count {
+	font-size: 1.5em;
+}
+
+.qp-saga-plan {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	color: var(--qp-color-text2);
+}
+
+.qp-kind-tick-mark {
+	width: var(--qp-surface-kinds-tick-width);
+	height: calc(var(--qp-surface-kinds-tick-height) * 0.85);
+	border-radius: calc(var(--qp-surface-kinds-tick-width) / 2);
+	background: var(--qp-surface-kinds-tick);
+}
+
+/* two tiles side by side while each holds its least width, else one over the other, each the row's width */
+.qp-saga-pair-row {
+	container-type: inline-size;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-saga-pair-row > * {
+	flex: 1 1 var(--qp-desktop-saga-tile-least);
+}
+
+.qp-saga-pair-row > .qp-saga-muscles {
+	flex: 0 1 var(--qp-desktop-saga-muscles-tile);
+	align-items: center;
+}
+
+/* a half with nothing hides and the other takes the row, as it does where the two stack (380px:
+   --qp-desktop-saga-muscles-tile, space12 and --qp-desktop-saga-tile-least) */
+.qp-saga-pair-row > .qp-saga-muscles:only-child {
+	flex: 1 1 auto;
+}
+
+@container (width < 380px) {
+	.qp-saga-pair-row > .qp-saga-muscles {
+		flex: 1 1 auto;
+	}
+}
+
+.qp-saga-muscles > .qp-type-caps {
+	align-self: flex-start;
+}
+
+.qp-saga-muscles qp-muscle-map {
+	width: var(--qp-desktop-saga-muscle-map);
+	aspect-ratio: 266 / 366;
+}
+
+.qp-saga-legend {
+	display: flex;
+	gap: var(--qp-layout-space10);
+	color: var(--qp-color-text2);
+}
+
+.qp-saga-legend span {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-swatch-most, .qp-swatch-some {
+	width: var(--qp-layout-space8);
+	height: var(--qp-layout-space8);
+	border-radius: var(--qp-layout-space2);
+	background: var(--qp-surface-body-map-day-most);
+}
+
+.qp-swatch-some {
+	opacity: var(--qp-surface-body-map-day-some-opacity);
+}
+
+.qp-saga-pair {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-saga-pair qp-art {
+	width: var(--qp-layout-space20);
+	height: var(--qp-layout-space20);
+	color: var(--qp-color-gold);
+}
+
+.qp-saga-line {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--qp-layout-space6);
+	font: var(--qp-type-body-font);
+}
+
+.qp-saga-value {
+	white-space: nowrap;
+}
+
+.qp-saga-was {
+	font: var(--qp-type-meta-font);
+	color: var(--qp-color-text3);
+}
+
+.qp-saga-xp-tile {
+	justify-content: center;
+	gap: var(--qp-layout-space10);
+}
+
+.qp-saga-xp, .qp-saga-level {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+}
+
+.qp-saga-xp qp-art {
+	width: var(--qp-layout-space20);
+	height: var(--qp-layout-space20);
+	color: var(--qp-color-gold);
+}
+
+.qp-saga-xp-number {
+	font: var(--qp-type-num-medium-font);
+	font-variant-numeric: tabular-nums;
+	color: var(--qp-color-text);
+}
+
+/* Level 23 → 24: the arrow as high as the numbers' digits */
+.qp-saga-level-arrow {
+	width: calc(var(--qp-type-num-row-size) * 0.8);
+	height: calc(var(--qp-type-num-row-size) * 0.8);
+	color: var(--qp-color-text2);
+	transform: rotate(90deg);
+}
+
+.qp-saga-level-from, .qp-saga-level-to {
+	font: var(--qp-type-num-row-font);
+	color: var(--qp-color-text3);
+}
+
+.qp-saga-level-to {
+	color: var(--qp-color-gold-hi);
+}
+
+.qp-saga-level-bar {
+	position: relative;
+	flex: 1;
+	min-width: var(--qp-layout-space24);
+	height: calc(var(--qp-layout-xp-bar-height-hero) - 1px);
+	border-radius: var(--qp-layout-xp-bar-radius);
+	background: var(--qp-color-track);
+	overflow: hidden;
+}
+
+.qp-saga-level-bar i {
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: calc(var(--qp-share, 0) * 100%);
+	background: var(--qp-color-gold);
+}
+
+.qp-saga-old {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	color: var(--qp-color-text2);
+}
+
+.qp-saga-dash {
+	width: var(--qp-layout-space12);
+	border-top: var(--qp-layout-hairline) dashed var(--qp-surface-week-strip-old-best);
+}
+
+/* the Week tile's head: Week, then its Old best and its Share week at the end */
+.qp-saga-week-end {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+}
+
+/* The earlier chapters ----------------------------------------------------------------------------------------------- */
+
+/* one line a row, its columns lined up down the list (subgrid): the chapter's tag, the date, the day's word with its
+   gem or star, a rule, the moves at the row's end ("44 moves", its number in numSmall); a quiet row's date and No
+   moves in the same columns; the rows the kit's (its hover, its press and its inset ring on the card's corners) */
+.qp-chapters {
+	container-type: inline-size;
+	display: grid;
+	grid-template-columns: max-content max-content minmax(min-content, max-content) minmax(var(--qp-layout-space8), 1fr)
+		max-content max-content;
+}
+
+.qp-chapters qp-card-row {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+}
+
+.qp-chapter-row {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+	align-items: center;
+	column-gap: var(--qp-layout-space10);
+	min-height: var(--qp-layout-row-height);
+	padding: var(--qp-layout-row-padding-v) var(--qp-layout-row-padding-h);
+	text-align: start;
+	border-radius: inherit;
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-chapter-row:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-chapter-row:active {
+	background: rgb(0 0 0 / var(--qp-surface-press-shade-opacity));
+}
+
+.qp-chapter-row:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+.qp-chapter-tag {
+	grid-column: 1;
+}
+
+.qp-chapter-date {
+	grid-column: 2;
+	color: var(--qp-color-text3);
+}
+
+/* the day's word: the kit's QualityWord, Best day ever its star and its words in gold, No moves quiet */
+.qp-chapter-word {
+	grid-column: 3;
+	font: 600 var(--qp-type-meta-size) / var(--qp-type-meta-line-height) var(--qp-type-body-family);
+}
+
+.qp-chapter-quiet .qp-chapter-word {
+	color: var(--qp-color-text3);
+}
+
+.qp-chapter-best {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-surface-quality-word-gem-gap);
+	color: var(--qp-color-gold);
+}
+
+.qp-chapter-best qp-art {
+	flex: none;
+	width: var(--qp-surface-slant-tag-star-size);
+	height: var(--qp-surface-slant-tag-star-size);
+}
+
+.qp-chapter-rule {
+	grid-column: 4;
+	height: var(--qp-layout-hairline);
+	background: var(--qp-color-line-strong);
+}
+
+/* the moves at the row's end: the number right-aligned in its column, its unit after it */
+.qp-chapter-count {
+	grid-column: 5 / -1;
+	display: grid;
+	grid-template-columns: subgrid;
+	align-items: baseline;
+	justify-items: end;
+}
+
+.qp-chapter-count > .qp-type-meta {
+	justify-self: start;
+}
+
+.qp-chapter-moves {
+	font: var(--qp-type-num-small-font);
+	font-variant-numeric: tabular-nums;
+	color: var(--qp-color-text2);
+}
+
+/* the rule only where it has room to read as one (464px: --qp-desktop-saga-chapters-rule) */
+@container (width < 464px) {
+	.qp-chapter-rule {
+		visibility: hidden;
+	}
+}
+
+/* a list too narrow for one line a row (a large zoom): the tag, the date and the word one over the other, the moves
+   beside them at the row's end. 416px: --qp-desktop-saga-chapters-stack */
+@container (width < 416px) {
+	.qp-chapters, .qp-chapters qp-card-row {
+		display: block;
+	}
+
+	.qp-chapter-row {
+		grid-template-columns: minmax(0, 1fr) max-content;
+		grid-template-areas: "tag count" "date count" "word count";
+		row-gap: var(--qp-layout-space4);
+	}
+
+	.qp-chapter-tag {
+		grid-area: tag;
+	}
+
+	.qp-chapter-date {
+		grid-area: date;
+	}
+
+	.qp-chapter-word {
+		grid-area: word;
+	}
+
+	.qp-chapter-rule {
+		display: none;
+	}
+
+	.qp-chapter-count {
+		grid-area: count;
+		display: flex;
+		gap: var(--qp-layout-space4);
+	}
+}
+
+/* Pump home's today's chapter ---------------------------------------------------------------------------------------- */
+
+qp-card.qp-chapter {
+	padding: 0;
+}
+
+/* as the phones lay it out (board A-Home): Today's chapter with the chevron, the number with the chapter's tag and the
+   day's word over Moves today beside it, the strip at full height, the pumps and the records */
+.qp-chapter-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	width: 100%;
+	padding: var(--qp-layout-space12) var(--qp-layout-space14) var(--qp-layout-space12) var(--qp-layout-space16);
+	text-align: start;
+	border-radius: var(--qp-layout-card-radius);
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-chapter-card:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-chapter-card:active {
+	background: rgb(0 0 0 / var(--qp-surface-press-shade-opacity));
+}
+
+.qp-chapter-card:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+.qp-chapter-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	color: var(--qp-color-text2);
+}
+
+.qp-chapter-top .qp-type-caps {
+	color: var(--qp-color-text2);
+}
+
+.qp-chapter-top .qp-chevron {
+	flex: none;
+	transform: rotate(-135deg);
+}
+
+.qp-chapter-counts {
+	font: var(--qp-type-meta-font);
+	color: var(--qp-color-text2);
+}
+
+.qp-chapter-counts b {
+	font: 700 1.25em var(--qp-type-num-row-family);
+	color: var(--qp-color-text);
+}
+
+.qp-chapter-body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	min-width: 0;
+}
+
+.qp-chapter-big {
+	--qp-saga-size: var(--qp-type-num-hero-size);
+	display: flex;
+	align-items: flex-end;
+	gap: var(--qp-layout-space12);
+}
+
+/* the chapter's tag and the day's word side by side, one over the other where they do not fit, over Moves today */
+.qp-chapter-side {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	min-width: 0;
+	padding-bottom: calc(var(--qp-type-num-hero-size) * 0.08);
+}
+
+.qp-chapter-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-chapter-big[hidden], .qp-chapter-body [hidden] {
+	display: none;
+}
+
+.qp-chapter-number {
+	flex: none;
+	font: var(--qp-type-num-hero-weight) var(--qp-type-num-hero-size) / 0.86 var(--qp-type-num-hero-family);
+	font-variant-numeric: tabular-nums;
+	background: var(--qp-surface-saga-hero-number);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+/* The held book's pill ----------------------------------------------------------------------------------------------- */
+
+/* views/log/held.js (slice 44): centred under the TopBar over the page, stuck to the page's top as it scrolls, taking no
+   room in the column; it comes and goes with the toast's motion, under Reduce Motion a fade */
+.qp-held {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	justify-content: center;
+	height: 0;
+	pointer-events: none;
+}
+
+.qp-held > qp-chip {
+	margin-top: var(--qp-layout-space8);
+	pointer-events: auto;
+	animation: qp-held-in var(--qp-motion-toast-in) both;
+}
+
+.qp-held.qp-out > qp-chip {
+	animation: qp-held-out var(--qp-motion-toast-out) both;
+}
+
+@keyframes qp-held-in {
+	from {
+		opacity: 0;
+		transform: translateY(-100%);
+	}
+}
+
+@keyframes qp-held-out {
+	to {
+		opacity: 0;
+		transform: translateY(-100%);
+	}
+}
+
+/* the kit's fades (kit.css) */
+@media (prefers-reduced-motion: reduce) {
+	.qp-held > qp-chip {
+		animation-name: qp-fade-in;
+	}
+
+	.qp-held.qp-out > qp-chip {
+		animation-name: qp-fade-out;
+	}
+}
+
+/* The best-day moment ------------------------------------------------------------------------------------------------ */
+
+dialog.qp-best {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	max-height: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: var(--qp-surface-best-day-ground), var(--qp-color-page);
+	color: var(--qp-color-text);
+	overflow: hidden auto;
+}
+
+dialog.qp-best::backdrop {
+	background: var(--qp-color-page);
+}
+
+.qp-best-rays {
+	position: absolute;
+	left: 50%;
+	top: 40%;
+	width: calc(var(--qp-surface-best-day-rays-radius) * 2);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: repeating-conic-gradient(var(--qp-surface-best-day-ray) 0
+		calc(360deg / var(--qp-surface-best-day-ray-count) * var(--qp-surface-best-day-ray-fraction)),
+		transparent 0 calc(360deg / var(--qp-surface-best-day-ray-count)));
+	-webkit-mask-image: radial-gradient(closest-side, #000, transparent);
+	mask-image: radial-gradient(closest-side, #000, transparent);
+	transform: translate(-50%, -50%);
+	animation: qp-rays var(--qp-motion-best-day-rays) infinite;
+	pointer-events: none;
+}
+
+@keyframes qp-rays {
+	to {
+		transform: translate(-50%, -50%) rotate(360deg);
+	}
+}
+
+/* the page fits the window: the number and the knight sized by its height as well as its width (the default 520 x 760
+   shows Close); a window too short for it (a large zoom) scrolls, the fade at its foot saying more is below */
+.qp-best-page {
+	--qp-best-number: min(var(--qp-surface-best-day-number-size), 40vw, 25vh);
+	--qp-best-figure: min(var(--qp-surface-best-day-figure), 30vh);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	max-width: var(--qp-wide-column);
+	min-height: 100%;
+	margin-inline: auto;
+	padding: var(--qp-layout-space24) var(--qp-layout-margin);
+	text-align: center;
+}
+
+.qp-best-more {
+	position: sticky;
+	bottom: 0;
+	display: none;
+	place-items: end center;
+	width: 100%;
+	height: var(--qp-layout-space32);
+	margin-top: calc(var(--qp-layout-space32) * -1);
+	padding-bottom: var(--qp-layout-space8);
+	background: linear-gradient(transparent, var(--qp-color-page));
+	color: var(--qp-color-text2);
+	pointer-events: none;
+}
+
+dialog.qp-best-below .qp-best-more {
+	display: grid;
+}
+
+/* a short window (down to its least, 600px: --qp-desktop-window-min-height) keeps Close in view: the number, the
+   knight and the gaps smaller */
+@media (max-height: 700px) {
+	.qp-best-page {
+		--qp-best-number: min(var(--qp-surface-best-day-number-size), 40vw, 21vh);
+		--qp-best-figure: min(var(--qp-surface-best-day-figure), 25vh);
+		gap: var(--qp-layout-space4);
+		padding-block: var(--qp-layout-space12);
+	}
+
+	.qp-best-foot {
+		margin-top: var(--qp-layout-space8);
+	}
+}
+
+.qp-best-more .qp-chevron {
+	transform: rotate(-45deg);
+}
+
+.qp-best-ding {
+	font: 700 var(--qp-surface-best-day-ding-size) var(--qp-type-num-saga-family);
+	letter-spacing: calc(var(--qp-surface-best-day-ding-tracking-fraction) * 1em);
+	text-transform: uppercase;
+	color: var(--qp-color-gold-hi);
+}
+
+.qp-best-bar {
+	width: min(100%, var(--qp-surface-best-day-bar-width));
+	height: auto;
+	aspect-ratio: 240 / 16;
+	color: var(--qp-color-gold);
+}
+
+.qp-best-title {
+	font: var(--qp-type-fanfare-font);
+	text-transform: uppercase;
+	color: var(--qp-color-gold-hi);
+}
+
+.qp-best-stage {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 100%;
+}
+
+/* the knight behind the number's foot, its helmet and raised arms under the digits (board A-Best) */
+.qp-best-stage qp-figure-stage {
+	grid-area: 1 / 1;
+	width: var(--qp-best-figure);
+	margin-top: calc(var(--qp-best-number) * var(--qp-surface-best-day-figure-top-fraction));
+}
+
+.qp-best-stage .qp-plinth {
+	display: none;
+}
+
+.qp-best-number {
+	grid-area: 1 / 1;
+	align-self: start;
+	font: 700 var(--qp-best-number) / 1 var(--qp-type-num-saga-family);
+	letter-spacing: var(--qp-type-num-saga-tracking);
+	font-variant-numeric: tabular-nums;
+	background: var(--qp-surface-best-day-number);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	filter: drop-shadow(var(--qp-surface-best-day-number-glow)) drop-shadow(var(--qp-surface-best-day-number-shadow));
+}
+
+.qp-best-label {
+	font: 700 var(--qp-surface-best-day-label-size) var(--qp-type-num-saga-family);
+	letter-spacing: calc(var(--qp-surface-best-day-label-tracking-fraction) * 1em);
+	text-transform: uppercase;
+}
+
+.qp-best-old {
+	color: var(--qp-color-text2);
+}
+
+.qp-best-foot {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	width: 100%;
+	margin-top: var(--qp-layout-space16);
+}
+
+/* the bars slide in and the page rises (fanfareBars, sagaReveal); still under Reduce Motion (the tokens' zero) */
+dialog.qp-best-in .qp-best-bar {
+	animation: qp-bar-in var(--qp-motion-fanfare-bars) both;
+}
+
+@keyframes qp-bar-in {
+	from {
+		opacity: 0;
+		transform: scaleX(0.4);
+	}
+}

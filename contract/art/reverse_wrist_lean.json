@@ -1,0 +1,46 @@
+{
+  "move": "reverse_wrist_lean",
+  "view": "side",
+  "camera": {"yaw": 34, "pitch": 12},
+  "working": ["forearm"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 106, "top": 74}],
+  "poses": {
+    "over": {
+      "pelvis": [100, 92, 0],
+      "trunk": [33, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [126, 77.3, 24], "pole": [-1, 0, 0.7], "hand": [-1, -0.15, 0]},
+      "legs": {"foot": [76, 12], "y": 0, "turn": 6, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {"from": "over", "pelvis": [91, 92, 0], "trunk": [29, 0, 0], "head": [-4, 0, 0]},
+    "lean_in": {"from": "lean", "pelvis": [92, 92.2, 0], "trunk": [29, 0, 0], "chest": [5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "over"},
+    {"hold": 0.4, "phase": "hands_on_desk"},
+    {"to": "lean", "s": 1.6, "phase": "lean_back", "effort": 0.5},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "over", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 168},
+    {"at": "lean", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "max": -9}
+  ],
+  "note": "Close to the desk, palms flat on its top, fingers pointing back at the body, the heels of the hands a little in from the edge. The hips move back so the shoulders travel a fist behind the wrists with the arms straight: the forearms tip back over the hands and the wrists open past 90 degrees."
+}

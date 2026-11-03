@@ -1,0 +1,35 @@
+{
+  "move": "band_curl",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 6},
+  "working": ["upper_arm"],
+  "items": [
+    {
+      "kind": "band",
+      "strands": [
+        [{"at": "sole_near", "off": [3, 0, -11]}, "grip_near"],
+        [{"at": "sole_far", "off": [3, 0, 11]}, "grip_far"]
+      ]
+    }
+  ],
+  "poses": {
+    "down": {
+      "pelvis": [3, 94.4, 0],
+      "trunk": [1, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"fk": [9, 10, 10, 0, 0]},
+      "legs": {"foot": [0, 14], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "up": {"from": "down", "arms": {"fk": [8, 10, 128, 0, 0]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "up", "s": 1.0, "phase": "curl", "effort": 1.0},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "down", "s": 1.8, "phase": "lower_slowly", "effort": 0.55}
+  ],
+  "key": "up",
+  "targets": [{"at": "up", "check": "angle", "joints": ["hip_near", "shoulder_near", "elbow_near"], "max": 15}]
+}

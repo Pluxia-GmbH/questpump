@@ -1,0 +1,42 @@
+{
+  "move": "butterfly",
+  "view": "side",
+  "camera": {"yaw": 62, "pitch": 18},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -40, "f1": 90, "u": 45}],
+  "poses": {
+    "sit": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [0, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [-31, 61, 24], "pole": [-0.7, 0, 0.7], "hand": [-0.35, -0.93, 0.05]},
+      "legs": {"ik": [40, 53, 6.5], "pole": [0.3, 0.75, 0.7], "toe": [1, 0.05, -0.2]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "open": {
+      "from": "sit",
+      "trunk": [-2, 0, 0],
+      "head": [-2, 0, 0],
+      "legs": {"ik": [40, 53, 6.5], "pole": [0.2, 0.45, 0.9], "toe": [1, 0.05, -0.2]},
+      "chest": [-3, 0, 0]
+    },
+    "open_in": {"from": "open", "legs": {"ik": [40, 53, 6.5], "pole": [0.2, 0.4, 0.9], "toe": [1, 0.05, -0.2]}}
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.2},
+    {"to": "open", "s": 2.2, "phase": "knees_out", "effort": 0.5},
+    {"to": "open_in", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "open", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "open_in", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "open", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "sit", "s": 2.0, "phase": "release", "effort": 0.3}
+  ],
+  "key": "open",
+  "targets": [
+    {"at": "open", "check": "height", "joint": "knee_near", "min": 70, "max": 76},
+    {"at": "open", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  ],
+  "note": "Sitting tall on a bed, the fingertips on the bed behind the hips, the soles together and the heels about a forearm from the body; the knees fall open from up beside the chest to about two fists above the bed."
+}

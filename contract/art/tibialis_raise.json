@@ -1,0 +1,31 @@
+{
+  "move": "tibialis_raise",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 4},
+  "working": ["shin"],
+  "props": [{"kind": "wall", "f": -30, "behind": true}],
+  "poses": {
+    "flat": {
+      "pelvis": [-15.8, 86.8, 0],
+      "trunk": [-2, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"fk": [-6, 10, 14]},
+      "legs": {"foot": [20, 12], "turn": 8, "knee_out": 4},
+      "contacts": ["pelvis", "neck", "toe_near", "toe_far"]
+    },
+    "up": {
+      "from": "flat",
+      "pelvis": [-15.8, 90.8, 0],
+      "legs": {"foot": [20, 12], "turn": 8, "knee_out": 4, "lift": -33}
+    }
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.3, "phase": "back_on_wall"},
+    {"to": "up", "s": 1.0, "phase": "toes_up", "effort": 0.9},
+    {"hold": 0.3, "phase": "toes_up", "effort": 1.0},
+    {"to": "flat", "s": 1.8, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "up",
+  "targets": [{"at": "up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 160}]
+}

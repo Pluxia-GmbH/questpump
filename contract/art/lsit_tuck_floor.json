@@ -1,0 +1,74 @@
+{
+  "move": "lsit_tuck_floor",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 6},
+  "working": ["abdomen", "thigh", "upper_arm"],
+  "breathe": true,
+  "poses": {
+    "sit": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [6, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [33, 52, 30], "pole": [-0.3, -1, 0.8], "hand": [0.8, -0.6, 0]},
+      "legs": {"foot": [58, 17], "turn": 6, "knee_out": 10},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    },
+    "hands": {
+      "from": "in",
+      "legs": {"foot": [58, 17], "turn": 6, "knee_out": 10},
+      "contacts": [
+        "pelvis",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "in": {
+      "pelvis": [0, 15.4, 0],
+      "trunk": [22.5, 0, 0],
+      "chest": [5, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [12.7, 3.3, 33.9], "pole": [-0.4, 0, 1], "hand": [1, -0.14, 0]},
+      "legs": {"fk": [148.5, 20.6, 63, -45]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "out": {"from": "in", "head": [-6, 0, 0], "legs": {"fk": [148.5, 20.6, 61, -47]}},
+    "caved": {
+      "from": "in",
+      "pelvis": [0, 15.6, 0],
+      "chest": [15, 0, 0],
+      "head": [26, 0, 0],
+      "arms": {"ik": [12.7, 3.3, 33.9], "pole": [0, 0, 1], "hand": [1, -0.14, 0]},
+      "legs": {"fk": [148.5, 23, 63, -45]}
+    }
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.4, "phase": "sit"},
+    {"to": "hands", "s": 1.0, "phase": "hands_down", "effort": 0.4},
+    {"to": "in", "s": 0.9, "phase": "knees_up", "effort": 0.75},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.75},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "hands", "s": 0.8, "phase": "lower_slowly", "effort": 0.5},
+    {"to": "sit", "s": 0.9, "phase": "sit_tall", "effort": 0.2}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "caved",
+    "caption": "chest_caves",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 168},
+    {"at": "in", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "in", "check": "height", "joint": "ankle_near", "min": 16},
+    {"at": "in", "check": "height", "joint": "knee_near", "min": 40},
+    {"at": "in", "check": "height", "joint": "pelvis", "min": 15}
+  ]
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- The done check (an objective line that is done, the coach's "Reported"): a bold check of two plates meeting in a
+       mitred point, each end cut square; lit from the top left, the long arm's lower face in shadow. One colour, never
+       mirrored: the caller tints it by state (ink on parchment, text or gold on card). -->
+  <path data-token="tint" fill="currentColor" d="
+    M3.24 6.76 L5.97 9.49 L12.73 2.29 L14.77 4.21 L6.03 13.51 L1.26 8.74 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="M6 11.5 L13.75 3.25 L14.77 4.21 L6.03 13.51 Z"/>
+</svg>

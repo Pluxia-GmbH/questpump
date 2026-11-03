@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 16">
+  <!-- The level-up banner's bar, drawn as is above the words and again under them, never mirrored: a long gold bar of
+       two facets tapering to a point at each end, through a collar either side to a raised six-sided centre boss, its
+       bevel cut in six facets round a sunken field in bevel with a gold domed rivet in the middle and a small rivet
+       either side. Lit from the top left: the upper facets in light, the lower in shadow, the boss's left facets
+       lighter than its right and the field's upper rim in shadow, so its light reads the same above and below the
+       words. -->
+  <defs>
+    <radialGradient id="dome" gradientUnits="userSpaceOnUse" cx="118.9" cy="6.9" r="4.6">
+      <stop offset="0" data-token="void" stop-color="#050404" stop-opacity="0"/>
+      <stop offset="1" data-token="void" stop-color="#050404" stop-opacity="0.6"/>
+    </radialGradient>
+  </defs>
+  <path data-token="gold" fill="#E8B84A" d="
+    M2 8 C8 6.25 16 4.5 30 4.5 H210 C224 4.5 232 6.25 238 8 C232 9.75 224 11.5 210 11.5 H30 C16 11.5 8 9.75 2 8 Z"/>
+  <path data-token="text" fill="#F2EBDC" fill-opacity="0.25" d="
+    M2 8 C8 6.25 16 4.5 30 4.5 H210 C224 4.5 232 6.25 238 8 Z"/>
+  <path data-token="void" fill="#050404" fill-opacity="0.4" d="
+    M2 8 H238 C232 9.75 224 11.5 210 11.5 H30 C16 11.5 8 9.75 2 8 Z"/>
+  <path data-stroke-token="text" stroke="#F2EBDC" stroke-opacity="0.6" fill="none" stroke-width="0.7"
+        stroke-linecap="round" d="M9 6.35 C15 5.5 21 5.25 30 5.25 H210 C219 5.25 225 5.5 231 6.35"/>
+  <path data-stroke-token="void" stroke="#050404" fill="none" stroke-width="0.75" stroke-linejoin="round" d="
+    M2 8 C8 6.25 16 4.5 30 4.5 H210 C224 4.5 232 6.25 238 8 C232 9.75 224 11.5 210 11.5 H30 C16 11.5 8 9.75 2 8 Z"/>
+  <rect data-token="gold" fill="#E8B84A" x="88" y="2.5" width="6" height="11" rx="1.2"/>
+  <rect data-token="gold" fill="#E8B84A" x="146" y="2.5" width="6" height="11" rx="1.2"/>
+  <path data-token="text" fill="#F2EBDC" fill-opacity="0.3" d="
+    M88 8 V3.7 C88 3.04 88.54 2.5 89.2 2.5 H92.8 C93.46 2.5 94 3.04 94 3.7 V8 Z
+    M146 8 V3.7 C146 3.04 146.54 2.5 147.2 2.5 H150.8 C151.46 2.5 152 3.04 152 3.7 V8 Z"/>
+  <path data-token="void" fill="#050404" fill-opacity="0.4" d="
+    M88 8 H94 V12.3 C94 12.96 93.46 13.5 92.8 13.5 H89.2 C88.54 13.5 88 12.96 88 12.3 Z
+    M146 8 H152 V12.3 C152 12.96 151.46 13.5 150.8 13.5 H147.2 C146.54 13.5 146 12.96 146 12.3 Z"/>
+  <rect data-stroke-token="void" stroke="#050404" fill="none" stroke-width="0.6" x="88" y="2.5" width="6" height="11"
+        rx="1.2"/>
+  <rect data-stroke-token="void" stroke="#050404" fill="none" stroke-width="0.6" x="146" y="2.5" width="6" height="11"
+        rx="1.2"/>
+  <path data-token="gold" fill="#E8B84A" d="M103 8 L109.5 0.75 H130.5 L137 8 L130.5 15.25 H109.5 Z"/>
+  <path data-token="text" fill="#F2EBDC" fill-opacity="0.55" d="M103 8 L109.5 0.75 L112 3.75 L108.25 8 Z"/>
+  <path data-token="text" fill="#F2EBDC" fill-opacity="0.35" d="M109.5 0.75 H130.5 L128 3.75 H112 Z"/>
+  <path data-token="text" fill="#F2EBDC" fill-opacity="0.12" d="M130.5 0.75 L137 8 H131.75 L128 3.75 Z"/>
+  <path data-token="void" fill="#050404" fill-opacity="0.5" d="M137 8 L130.5 15.25 L128 12.25 L131.75 8 Z"/>
+  <path data-token="void" fill="#050404" fill-opacity="0.42" d="M130.5 15.25 H109.5 L112 12.25 H128 Z"/>
+  <path data-token="void" fill="#050404" fill-opacity="0.28" d="M109.5 15.25 L103 8 H108.25 L112 12.25 Z"/>
+  <path data-token="bevel" fill="#6B5E4A" d="M108.25 8 L112 3.75 H128 L131.75 8 L128 12.25 H112 Z"/>
+  <path data-token="void" fill="#050404" fill-opacity="0.45" d="
+    M108.25 8 L112 3.75 H128 L128.6 4.4 H112.6 L109.1 8.3 Z"/>
+  <path data-stroke-token="void" stroke="#050404" fill="none" stroke-width="0.5" stroke-linejoin="round" d="
+    M108.25 8 L112 3.75 H128 L131.75 8 L128 12.25 H112 Z"/>
+  <path data-stroke-token="void" stroke="#050404" fill="none" stroke-width="0.75" stroke-linejoin="round" d="
+    M103 8 L109.5 0.75 H130.5 L137 8 L130.5 15.25 H109.5 Z"/>
+  <circle data-token="gold" fill="#E8B84A" cx="120" cy="8" r="3.4"/>
+  <circle fill="url(#dome)" cx="120" cy="8" r="3.4"/>
+  <circle data-stroke-token="void" stroke="#050404" fill="none" stroke-width="0.5" cx="120" cy="8" r="3.4"/>
+  <circle data-token="text" fill="#F2EBDC" fill-opacity="0.85" cx="118.85" cy="6.85" r="0.9"/>
+  <circle data-token="gold" fill="#E8B84A" data-stroke-token="void" stroke="#050404" stroke-width="0.45" cx="113.4"
+          cy="8" r="1.05"/>
+  <circle data-token="gold" fill="#E8B84A" data-stroke-token="void" stroke="#050404" stroke-width="0.45" cx="126.6"
+          cy="8" r="1.05"/>
+</svg>

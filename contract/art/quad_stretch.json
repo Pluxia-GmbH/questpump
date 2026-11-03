@@ -1,0 +1,70 @@
+{
+  "move": "quad_stretch",
+  "view": "side",
+  "camera": {"yaw": 8, "pitch": 6},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "desk", "l": 38, "f": 0, "top": 74}],
+  "poses": {
+    "stand": {
+      "pelvis": [2, 94.0, 2],
+      "trunk": [1, 0, 0],
+      "arm_near": {"fk": [4, 4, 10]},
+      "arm_far": {"ik": [6, 90.5, 44], "pole": [-0.3, 0, 1], "hand": [0.2, -0.97, 0.1]},
+      "leg_near": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_far"]
+    },
+    "catch": {
+      "from": "stand",
+      "pelvis": [3, 94.0, 3],
+      "trunk": [7, -4, 0],
+      "arm_near": {"ik": [-27, 96, 15], "pole": [0.2, -0.2, 1], "hand": [0.15, 0, -1]},
+      "leg_near": {"fk": [12, 2, 150, -65]},
+      "contacts": ["toe_far", "ankle_far", "hand_tip_far"]
+    },
+    "pull": {
+      "from": "catch",
+      "trunk": [0, -4, 0],
+      "arm_near": {"ik": [-30, 96.5, 15], "pole": [0.2, -0.2, 1], "hand": [0.3, -0.1, -1]},
+      "leg_near": {"fk": [-7, 2, 150, -70]}
+    },
+    "pull_in": {"from": "pull", "trunk": [-1, -4, 0], "chest": [-1, 0, 0]},
+    "knee_fwd": {
+      "from": "pull",
+      "trunk": [6, -4, 0],
+      "leg_near": {"fk": [30, 2, 162, -70]},
+      "arm_near": {"ik": [-18, 92, 15], "pole": [0.2, -0.2, 1], "hand": [0.3, -0.1, -1]}
+    },
+    "heel_up": {
+      "from": "stand",
+      "leg_near": {"foot": [0, 10], "turn": 6, "lift": 38, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_far", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.5, "phase": "stand_tall"},
+    {"to": "heel_up", "s": 0.4, "phase": "hand_back", "effort": 0.3},
+    {"to": "catch", "s": 1.2, "phase": "hand_back", "effort": 0.4},
+    {"to": "pull", "s": 1.3, "phase": "heel_to_buttock", "effort": 0.6},
+    {"to": "pull_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "pull", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "pull_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "pull", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "heel_up", "s": 1.4, "phase": "release", "effort": 0.3},
+    {"to": "stand", "s": 0.4, "phase": "release", "effort": 0.3}
+  ],
+  "key": "pull",
+  "fault": {
+    "pose": "knee_fwd",
+    "caption": "knee_drifts_forward",
+    "breaks": {"check": "angle", "joints": ["knee_near", "hip_near", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "pull", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 35},
+    {"at": "pull", "check": "angle", "joints": ["knee_near", "hip_near", "neck"], "min": 170},
+    {"at": "pull", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  ],
+  "note": "Standing side-on to the desk, the far hand on it: the near knee bends and the near hand draws that heel to the buttock, the knees side by side and the body tall. Seen almost from the side, so the folded shin and the heel at the buttock show behind the thigh."
+}

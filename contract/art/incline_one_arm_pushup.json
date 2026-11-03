@@ -1,0 +1,47 @@
+{
+  "move": "incline_one_arm_pushup",
+  "view": "side",
+  "camera": {"yaw": 40, "pitch": 22},
+  "working": ["chest", "upper_arm"],
+  "props": [{"kind": "bench", "f0": 92, "f1": 200, "u": 46}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -55, "angle": 33.5, "width": 30, "gap": 1.2},
+      "trunk": [0, -6, 0],
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [100, 49.3, 15], "pole": [-1, 0, 0.7], "hand": [1, -0.15, 0.15]},
+      "arm_far": {"ik": [-16, 4, 5], "rel": "pelvis", "pole": [0, 1, 0.8], "hand": [0, -0.3, -1]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "bottom": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": -55, "angle": 21.5, "width": 30, "gap": 1.2},
+      "trunk": [0, -7, 0]
+    },
+    "sag": {
+      "from": "bottom",
+      "line": {"pivot": "toes", "at": -55, "angle": 6, "hips": 40, "width": 30, "gap": 1.2, "lift": 72},
+      "trunk": [0, -7, 0],
+      "chest": [6, 0, 0],
+      "head": [6, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "arm_straight"},
+    {"to": "bottom", "s": 2.0, "phase": "chest_to_edge", "effort": 0.8},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.95},
+    {"to": "top", "s": 1.3, "phase": "push_away", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "top", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "bottom", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "top", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ]
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The Pump button: a kettlebell (the app's launcher motif), drawn so it never reads as the lock mark (mark_lock.svg,
+       an arched shackle over a square body) at 16-26 pt: a wide, flat-topped grip whose legs flare onto a round bell's
+       shoulders, the bell bulging past them, over a wide flat base (redrawn 2026-10-06, slice 29). The bell and its
+       handle are one plate in the tint; the handle's open window, about as tall as it is wide, is wound against the
+       plate, so it cuts the handle and leaves the bell's dome whole beneath it. Lit from the top left: the bell's right
+       side in shadow. -->
+  <path data-token="tint" fill="currentColor" d="
+    M12 8.25 C16.28 8.25 19.75 11.6 19.75 15.75 C19.75 18 18.75 20.05 17.1 21.5 H6.9 C5.25 20.05 4.25 18 4.25 15.75
+    C4.25 11.6 7.72 8.25 12 8.25 Z
+    M5.9 11.5 L6.75 3.5 C6.88 2.35 7.8 1.5 8.95 1.5 H15.05 C16.2 1.5 17.12 2.35 17.25 3.5 L18.1 11.5 Z
+    M8.05 10.5 H15.95 L15.3 4.2 C15.25 3.65 14.85 3.3 14.3 3.3 H9.7 C9.15 3.3 8.75 3.65 8.7 4.2 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12 8.25 C16.28 8.25 19.75 11.6 19.75 15.75 C19.75 18 18.75 20.05 17.1 21.5 H11.5
+    C15.4 20.7 17.5 18.4 17.5 15.65 C17.5 12.1 15.15 9 12 8.25 Z"/>
+</svg>

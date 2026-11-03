@@ -1,0 +1,6 @@
+{
+  "move": "side_lunge_press",
+  "variant_of": "side_lunge",
+  "phases": {"breathe": 4.8},
+  "note": "The side lunge pressed and sunk: its frames on a slower table, the press itself still (an isometric press shows no motion)."
+}

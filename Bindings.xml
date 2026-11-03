@@ -1,0 +1,10 @@
+<Bindings>
+	<!-- The Ready keybinding: opens the pending pump at once, or pays unfinished moves (docs/plan.md slice 1). -->
+	<Binding name="QUESTPUMP_START" header="QUESTPUMP" category="ADDONS">
+		QuestPump_StartPump()
+	</Binding>
+	<!-- The character sheet (docs/plan.md slice 3). -->
+	<Binding name="QUESTPUMP_SHEET" category="ADDONS">
+		QuestPump_ToggleSheet()
+	</Binding>
+</Bindings>

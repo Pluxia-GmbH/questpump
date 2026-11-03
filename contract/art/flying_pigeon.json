@@ -1,0 +1,53 @@
+{
+  "move": "flying_pigeon",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["upper_arm", "forearm", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [
+    {"kind": "mat", "f0": -100, "f1": 110, "l0": -70, "l1": 45},
+    {"kind": "step", "f0": -100, "f1": -70, "u": 12, "l0": -2, "l1": 28}
+  ],
+  "poses": {
+    "prep": {
+      "pelvis": [4, 61, 0],
+      "trunk": [100, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-36, 0, 0],
+      "arm_near": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [29, 34, -15], "pole": [0.3, -0.2, 1.4], "toe": [0, -0.5, -0.85]},
+      "leg_far": {"ik": [-77, 27, 13], "pole": [0, -1, 0], "toe": [-0.75, -0.65, 0]},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fly": {
+      "pelvis": [18, 68, 0],
+      "trunk": [112, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arm_near": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [32, 33, -16], "pole": [0.4, -0.4, 1.4], "toe": [0, -0.5, -0.85]},
+      "leg_far": {"fk": [12, 3, 0, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fly_in": {"from": "fly", "pelvis": [18, 69.5, 0], "chest": [10, 0, 0], "head": [-38, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "prep"},
+    {"hold": 0.4, "phase": "hook_toes"},
+    {"to": "fly", "s": 1.6, "phase": "float", "effort": 0.8},
+    {"to": "fly_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "prep", "s": 1.6, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "fly",
+  "targets": [
+    {"at": "fly", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "fly", "check": "height", "joint": "ankle_far", "min": 35},
+    {"at": "fly", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 80, "max": 140}
+  ],
+  "note": "Eka Pada Galavasana: the front shin lies across the backs of both upper arms just above the elbows, its foot hooked round the far arm, the hands flat under the shoulders with the elbows bent. From the back foot resting on a stack of books, the body leans forward until the back leg lifts and straightens behind, the hips level and the gaze forward."
+}

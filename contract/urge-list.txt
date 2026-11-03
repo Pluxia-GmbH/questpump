@@ -1,0 +1,48 @@
+# What no coach line says beyond the health-claim deny-list (docs/plan.md slice 9): urging past a safe limit (Apple App
+# Store Review Guideline 1.4.5: apps "should not urge customers to participate in activities ... in a way that risks
+# physical harm"), and the body's measures the coach never names (calories, fat, the heart), which the addon itself may
+# say ("heart rate") and so stay out of the shared list. The matching rule is deny-list.txt's: one stem a line, '#'
+# starts a comment, a stem matches a text when it starts a word there, case-insensitively, and the words of a stem of
+# several words stand in a row with spaces or hyphens between them, typographic spaces, hyphens and apostrophes read as
+# ASCII ones. The phone apps refuse a talk or a Chronicle with a match here or in deny-list.txt, and nothing is said
+# instead. The game's own words stay the game's: an "all-out window" is a move the addon names, never a line the coach
+# says, and two stop lines in contract/moves.json name holding the breath as a stop, which the coach's input no longer
+# carries since 2026-10-09 (it gets no cue or stop line).
+
+# urging past a safe limit
+all out
+fail
+push through the pain
+push through the burn
+push past
+pain
+no excuse
+no limit
+your limit
+don't stop
+dont stop
+do not stop
+never stop
+never quit
+don't quit
+dont quit
+do not quit
+give up
+suffer
+feel the burn
+make it hurt
+exhaust
+collapse
+puke
+vomit
+# holding the breath under effort (docs/safety.md hazard 3): the coach never asks for it
+hold your breath
+hold the breath
+hold breath
+breath hold
+# the body's measures the coach never names
+calor
+metabol
+heart
+fat
+shred

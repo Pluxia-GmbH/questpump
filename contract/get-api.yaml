@@ -1,0 +1,170 @@
+openapi: 3.1.1
+info:
+  title: QuestPump click counts
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    How questpump.com counts its clicks without analytics (docs/plan.md slice 35; decided 2026-10-09 with the site's
+    redesign): no page runs a counting script, sets a cookie or loads anything from another origin. Instead every
+    download and store link on the site points at `/get/<target>`, and every link Pluxia places elsewhere (a post, a
+    video's description, an addon page) at `/from/<source>`: first-party redirects on the report Worker that count the
+    click and send the browser on. The counts answer which downloads people pick and where visitors come from, nothing
+    about any one person.
+
+    The files of the contract:
+
+    - this file: the two routes, the targets and their addresses, what a click writes, what is never kept;
+    - `site/report/src/index.js` and `site/report/wrangler.toml`: the routes `/get/*` and `/from/*` on the report
+      Worker (beside the coach report's, the feedback button's and the waitlist's), on `questpump.com` and, while the
+      Pages project serves it, `www.questpump.com` (the pages link them by a relative path), its Analytics Engine
+      binding `CLICKS` (the dataset `questpump_clicks`) and its rate limit `CLICK_LIMIT`;
+    - the site's pages (`site/src/`): every download and store button links `/get/<target>`, never an installer's or a
+      store's own address;
+    - `site/public/speculation-rules.json`: never prerenders `/get/*` or `/from/*`, since a prerender would count a
+      click nobody made;
+    - `site/src/pages/privacy.astro`: what is counted, in the page's words;
+    - `.github/workflows/site.yml`: after each deploy, on both hosts, `HEAD /get/mac-arm` must meet the Worker's 302
+      to the Apple silicon installer, `HEAD /get/zip` its 302 to the add-on's zip and `HEAD /from/test` its 302 to the
+      home page (a HEAD counts nothing; the host's own answer to an address it lacks is never a 302): a probe for each
+      target that has an address of its own, but for the two other installers, which share the probed one's release;
+    - `.github/workflows/helper-release.yml`: the installers' fixed names, which the three installer targets name; the
+      add-on's release puts its zip, the same file CurseForge and Wago get, on the same release as
+      `QuestPump-addon.zip`, which the `zip` target names.
+
+    **The targets.** `mac-arm`, `mac-intel` and `windows` go to the installers of QuestPump for Mac and Windows, and
+    `zip` to the add-on's zip, `QuestPump-addon.zip` (all four on the helper-updater release of the public repository,
+    `https://github.com/Pluxia-GmbH/questpump/releases/download/helper-updater/`, under fixed names each new version
+    replaces). `ios`, `android` and `phone` have no address until the phone apps are in the stores (the site's
+    `PHONES` switch, `site/src/launch.ts`), `curseforge` and `wago` none until the add-on's projects there exist, and
+    `discord` none until the community opens (the public release, docs/tasks.md); each goes to
+    `https://questpump.com/start` until it has one. `phone` is
+    the one button for either phone: once both stores have an address it reads the request's `User-Agent` only to pick
+    the visitor's store (an iPhone or iPad the App Store, Android Google Play, anything else `/start`) and keeps nothing
+    of it. Any other target is a 404, counted nowhere.
+
+    **The sources.** `/from/<source>` takes a source of 1 to 40 lower-case letters, digits and hyphens (`reddit`,
+    `yt-launch`), counts it and sends the browser to the home page; any other path is a 404, counted nowhere.
+
+    **What a click writes.** For a GET, one data point in Cloudflare Workers Analytics Engine, the dataset
+    `questpump_clicks`: its index the target or the source (Analytics Engine's sampling key), and five blobs in this
+    order: the kind (`get` or `from`); the target or the source; the referring page's path when the `Referer` names a
+    page of the site (`https://questpump.com`, or `https://www.questpump.com` while the Pages project serves it;
+    `/helper`, `/`; else empty), at most 200 characters; the visitor's country as Cloudflare's network reads it for the
+    request (`request.cf.country`, two letters, `T1` for Tor; else empty); and the host of the `Referer`
+    (`questpump.com`, `www.reddit.com`; else empty), at most 100 characters. Analytics Engine adds the time. No numbers
+    (doubles). A HEAD answers as a GET does and writes nothing. At most 60 data points a minute are written in each
+    Cloudflare location (the rate limit `CLICK_LIMIT`, one key for every click, which Cloudflare counts per location
+    and calls "permissive, eventually consistent", so a burst may pass a few more), so a loop of requests from one place
+    cannot use up Analytics Engine's free allowance of 100,000 a day. A click past that limit, or one whose data point
+    cannot be written, is sent on all the same, uncounted, and the Worker logs the limit or the error's name alone.
+
+    **What is never kept.** No IP address, no user agent, no cookie, no per-person or per-device id, and of another
+    site's `Referer` only its host (browsers send no more by default, and the Worker drops a path that comes): nothing
+    in a data point tells two clicks of one person from two people's. Workers Logs stays off (wrangler.toml).
+
+    **Who keeps it, and how long.** Cloudflare (Pluxia's processor, as for hosting) stores the data points in Pluxia's
+    account and deletes each after three months (Analytics Engine's retention, Cloudflare's "Limits" page, read
+    2026-10-09). Only Pluxia reads them, through the SQL API with a token of its own (Account Analytics: Read, never
+    in CI), as counts.
+# public routes: a click needs no credential, and none is read
+security: []
+servers:
+  - url: https://questpump.com
+  - url: https://www.questpump.com
+paths:
+  /get/{target}:
+    parameters:
+      - name: target
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [mac-arm, mac-intel, windows, ios, android, phone, curseforge, wago, zip, discord]
+    get:
+      operationId: getTarget
+      summary: Counts a download or store click and sends the browser to the target's address
+      responses:
+        "302":
+          description: |
+            To the target's address (above); `/start` while it has none. Never kept in a cache, so each click reaches
+            the Worker.
+          headers:
+            Location:
+              required: true
+              schema: { type: string, format: uri }
+            Cache-Control:
+              required: true
+              schema: { type: string, const: no-store }
+        "404": { description: No such target; nothing counted }
+        "405":
+          description: Not a GET or a HEAD; nothing counted
+          headers:
+            Allow:
+              required: true
+              schema: { type: string, const: "GET, HEAD" }
+    head:
+      operationId: headTarget
+      summary: The GET's answer, counting nothing
+      responses:
+        "302": { description: As the GET's }
+        "404": { description: No such target }
+  /from/{source}:
+    parameters:
+      - name: source
+        in: path
+        required: true
+        schema: { type: string, pattern: "^[a-z0-9-]{1,40}$" }
+    get:
+      operationId: fromSource
+      summary: Counts a visit from a link Pluxia placed and sends the browser to the home page
+      responses:
+        "302":
+          description: To `https://questpump.com/`, never kept in a cache.
+          headers:
+            Location:
+              required: true
+              schema: { type: string, const: "https://questpump.com/" }
+            Cache-Control:
+              required: true
+              schema: { type: string, const: no-store }
+        "404": { description: "A source that is not 1 to 40 of a-z, 0-9 and the hyphen; nothing counted" }
+        "405":
+          description: Not a GET or a HEAD; nothing counted
+          headers:
+            Allow:
+              required: true
+              schema: { type: string, const: "GET, HEAD" }
+    head:
+      operationId: headSource
+      summary: The GET's answer, counting nothing
+      responses:
+        "302": { description: As the GET's }
+        "404": { description: Not a source }
+components:
+  schemas:
+    Click:
+      type: object
+      description: |
+        The data point a GET writes (Analytics Engine's writeDataPoint), documented as an object; the Worker passes
+        `indexes` and `blobs` as arrays in this order.
+      required: [indexes, blobs]
+      additionalProperties: false
+      properties:
+        indexes:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items: { type: string, maxLength: 40 }
+          description: The target or the source.
+        blobs:
+          type: array
+          minItems: 5
+          maxItems: 5
+          prefixItems:
+            - { type: string, enum: [get, from], description: The kind }
+            - { type: string, maxLength: 40, description: The target or the source }
+            - { type: string, maxLength: 200, description: "The referring page's path on questpump.com, else empty" }
+            - { type: string, maxLength: 2, description: "The visitor's country (request.cf.country), else empty" }
+            - { type: string, maxLength: 100, description: "The Referer's host, else empty" }

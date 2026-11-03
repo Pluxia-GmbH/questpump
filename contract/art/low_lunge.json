@@ -1,0 +1,63 @@
+{
+  "move": "low_lunge",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 16},
+  "working": ["thigh_near", "tasset_near"],
+  "items": [{"kind": "towel", "under": "knee_near"}],
+  "poses": {
+    "set": {
+      "pelvis": [-30, 54, 0],
+      "fit": {"joint": "knee_near", "u": 10},
+      "trunk": [12, 0, 0],
+      "arms": {"ik": [6, 56, 14], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]},
+      "leg_near": {"foot": [-82, 12], "y": -3, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [37.5, 12], "turn": 4, "knee_out": 4},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "forward": {
+      "from": "set",
+      "pelvis": [-6.8, 41, 0],
+      "trunk": [4, 0, 0],
+      "arms": {"ik": [28, 57, 14], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]}
+    },
+    "reach": {
+      "from": "forward",
+      "trunk": [-2, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"fk": [172, 12, 4]}
+    },
+    "reach_in": {"from": "reach", "pelvis": [-5.8, 41, 0], "chest": [-6, 0, 0], "arms": {"fk": [176, 12, 4]}},
+    "lean": {
+      "from": "reach",
+      "trunk": [36, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"ik": [30, 57, 14], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.6, "phase": "knee_down"},
+    {"to": "forward", "s": 2.4, "phase": "hips_forward", "effort": 0.5},
+    {"to": "reach", "s": 1.8, "phase": "arms_up", "effort": 0.6},
+    {"to": "reach_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "reach", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "reach_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "reach", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "forward", "s": 1.8, "phase": "hands_down", "effort": 0.4},
+    {"to": "set", "s": 2.2, "phase": "hips_back", "effort": 0.3}
+  ],
+  "key": "reach",
+  "fault": {
+    "pose": "lean",
+    "caption": "chest_leans",
+    "breaks": {"check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "max": 8}
+  },
+  "targets": [
+    {"at": "reach", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 70, "max": 95},
+    {"at": "reach", "check": "height", "joint": "knee_near", "max": 11},
+    {"at": "reach", "check": "height", "joint": "pelvis", "max": 43}
+  ],
+  "note": "The back knee rests on a folded towel (the towel item under knee_near); fit keeps it planted while the hips travel forward and sink lower than the front knee (the pelvis at 41 cm, the front knee at 50), the back thigh slanting about 45 degrees and the front shin upright over its ankle, the chest tall and the arms up."
+}

@@ -1,0 +1,109 @@
+{
+  "move": "split_low_tall",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 14},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [
+    {"kind": "mat", "f0": -110, "f1": 108},
+    {"kind": "step", "f0": -26, "f1": -3, "u": 22, "l0": -50, "l1": -28},
+    {"kind": "step", "f0": -26, "f1": -3, "u": 22, "l0": 28, "l1": 50}
+  ],
+  "poses": {
+    "lunge": {
+      "pelvis": [-15, 45.8, 0],
+      "trunk": [66, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"ik": [56, 17, 42], "pole": [1, 0.3, 0.3], "hand": [0.35, -0.94, 0]},
+      "leg_near": {"foot": [-85, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [28, 28], "y": 1, "turn": 22, "knee_out": 4, "pole": [1, 0, 0.9]},
+      "contacts": ["knee_near", "ankle_near", "toe_near", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"],
+      "fit": {"joint": "knee_near", "u": 10}
+    },
+    "slide": {
+      "from": "low",
+      "pelvis": [-8, 36, 0],
+      "fit": {"joint": "knee_near", "u": 11.5},
+      "trunk": [62, 0, 0],
+      "head": [-22, 0, 0],
+      "leg_far": {"foot": [62.8, 17], "y": 1, "turn": 11, "lift": -15, "knee_out": 2, "pole": [0.5, 0.4, 0.9]}
+    },
+    "slide2": {
+      "from": "low",
+      "pelvis": [-3, 30, 0],
+      "fit": {"joint": "knee_near", "u": 12.4},
+      "trunk": [52, 0, 0],
+      "head": [-18, 0, 0],
+      "leg_far": {"foot": [84, 12.5], "y": 1, "turn": 4, "lift": -22, "knee_out": 1, "pole": [0.4, 0.4, 0.95]}
+    },
+    "low": {
+      "from": "lunge",
+      "pelvis": [0, 27, 0],
+      "trunk": [48, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-16, 0, 0],
+      "leg_near": {"foot": [-85.0, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [97.55, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0.2, 0.4, 1]},
+      "contacts": ["ankle_near", "toe_near", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"],
+      "fit": {"joint": "knee_near", "u": 12.9}
+    },
+    "tall": {
+      "from": "low",
+      "trunk": [8, 0, 0],
+      "chest": [-2, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [-17, 25.5, 38], "pole": [-1, 0, 0.4], "hand": [1, -0.12, 0]},
+      "contacts": [
+        "ankle_near",
+        "toe_near",
+        "ankle_far",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lift": {
+      "from": "tall",
+      "trunk": [24, 0, 0],
+      "arms": {"ik": [28, 44, 34], "pole": [-1, 0, 0.4], "hand": [0.6, -0.7, 0]},
+      "contacts": ["ankle_near", "toe_near", "ankle_far", "toe_far"]
+    },
+    "tall_in": {"from": "tall", "fit": {"joint": "knee_near", "u": 12.5}, "trunk": [7, 0, 0], "chest": [-3, 0, 0]},
+    "knee_bent": {
+      "from": "tall",
+      "leg_far": {"foot": [91, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0.2]}
+    }
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.5, "phase": "lunge", "effort": 0.3},
+    {"to": "slide", "s": 1.01, "ease": "in", "phase": "slide_out", "effort": 0.6},
+    {"to": "slide2", "s": 0.68, "ease": "linear", "phase": "slide_out", "effort": 0.6},
+    {"to": "low", "s": 0.51, "ease": "out", "phase": "slide_out", "effort": 0.6},
+    {"to": "lift", "s": 0.8, "phase": "chest_up", "effort": 0.6},
+    {"to": "tall", "s": 0.8, "phase": "chest_up", "effort": 0.65},
+    {"to": "tall_in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "tall", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "lift", "s": 0.6, "phase": "lean_forward", "effort": 0.5},
+    {"to": "low", "s": 0.8, "phase": "lean_forward", "effort": 0.5},
+    {"to": "slide2", "s": 0.55, "ease": "in", "phase": "slide_back", "effort": 0.3},
+    {"to": "slide", "s": 0.73, "ease": "linear", "phase": "slide_back", "effort": 0.3},
+    {"to": "lunge", "s": 0.92, "ease": "out", "phase": "slide_back", "effort": 0.3}
+  ],
+  "key": "tall",
+  "fault": {
+    "pose": "knee_bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  },
+  "targets": [
+    {"at": "tall", "check": "height", "joint": "pelvis", "max": 29.5},
+    {"at": "tall", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "tall", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "tall", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "max": 12}
+  ],
+  "note": "The front leg is the far one. From a low lunge the front heel slides out (toes up) into the low split, the hands planted ahead, then the body lifts upright, the palms pressing on two piles of books beside the hips and a little behind them, so the near pile never hides the gap under the hips, while the pelvis stays within 15 cm of the floor (its centre at 27, the armour 14.5 below it) and both knees stay straight."
+}

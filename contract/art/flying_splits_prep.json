@@ -1,0 +1,74 @@
+{
+  "move": "flying_splits_prep",
+  "view": "side",
+  "camera": {"yaw": -18, "pitch": 22},
+  "working": ["upper_arm", "forearm", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -100, "f1": 110, "l0": -70, "l1": 40}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-4, 46, 0],
+      "trunk": [96, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-30, 0, 0],
+      "arm_near": {"ik": [33, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [33, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"foot": [40, 52], "turn": 25, "lift": 0, "knee_out": 0, "pole": [0.2, 1, 0.8], "y": 1},
+      "leg_far": {"foot": [-106, 12], "turn": 0, "lift": 65, "knee_out": 0, "pole": [0, -1, 0], "y": 1},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean": {
+      "from": "lunge",
+      "pelvis": [4, 52, 0],
+      "trunk": [104, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-38, 0, 0],
+      "leg_near": {"foot": [54, 58], "turn": 25, "lift": 20, "knee_out": 0, "pole": [0.2, 1, 0.8], "y": 1},
+      "leg_far": {"foot": [-96, 12], "turn": 0, "lift": 72, "knee_out": 0, "pole": [0, -1, 0], "y": 1}
+    },
+    "float": {
+      "pelvis": [7, 50, 0],
+      "trunk": [102, 0, 0],
+      "chest": [7, 0, 0],
+      "head": [-40, 0, 0],
+      "arm_near": {"ik": [33, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [33, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [75.4, 46.5, 65.8], "pole": [0, 1, 0.3], "toe": [0.4, 0, 0.9]},
+      "leg_far": {"foot": [-97.6, 12], "turn": 0, "lift": 75, "knee_out": 0, "pole": [0, -1, 0], "y": 1},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "float_in": {
+      "from": "float",
+      "pelvis": [7, 51, 0],
+      "chest": [8.5, 0, 0],
+      "head": [-38, 0, 0],
+      "leg_near": {"ik": [75.4, 47.5, 65.8], "pole": [0, 1, 0.3], "toe": [0.4, 0, 0.9]}
+    },
+    "bent": {"from": "float", "leg_near": {"ik": [70, 30.2, 54.5], "pole": [0, 1, 0.3], "toe": [0.4, -0.3, 0.9]}}
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.4, "phase": "lunge"},
+    {"to": "lean", "s": 1.2, "phase": "lean_forward", "effort": 0.6},
+    {"to": "float", "s": 1.0, "phase": "front_leg_up", "effort": 0.8},
+    {"to": "float_in", "s": 1.0, "phase": "breathe", "effort": 0.8},
+    {"to": "float", "s": 1.0, "phase": "breathe", "effort": 0.8},
+    {"to": "float_in", "s": 1.0, "phase": "breathe", "effort": 0.8},
+    {"to": "float", "s": 1.0, "phase": "breathe", "effort": 0.8},
+    {"to": "lean", "s": 1.0, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "lunge", "s": 1.2, "phase": "lower_slowly", "effort": 0.4}
+  ],
+  "key": "float",
+  "fault": {
+    "pose": "bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "float", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "float", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "float", "check": "height", "joint": "ankle_near", "min": 22},
+    {"at": "float", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 85, "max": 125}
+  ],
+  "note": "The flying splits' first stage (Yoga International): from the lunge the front shoulder sits under the front thigh, the body leans forward on bent arms until the straight front leg lifts off the floor, pointing a little out so the thigh passes outside the chest and the shin lies on the shoulder plate, while the back leg stays long with its toes on the floor (the pump mirrors it for the other side)."
+}

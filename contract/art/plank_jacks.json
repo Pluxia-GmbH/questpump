@@ -1,0 +1,57 @@
+{
+  "move": "plank_jacks",
+  "view": "side",
+  "camera": {"yaw": 36, "pitch": 24},
+  "working": ["abdomen", "thigh", "pauldron"],
+  "ballistic": true,
+  "fast_phase": 0.5,
+  "props": [{"kind": "mat", "f0": -90, "f1": 110, "l0": -50, "l1": 50}],
+  "poses": {
+    "in": {
+      "line": {"pivot": "toes", "at": -70, "angle": 16.5, "width": 11, "y": 1},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "hop_out": {
+      "line": {"pivot": "toes", "at": -67.5, "angle": 13.5, "width": 24, "y": 5},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "out": {
+      "line": {"pivot": "toes", "at": -65.4, "angle": 16.5, "width": 38, "y": 1},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "hop_in": {"from": "hop_out"},
+    "sag": {
+      "line": {"pivot": "toes", "at": -65.4, "angle": 8, "hips": 20, "width": 38, "y": 1},
+      "chest": [6, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "in"},
+    {"to": "hop_out", "s": 0.12, "ease": "out", "phase": "feet_wide", "effort": 0.9, "dynamic": true},
+    {"to": "out", "s": 0.12, "ease": "in", "phase": "feet_wide", "effort": 0.9, "dynamic": true},
+    {"hold": 0.04, "phase": "feet_wide", "effort": 0.8},
+    {"to": "hop_in", "s": 0.12, "ease": "out", "phase": "back_in", "effort": 0.9, "dynamic": true},
+    {"to": "in", "s": 0.12, "ease": "in", "phase": "back_in", "effort": 0.9, "dynamic": true},
+    {"hold": 0.04, "phase": "back_in", "effort": 0.7}
+  ],
+  "key": "out",
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "out", "check": "offset", "joint": "ankle_near", "from": "pelvis", "axis": "l", "min": 30},
+    {"at": "in", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "out", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  ]
+}

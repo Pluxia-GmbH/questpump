@@ -1,0 +1,68 @@
+{
+  "move": "standing_figure_four",
+  "view": "side",
+  "camera": {"yaw": 42, "pitch": 12},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "shift": {
+      "from": "tall",
+      "pelvis": [1, 94.2, -3],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "cross": {
+      "from": "tall",
+      "pelvis": [-3, 92.5, -3],
+      "trunk": [10, 0, 0],
+      "leg_far": {"ik": [10, 58, -8], "pole": [0.3, 0.1, 1], "toe": [0.4, 0.2, -0.9]},
+      "arms": {"ik": [26, 112, 3.6], "pole": [-0.2, -0.6, 1], "hand": [0.2, 1, -0.04]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "sit": {
+      "from": "cross",
+      "pelvis": [-16, 80, -3],
+      "trunk": [30, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-14, 0, 0],
+      "leg_far": {"ik": [9, 57, -11], "pole": [0.3, 0.1, 1], "toe": [0.4, 0.2, -0.9]},
+      "arms": {"ik": [23, 104, 3.6], "pole": [-0.2, -0.6, 1], "hand": [0.3, 0.95, -0.04]}
+    },
+    "sit_in": {"from": "sit", "pelvis": [-16, 80.3, -3], "chest": [-8, 0, 0]},
+    "lift": {
+      "from": "tall",
+      "pelvis": [-1, 93.5, -3],
+      "trunk": [6, 0, 0],
+      "leg_far": {"ik": [24, 54, 12], "pole": [1, 0.2, 0.5], "toe": [0.7, -0.4, -0.2]},
+      "contacts": ["toe_near", "ankle_near"],
+      "arms": {"fk": [24, 34, 40]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "shift", "s": 0.6, "phase": "one_leg", "effort": 0.3},
+    {"to": "lift", "s": 0.5, "phase": "knee_up", "effort": 0.4},
+    {"to": "cross", "s": 0.7, "phase": "knee_up", "effort": 0.5},
+    {"to": "sit", "s": 1.4, "phase": "sit_back", "effort": 0.7},
+    {"to": "sit_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "sit", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "sit_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "sit", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "cross", "s": 1.2, "phase": "stand_up", "effort": 0.5},
+    {"to": "lift", "s": 0.4, "phase": "lower", "effort": 0.4},
+    {"to": "shift", "s": 0.5, "phase": "lower", "effort": 0.3},
+    {"to": "tall", "s": 0.6, "phase": "foot_down", "effort": 0.2}
+  ],
+  "key": "sit",
+  "targets": [{"at": "sit", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 150}],
+  "note": "The near leg stands and bends as the seat goes back; the far ankle crosses over the near knee, the far knee opens out away from the camera and its shin lies level, the palms together at the chest."
+}

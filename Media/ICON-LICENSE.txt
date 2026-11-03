@@ -1,0 +1,4 @@
+Copyright (c) 2026 Pluxia GmbH. All rights reserved.
+
+The QuestPump icon in this folder (Icon.tga, the addon's icon in the game's AddOns list) is not open source: the MIT
+licence at the addon's root covers its code, not this image.

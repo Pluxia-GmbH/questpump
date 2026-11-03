@@ -1,0 +1,195 @@
+[package]
+name = "questpump-helper"
+version = "1.0.0"
+description = "QuestPump for Mac and Windows (the helper): reads the addon's status strip, keeps your progress for the game and pairs your phone"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[lib]
+name = "questpump_helper_lib"
+# rlib alone: the app is desktop only, and the Tauri template's staticlib and cdylib are its iOS and Android builds'
+# libraries, which Cargo wrote beside the rlib at every compile of this crate (the .a alone 400 to 800 MB)
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+questpump-core = { path = "../crates/questpump-core" }
+# the addon's own engine (desk/engine.rs, slice 35)
+questpump-engine = { path = "../crates/questpump-engine" }
+# 2.12: Builder::activate_ignoring_other_apps; protocol-asset: the figures the page shows from the bundle's resources
+# and the films' folder (app.security.assetProtocol's scope), byte ranges for <video> included
+tauri = { version = "2.12", features = ["tray-icon", "image-png", "protocol-asset"] }
+tauri-plugin-single-instance = "2"
+tauri-plugin-log = "2"
+log = "0.4"
+# tauri-plugin-log's file target, through fern: a record formatted before its file's lock is taken, so a panic while a
+# log call formats (a Display that panics) reaches the panic hook with no lock held, and the hook's own log line
+# cannot deadlock on it (crash.rs `catch_panics`)
+fern = { version = "0.7", features = ["meta-logging-in-format"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-util", "sync", "time", "process", "fs"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+interprocess = { version = "2", features = ["tokio"] }
+dirs = "7"
+rand = "0.10"
+base64 = "0.23"
+ciborium = "0.2"
+qrcode = { version = "0.14", default-features = false } # the pair link's modules, which the page draws
+if-addrs = "0.15"
+time = { version = "0.3", features = ["formatting", "local-offset", "macros"] }
+anyhow = "1"
+axum = { version = "0.8", default-features = false, features = ["http1", "query", "tokio"] }
+hyper-util = { version = "0.1", features = ["server-auto", "tokio", "service"] }
+socket2 = "0.6" # the LAN API's IPv6 listener IPv6-only beside the IPv4 one (lan::bind); already in the graph through tokio
+tower = "0.5"
+btleplug = "0.13"
+# `sink`: the sync's live socket sends its first message (runtime/sync.rs, slice 60)
+futures-util = { version = "0.3", default-features = false, features = ["sink"] }
+uuid = "1"
+prost = "0.14" # the Battle.net Agent's product.db: three derived messages, unknown fields skipped (install.rs)
+tauri-plugin-dialog = "2" # the window's folder picker, called from Rust
+# signed updates from the release feed (update.rs), over the system's own TLS (SChannel, Security.framework): no
+# rustls and ring C build; the NSIS installer needs no zip, and macOS unpacks its .app.tar.gz without a feature
+tauri-plugin-updater = { version = "2", default-features = false, features = ["native-tls", "system-proxy"] }
+# the feedback button's one POST to questpump.com (feedback.rs): the reqwest the updater already pulls in, on the same
+# system TLS and proxy; the LAN API's security tests call the loopback with it too
+reqwest = { version = "0.13", default-features = false, features = ["native-tls", "system-proxy"] }
+# the sync's live WebSocket to questpump.com (runtime/sync.rs, slice 60): only that the account's cursor moved, over the
+# system's own TLS as reqwest's
+tokio-tungstenite = { version = "0.30", default-features = false, features = ["connect", "native-tls"] }
+# the desktop app's sounds and voice (desk/audio.rs) on the output the player picks: cpal's playback and symphonia's
+# Ogg Vorbis (the sounds, the takes) only
+rodio = { version = "0.23", default-features = false, features = ["playback", "vorbis"] }
+# sha256s (the addon's zip as it downloads, addon.rs; the games' icons; the sync) and the asset protocol's URLs spelt
+# as Tauri's convertFileSrc spells them (both already in the graph)
+sha2 = "0.11"
+percent-encoding = "2"
+# the time zone's IANA id, one of the two signs of the crash reports' opt-in regions (crash.rs), already in the graph
+iana-time-zone = "0.1"
+# the day reel's layers (desk/reel/compose.rs): the page's PNGs decoded, already in the graph through Tauri's image
+png = "0.18"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+screencapturekit = { version = "=11.1.1", features = ["macos_14_0"] }
+# the window list (CGWindow), and the input's idle time the reminders' sitting cue reads (desk/reminders.rs)
+objc2-core-graphics = { version = "0.3", features = ["CGWindow", "CGEventSource", "CGEventTypes"] }
+# the window list's entries (games/procs.rs: the front window's owner, a game window's bounds, the program picker),
+# already in the graph through objc2-core-graphics
+objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFArray", "CFDictionary", "CFNumber", "CFString", "CFCGTypes"] }
+# the Bluetooth grant's state (bluetooth.rs, blelink/mac.rs), and the Bluetooth link's peripheral (blelink/mac.rs, slice
+# 43): the manager, its delegate's centrals and requests, the advertisement's keys, the service and its characteristics,
+# their UUIDs, the ATT results, and the dispatch queue its callbacks come on
+objc2-core-bluetooth = { version = "0.3", default-features = false, features = [
+	"std",
+	"bitflags",
+	"dispatch2",
+	"CBAdvertisementData",
+	"CBATTRequest",
+	"CBAttribute",
+	"CBCentral",
+	"CBCharacteristic",
+	"CBError",
+	"CBManager",
+	"CBPeer",
+	"CBPeripheralManager",
+	"CBService",
+	"CBUUID",
+] }
+# the Bluetooth link's own serial queue for CBPeripheralManager's callbacks (blelink/mac.rs), already in the graph
+# through objc2-core-bluetooth
+dispatch2 = { version = "0.3", default-features = false, features = ["std", "objc2"] }
+libproc = "0.14"
+# a running app's Info.plist, read for its games category or Game Mode (games/detect.rs, slice 48), already in the graph
+# through Tauri
+plist = "1"
+# the updater's check that this account may replace the helper's app (update.rs), and the open files' limit raised at
+# the start (lib.rs)
+libc = "0.2"
+# start at login: the app as a login item (autostart.rs); only the SMAppService class and its error codes
+objc2-service-management = { version = "0.3", default-features = false, features = ["std", "objc2", "objc2-foundation", "SMAppService", "SMErrors"] }
+# the player's road units for the walking pad's line (units.rs), read inside an autorelease pool of their own, the
+# launch Apple event that tells a start at login (desk/launch.rs), and the activity that keeps the Mac awake while a
+# pump runs (desk/awake.rs)
+objc2 = { version = "0.6", features = ["exception"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSAppleEventDescriptor", "NSAppleEventManager", "NSArray", "NSData", "NSDictionary", "NSError", "NSLocale", "NSObject", "NSProcessInfo", "NSString", "NSURL", "NSUUID", "NSValue"] }
+# whether VoiceOver runs (desk/audio.rs: a pump's lines go to the page's live region then), already in the graph
+# through Tauri's windowing; a game's icon (games/icons.rs, slice 56): `NSWorkspace`'s image of its app drawn into a
+# bitmap and written as PNG
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "objc2-core-foundation", "NSWorkspace", "NSAccessibility", "NSPasteboard", "NSBitmapImageRep", "NSGraphics", "NSGraphicsContext", "NSImage", "NSImageRep"] }
+# the day reel (desk/reel/mac.rs): the films read by AVAssetReader, the reel written by AVAssetWriter from Core Video
+# pixel buffers and Core Media sample buffers, its AAC settings' keys from AVFAudio (in the graph through cpal), and the
+# block that hears the file finished; objc2's `exception` turns an Objective-C exception into an error
+objc2-av-foundation = { version = "0.3", default-features = false, features = ["std", "block2", "objc2-core-media", "objc2-core-video", "AVAsset", "AVAssetReader", "AVAssetReaderOutput", "AVAssetTrack", "AVAssetWriter", "AVAssetWriterInput", "AVMediaFormat", "AVMetadataItem", "AVVideoSettings"] }
+objc2-core-media = { version = "0.3", default-features = false, features = ["std", "objc2-core-audio-types", "objc2-core-video", "CMBase", "CMBlockBuffer", "CMFormatDescription", "CMSampleBuffer", "CMTime"] }
+objc2-core-video = { version = "0.3", default-features = false, features = ["std", "CVBase", "CVBuffer", "CVImageBuffer", "CVPixelBuffer", "CVPixelBufferPool", "CVReturn"] }
+objc2-avf-audio = { version = "0.3", default-features = false, features = ["std", "AVAudioSettings"] }
+objc2-core-audio-types = { version = "0.3", default-features = false, features = ["std", "CoreAudioBaseTypes"] }
+block2 = "0.6"
+# the secrets' Keychain item and the release's signature check that guards it (secrets.rs), already in the graph
+# through native-tls
+security-framework = "3"
+
+[target.'cfg(windows)'.dependencies]
+windows-capture = "2" # Windows.Graphics.Capture (capture/win/wgc.rs); it pins windows 0.62
+widestring = "1" # the SDDL string interprocess reads the named pipe's security descriptor from (socket.rs)
+# the web view's settings Tauri does not reach (desk/windows.rs: its browser keys off), already in the graph through wry
+webview2-com = "0.39"
+# a panic's frames with their addresses, so a frame without a name reads as its module and offset (crash.rs: the
+# installer ships no symbols, and std's backtrace prints such a frame as <unknown>)
+backtrace = "0.3.76"
+windows = { version = "0.62", features = [
+	"Devices_Bluetooth", # the Bluetooth link's peripheral (blelink/win.rs, slice 43): the adapter, its roles, the device
+	"Devices_Bluetooth_GenericAttributeProfile", # the GATT server: the provider, its characteristics, the clients
+	"Devices_Radios", # the adapter's radio, off or on
+	"Foundation_Collections", # the subscribed clients' list
+	"Foundation_Metadata",
+	"Graphics_Capture",
+	"Graphics_Imaging", # the band ELDEN RING's boss banners hand Windows' OCR, as a SoftwareBitmap (capture/win/banner.rs)
+	"Media_Ocr", # Windows' own OCR, which reads ELDEN RING's boss banners' words (capture/win/banner.rs)
+	"Security_Authorization_AppCapabilityAccess",
+	"Storage_Streams", # the Bluetooth link's values as buffers (blelink/win.rs), and the OCR's band (capture/win/banner.rs)
+	"Win32_Devices_Display",
+	"Win32_Foundation",
+	"Win32_Globalization",
+	"Win32_Graphics_Direct3D",
+	"Win32_Graphics_Direct3D11",
+	"Win32_Graphics_Dwm",
+	"Win32_Graphics_Dxgi",
+	"Win32_Graphics_Dxgi_Common",
+	"Win32_Graphics_Gdi",
+	"Win32_Graphics_Imaging", # a Steam game's icon from Steam's own .ico or cached JPEG, decoded and scaled (games/icons.rs)
+	"Win32_Media_MediaFoundation", # the day reel: the films' source reader, the reel's sink writer (desk/reel/win.rs)
+	"Win32_NetworkManagement_Dns",
+	"Win32_NetworkManagement_IpHelper",
+	"Win32_NetworkManagement_WindowsFirewall",
+	"Win32_Networking_WinSock",
+	"Win32_Security",
+	"Win32_Security_Authorization",
+	"Win32_Security_Cryptography", # the secrets' DPAPI blob (secrets.rs)
+	"Win32_Storage_FileSystem", # a found game's name from its program's version resource (games/win.rs)
+	"Win32_System_Com",
+	"Win32_System_DataExchange", # Copy video's CF_HDROP on the clipboard (desk/reel/win.rs)
+	"Win32_System_Diagnostics_ToolHelp",
+	"Win32_System_LibraryLoader", # a crash report's frame as its module and offset (crash.rs); Media Foundation's DLLs
+	"Win32_System_Memory", # Copy video's clipboard memory (desk/reel/win.rs); racing games' shared memory (games/shm.rs)
+	"Win32_System_Ole",
+	"Win32_System_Performance",
+	"Win32_System_Power",
+	"Win32_System_Registry",
+	"Win32_System_StationsAndDesktops",
+	"Win32_System_SystemInformation",
+	"Win32_System_Threading",
+	"Win32_System_Variant",
+	"Win32_UI_HiDpi",
+	"Win32_UI_Input_KeyboardAndMouse", # the reminders' sitting cue: the input's idle time (desk/reminders.rs)
+	"Win32_UI_Shell",
+	"Win32_UI_WindowsAndMessaging",
+] }

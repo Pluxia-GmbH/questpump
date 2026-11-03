@@ -1,0 +1,38 @@
+{
+  "move": "ring_curl",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 6},
+  "working": ["thigh"],
+  "props": [{"kind": "mat", "f0": -100, "f1": 70, "l0": -36, "l1": 36}],
+  "items": [{"kind": "straps", "at": [70.9, 250], "half": 14, "to": "heels"}],
+  "poses": {
+    "long": {
+      "pelvis": [-5.5, 37.5, 0],
+      "trunk": [-116.0, 0, 0],
+      "head": [29.0, 0, 0],
+      "arms": {"ik": [-28, 5.5, 68], "pole": [0, -0.3, 1], "hand": [0.3, -0.05, 1]},
+      "legs": {"ik": [74.9, 72, 11], "pole": [0, 1, 0], "toe": [-0.24, 1, 0]},
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "curl": {
+      "from": "long",
+      "pelvis": [-23.5, 60, 0],
+      "trunk": [-156.0, 0, 0],
+      "chest": [15, 0, 0],
+      "head": [55.0, 0, 0],
+      "legs": {"ik": [30.1, 76.7, 11], "pole": [0.3, 1, 0], "toe": [0.87, 0.49, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "long"},
+    {"hold": 0.3, "phase": "bridge", "effort": 0.5},
+    {"to": "curl", "s": 1.2, "phase": "pull_in", "effort": 1.0},
+    {"hold": 0.2, "phase": "squeeze", "effort": 0.9},
+    {"to": "long", "s": 1.5, "phase": "heels_out", "effort": 0.6}
+  ],
+  "key": "curl",
+  "targets": [
+    {"at": "long", "check": "angle", "joints": ["neck", "pelvis", "ankle_near"], "min": 170},
+    {"at": "curl", "check": "angle", "joints": ["neck", "pelvis", "knee_near"], "min": 160}
+  ]
+}

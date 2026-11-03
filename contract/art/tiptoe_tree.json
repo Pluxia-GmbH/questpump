@@ -1,0 +1,81 @@
+{
+  "move": "tiptoe_tree",
+  "view": "side",
+  "camera": {"yaw": 68, "pitch": 12},
+  "working": ["thigh_far", "shin_far", "abdomen"],
+  "fast_phase": 0.4,
+  "props": [{"kind": "desk", "l": 46, "f": 0, "top": 74}],
+  "poses": {
+    "stand": {
+      "pelvis": [1, 94.3, 1],
+      "trunk": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {"ik": [4, 82, 31], "pole": [-0.3, 0, 1], "hand": [0.05, -1, 0]},
+      "arm_far": {"ik": [4, 94, 55], "pole": [-0.3, -1, 0.4], "hand": [0.1, -1, 0.3]},
+      "leg_near": {"ik": [0, 7, 10], "pole": [1, 0, 0.07], "toe": [0.99, 0, 0.14]},
+      "leg_far": {"foot": [0, 8], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "shift": {
+      "from": "stand",
+      "pelvis": [1, 94.1, 4],
+      "trunk": [0, 1, 0],
+      "chest": [0, -1, 0],
+      "leg_near": {"ik": [0.7, 14.2, 10.6], "pole": [0.45, 0, 1], "toe": [0.9, -0.42, 0.13]}
+    },
+    "kick": {
+      "from": "stand",
+      "pelvis": [1, 94.2, 5],
+      "trunk": [0, 2, 0],
+      "chest": [0, -2, 0],
+      "leg_near": {"ik": [2, 24, 4], "pole": [0.3, -0.1, 1], "toe": [0.57, -0.82, 0]},
+      "contacts": ["toe_far"]
+    },
+    "tree": {
+      "from": "kick",
+      "pelvis": [1, 94.3, 5],
+      "leg_near": {"ik": [3, 37, 2.5], "pole": [0.2, -0.1, 1], "toe": [0.35, -0.9, 0]}
+    },
+    "prayer": {
+      "from": "tree",
+      "arm_near": {"ik": [23, -29.5, 5.0], "rel": "neck", "pole": [-0.1, -0.5, 1], "hand": [0.12, 1, -0.04]},
+      "arm_far": {"ik": [23, -29.5, 5.0], "rel": "neck", "pole": [-0.1, -0.5, 1], "hand": [0.12, 1, -0.04]}
+    },
+    "on_knee": {"from": "rise", "leg_near": {"ik": [11, 62, 3], "pole": [0.5, -0.1, 1], "toe": [0.35, -0.9, 0]}},
+    "rise": {
+      "from": "prayer",
+      "pelvis": [5, 103.6, 5],
+      "leg_near": {"ik": [8, 46.3, 2], "pole": [0.2, -0.1, 1], "toe": [0.35, -0.9, 0]},
+      "leg_far": {"foot": [0, 8], "turn": 8, "knee_out": 4, "lift": 32}
+    },
+    "rise_in": {"from": "rise", "pelvis": [5, 103.9, 5], "chest": [-1, -2, 0]}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.5, "phase": "stand"},
+    {"to": "shift", "s": 0.5, "phase": "foot_to_calf", "effort": 0.5},
+    {"to": "kick", "s": 0.5, "phase": "foot_to_calf", "effort": 0.5},
+    {"to": "tree", "s": 0.8, "phase": "foot_to_calf", "effort": 0.5},
+    {"to": "prayer", "s": 1.0, "phase": "hands_together", "effort": 0.6},
+    {"to": "rise", "s": 1.3, "phase": "rise", "effort": 0.8},
+    {"to": "rise_in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "rise", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "prayer", "s": 1.3, "phase": "heel_down", "effort": 0.8},
+    {"to": "tree", "s": 1.0, "phase": "lower", "effort": 0.6},
+    {"to": "kick", "s": 0.8, "phase": "lower", "effort": 0.5},
+    {"to": "shift", "s": 0.5, "phase": "lower", "effort": 0.5},
+    {"to": "stand", "s": 0.6, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "rise",
+  "fault": {
+    "pose": "on_knee",
+    "caption": "foot_on_knee",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "knee_far", "axis": "u", "max": -6}
+  },
+  "note": "The tree beside the desk, the standing (far) leg beside it: the near foot comes in to the standing ankle and slides up the inner leg to the calf, the knee opening away from the desk, and the hands meet at the chest; then the far heel rises high onto the ball of the foot, the body lifting straight up over it, and lowers again. The far fingertips hover over the desk while the foot comes up and goes down; the way down retraces the way up.",
+  "breathe": true,
+  "targets": [
+    {"at": "rise", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "rise", "check": "height", "joint": "ankle_far", "min": 14}
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "move": "step_over",
+  "view": "front",
+  "camera": {"yaw": 14, "pitch": 12},
+  "working": ["thigh", "shin"],
+  "props": [{"kind": "step", "f0": -22, "f1": 34, "u": 20, "l0": -18, "l1": 18}],
+  "poses": {
+    "far_side": {
+      "pelvis": [2, 94.4, 40],
+      "trunk": [4, 0, 0],
+      "arms": {"fk": [12, 14, 78]},
+      "leg_near": {"foot": [0, -29], "turn": 8, "knee_out": 8},
+      "leg_far": {"foot": [0, 51], "turn": 8, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "near_lead": {
+      "from": "far_side",
+      "pelvis": [2, 93.6, 35],
+      "trunk": [5, -3, 0],
+      "arm_near": {"fk": [-12, 14, 80]},
+      "arm_far": {"fk": [34, 14, 86]},
+      "leg_near": {"foot": [2, -25], "turn": 8, "y": 30, "lift": 8, "knee_out": 10},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "straddle_far": {
+      "from": "far_side",
+      "pelvis": [2, 91.5, 21],
+      "trunk": [6, -2, 0],
+      "arm_near": {"fk": [-6, 14, 80]},
+      "arm_far": {"fk": [26, 14, 84]},
+      "leg_near": {"foot": [0, 8], "turn": 8, "y": 20, "knee_out": 10}
+    },
+    "far_follow": {
+      "from": "straddle_far",
+      "pelvis": [2, 105, 9],
+      "trunk": [6, -2, 0],
+      "arm_near": {"fk": [30, 14, 86]},
+      "arm_far": {"fk": [-10, 14, 80]},
+      "leg_far": {"foot": [2, 26], "turn": 8, "y": 31, "lift": 12, "knee_out": 10},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "on_step": {
+      "pelvis": [2, 114.4, 0],
+      "trunk": [4, 0, 0],
+      "arms": {"fk": [12, 14, 78]},
+      "leg_near": {"foot": [0, 8], "turn": 8, "y": 20, "knee_out": 8},
+      "leg_far": {"foot": [0, 8], "turn": 8, "y": 20, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "near_off": {
+      "from": "on_step",
+      "pelvis": [2, 105, -9],
+      "trunk": [6, 2, 0],
+      "arm_near": {"fk": [-10, 14, 80]},
+      "arm_far": {"fk": [30, 14, 86]},
+      "leg_near": {"foot": [2, 26], "turn": 8, "y": 31, "lift": 12, "knee_out": 10},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "straddle_near": {
+      "from": "on_step",
+      "pelvis": [2, 91.5, -21],
+      "trunk": [6, 2, 0],
+      "arm_near": {"fk": [26, 14, 84]},
+      "arm_far": {"fk": [-6, 14, 80]},
+      "leg_near": {"foot": [0, 51], "turn": 8, "knee_out": 8}
+    },
+    "far_off": {
+      "from": "straddle_near",
+      "pelvis": [2, 93.6, -35],
+      "trunk": [5, 3, 0],
+      "arm_near": {"fk": [34, 14, 86]},
+      "arm_far": {"fk": [-12, 14, 80]},
+      "leg_far": {"foot": [2, -25], "turn": 8, "y": 30, "lift": 8, "knee_out": 10},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "near_side": {
+      "from": "far_side",
+      "pelvis": [2, 94.4, -40],
+      "leg_near": {"foot": [0, 51], "turn": 8, "knee_out": 8},
+      "leg_far": {"foot": [0, -29], "turn": 8, "knee_out": 8}
+    }
+  },
+  "timeline": [
+    {"pose": "far_side"},
+    {"hold": 0.08, "phase": "step_up", "effort": 0.5},
+    {"to": "near_lead", "s": 0.13, "phase": "step_up", "effort": 0.6},
+    {"to": "straddle_far", "s": 0.15, "phase": "step_up", "effort": 0.7},
+    {"to": "far_follow", "s": 0.13, "phase": "step_up", "effort": 0.8},
+    {"to": "on_step", "s": 0.15, "phase": "step_up", "effort": 0.7},
+    {"to": "near_off", "s": 0.13, "phase": "step_down", "effort": 0.6},
+    {"to": "straddle_near", "s": 0.15, "phase": "step_down", "effort": 0.6},
+    {"to": "far_off", "s": 0.13, "phase": "step_down", "effort": 0.6},
+    {"to": "near_side", "s": 0.15, "phase": "step_down", "effort": 0.5},
+    {"hold": 0.08, "phase": "step_up", "effort": 0.5},
+    {"to": "far_off", "s": 0.13, "phase": "step_up", "effort": 0.6},
+    {"to": "straddle_near", "s": 0.15, "phase": "step_up", "effort": 0.7},
+    {"to": "near_off", "s": 0.13, "phase": "step_up", "effort": 0.8},
+    {"to": "on_step", "s": 0.15, "phase": "step_up", "effort": 0.7},
+    {"to": "far_follow", "s": 0.13, "phase": "step_down", "effort": 0.6},
+    {"to": "straddle_far", "s": 0.15, "phase": "step_down", "effort": 0.6},
+    {"to": "near_lead", "s": 0.13, "phase": "step_down", "effort": 0.6},
+    {"to": "far_side", "s": 0.15, "phase": "step_down", "effort": 0.5}
+  ],
+  "key": "straddle_near"
+}

@@ -1,0 +1,114 @@
+{
+  "move": "stand_to_stand",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 8},
+  "working": ["back", "pauldron", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -95, "f1": 40}],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "pelvis": [5, 94, 0],
+      "trunk": [-6, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-15, 0, 0],
+      "from": "tall",
+      "arms": {"fk": [172, 8, 4]}
+    },
+    "arch": {
+      "pelvis": [24, 90, 0],
+      "trunk": [-38, 0, 0],
+      "chest": [-35, 0, 0],
+      "head": [-25, 0, 0],
+      "from": "tall",
+      "arms": {"fk": [170, 8, 6]}
+    },
+    "deep": {
+      "pelvis": [22, 86, 0],
+      "trunk": [-80, 0, 0],
+      "chest": [-25, 0, 0],
+      "head": [-30, 0, 0],
+      "from": "tall",
+      "arms": {"fk": [175, 8, 6]}
+    },
+    "land": {
+      "pelvis": [-2, 74, 0],
+      "trunk": [-110, 0, 0],
+      "chest": [-10, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [-60, 4.3, 20], "pole": [0.6, 0.3, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel": {
+      "pelvis": [-14, 84, 0],
+      "trunk": [-110, 0, 0],
+      "chest": [-25, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [-60, 4.3, 20], "pole": [0.6, 0.3, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel_in": {"from": "wheel", "pelvis": [-14, 84.6, 0], "trunk": [-111, 0, 0], "chest": [-27, 0, 0]},
+    "bent": {
+      "from": "wheel",
+      "pelvis": [-20, 81, 0],
+      "arms": {"ik": [-60, 4.3, 20], "pole": [-1, 0.2, 0.4], "hand": [1, -0.03, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.9, "phase": "arms_up", "effort": 0.3},
+    {"to": "arch", "s": 1.3, "phase": "hips_forward", "effort": 0.5},
+    {"to": "deep", "s": 1.0, "phase": "lean_back", "effort": 0.7},
+    {"to": "land", "s": 0.7, "phase": "hands_down", "effort": 0.8, "dynamic": true},
+    {"to": "wheel", "s": 0.8, "phase": "arms_straight", "effort": 0.9},
+    {"to": "wheel_in", "s": 0.8, "phase": "breathe", "effort": 0.8},
+    {"to": "wheel", "s": 0.8, "phase": "breathe", "effort": 0.8},
+    {"to": "land", "s": 0.8, "phase": "shift_forward", "effort": 0.8},
+    {"to": "deep", "s": 0.8, "phase": "stand_up", "effort": 1.0, "dynamic": true},
+    {"to": "arch", "s": 1.0, "phase": "stand_up", "effort": 0.7},
+    {"to": "reach", "s": 0.9, "phase": "stand_tall", "effort": 0.4},
+    {"to": "tall", "s": 0.8, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "wheel",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  },
+  "targets": [
+    {"at": "deep", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "max": 105},
+    {"at": "wheel", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "wheel", "check": "height", "joint": "head", "min": 20},
+    {"at": "arch", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "max": 125}
+  ],
+  "note": "Standing on the mat with no wall: the arms reach up, the hips press forward over the feet and the back arches down until the hands land, then the arms press straight into the wheel, the head off the floor and the knees bent (the goal pose); the weight shifts back over the feet and the body rises to standing."
+}

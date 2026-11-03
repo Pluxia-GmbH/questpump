@@ -1,0 +1,271 @@
+name: Addon release
+# The add-on's release and its update feed (helper/README.md, "Releasing"). A pushed tag vX.Y.Z runs, in order:
+#   check    the tag is vX.Y.Z, CHANGELOG.md has its section, the updater's key and PHONE_APPS are set, the permanent
+#            helper-updater release exists (a helper release makes it, so the helper goes first), and the packager's
+#            dry run passes tools/package-check.sh with the tag in its QuestPump.toc;
+#   release  the packager, pinned to a commit, in the environment addon-release: CurseForge (Forever and retail, from
+#            the TOC's two interfaces), Wago, and this repository's release of the tag with release.json, which takes
+#            Latest (the helper's releases never do);
+#   feed     addon.json for that release's zip (tools/addon_feed.py), signed with the updater's key like the desktop
+#            app's own updates (addon.json.sig), and the zip byte for byte as QuestPump-addon.zip, all three uploaded to
+#            helper-updater, where QuestPump on this computer reads them to install and update the add-on.
+# Run from the Actions tab (feed_only), it republishes addon.json and its signature for the newest vX.Y.Z release with
+# the current PHONE_APPS and no new version: the day the phone apps can be installed, or after a failed feed job.
+# It runs only in the public repository Pluxia-GmbH/questpump; in any other repository every job is skipped. Every
+# action and tool is pinned, as in all of the repository's workflows.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      feed_only:
+        description: Republish addon.json with the current PHONE_APPS (a release runs only from a pushed vX.Y.Z tag)
+        type: boolean
+        default: true
+permissions: {}
+concurrency:
+  # one add-on release at a time: each one moves the feed on helper-updater
+  group: addon-release
+  cancel-in-progress: false
+env:
+  TAG: ${{ github.ref_name }}
+jobs:
+  check:
+    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # Signing secrets live in this environment, whose rules admit helper-v* and v* tags and main alone.
+    environment: release-signing
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      # the packager reads the history (the version from the tag) and HEAD's files: every commit and tree, and only
+      # HEAD's blobs
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+      # the packager uploads what the tag holds: only main's commits (what tools/public/export.py pushes) are released
+      - name: The tag's commit is on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$TAG is on $GITHUB_SHA, which is not a commit of main"; exit 1
+          fi
+      - name: The tag is vX.Y.Z and CHANGELOG.md has its section
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$TAG is not vX.Y.Z"; exit 1
+          fi
+          v="${TAG#v}"
+          if ! grep -qE "^## \[${v//./\\.}\]( - [0-9]{4}-[0-9]{2}-[0-9]{2})?$" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## [$v]' section: the packager sends it as the release's changelog"
+            exit 1
+          fi
+      - name: The feed's key, PHONE_APPS and helper-updater are in place
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HAS_TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
+          PHONE_APPS: ${{ vars.PHONE_APPS }}
+        run: |
+          if [ "$HAS_TAURI_SIGNING_PRIVATE_KEY" != true ]; then
+            echo "::error::TAURI_SIGNING_PRIVATE_KEY is not set: the feed is signed with the updater's key" \
+              "(helper/README.md, Releasing)"
+            exit 1
+          fi
+          case "$PHONE_APPS" in
+            "" | true | false) ;;
+            *) echo "::error::the variable PHONE_APPS is '$PHONE_APPS': set it to true or false"; exit 1 ;;
+          esac
+          if ! gh release view helper-updater > /dev/null 2>&1; then
+            echo "::error::there is no helper-updater release yet: release the helper (a helper-vX.Y.Z tag) first"
+            exit 1
+          fi
+      # LibStub's /trunk external needs Subversion, installed with the package lists' fallback
+      - name: Subversion
+        run: |
+          sudo apt-get install -y -qq --no-install-recommends subversion ||
+            { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends subversion; }
+      - name: Package (dry run)
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        env:
+          # the clone holds HEAD's blobs alone and no token: a git command that needs another fails here at once
+          GIT_NO_LAZY_FETCH: "1"
+          ZIPOPT: -n .ogg:.png
+        with:
+          args: -d
+      - name: Package check (all three folders, under 300 MB)
+        run: sh tools/package-check.sh
+      - name: The zip's QuestPump.toc names the tag
+        # the packager takes the pushed tag even when helper-vX.Y.Z sits on the same commit
+        run: |
+          zips=(.release/*.zip)
+          if [ "${#zips[@]}" -ne 1 ] || [ ! -f "${zips[0]}" ]; then
+            echo "::error::the dry run left ${#zips[@]} zips in .release/, not one"; exit 1
+          fi
+          zip="${zips[0]}"
+          got="$(unzip -p "$zip" QuestPump/QuestPump.toc | tr -d '\r' | sed -n 's/^## Version: *//p')"
+          if [ "$got" != "$TAG" ]; then
+            echo "::error::$zip's QuestPump.toc says ## Version: $got, not $TAG"; exit 1
+          fi
+
+  release:
+    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
+    needs: check
+    # CF_API_KEY and WAGO_API_TOKEN live in the environment addon-release, which admits v* tags alone
+    environment: addon-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      # without a token or an id the packager skips that store with no error: every one is required here
+      - name: The store tokens and project ids are set
+        env:
+          HAS_CF_API_KEY: ${{ secrets.CF_API_KEY != '' }}
+          HAS_WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN != '' }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          WAGO_PROJECT_ID: ${{ vars.WAGO_PROJECT_ID }}
+        run: |
+          missing=""
+          [ "$HAS_CF_API_KEY" = true ] || missing="$missing CF_API_KEY"
+          [ "$HAS_WAGO_API_TOKEN" = true ] || missing="$missing WAGO_API_TOKEN"
+          [[ "$CURSEFORGE_PROJECT_ID" =~ ^[0-9]+$ ]] || missing="$missing CURSEFORGE_PROJECT_ID"
+          [[ "$WAGO_PROJECT_ID" =~ ^[A-Za-z0-9]+$ ]] || missing="$missing WAGO_PROJECT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::not set, or not an id, in the environment addon-release:$missing (helper/README.md," \
+              "Releasing)"
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+      - name: Subversion
+        run: |
+          sudo apt-get install -y -qq --no-install-recommends subversion ||
+            { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends subversion; }
+      # CurseForge, then Wago, then this repository's release (CHANGELOG.md as its notes, release.json beside the zip);
+      # one failed upload fails the job after the others ran: upload that store's file by hand from the release's zip
+      # and run this workflow from the Actions tab for the feed
+      - name: Package and upload
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        env:
+          GIT_NO_LAZY_FETCH: "1"
+          GITHUB_OAUTH: ${{ github.token }}
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+        with:
+          # the ids checked above, digits and letters alone
+          args: -p ${{ vars.CURSEFORGE_PROJECT_ID }} -a ${{ vars.WAGO_PROJECT_ID }}
+      - name: Package check (the uploaded zip)
+        run: sh tools/package-check.sh
+
+  feed:
+    if: >-
+      github.repository == 'Pluxia-GmbH/questpump' && !cancelled()
+      && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success')
+    needs: [check, release]
+    environment: release-signing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Only the feed runs from the Actions tab
+        if: github.event_name == 'workflow_dispatch' && !inputs.feed_only
+        run: |
+          echo "::error::an add-on release runs only from a pushed vX.Y.Z tag: run this with feed_only to republish" \
+            "the feed"
+          exit 1
+      # the feed is signed with the updater's key by this checkout's tools: from the Actions tab, main's alone
+      - name: A hand run is on main
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::republish the feed from main, not $GITHUB_REF"
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # the feed's writer and the updater's public key
+          sparse-checkout: |
+            tools
+            helper/src-tauri
+      - name: The newest vX.Y.Z release and its zip
+        id: release
+        env:
+          PHONE_APPS: ${{ vars.PHONE_APPS }}
+        run: |
+          case "$PHONE_APPS" in
+            "") echo "phone_apps=false" >> "$GITHUB_OUTPUT" ;;
+            true | false) echo "phone_apps=$PHONE_APPS" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::the variable PHONE_APPS is '$PHONE_APPS': set it to true or false"; exit 1 ;;
+          esac
+          # the highest version among the published releases: the feed never names an older one
+          newest="$(gh release list --exclude-drafts --exclude-pre-releases --limit 1000 --json tagName --jq '
+            [.[].tagName | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))]
+            | sort_by(ltrimstr("v") | split(".") | map(tonumber)) | last // ""')"
+          if [ -z "$newest" ]; then
+            echo "::error::there is no published vX.Y.Z release"; exit 1
+          fi
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$newest" != "$TAG" ]; then
+            echo "::error::$TAG is not the newest add-on release ($newest): the feed stays on $newest"; exit 1
+          fi
+          gh release download "$newest" --pattern release.json --dir rel
+          zip="$(jq -r '.releases[0].filename // ""' rel/release.json)"
+          if ! [[ "$zip" =~ ^[A-Za-z0-9._-]+\.zip$ ]]; then
+            echo "::error::$newest's release.json names no zip ('$zip')"; exit 1
+          fi
+          gh release download "$newest" --pattern "$zip" --dir rel
+          {
+            echo "tag=$newest"
+            echo "version=${newest#v}"
+            echo "zip=rel/$zip"
+            echo "pub_date=$(gh release view "$newest" --json publishedAt --jq .publishedAt)"
+          } >> "$GITHUB_OUTPUT"
+      - name: addon.json for it
+        env:
+          ZIP: ${{ steps.release.outputs.zip }}
+          V: ${{ steps.release.outputs.version }}
+          PUB_DATE: ${{ steps.release.outputs.pub_date }}
+          PHONE_APPS: ${{ steps.release.outputs.phone_apps }}
+        run: |
+          mkdir feed
+          python3 -B tools/addon_feed.py --zip "$ZIP" --version "$V" --pub-date "$PUB_DATE" \
+            --phone-apps "$PHONE_APPS" --repo "$GITHUB_REPOSITORY" --out feed/addon.json
+          cp "$ZIP" feed/QuestPump-addon.zip
+      - name: The Tauri CLI, pinned to the tauri crate's version
+        run: npm install -g @tauri-apps/cli@2.12.4
+      - name: Signed with the updater's key
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          V: ${{ steps.release.outputs.version }}
+        run: tauri signer sign --app-version "$V" feed/addon.json
+      - name: The signature is by the key installed apps trust
+        # as helper-release.yml's publish job: both are base64 of minisign's text, whose second line holds the key id
+        # at bytes 2-9; the CLI signs with any key it is given
+        run: |
+          keyid() { base64 --decode | sed -n 2p | base64 --decode | od -An -tx1 -j2 -N8 | tr -d ' \n'; }
+          trusted="$(jq -r .plugins.updater.pubkey helper/src-tauri/tauri.conf.json | keyid)"
+          signed="$(keyid < feed/addon.json.sig)"
+          if [ -z "$trusted" ] || [ "$signed" != "$trusted" ]; then
+            echo "::error::addon.json is signed with key '$signed', and installed apps trust '$trusted':" \
+              "TAURI_SIGNING_PRIVATE_KEY is not the updater's key"
+            exit 1
+          fi
+      - name: Uploaded to helper-updater
+        # the zip first and addon.json last: an app that reads the old addon.json meanwhile finds a zip whose SHA-256
+        # differs and installs nothing until the next check
+        env:
+          TAG_NAME: ${{ steps.release.outputs.tag }}
+        run: |
+          gh release upload helper-updater feed/QuestPump-addon.zip --clobber
+          gh release upload helper-updater feed/addon.json.sig --clobber
+          gh release upload helper-updater feed/addon.json --clobber
+          echo "::notice::helper-updater's feed names $TAG_NAME ($(jq -c '{version, phone_apps}' feed/addon.json))"

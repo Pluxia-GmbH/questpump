@@ -1,0 +1,88 @@
+{
+  "move": "crow_books",
+  "view": "side",
+  "camera": {"yaw": 8, "pitch": 4},
+  "working": ["forearm", "upper_arm", "abdomen"],
+  "breathe": true,
+  "props": [
+    {"kind": "mat", "f0": -50, "f1": 80, "l0": -40, "l1": 40},
+    {"kind": "step", "f0": -24, "f1": 9, "u": 12, "l0": -24, "l1": 24}
+  ],
+  "poses": {
+    "squat": {
+      "pelvis": [-30, 49, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [100, 8, 30, 0, 0]},
+      "legs": {"foot": [-20, 20], "y": 12, "turn": 10, "lift": 0, "knee_out": 0, "pole": [0.85, 0, 1.4]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "squat",
+      "pelvis": [-18, 52, 0],
+      "trunk": [84, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-20, 20], "y": 12, "turn": 10, "lift": 0, "knee_out": 0, "pole": [0.6, 0, 1.4]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prep": {
+      "pelvis": [4, 69, 0],
+      "trunk": [104, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.5], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-20, 20], "y": 12, "turn": 10, "lift": 60, "knee_out": 0, "pole": [1, -0.2, 1.35]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "crow": {
+      "pelvis": [10, 69, 0],
+      "trunk": [114, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [-50, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [4, 50, 10], "pole": [0.6, -1, 0.9], "toe": [-1, 0.3, 0]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "crow_in": {"from": "crow", "pelvis": [10, 69.5, 0], "chest": [11, 0, 0]},
+    "head_down": {"from": "crow", "head": [10, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.4, "phase": "squat_deep"},
+    {"to": "hands", "s": 1.0, "phase": "hands_down", "effort": 0.3},
+    {"to": "prep", "s": 1.2, "phase": "shift_forward", "effort": 0.6},
+    {"to": "crow", "s": 1.2, "phase": "float", "effort": 0.8},
+    {"to": "crow_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "crow", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "crow_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "crow", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "prep", "s": 1.2, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "hands", "s": 1.2, "phase": "rock_back", "effort": 0.4},
+    {"to": "squat", "s": 0.9, "phase": "sit_back", "effort": 0.2}
+  ],
+  "key": "crow",
+  "fault": {
+    "pose": "head_down",
+    "caption": "head_drops",
+    "breaks": {"check": "offset", "joint": "head", "from": "neck", "axis": "u", "min": 0}
+  },
+  "targets": [
+    {"at": "crow", "check": "height", "joint": "ankle_near", "min": 30},
+    {"at": "crow", "check": "height", "joint": "toe_near", "min": 30},
+    {"at": "crow", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 95, "max": 130},
+    {"at": "crow", "check": "height", "joint": "knee_near", "min": 40}
+  ],
+  "note": "The crow from a stack of books about 12 cm high: the toes start on the books behind the hands, the shoulders lean on past the wrists until both feet float off the books, the knees on the backs of the upper arms, and the feet come back down onto the books."
+}

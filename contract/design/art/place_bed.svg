@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- A bed (the Hotel room template, slice 51): a headboard post, the frame's rail out to a foot leg, a mattress that
+       rounds at the foot and a round pillow by the headboard; one stroke weight, round caps and joins, no shading. One
+       colour, never mirrored: the caller tints it (text2 in a Row's KindTile). -->
+  <path data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" d="
+    M3 5.5 V19.5 M3 15.5 H21 V19.5 M9.75 15.5 V11.5 H18 C19.66 11.5 21 12.84 21 14.5 V15.5"/>
+  <circle data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" cx="6.25" cy="12" r="1.25"/>
+</svg>

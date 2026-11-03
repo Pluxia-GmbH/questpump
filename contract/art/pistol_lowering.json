@@ -1,0 +1,84 @@
+{
+  "move": "pistol_lowering",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh_near"],
+  "poses": {
+    "top": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [6, 0, 0],
+      "arms": {"fk": [82, 4, 6]},
+      "leg_near": {"foot": [0, 12], "turn": 22, "knee_out": 16},
+      "leg_far": {"fk": [42, 4, 6, 0]},
+      "contacts": ["toe_near"]
+    },
+    "mid": {
+      "from": "top",
+      "pelvis": [-10, 64, 0],
+      "trunk": [28, 0, 0],
+      "chest": [-2, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"fk": [104, 4, 5]},
+      "leg_far": {"fk": [92, 4, 4, 0]}
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-18, 34, 0],
+      "trunk": [34, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [128, 4, 4]},
+      "leg_far": {"fk": [130, 8, 4, 0]}
+    },
+    "knee_up": {"from": "bottom", "leg_far": {"fk": [140, 20, 50, 0]}},
+    "foot_over": {
+      "from": "squat",
+      "pelvis": [-17, 37, 0],
+      "leg_far": {"foot": [28, 16], "turn": 22, "knee_out": 28, "y": 7},
+      "contacts": ["toe_near"]
+    },
+    "squat": {
+      "from": "bottom",
+      "pelvis": [-16, 38, 0],
+      "trunk": [34, 0, 0],
+      "leg_far": {"foot": [28, 16], "turn": 22, "knee_out": 28},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "stand": {
+      "from": "top",
+      "pelvis": [10, 92, 0],
+      "trunk": [4, 0, 0],
+      "leg_far": {"foot": [28, 16], "turn": 22, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "heel_up": {
+      "from": "bottom",
+      "pelvis": [-18, 43, 0],
+      "leg_near": {"foot": [0, 12], "turn": 22, "knee_out": 16, "lift": 40},
+      "trunk": [30, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "one_leg"},
+    {"to": "mid", "s": 2.6, "ease": "in", "phase": "lower_on_one", "effort": 0.7},
+    {"to": "bottom", "s": 2.4, "ease": "out", "phase": "lower_slowly", "effort": 0.9},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.9},
+    {"to": "knee_up", "s": 0.45, "ease": "in", "phase": "foot_down", "effort": 0.5},
+    {"to": "foot_over", "s": 0.35, "phase": "foot_down", "effort": 0.45},
+    {"to": "squat", "s": 0.3, "ease": "out", "phase": "foot_down", "effort": 0.4},
+    {"to": "stand", "s": 1.3, "phase": "rise_on_two", "effort": 0.7},
+    {"to": "top", "s": 0.8, "phase": "one_leg", "effort": 0.3}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "heel_up",
+    "caption": "heel_lifts",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "bottom", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "bottom", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  ]
+}

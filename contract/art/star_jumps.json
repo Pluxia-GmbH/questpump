@@ -1,0 +1,66 @@
+{
+  "move": "star_jumps",
+  "view": "front",
+  "camera": {"yaw": 14, "pitch": 6},
+  "working": ["thigh", "shin", "pauldron"],
+  "ballistic": true,
+  "fast_phase": 0.6,
+  "poses": {
+    "crouch": {
+      "pelvis": [-6, 70, 0],
+      "trunk": [30, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"fk": [10, 16, 14]},
+      "legs": {"foot": [0, 13], "turn": 12, "knee_out": 14},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "push": {
+      "pelvis": [0, 100, 0],
+      "trunk": [6, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [4, 72, 12]},
+      "legs": {"foot": [0, 13], "turn": 12, "knee_out": 10, "lift": 42},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "star": {
+      "pelvis": [0, 124, 0],
+      "trunk": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [4, 148, 6]},
+      "legs": {"fk": [4, 28, 4, 35]},
+      "contacts": []
+    },
+    "fall": {
+      "pelvis": [0, 110, 0],
+      "trunk": [4, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"fk": [4, 100, 8]},
+      "legs": {"fk": [6, 6, 10, 35]},
+      "contacts": []
+    },
+    "land": {
+      "from": "push",
+      "pelvis": [-2, 88, 0],
+      "trunk": [12, 0, 0],
+      "arms": {"fk": [6, 42, 12]},
+      "legs": {"foot": [0, 13], "turn": 12, "knee_out": 12, "lift": 14}
+    }
+  },
+  "timeline": [
+    {"pose": "crouch"},
+    {"hold": 0.06, "phase": "squat", "effort": 0.7},
+    {"to": "push", "s": 0.16, "ease": "in", "phase": "jump", "effort": 1.0, "dynamic": true},
+    {"to": "star", "s": 0.16, "ease": "out", "phase": "feet_wide", "effort": 1.0, "dynamic": true},
+    {"hold": 0.04, "phase": "feet_wide", "effort": 0.9},
+    {"to": "fall", "s": 0.14, "ease": "in", "phase": "land_softly", "effort": 0.8, "dynamic": true},
+    {"to": "land", "s": 0.12, "ease": "linear", "phase": "land_softly", "effort": 0.8, "dynamic": true},
+    {"to": "crouch", "s": 0.22, "ease": "out", "phase": "land_softly", "effort": 0.7}
+  ],
+  "key": "star",
+  "targets": [
+    {"at": "star", "check": "height", "joint": "toe_near", "min": 20},
+    {"at": "star", "check": "offset", "joint": "ankle_near", "from": "pelvis", "axis": "l", "min": 30},
+    {"at": "star", "check": "offset", "joint": "wrist_near", "from": "head", "axis": "u", "min": 10},
+    {"at": "crouch", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 120}
+  ]
+}

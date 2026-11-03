@@ -1,0 +1,15 @@
+{
+ "about": "The share cards' scenes (docs/plan.md slice 51, \"The share cards\"; Rapha, 2026-10-22: the illustrated backgrounds): one hand-painted page a place template and one for the streak, each 1024 x 1536 WebP whose lower third fades into bare parchment, under the card's words. The apps bundle this folder as it is (the iPhone as a folder reference, Android as assets, the desktop app as a bundle resource). `places` maps a place's template (contract/places.json; Home is `home`) to its scene, `streak` names the streak card's and `fallback` the scene of a place without a template. Each scene's `stand` is where the standard-bearer's feet stand, as shares of the scene's width and height, and `height` the figure's height (its box in contract/figures/figures.json `extras.streak_banner`, banner tip to feet) as a share of the scene's height. The pages were drafted with an image model for Pluxia and are hand-finished before the release (docs/tasks.md); every file has its row in contract/design/ledger.json.",
+ "scenes": {
+  "gym": {"file": "gym.webp", "stand": [0.56, 0.7], "height": 0.483},
+  "home": {"file": "home.webp", "stand": [0.638, 0.728], "height": 0.483},
+  "hotel": {"file": "hotel.webp", "stand": [0.61, 0.728], "height": 0.483},
+  "office": {"file": "office.webp", "stand": [0.62, 0.7], "height": 0.483},
+  "outdoors": {"file": "outdoors.webp", "stand": [0.6, 0.67], "height": 0.469},
+  "park": {"file": "park.webp", "stand": [0.638, 0.709], "height": 0.483},
+  "road": {"file": "road.webp", "stand": [0.435, 0.735], "height": 0.469}
+ },
+ "places": {"gym": "gym", "home": "home", "hotel": "hotel", "office": "office", "outdoors": "outdoors", "park": "park"},
+ "streak": "road",
+ "fallback": "road"
+}

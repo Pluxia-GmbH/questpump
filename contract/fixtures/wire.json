@@ -1,0 +1,1944 @@
+{
+ "about": "Every plaintext body of the link (contract/companion-api.yaml), as JSON before sealing: every app decodes each body it receives or sends and writes it back to the same JSON value (the order of keys aside; an absent optional field stays absent). Sequence numbers start at the helper's start time in milliseconds, so they have 13 digits. Instants are integer milliseconds on the helper's wall clock, except t0 (the device's clock), locked_until, game_offer_at and history's proofs_since (unix seconds), a body field's changed_at (milliseconds on the clock of the device that changed it), the history rows and the app rows and the sheets (rows.jsonl's and sheets.jsonl's own units). The JWS, the purchase text and the signatures of the Pro proofs are synthetic stand-ins, never a real one. hello_response is the one body that travels as plain JSON, never sealed (it names nothing of the computer, no id, name or port: n, h and k are proofs over the request's challenge, find.json; on Bluetooth the hello characteristic's {v, k, c} is plain too, k an hourly proof of the key and c the connection's challenge: contract/fixtures/ble.json). Every body travels the same on Bluetooth, sealed again whole in its envelope (slice 43).",
+ "bodies": [
+  {
+   "about": "a phone pairs",
+   "kind": "pair_request",
+   "json": {
+    "device": "ios",
+    "name": "David's iPhone",
+    "sent_at": 1790000000100
+   }
+  },
+  {
+   "about": "the helper answers a pairing with its name and address",
+   "kind": "pair_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000123
+    }
+   }
+  },
+  {
+   "about": "a pairing answered over Bluetooth once the LAN failed (slice 43): the same body, the helper block with the game's state, the step left (Check again) and its Bluetooth link on",
+   "kind": "pair_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000123,
+     "mdns": "Davids-MacBook-Pro.local",
+     "hid": "AAECAwQFBgcICQoLDA0ODw",
+     "wow": "addon",
+     "sight": "sees",
+     "step": "check_again",
+     "ble": "on"
+    }
+   }
+  },
+  {
+   "about": "a clock round trip",
+   "kind": "ping_response",
+   "json": {
+    "helper": {
+     "name": "Büro",
+     "host": "10.0.0.7",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000501
+    },
+    "t0": 1789999999000,
+    "t1": 1790000000500,
+    "t2": 1790000000501
+   }
+  },
+  {
+   "about": "a clock round trip with a helper that knows its .local name and its install id: a device keeps both in its pair link when it moves it",
+   "kind": "ping_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.87",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000501,
+     "mdns": "Davids-MacBook-Pro.local",
+     "hid": "AAECAwQFBgcICQoLDA0ODw"
+    },
+    "t0": 1789999999000,
+    "t1": 1790000000500,
+    "t2": 1790000000501
+   }
+  },
+  {
+   "about": "a clock round trip with a Windows PC whose Bluetooth adapter cannot serve phones (slice 43): ble no_peripheral, so its phones link on Wi-Fi alone",
+   "kind": "ping_response",
+   "json": {
+    "helper": {
+     "name": "GAMING_PC",
+     "host": "192.168.1.31",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000501,
+     "hid": "AgICAgICAgICAgICAgICAg",
+     "wow": "addon",
+     "sight": "sees",
+     "step": "none",
+     "ble": "no_peripheral"
+    },
+    "t0": 1789999999000,
+    "t1": 1790000000500,
+    "t2": 1790000000501
+   }
+  },
+  {
+   "about": "GET /v1/hello?c=…, unsealed and without a bearer: the answer's n, h and k alone (find.json's rule; c c0…cf, n d0…df, seal.json's key and hid bytes 0-15), nothing of the computer",
+   "kind": "hello_response",
+   "json": {
+    "v": 2,
+    "n": "0NHS09TV1tfY2drb3N3e3w",
+    "h": "2666kW5ylbg",
+    "k": "PuHulQBRsjo"
+   }
+  },
+  {
+   "about": "the watch's first held request: nothing to carry yet",
+   "kind": "sync_request",
+   "json": {
+    "device": "watchos",
+    "t0": 1789999999000,
+    "since": 0,
+    "client": "5B0E2C3A-8F1D-4E2B-9C61-2F6A7D9E0B14",
+    "sent_at": 1790000059000
+   }
+  },
+  {
+   "about": "a request during a game pump: two windows, the pump's start, a receipt, the battery",
+   "kind": "sync_request",
+   "json": {
+    "device": "watchos",
+    "t0": 1790000005000,
+    "since": 1789999980007,
+    "samples": [
+     {
+      "sample_end": 1790000000000,
+      "sent_at": 1790000004990,
+      "bpm": 96,
+      "steps": 0,
+      "pump_id": "g-513-1790000000"
+     },
+     {
+      "sample_end": 1790000005000,
+      "sent_at": 1790000004990,
+      "steps": 12,
+      "metres": 8.4,
+      "cadence": 2.4,
+      "pump_id": "g-513-1790000000"
+     }
+    ],
+    "events": [
+     {
+      "type": "pump_start",
+      "pump_id": "g-513-1790000000",
+      "start_at": 1789999998500
+     }
+    ],
+    "received": [
+     {
+      "seq": 1789999980007,
+      "at": 1789999993261
+     }
+    ],
+    "battery": 0.82,
+    "client": "5B0E2C3A-8F1D-4E2B-9C61-2F6A7D9E0B14",
+    "sent_at": 1790000065000
+   }
+  },
+  {
+   "about": "a game pump's card settled: what the wrist measured",
+   "kind": "sync_request",
+   "json": {
+    "device": "watchos",
+    "t0": 1790000070000,
+    "since": 1789999980009,
+    "events": [
+     {
+      "type": "pump_done",
+      "pump_id": "g-513-1790000000",
+      "start_at": 1789999998500,
+      "seconds": 42,
+      "steps": 96,
+      "metres": 61.4,
+      "peak_bpm": 152,
+      "delta_bpm": 27,
+      "verdict": "proven",
+      "slot": 0
+     }
+    ],
+    "client": "5B0E2C3A-8F1D-4E2B-9C61-2F6A7D9E0B14",
+    "sent_at": 1790000130000
+   }
+  },
+  {
+   "about": "a phone's catch-up pump while a watch holds the link: a plain post",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790000100000,
+    "since": 0,
+    "events": [
+     {
+      "type": "pump_done",
+      "pump_id": "p-1b4e28ba-2fa1-11d2-883f-0016d3cca427",
+      "start_at": 1790000040000,
+      "moves": [
+       {
+        "seconds": 40,
+        "move": 12
+       },
+       {
+        "seconds": 35,
+        "move": 95
+       }
+      ]
+     }
+    ],
+    "hold": false,
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790000100100
+   }
+  },
+  {
+   "about": "an app pump's rows from the phone, a plain post while a watch holds the link (slice 26): a knee flagged in Settings, the pump's offered row, a record, two sets saved without a count in the same second (n 1 and n 2: two rows alike stay two), and the felt-unwell stop that ended it, each with the app and phone bits",
+   "kind": "sync_request",
+   "json": {
+    "device": "android",
+    "t0": 1790000400000,
+    "since": 0,
+    "rows": [
+     {
+      "row": "1790000300|0|0|0|0|0|0|3|9|1|0|0|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000390|0|0|1|0|0|0|0|6|2|1|7|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000420|0|0|1|0|1|3|12|1|14|0|1|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000421|0|0|1|1|0|0|10|1|0|0|5|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000421|0|0|1|1|0|0|10|1|0|0|5|2176",
+      "n": 2
+     },
+     {
+      "row": "1790000450|0|0|1|0|0|0|0|6|0|0|9|2180",
+      "n": 1
+     }
+    ],
+    "hold": false,
+    "client": "6A1D2C3B-4E5F-4A6B-8C7D-9E0F1A2B3C4D",
+    "sent_at": 1790000400100
+   }
+  },
+  {
+   "about": "a phone started the pump a match's offer opened while a watch holds the link (slice 35): a plain post naming the offer, sent again until a response comes, and when the phone last posted a game offer (unix seconds: its notice of that offer)",
+   "kind": "sync_request",
+   "json": {
+    "device": "android",
+    "t0": 1790000760000,
+    "since": 0,
+    "offer_taken": "m-3f2b8c1e-7a4d-4e5f-9b6a-0c1d2e3f4a5b",
+    "game_offer_at": 1790000701,
+    "hold": false,
+    "client": "6A1D2C3B-4E5F-4A6B-8C7D-9E0F1A2B3C4D",
+    "sent_at": 1790000760100
+   }
+  },
+  {
+   "about": "an iPhone with Pro hands its proof over in a plain post (slice 35): its entitlement's signed transaction and its renewal info, here synthetic stand-ins of the JWS's shape, never a real one",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790000800000,
+    "since": 0,
+    "pro_proof": {
+     "store": "app_store",
+     "transaction": "eyJhbGciOiJFUzI1NiIsIng1YyI6WyJjM2x1ZEdobGRHbGpJR3hsWVdZPSIsImMzbHVkR2hsZEdsaklHbHVkR1Z5YldWa2FXRjBaUT09IiwiYzNsdWRHaGxkR2xqSUhKdmIzUT0iXX0.eyJzeW50aGV0aWMiOnRydWUsImJ1bmRsZUlkIjoiYWkucGx1eGlhLnF1ZXN0cHVtcCIsInByb2R1Y3RJZCI6ImFpLnBsdXhpYS5xdWVzdHB1bXAucHJvLm1vbnRobHkiLCJ0eXBlIjoiQXV0by1SZW5ld2FibGUgU3Vic2NyaXB0aW9uIiwiZW52aXJvbm1lbnQiOiJTYW5kYm94Iiwib3JpZ2luYWxUcmFuc2FjdGlvbklkIjoiMCIsImV4cGlyZXNEYXRlIjoxNzkyNTkyMDAwMDAwLCJzaWduZWREYXRlIjoxNzkwMDAwNzAwMDAwfQ.c3ludGhldGljIHNpZ25hdHVyZSwgbmV2ZXIgYSByZWFsIG9uZTogcnx8cy4uLi4uLi4uLi4uLi4uLi4uLi4uLg",
+     "renewal": "eyJhbGciOiJFUzI1NiIsIng1YyI6WyJjM2x1ZEdobGRHbGpJR3hsWVdZPSIsImMzbHVkR2hsZEdsaklHbHVkR1Z5YldWa2FXRjBaUT09IiwiYzNsdWRHaGxkR2xqSUhKdmIzUT0iXX0.eyJzeW50aGV0aWMiOnRydWUsIm9yaWdpbmFsVHJhbnNhY3Rpb25JZCI6IjAiLCJwcm9kdWN0SWQiOiJhaS5wbHV4aWEucXVlc3RwdW1wLnByby5tb250aGx5IiwiZW52aXJvbm1lbnQiOiJTYW5kYm94Iiwic2lnbmVkRGF0ZSI6MTc5MDAwMDcwMDAwMH0.c3ludGhldGljIHNpZ25hdHVyZSwgbmV2ZXIgYSByZWFsIG9uZTogcnx8cy4uLi4uLi4uLi4uLi4uLi4uLi4uLg"
+    },
+    "hold": false,
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790000800100
+   }
+  },
+  {
+   "about": "an Android phone with Pro hands its proof over (slice 35): Play's purchase JSON as the text it signed and the signature in standard base64, both synthetic here",
+   "kind": "sync_request",
+   "json": {
+    "device": "android",
+    "t0": 1790000810000,
+    "since": 0,
+    "pro_proof": {
+     "store": "play",
+     "purchase": "{\"orderId\":\"GPA.0000-0000-0000-00000\",\"packageName\":\"ai.pluxia.questpump\",\"productId\":\"ai.pluxia.questpump.pro\",\"purchaseTime\":1790000000000,\"purchaseState\":0,\"purchaseToken\":\"synthetic-purchase-token\",\"quantity\":1,\"autoRenewing\":true,\"acknowledged\":true}",
+     "signature": "YSBzeW50aGV0aWMgc3RhbmQtaW4gb2YgUGxheSdzIFJTQSBzaWduYXR1cmUsIG5ldmVyIGEgcmVhbCBvbmU="
+    },
+    "hold": false,
+    "client": "6A1D2C3B-4E5F-4A6B-8C7D-9E0F1A2B3C4D",
+    "sent_at": 1790000810100
+   }
+  },
+  {
+   "about": "an iPhone whose store answered without Pro since its proof went (lapsed, refunded), in a held request: the computer's extras go at once",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790000900000,
+    "since": 1789999980018,
+    "pro_proof": {
+     "store": "none"
+    },
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790000900100
+   }
+  },
+  {
+   "about": "a phone sends back the computer's rows it took from the helper's copy (slice 35): stored with bit 12 (computer) once bits 11 and 7 came off, stamped again with the app bit alone (6144 and the row's own bits), never 11, 7 and 12 together, so the helper keeps each once",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790000950000,
+    "since": 0,
+    "rows": [
+     {
+      "row": "1790000790|0|0|1|0|0|0|0|6|1|1|7|6144",
+      "n": 1
+     },
+     {
+      "row": "1790000820|0|0|1|0|1|3|12|1|15|0|1|6144",
+      "n": 1
+     }
+    ],
+    "hold": false,
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790000950100
+   }
+  },
+  {
+   "about": "a phone that follows the game on Wi-Fi with nothing to send (2026-10-13): its held request may wait 15 s",
+   "kind": "sync_request",
+   "json": {
+    "device": "android",
+    "client": "6A1D2C3B-4E5F-4A6B-8C7D-9E0F1A2B3C4D",
+    "t0": 1790000000000,
+    "sent_at": 1790000000100,
+    "since": 1789999980016,
+    "wait": 15000,
+    "battery": 0.64
+   }
+  },
+  {
+   "about": "a phone that follows the game over Bluetooth with nothing to send (slice 43): its held request may wait 10 minutes, each answer waking it (contract/fixtures/ble.json seals this body in its sync)",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "t0": 1790000000000,
+    "sent_at": 1790000000100,
+    "since": 1789999980016,
+    "wait": 600000,
+    "battery": 0.81
+   }
+  },
+  {
+   "about": "a phone that steps back for its watch keeps one standing request over Bluetooth (since the review of 2026-10-17): hold false with a wait, which holds nothing and carries no command back, answered at its wait's end, at a change of the game, when a newer request of the phone arrives, and at once while no device holds the link",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "t0": 1790000030000,
+    "sent_at": 1790000030100,
+    "since": 1789999980016,
+    "hold": false,
+    "wait": 600000,
+    "battery": 0.8
+   }
+  },
+  {
+   "about": "the hold ended with nothing for the device",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000005012
+    },
+    "t0": 1790000000000,
+    "t1": 1790000000010,
+    "t2": 1790000005012,
+    "next": 1789999980007,
+    "commands": []
+   }
+  },
+  {
+   "about": "every command (a game pump the player banked after taking its move back to Ready, a move's verdict with its slot, a catch-up pump's without), and the felt-unwell lock",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1789999993200
+    },
+    "t0": 1789999993180,
+    "t1": 1789999993190,
+    "t2": 1789999993200,
+    "next": 1789999980016,
+    "locked_until": 1790049600,
+    "commands": [
+     {
+      "seq": 1789999980008,
+      "type": "turn_in",
+      "quest_id": 26391,
+      "tier": 2,
+      "sent_at": 1789999990000,
+      "expires_at": 1790000020000
+     },
+     {
+      "seq": 1789999980009,
+      "type": "quest_complete",
+      "quest_id": 26391,
+      "sent_at": 1789999990100,
+      "expires_at": 1790000050100
+     },
+     {
+      "seq": 1789999980010,
+      "type": "pump_offered",
+      "pump_id": "g-513-1790000000",
+      "quest_id": 26391,
+      "moves": [
+       {
+        "slot": 0,
+        "move": 12,
+        "target": 11
+       },
+       {
+        "slot": 1,
+        "move": 40,
+        "target": 0
+       }
+      ],
+      "streak": 4,
+      "sent_at": 1789999991000,
+      "expires_at": 1790000111000
+     },
+     {
+      "seq": 1789999980011,
+      "type": "countdown",
+      "pump_id": "g-513-1790000000",
+      "slot": 0,
+      "start_at": 1789999993500,
+      "go_at": 1789999998500,
+      "ticks": 5,
+      "sent_at": 1789999993180,
+      "expires_at": 1790000028500
+     },
+     {
+      "seq": 1789999980012,
+      "type": "move_end",
+      "pump_id": "g-513-1790000000",
+      "slot": 0,
+      "cancelled": true,
+      "sent_at": 1789999993188,
+      "expires_at": 1790000053188
+     },
+     {
+      "seq": 1789999980013,
+      "type": "pump_done",
+      "pump_id": "g-513-1790000000",
+      "ended": "banked",
+      "sent_at": 1789999993190,
+      "expires_at": 1790000053190
+     },
+     {
+      "seq": 1789999980014,
+      "type": "verdict",
+      "pump_id": "g-513-1790000000",
+      "slot": 1,
+      "verdict": "proven",
+      "peak": 152,
+      "delta": 27,
+      "sent_at": 1789999993192,
+      "expires_at": 1790000053192
+     },
+     {
+      "seq": 1789999980015,
+      "type": "verdict",
+      "pump_id": "w-5a1d0c3e-7f41-4b8a-9d2c-6e0f1a2b3c4d",
+      "verdict": "no_hr",
+      "sent_at": 1789999993193,
+      "expires_at": 1790000053193
+     },
+     {
+      "seq": 1789999980016,
+      "type": "session_end",
+      "sent_at": 1789999993195,
+      "expires_at": 1790000053195
+     }
+    ]
+   }
+  },
+  {
+   "about": "the game's Keep going on the move the device follows (slice 52's double-check, 2026-10-24): its clock runs on to the full move's 45 s, counting up",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000330020
+    },
+    "t0": 1790000330000,
+    "t1": 1790000330010,
+    "t2": 1790000330020,
+    "next": 1790000300014,
+    "commands": [
+     {
+      "seq": 1790000300014,
+      "type": "keep",
+      "pump_id": "g-513-1790000300",
+      "slot": 1,
+      "seconds": 45,
+      "sent_at": 1790000329990,
+      "expires_at": 1790000389990
+     }
+    ]
+   }
+  },
+  {
+   "about": "a held answer as a Counter-Strike 2 match ended on the computer (slice 35): the match's offer for the device that holds the link, ten minutes to live (match_offer_min), while the next match's warmup already runs (playing)",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "GAMING_PC",
+     "host": "192.168.1.31",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000700452
+    },
+    "t0": 1790000699000,
+    "t1": 1790000699010,
+    "t2": 1790000700452,
+    "next": 1789999980017,
+    "playing": true,
+    "commands": [
+     {
+      "seq": 1789999980017,
+      "type": "match_end",
+      "offer": "m-3f2b8c1e-7a4d-4e5f-9b6a-0c1d2e3f4a5b",
+      "link": "counterstrike",
+      "name": "Counter-Strike 2",
+      "kind": "match",
+      "ended_at": 1790000700000,
+      "sent_at": 1790000700450,
+      "expires_at": 1790001300450
+     }
+    ]
+   }
+  },
+  {
+   "about": "a program the player picked closed on the computer (slice 35): a session's end, never a match's, so the offer names no kind and its pump opens with none chosen",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790003600203
+    },
+    "t0": 1790003596000,
+    "t1": 1790003596010,
+    "t2": 1790003600203,
+    "next": 1789999980018,
+    "commands": [
+     {
+      "seq": 1789999980018,
+      "type": "match_end",
+      "offer": "m-0a6e5c9d-1b2f-4c3d-8e4f-5a6b7c8d9e0f",
+      "link": "program",
+      "name": "Factorio",
+      "ended_at": 1790003590000,
+      "sent_at": 1790003600200,
+      "expires_at": 1790004200200
+     }
+    ]
+   }
+  },
+  {
+   "about": "the held answer on Bluetooth as the game's pump comes (slice 43): the turn-in and the pump's moves, as on the LAN, to a phone whose request may have waited minutes; the helper block with the game's state and its Bluetooth link on (contract/fixtures/ble.json seals this body in its last answer)",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000012400,
+     "mdns": "Davids-MacBook-Pro.local",
+     "hid": "AAECAwQFBgcICQoLDA0ODw",
+     "wow": "addon",
+     "sight": "sees",
+     "step": "none",
+     "ble": "on"
+    },
+    "t0": 1790000000000,
+    "t1": 1790000000110,
+    "t2": 1790000012400,
+    "next": 1789999980019,
+    "commands": [
+     {
+      "seq": 1789999980018,
+      "type": "turn_in",
+      "sent_at": 1790000012380,
+      "expires_at": 1790000612380,
+      "quest_id": 26389,
+      "tier": 2
+     },
+     {
+      "seq": 1789999980019,
+      "type": "pump_offered",
+      "sent_at": 1790000012390,
+      "expires_at": 1790000612390,
+      "pump_id": "g-513-1790000012",
+      "moves": [
+       {
+        "slot": 0,
+        "move": 12,
+        "target": 22
+       },
+       {
+        "slot": 1,
+        "move": 95,
+        "target": 45
+       }
+      ],
+      "streak": 6
+     }
+    ]
+   }
+  },
+  {
+   "about": "the hold ended with nothing for the device, on a Mac whose Bluetooth grant macOS refused (slice 43): ble no_grant, which the phones name as the computer's to fix",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000005012,
+     "mdns": "Davids-MacBook-Pro.local",
+     "hid": "AAECAwQFBgcICQoLDA0ODw",
+     "ble": "no_grant"
+    },
+    "t0": 1790000000000,
+    "t1": 1790000000010,
+    "t2": 1790000005012,
+    "next": 1789999980007,
+    "commands": []
+   }
+  },
+  {
+   "about": "the answer to that standing request the moment its watch's link went quiet (since the review of 2026-10-17): unheld, no device holds the link, so the phone takes it with its held request at once; no commands and the request's own since as next, as a plain post's",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000041250,
+     "mdns": "Davids-MacBook-Pro.local",
+     "hid": "AAECAwQFBgcICQoLDA0ODw",
+     "wow": "addon",
+     "sight": "sees",
+     "step": "none",
+     "ble": "on"
+    },
+    "t0": 1790000030000,
+    "t1": 1790000030110,
+    "t2": 1790000041250,
+    "next": 1789999980016,
+    "unheld": true,
+    "commands": []
+   }
+  },
+  {
+   "about": "the sheet: the unfinished list, two owed moves the game holds back, two characters, one without a sheet yet",
+   "kind": "sheet_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000000
+    },
+    "unfinished": 3,
+    "held": 2,
+    "owed": [
+     {
+      "move": 12,
+      "kind": 1,
+      "ladder": 1,
+      "rung": 1
+     },
+     {
+      "move": 95,
+      "kind": 3,
+      "seconds": 45,
+      "ladder": 6,
+      "rung": 2
+     },
+     {
+      "move": 4,
+      "kind": 3,
+      "seconds": 40,
+      "ladder": 6,
+      "rung": 5,
+      "allout": true
+     }
+    ],
+    "characters": [
+     {
+      "index": 1,
+      "guid": "Player-1234-0ABCDEF0",
+      "name": "Thrall",
+      "realm": "Stormscale",
+      "class": "SHAMAN",
+      "sheet": {
+       "char": 1,
+       "level": 12,
+       "stats": {
+        "str": 14,
+        "sta": 11
+       }
+      }
+     },
+     {
+      "index": 2,
+      "guid": "Player-1234-0ABCDEF1"
+     }
+    ]
+   }
+  },
+  {
+   "about": "the sheet while World of Warcraft with QuestPump runs on the computer (slice 35): the unfinished list is the game's next pump's, and no catch-up pays it meanwhile",
+   "kind": "sheet_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000100200
+    },
+    "unfinished": 2,
+    "game_asks": true,
+    "owed": [
+     {
+      "move": 12,
+      "kind": 1,
+      "ladder": 1,
+      "rung": 1
+     },
+     {
+      "move": 95,
+      "kind": 3,
+      "seconds": 45,
+      "ladder": 6,
+      "rung": 2
+     }
+    ],
+    "characters": [
+     {
+      "index": 1,
+      "guid": "Player-1234-0ABCDEF0",
+      "name": "Thrall",
+      "realm": "Stormscale",
+      "class": "SHAMAN"
+     }
+    ]
+   }
+  },
+  {
+   "about": "the history's first page: a pump row with its heart-rate proof and one of its move rows, as rows.jsonl keeps them, with the day's proofs asked for",
+   "kind": "history_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000000
+    },
+    "store": "2026-09-21T18:20:00.050Z/1790000000",
+    "next": 2,
+    "more": true,
+    "proofs": [
+     {
+      "row_ts": 1790000000,
+      "hr_verdict": "proven",
+      "hr_peak": 152,
+      "hr_delta": 27
+     }
+    ],
+    "rows": [
+     {
+      "ts_helper": "2026-09-21T18:20:00.050Z",
+      "row_ts": 1790000000,
+      "char": 1,
+      "quest_id": 26391,
+      "tier": 2,
+      "slot": 0,
+      "ladder": 0,
+      "rung": 0,
+      "move": 0,
+      "kind": 6,
+      "reps": 2,
+      "seconds": 0,
+      "outcome": 7,
+      "flags": 0,
+      "source": "game",
+      "load_id": 513,
+      "event_no": 41,
+      "ts_client_ms": 118000,
+      "hr_verdict": "proven",
+      "hr_peak": 152,
+      "hr_delta": 27
+     },
+     {
+      "ts_helper": "2026-09-21T18:20:05.123Z",
+      "row_ts": 1790000000,
+      "char": 1,
+      "quest_id": 26391,
+      "tier": 2,
+      "slot": 0,
+      "ladder": 3,
+      "rung": 2,
+      "move": 12,
+      "kind": 1,
+      "reps": 11,
+      "seconds": 0,
+      "outcome": 5,
+      "flags": 0,
+      "source": "game",
+      "load_id": 513,
+      "event_no": 44,
+      "ts_client_ms": 123456
+     }
+    ]
+   }
+  },
+  {
+   "about": "the history's last page: a pump row whose proof is not out yet, of a store that holds nothing more",
+   "kind": "history_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000000
+    },
+    "store": "2026-09-21T18:20:00.050Z/1790000000",
+    "next": 3,
+    "more": false,
+    "rows": [
+     {
+      "ts_helper": "2026-09-21T18:42:10.500Z",
+      "row_ts": 1790001320,
+      "char": 1,
+      "quest_id": 0,
+      "tier": 0,
+      "slot": 0,
+      "ladder": 0,
+      "rung": 0,
+      "move": 0,
+      "kind": 6,
+      "reps": 1,
+      "seconds": 0,
+      "outcome": 7,
+      "flags": 0,
+      "source": "game",
+      "load_id": 513,
+      "event_no": 52,
+      "ts_client_ms": 1440000
+     }
+    ]
+   }
+  },
+  {
+   "about": "the sheets: one character's summary as the addon folded it after a pump, with when the helper read it",
+   "kind": "sheets_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000000
+    },
+    "store": "2026-09-21T18:20:06.000Z",
+    "next": 1,
+    "more": false,
+    "sheets": [
+     {
+      "ts_helper": "2026-09-21T18:20:06.000Z",
+      "char": 1,
+      "sheet": {
+       "char": 1,
+       "at": 1790000005,
+       "ws": 1789484400,
+       "saved": 1790000000,
+       "v": 1,
+       "lvl": 12,
+       "xp": 690,
+       "into": 40,
+       "need": 250,
+       "par": 0,
+       "st": [
+        14,
+        9,
+        8,
+        11,
+        7
+       ],
+       "wk": [
+        2,
+        0,
+        1,
+        1,
+        0
+       ],
+       "build": "gorilla",
+       "crit": 12,
+       "exp": 9,
+       "def": 3,
+       "streak": 4,
+       "tokens": 1,
+       "lad": [
+        [
+         2,
+         43,
+         7,
+         0
+        ],
+        [
+         2,
+         2,
+         15,
+         1
+        ],
+        [
+         1,
+         56,
+         0,
+         0
+        ],
+        [
+         1,
+         33,
+         0,
+         0
+        ],
+        [
+         1,
+         70,
+         44,
+         1
+        ],
+        [
+         1,
+         0,
+         0,
+         0
+        ],
+        [
+         1,
+         16,
+         0,
+         0
+        ]
+       ],
+       "mq": [
+        1,
+        2,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+       ],
+       "mw": [
+        2,
+        2,
+        0,
+        0,
+        1,
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        0
+       ],
+       "owed": 0,
+       "last": [
+        75,
+        3,
+        1,
+        1
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "about": "the answer to the app rows' plain post: no commands, the lock the stop row set, and the store of app rows that now holds them",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000005012
+    },
+    "t0": 1790000400000,
+    "t1": 1790000400110,
+    "t2": 1790000400114,
+    "next": 0,
+    "locked_until": 1790049600,
+    "rows_store": "2026-09-21T14:20:00.105Z/1790000300/1",
+    "commands": []
+   }
+  },
+  {
+   "about": "the answer to the offer taken, as every device's answers say while the offer would have lived (slice 35): the offer withdrawn, so a device that raised it takes its notice back, and the latest game offer on any device",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "GAMING_PC",
+     "host": "192.168.1.31",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000760114
+    },
+    "t0": 1790000760000,
+    "t1": 1790000760110,
+    "t2": 1790000760114,
+    "next": 0,
+    "rows_store": "2026-09-21T14:20:00.105Z/1790000300/1",
+    "offer_withdrawn": [
+     "m-3f2b8c1e-7a4d-4e5f-9b6a-0c1d2e3f4a5b"
+    ],
+    "game_offer_at": 1790000701,
+    "commands": []
+   }
+  },
+  {
+   "about": "the answer to the phone's catch-up while World of Warcraft with QuestPump runs on the computer (slice 35): the game asks the owed moves on its next pump, so the catch-up paid none of them, its id in game_held (as again for the same event sent after a lost response, whatever the game does since), and the phone keeps them owed",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000100112
+    },
+    "t0": 1790000100000,
+    "t1": 1790000100108,
+    "t2": 1790000100112,
+    "next": 0,
+    "rows_store": "2026-09-21T14:20:00.105Z/1790000300/1",
+    "game_asks": true,
+    "game_held": [
+     "p-1b4e28ba-2fa1-11d2-883f-0016d3cca427"
+    ],
+    "commands": []
+   }
+  },
+  {
+   "about": "the helper's copy of the app rows (slice 28), its first page: the phone's knee flag and pump row, then a record set and the two alike rows of one second with their copy numbers, as the store keeps them; more follow",
+   "kind": "app_rows_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000500000
+    },
+    "store": "2026-09-21T14:20:00.105Z/1790000300/1",
+    "next": 5,
+    "more": true,
+    "rows": [
+     {
+      "row": "1790000300|0|0|0|0|0|0|3|9|1|0|0|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000390|0|0|1|0|0|0|0|6|2|1|7|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000420|0|0|1|0|1|3|12|1|14|0|1|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000421|0|0|1|1|0|0|10|1|0|0|5|2176",
+      "n": 1
+     },
+     {
+      "row": "1790000421|0|0|1|1|0|0|10|1|0|0|5|2176",
+      "n": 2
+     }
+    ]
+   }
+  },
+  {
+   "about": "the helper's copy's last page (slice 35): a pump run on the computer, its pump row and a record set, as the helper keeps them (the app bit with the computer's, bit 12)",
+   "kind": "app_rows_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790001000000
+    },
+    "store": "2026-09-21T14:20:00.105Z/1790000300/1",
+    "next": 7,
+    "more": false,
+    "rows": [
+     {
+      "row": "1790000790|0|0|1|0|0|0|0|6|1|1|7|6144",
+      "n": 1
+     },
+     {
+      "row": "1790000820|0|0|1|0|1|3|12|1|15|0|1|6144",
+      "n": 1
+     }
+    ]
+   }
+  },
+  {
+   "about": "a phone's body (slice 35, POST /v1/body): the fields the player changed on it, each with when, on the phone's own clock: no jumping on, two moves and a group unchecked; a field it never changed stays out",
+   "kind": "body_request",
+   "json": {
+    "device": "android",
+    "sent_at": 1790000400100,
+    "body": {
+     "no_jump": {
+      "value": true,
+      "changed_at": 1790000300000
+     },
+     "moves": {
+      "value": {
+       "exclude": {
+        "ids": [
+         12,
+         95
+        ],
+        "groups": [
+         "rope"
+        ]
+       }
+      },
+      "changed_at": 1790000350000
+     }
+    }
+   }
+  },
+  {
+   "about": "the body every app device shares after the merge: the phone's no jumping, head-down positions avoided in the game (at the helper's time), the experience another phone set, and the moves of a later change elsewhere, the opt-in headstand checked, which the phone takes",
+   "kind": "body_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000400114
+    },
+    "body": {
+     "no_jump": {
+      "value": true,
+      "changed_at": 1790000300000
+     },
+     "no_head_down": {
+      "value": true,
+      "changed_at": 1790000120000
+     },
+     "experience": {
+      "value": "some",
+      "changed_at": 1790000200000
+     },
+     "moves": {
+      "value": {
+       "exclude": {
+        "ids": [
+         12,
+         95
+        ],
+        "groups": [
+         "rope"
+        ]
+       },
+       "include": [
+        284
+       ]
+      },
+      "changed_at": 1790000380000
+     }
+    }
+   }
+  },
+  {
+   "about": "a phone's catch-up that asked the counts (2026-10-12): the wall push-up's set past its record, with the rung its two days opened, a deep squat hold's set at its typed seconds, answered \"Is that right?\" yes, the step jacks timed with no set, and an all-out window of jumping jacks owed under its own move (a closing move's, since 2026-10-15), a counted set; each move names the owed row it was dosed from",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790000300000,
+    "since": 0,
+    "events": [
+     {
+      "type": "pump_done",
+      "pump_id": "p-6f1c2d3e-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+      "start_at": 1790000200000,
+      "moves": [
+       {
+        "seconds": 38,
+        "move": 12,
+        "ts": 1789990000,
+        "set": {
+         "reps": 21,
+         "seconds": 38,
+         "outcome": 1,
+         "flags": 0,
+         "at": 1790000241000,
+         "rungs": [
+          {
+           "ladder": 1,
+           "rung": 2,
+           "cause": 1
+          }
+         ]
+        }
+       },
+       {
+        "seconds": 52,
+        "move": 15,
+        "ts": 1789990000,
+        "set": {
+         "reps": 0,
+         "seconds": 50,
+         "outcome": 2,
+         "flags": 8,
+         "at": 1790000270000
+        }
+       },
+       {
+        "seconds": 45,
+        "move": 95,
+        "ts": 1789990000
+       },
+       {
+        "seconds": 30,
+        "move": 94,
+        "ts": 1789993600,
+        "set": {
+         "reps": 34,
+         "seconds": 30,
+         "outcome": 1,
+         "flags": 1024,
+         "at": 1790000299000
+        }
+       }
+      ]
+     }
+    ],
+    "hold": false,
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790000300100
+   }
+  },
+  {
+   "about": "a watch's catch-up of one loaded move (2026-10-12): the backpack row's set with its weight, 12 kg",
+   "kind": "sync_request",
+   "json": {
+    "device": "watchos",
+    "t0": 1790000400000,
+    "since": 0,
+    "events": [
+     {
+      "type": "pump_done",
+      "pump_id": "w-0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+      "start_at": 1790000350000,
+      "moves": [
+       {
+        "seconds": 41,
+        "move": 57,
+        "set": {
+         "reps": 14,
+         "seconds": 41,
+         "outcome": 11,
+         "flags": 0,
+         "load": 120,
+         "at": 1790000392000
+        }
+       }
+      ],
+      "verdict": "no_hr"
+     }
+    ],
+    "hold": true,
+    "client": "1D8F2A3B-4C5E-4D6F-9A71-8293A4B5C6D7",
+    "sent_at": 1790000400100
+   }
+  },
+  {
+   "about": "an Android phone's catch-up whose sets carry their answers and steps (2026-10-19, the program's double-check): an all-out window of jumping jacks saved Form slipped at 12, done (outcome 5) with the counted bit and its answer (flags 1024 | 1 << 14), so it counts no clean day; the high knees' steady minute whose pace was \"Yes, the whole time\", done with its pace answer and no counted bit (flags 1 << 14); and the wall push-up's set past its record, with the rung its days opened and the step it mastered",
+   "kind": "sync_request",
+   "json": {
+    "device": "android",
+    "t0": 1790000500000,
+    "since": 0,
+    "events": [
+     {
+      "type": "pump_done",
+      "pump_id": "p-7a2d3e4f-5b6c-4d7e-9f80-a1b2c3d4e5f6",
+      "start_at": 1790000420000,
+      "moves": [
+       {
+        "seconds": 30,
+        "move": 94,
+        "ts": 1789993600,
+        "set": {
+         "reps": 12,
+         "seconds": 30,
+         "outcome": 5,
+         "flags": 17408,
+         "at": 1790000452000
+        }
+       },
+       {
+        "seconds": 60,
+        "move": 91,
+        "ts": 1789993600,
+        "set": {
+         "reps": 0,
+         "seconds": 60,
+         "outcome": 5,
+         "flags": 16384,
+         "at": 1790000474000
+        }
+       },
+       {
+        "seconds": 40,
+        "move": 12,
+        "ts": 1789997200,
+        "set": {
+         "reps": 25,
+         "seconds": 40,
+         "outcome": 1,
+         "flags": 0,
+         "at": 1790000496000,
+         "rungs": [
+          {
+           "ladder": 1,
+           "rung": 2,
+           "cause": 1
+          }
+         ],
+         "mastered": [
+          {
+           "ladder": 1,
+           "rung": 1
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ],
+    "hold": false,
+    "client": "2E9A3B4C-5D6F-4E70-8B82-93A4B5C6D7E8",
+    "sent_at": 1790000500100
+   }
+  },
+  {
+   "about": "an iPhone's catch-up whose owed frog stand was swapped on its Ready view (2026-10-26): `ran` names the frog stand from books, Swap's easier version, which pays the frog stand's owed row; its hold saved at 12 s, and the step down its easier pick takes from the planche ladder's rung 2 in `ran.down` (cause 8, ns.EasierDown), which comes with or without a set",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790000600000,
+    "since": 0,
+    "events": [
+     {
+      "type": "pump_done",
+      "pump_id": "p-8b3e4f50-6c7d-4e8f-a091-b2c3d4e5f607",
+      "start_at": 1790000520000,
+      "moves": [
+       {
+        "seconds": 34,
+        "move": 343,
+        "ts": 1789998800,
+        "ran": {
+         "move": 425,
+         "kind": 2,
+         "ladder": 22,
+         "rung": 1,
+         "easier": true,
+         "down": {
+          "ladder": 22,
+          "rung": 1
+         }
+        },
+        "set": {
+         "reps": 0,
+         "seconds": 12,
+         "outcome": 1,
+         "flags": 0,
+         "at": 1790000554000
+        }
+       }
+      ]
+     }
+    ],
+    "hold": false,
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790000600100
+   }
+  },
+  {
+   "about": "an iPhone's Bank it on the Ready view of a match's pump (slice 58), a plain post while a watch holds the link, sent again until a response comes: under the pump's own f- id and its start, Big (tier 3), one entry per move of its own not done yet in the pump's order, each with its row kind, the ladder and the rung its slot is dosed at and its seconds (0 but on a timed move): the wall push-up's set, the deep squat hold, a steady minute of high knees and the all-out window of jumping jacks, the one marked allout (absent on every other move); the helper writes one banked owed row each, dated the start's unix second, once a pump id",
+   "kind": "sync_request",
+   "json": {
+    "device": "ios",
+    "t0": 1790010260000,
+    "since": 0,
+    "events": [
+     {
+      "type": "bank",
+      "pump_id": "f-4b5c6d7e-8f90-4a1b-9c2d-3e4f5a6b7c8d",
+      "tier": 3,
+      "start_at": 1790010200000,
+      "moves": [
+       {
+        "seconds": 0,
+        "move": 12,
+        "kind": 1,
+        "ladder": 1,
+        "rung": 1
+       },
+       {
+        "seconds": 0,
+        "move": 15,
+        "kind": 2,
+        "ladder": 2,
+        "rung": 3
+       },
+       {
+        "seconds": 60,
+        "move": 91,
+        "kind": 3,
+        "ladder": 6,
+        "rung": 4
+       },
+       {
+        "seconds": 30,
+        "move": 94,
+        "kind": 3,
+        "ladder": 6,
+        "rung": 5,
+        "allout": true
+       }
+      ]
+     }
+    ],
+    "hold": false,
+    "client": "0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6",
+    "sent_at": 1790010260100
+   }
+  },
+  {
+   "about": "an Android phone's Skip of one unfinished move (since 2026-10-09), a plain post: under the skip's own p- id, start_at the click, the move skipped with seconds 0 and the owed row's ts the unfinished list gave it (here the deep squat hold the iPhone's bank above left unfinished); the helper writes the game's skipped paid row for it",
+   "kind": "sync_request",
+   "json": {
+    "device": "android",
+    "t0": 1790010300000,
+    "since": 0,
+    "events": [
+     {
+      "type": "skip",
+      "pump_id": "p-5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+      "start_at": 1790010295000,
+      "moves": [
+       {
+        "seconds": 0,
+        "move": 15,
+        "ts": 1790010200
+       }
+      ]
+     }
+    ],
+    "hold": false,
+    "client": "2E9A3B4C-5D6F-4E70-8B82-93A4B5C6D7E8",
+    "sent_at": 1790010300100
+   }
+  },
+  {
+   "about": "a held answer as a Counter-Strike 2 match ended after 41 minutes sat at the computer (slice 48, docs/computer-games.md): the offer's size from the sitting clock, Normal (tier 2, never the minutes), and the arms rest, since the shooter still ran at the match's end (the command's arms, present only when true); sent at the first look after the decision since the shooter stood in front on the computer's one screen, so its card could not show (slice 48's double-check), and the response's own arms says the shooter still runs with its arms rest on (present only when true): a device rests the arms in the offer's pump while a response within the last minute says so, or while none came in a minute",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "GAMING_PC",
+     "host": "192.168.1.31",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790006400452
+    },
+    "t0": 1790006399000,
+    "t1": 1790006399010,
+    "t2": 1790006400452,
+    "next": 1789999980019,
+    "arms": true,
+    "commands": [
+     {
+      "seq": 1789999980019,
+      "type": "match_end",
+      "offer": "m-7c1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+      "link": "counterstrike",
+      "name": "Counter-Strike 2",
+      "kind": "match",
+      "tier": 2,
+      "arms": true,
+      "ended_at": 1790006400000,
+      "sent_at": 1790006400450,
+      "expires_at": 1790007000450
+     }
+    ]
+   }
+  },
+  {
+   "about": "a League of Legends match's offer after 24 minutes sat (slice 48): Small (tier 1), sent at the look match_relaunch_s passed with no relaunch, its card shown at the close to a computer whose input had by then been idle match_away_s (slice 48's double-check: the player left the desk at the end screen), no arms rest (League is no aim game)",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790010090203
+    },
+    "t0": 1790010086000,
+    "t1": 1790010086010,
+    "t2": 1790010090203,
+    "next": 1789999980020,
+    "commands": [
+     {
+      "seq": 1789999980020,
+      "type": "match_end",
+      "offer": "m-1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b",
+      "link": "league",
+      "name": "League of Legends or TFT",
+      "kind": "match",
+      "tier": 1,
+      "ended_at": 1790010000000,
+      "sent_at": 1790010090200,
+      "expires_at": 1790010690200
+     }
+    ]
+   }
+  },
+  {
+   "about": "a held answer as a Counter-Strike 2 match of 34 minutes ended (slice 57: every match its own pump): the offer's size from the match's own minutes, Normal (tier 2), as a desktop app of slices 57 and 58 sized 34 minutes at 20 minutes a step (30 to 49; since slice 59, at 12 a step, it sends Big, tier 3, for 34 minutes, and a device takes the tier as sent, never sizing it again from minutes), those minutes (from the match's start the game's feed told, by the computer's own clock), which the pump's cardio takes, warm since the computer's sitting clock held match_sat_min as the offer was made (present only when true, read only beside minutes), and the arms rest since the shooter still ran at its end (present only when true); a match_end without minutes is from an older desktop app, which a device reads as before",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "GAMING_PC",
+     "host": "192.168.1.31",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790013600452
+    },
+    "t0": 1790013599000,
+    "t1": 1790013599010,
+    "t2": 1790013600452,
+    "next": 1789999980021,
+    "arms": true,
+    "commands": [
+     {
+      "seq": 1789999980021,
+      "type": "match_end",
+      "offer": "m-5d6e7f8a-9b0c-4d1e-8f2a-3b4c5d6e7f8a",
+      "link": "counterstrike",
+      "name": "Counter-Strike 2",
+      "kind": "match",
+      "tier": 2,
+      "minutes": 34,
+      "warm": true,
+      "arms": true,
+      "ended_at": 1790013600000,
+      "sent_at": 1790013600450,
+      "expires_at": 1790014200450
+     }
+    ]
+   }
+  },
+  {
+   "about": "a phone's body with Moves per match (slice 48): Extreme, which sizes every pump after a game's end on every device; the field's own changed_at, on the phone's clock",
+   "kind": "body_request",
+   "json": {
+    "device": "ios",
+    "sent_at": 1790000400200,
+    "body": {
+     "match_pace": {
+      "value": "extreme",
+      "changed_at": 1790000390000
+     }
+    }
+   }
+  },
+  {
+   "about": "the body after the merge with Moves per match set on the computer's Games page (slice 48): Light at the helper's time, beside the experience a phone set",
+   "kind": "body_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000400214
+    },
+    "body": {
+     "experience": {
+      "value": "some",
+      "changed_at": 1790000200000
+     },
+     "match_pace": {
+      "value": "light",
+      "changed_at": 1790000400000
+     }
+    }
+   }
+  },
+  {
+   "about": "a phone's body with its places (slice 51, contract/places.json): Home's equipment and switches changed on the phone (home), and the other places in the player's order (places): the seeded hotel room, renamed, and a fitness centre added from its template with a drawn id; the place in use is never in the body",
+   "kind": "body_request",
+   "json": {
+    "device": "ios",
+    "sent_at": 1790000500100,
+    "body": {
+     "home": {
+      "value": {
+       "gear": [
+        "bar",
+        "bands",
+        "dumbbells"
+       ],
+       "floor": true,
+       "space": true,
+       "quiet": false
+      },
+      "changed_at": 1790000450000
+     },
+     "places": {
+      "value": [
+       {
+        "id": "hotel",
+        "template": "hotel",
+        "name": "Lisbon hotel",
+        "glyph": "place_bed",
+        "gear": [],
+        "floor": true,
+        "space": true,
+        "quiet": true
+       },
+       {
+        "id": "p-3f9a0c1e",
+        "template": "gym",
+        "glyph": "place_dumbbell",
+        "gear": [
+         "fixed_bar",
+         "kettlebell",
+         "dumbbells",
+         "rope"
+        ],
+        "floor": true,
+        "space": true,
+        "quiet": false
+       }
+      ],
+      "changed_at": 1790000480000
+     }
+    }
+   }
+  },
+  {
+   "about": "the body after the merge with Home changed later in the game (slice 51): the game's Home at the profile's bodyAt.home wins over the phone's, the phone's places kept; an empty place with no template, its own name and glyph",
+   "kind": "body_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000500114
+    },
+    "body": {
+     "home": {
+      "value": {
+       "gear": [
+        "stable_chair",
+        "bar",
+        "bands"
+       ],
+       "floor": true,
+       "space": false,
+       "quiet": true
+      },
+      "changed_at": 1790000470000
+     },
+     "places": {
+      "value": [
+       {
+        "id": "hotel",
+        "template": "hotel",
+        "name": "Lisbon hotel",
+        "glyph": "place_bed",
+        "gear": [],
+        "floor": true,
+        "space": true,
+        "quiet": true
+       },
+       {
+        "id": "p-77d0b2a4",
+        "name": "Garage",
+        "glyph": "place_peak",
+        "gear": [
+         "kettlebell"
+        ],
+        "floor": true,
+        "space": true,
+        "quiet": false
+       }
+      ],
+      "changed_at": 1790000490000
+     }
+    }
+   }
+  },
+  {
+   "about": "a held answer as the player typed a count in the game (slice 51): the move's end, then move_counted with the row's reps, seconds and outcome (beat 1), which the device shows on the move with the record mark when it beats the record it knows",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000612000
+    },
+    "t0": 1790000611980,
+    "t1": 1790000611990,
+    "t2": 1790000612000,
+    "next": 1789999980031,
+    "commands": [
+     {
+      "seq": 1789999980030,
+      "type": "move_end",
+      "pump_id": "g-513-1790000600",
+      "slot": 0,
+      "sent_at": 1790000611000,
+      "expires_at": 1790000671000
+     },
+     {
+      "seq": 1789999980031,
+      "type": "move_counted",
+      "pump_id": "g-513-1790000600",
+      "slot": 0,
+      "reps": 14,
+      "seconds": 41,
+      "outcome": 1,
+      "sent_at": 1790000611950,
+      "expires_at": 1790000671950
+     }
+    ]
+   }
+  },
+  {
+   "about": "the answer to a phone's standing request while its watch holds the link (slice 51): the game pump's commands since the request's since as mirror, which the phone shows and never acknowledges or answers; next the highest seq among them, no commands",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000612010
+    },
+    "t0": 1790000590000,
+    "t1": 1790000590110,
+    "t2": 1790000612010,
+    "next": 1789999980031,
+    "mirror": [
+     {
+      "seq": 1789999980028,
+      "type": "pump_offered",
+      "pump_id": "g-513-1790000600",
+      "quest_id": 26391,
+      "moves": [
+       {
+        "slot": 0,
+        "move": 12,
+        "target": 14
+       },
+       {
+        "slot": 1,
+        "move": 40,
+        "target": 0
+       }
+      ],
+      "streak": 5,
+      "sent_at": 1790000601000,
+      "expires_at": 1790000721000
+     },
+     {
+      "seq": 1789999980029,
+      "type": "countdown",
+      "pump_id": "g-513-1790000600",
+      "slot": 0,
+      "start_at": 1790000603500,
+      "go_at": 1790000608500,
+      "ticks": 5,
+      "sent_at": 1790000603180,
+      "expires_at": 1790000638500
+     },
+     {
+      "seq": 1789999980030,
+      "type": "move_end",
+      "pump_id": "g-513-1790000600",
+      "slot": 0,
+      "sent_at": 1790000611000,
+      "expires_at": 1790000671000
+     },
+     {
+      "seq": 1789999980031,
+      "type": "move_counted",
+      "pump_id": "g-513-1790000600",
+      "slot": 0,
+      "reps": 14,
+      "seconds": 41,
+      "outcome": 1,
+      "sent_at": 1790000611950,
+      "expires_at": 1790000671950
+     }
+    ],
+    "commands": []
+   }
+  },
+  {
+   "about": "GET /v1/account from a desktop app in a sync account (slice 60): its id and R (seal.json's sync block), three devices, an email linked",
+   "kind": "account_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000000
+    },
+    "account": "ABEiM0RVZneImaq7zN3u_w",
+    "r": "oKGio6SlpqeoqaqrrK2urw",
+    "devices": 3,
+    "email": true
+   }
+  },
+  {
+   "about": "GET /v1/account from a desktop app with its Sync off (slice 60): no account, so a phone with one asks Add",
+   "kind": "account_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000000000
+    },
+    "account": null,
+    "r": null,
+    "devices": 0,
+    "email": false
+   }
+  },
+  {
+   "about": "PUT /v1/account, a phone's Add (slice 60): its account and R handed to the desktop app",
+   "kind": "account_request",
+   "json": {
+    "device": "android",
+    "sent_at": 1790000200000,
+    "account": "ABEiM0RVZneImaq7zN3u_w",
+    "r": "oKGio6SlpqeoqaqrrK2urw"
+   }
+  },
+  {
+   "about": "POST /v1/sync's 422, for a body that opened but does not read (since the release security review of 2026-10-31; every other route's is bare): the refused request's nonce, base64url without padding; a device drops what that request carried only on this answer, sealed and naming its own request's nonce (seal.json `refusals`)",
+   "kind": "refused_response",
+   "json": {
+    "nonce": "AAAAAAAAAAAAAAAB"
+   }
+  }
+ ]
+}

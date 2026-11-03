@@ -1,0 +1,67 @@
+{
+  "move": "toe_hold_fold",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 16},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 12], "turn": 4, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "tall",
+      "pelvis": [-12, 94.0, 0],
+      "trunk": [70, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"fk": [70, 4, 8]}
+    },
+    "hook": {
+      "from": "tall",
+      "pelvis": [-14, 92.8, 0],
+      "trunk": [106, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [28, 16.8, 12.5], "pole": [-0.2, 0.2, 1], "hand": [-0.28, -0.96, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fold": {
+      "from": "hook",
+      "pelvis": [-19.5, 92.75, 0],
+      "trunk": [105, 0, 0],
+      "chest": [32, 0, 0],
+      "head": [16, 0, 0],
+      "arms": {"ik": [28, 16.8, 12.5], "pole": [-0.2, 0.2, 1], "hand": [-0.28, -0.96, 0]}
+    },
+    "fold_in": {"from": "fold", "trunk": [106, 0, 0], "chest": [33, 0, 0]},
+    "bent": {"from": "fold", "pelvis": [-12, 88.5, 0], "trunk": [100, 0, 0], "chest": [30, 0, 0], "head": [16, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hinge", "s": 1.4, "ease": "in", "phase": "fold_forward", "effort": 0.4},
+    {"to": "hook", "s": 1.4, "ease": "out", "phase": "hook_toes", "effort": 0.6},
+    {"to": "fold", "s": 1.2, "phase": "hook_toes", "effort": 0.7},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "hinge", "s": 1.6, "ease": "in", "phase": "rise_slowly", "effort": 0.4},
+    {"to": "tall", "s": 1.4, "ease": "out", "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "fold", "check": "height", "joint": "shoulder_near", "max": 70},
+    {"at": "fold", "check": "height", "joint": "hand_tip_near", "max": 4},
+    {"at": "fold", "check": "offset", "joint": "hand_tip_near", "from": "toe_near", "axis": "f", "min": 6, "max": 10}
+  ],
+  "note": "Standing feet hip-width apart: a hinge from the hips, the knees soft, until the hands hang in front of the toes and two fingers hook round each big toe from the front, the fingertips curled back under its tip; then the knees straighten while the back rounds deeper than in the forward fold (the shoulders about 2 cm lower, under 70 cm) and the head hangs, the toes still hooked. The fault: the knees bend."
+}

@@ -1,0 +1,129 @@
+{
+  "move": "one_leg_wheel",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["pauldron", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -100, "f1": 66, "l0": -40, "l1": 40}],
+  "poses": {
+    "lie": {
+      "pelvis": [7, 16, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "pelvis",
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "leg_near": {"ik": [34, 8, 14], "pole": [0.2, 1, 0], "toe": [1, 0, 0.07]},
+      "leg_far": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1}
+    },
+    "crown": {
+      "from": "lie",
+      "pelvis": [-4, 56, 0],
+      "trunk": [-105, 0, 0],
+      "chest": [-30, 0, 0],
+      "head": [0, 0, 0],
+      "contacts": [
+        "head",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "leg_near": {"ik": [34, 8, 14], "pole": [0.2, 1, 0], "toe": [1, 0, 0.07]}
+    },
+    "wheel": {
+      "from": "lie",
+      "pelvis": [-18, 76, 0],
+      "trunk": [-85, 0, 0],
+      "chest": [-65, 0, 0],
+      "head": [8, 0, 0],
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "leg_near": {"ik": [34, 8, 14], "pole": [0.2, 1, 0], "toe": [1, 0, 0.07]}
+    },
+    "tuck": {
+      "from": "lie",
+      "pelvis": [2, 46, 0],
+      "trunk": [-125, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [40, 0, 0],
+      "contacts": [
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "leg_near": {"ik": [34, 8, 14], "pole": [0.2, 1, 0], "toe": [1, 0, 0.07]}
+    },
+    "bend": {
+      "from": "wheel",
+      "pelvis": [-18, 76, 1.5],
+      "leg_near": {"ik": [28, 100, 14], "pole": [-0.4, 1, 0], "toe": [1, 0.6, 0.07]},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "leg_up": {"from": "bend", "leg_near": {"ik": [22.5, 154, 12], "pole": [-0.4, 1, 0], "toe": [0.55, 1, 0]}},
+    "leg_up_in": {
+      "from": "leg_up",
+      "pelvis": [-18, 76.4, 1.5],
+      "chest": [-67, 0, 0],
+      "leg_near": {"ik": [22.9, 154.2, 12], "pole": [-0.4, 1, 0], "toe": [0.55, 1, 0]}
+    },
+    "hips_drop": {
+      "from": "leg_up",
+      "pelvis": [-14, 64, 1.5],
+      "trunk": [-100, 0, 0],
+      "chest": [-34, 0, 0],
+      "leg_near": {"ik": [26, 142, 12], "pole": [-0.4, 1, 0], "toe": [0.55, 1, 0]},
+      "head": [10, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "hands_by_ears", "effort": 0.2},
+    {"to": "crown", "s": 1.2, "phase": "hips_up", "effort": 0.7},
+    {"to": "wheel", "s": 1.2, "phase": "arms_straight", "effort": 0.9},
+    {"to": "bend", "s": 0.8, "phase": "knee_in", "effort": 0.95},
+    {"to": "leg_up", "s": 1.0, "phase": "leg_up", "effort": 1.0},
+    {"to": "leg_up_in", "s": 1.2, "phase": "breathe", "effort": 1.0},
+    {"to": "leg_up", "s": 1.2, "phase": "breathe", "effort": 1.0},
+    {"to": "bend", "s": 1.0, "phase": "knee_in", "effort": 0.95},
+    {"to": "wheel", "s": 0.8, "phase": "foot_down", "effort": 0.9},
+    {"to": "tuck", "s": 1.2, "phase": "tuck_chin", "effort": 0.6},
+    {"to": "lie", "s": 1.2, "phase": "lower_slowly", "effort": 0.3}
+  ],
+  "key": "leg_up",
+  "targets": [
+    {"at": "leg_up", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "leg_up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "leg_up", "check": "height", "joint": "pelvis", "min": 72},
+    {"at": "leg_up", "check": "height", "joint": "head", "min": 20}
+  ],
+  "note": "In the wheel, arms straight and the head free: shift the weight onto one foot, draw the other knee in and straighten that leg up toward the ceiling, the hips staying high and level; hold and breathe, bend the knee and set the foot down softly. The other side on the next set.",
+  "fault": {"pose": "hips_drop", "caption": "hips_sag", "breaks": {"check": "height", "joint": "pelvis", "min": 72}}
+}

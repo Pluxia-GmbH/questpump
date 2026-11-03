@@ -1,0 +1,55 @@
+{
+  "move": "single_leg_bridge",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["thigh", "abdomen"],
+  "props": [{"kind": "mat", "f0": -100, "f1": 62, "l0": -40, "l1": 40}],
+  "poses": {
+    "down": {
+      "pelvis": [-5, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [-15, 5.5, 60], "pole": [0, 1, 1], "hand": [0.4, -0.05, 1]},
+      "contacts": [
+        "neck",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "toe_near",
+        "ankle_near",
+        "pelvis"
+      ],
+      "leg_near": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "leg_far": {"fk": [50, 0, 30, 10]}
+    },
+    "up": {
+      "from": "down",
+      "pelvis": [-8, 35.5, 0],
+      "trunk": [-112, 0, 0],
+      "head": [23, 0, 0],
+      "leg_far": {"fk": [25, 0, 3, 0]},
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far", "toe_near", "ankle_near"]
+    },
+    "sag": {
+      "from": "up",
+      "pelvis": [-6, 23, 0],
+      "trunk": [-98, 0, 0],
+      "head": [8, 0, 0],
+      "leg_far": {"fk": [37, 0, 4, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.3, "phase": "lie"},
+    {"to": "up", "s": 1.0, "phase": "hips_up", "effort": 0.9},
+    {"hold": 0.4, "phase": "hips_level", "effort": 1.0},
+    {"to": "down", "s": 1.2, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "up",
+  "fault": {
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "pelvis", "knee_near"], "min": 165},
+    "pose": "sag"
+  },
+  "targets": [{"at": "up", "check": "angle", "joints": ["shoulder_near", "pelvis", "knee_near"], "min": 165}]
+}

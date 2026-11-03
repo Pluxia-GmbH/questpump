@@ -1,0 +1,100 @@
+{
+  "move": "crow_one_foot",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 8},
+  "working": ["forearm", "upper_arm", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -50, "f1": 80, "l0": -40, "l1": 40}],
+  "poses": {
+    "squat": {
+      "pelvis": [-30, 38, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [100, 8, 30, 0, 0]},
+      "legs": {"foot": [-16, 20], "y": 1, "turn": 10, "lift": 0, "knee_out": 0, "pole": [0.85, 0, 1.4]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "squat",
+      "pelvis": [-22, 42, 0],
+      "trunk": [70, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prep": {
+      "pelvis": [2, 65, 0],
+      "trunk": [104, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-16, 20], "y": 1, "turn": 10, "lift": 70, "knee_out": 0, "pole": [1, -0.2, 1.35]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "one": {
+      "pelvis": [6, 66, 0],
+      "trunk": [110, 0, 0],
+      "chest": [9, 0, 0],
+      "head": [-46, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [-7, 55, 12], "pole": [0.6, -0.45, 1.0], "toe": [-0.8, -0.5, 0]},
+      "leg_far": {"foot": [-16, 20], "y": 1, "turn": 10, "lift": 80, "knee_out": 0, "pole": [1, -0.2, 0.9]},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "one_in": {
+      "from": "one",
+      "pelvis": [6, 67.5, 0],
+      "chest": [11, 0, 0],
+      "head": [-44, 0, 0],
+      "leg_near": {"ik": [-7, 56.5, 12], "pole": [0.6, -0.45, 1.0], "toe": [-0.8, -0.5, 0]}
+    },
+    "back": {
+      "from": "one",
+      "pelvis": [-10, 60, 0],
+      "trunk": [94, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-40, 0, 0],
+      "leg_near": {"ik": [-10, 38, 10], "pole": [0.6, -1, 0.75], "toe": [-1, 0.3, 0]},
+      "leg_far": {"foot": [-22, 20], "y": 1, "turn": 10, "lift": 70, "knee_out": 0, "pole": [0.8, 0, 1.4]}
+    }
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.4, "phase": "squat_deep"},
+    {"to": "hands", "s": 1.0, "phase": "hands_down", "effort": 0.3},
+    {"to": "prep", "s": 1.2, "phase": "shift_forward", "effort": 0.6},
+    {"to": "one", "s": 1.2, "phase": "one_leg", "effort": 0.7},
+    {"to": "one_in", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "one", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "one_in", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "one", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "prep", "s": 1.2, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "hands", "s": 1.2, "phase": "rock_back", "effort": 0.4},
+    {"to": "squat", "s": 0.9, "phase": "sit_back", "effort": 0.2}
+  ],
+  "key": "one",
+  "fault": {
+    "pose": "back",
+    "caption": "no_lean",
+    "breaks": {"check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "min": 10}
+  },
+  "targets": [
+    {"at": "one", "check": "height", "joint": "toe_near", "min": 25},
+    {"at": "one", "check": "height", "joint": "ankle_near", "min": 25},
+    {"at": "one", "check": "height", "joint": "knee_near", "min": 38},
+    {"at": "one", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 95, "max": 140},
+    {"at": "one", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "min": 10}
+  ],
+  "note": "From crow prep: the shoulders lean on past the wrists until one foot lifts, its heel drawn toward the seat, the knees staying on the backs of the upper arms; the other toes rest lightly on the floor (the pump mirrors it for the other foot)."
+}

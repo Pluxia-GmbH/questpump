@@ -1,0 +1,240 @@
+/* Pump home on the computer (views/home/home.js; docs/ui.md, "Pump home on the computer"): the page a column over a
+ * foot that stays at the window's bottom (the phones' foot inset), the root scrolling under it, never through it; the
+ * column's hero the standing figure, which takes the room the blocks leave. */
+
+/* a root whose hero takes the room its blocks leave (Pump home's figure, Hero's body map): the column fills the page
+ * between its bar and its foot, the hero giving up height down to its least before a block leaves the view, the page
+ * scrolling only past that */
+qp-page.qp-home, qp-page.qp-hero {
+	display: flex;
+	flex-direction: column;
+}
+
+qp-page.qp-home > .qp-column, qp-page.qp-hero > .qp-column {
+	flex: 1 1 auto;
+}
+
+qp-page.qp-home qp-hero-column, qp-page.qp-hero qp-hero-column {
+	flex: 1 1 auto;
+	gap: var(--qp-layout-space12);
+}
+
+/* the hero's own drawing asks for no height: it gets what the blocks leave, between its least and its most */
+qp-page.qp-home qp-hero-column > [data-hero], qp-page.qp-hero qp-hero-column > [data-hero] {
+	contain: size;
+}
+
+/* the standing figure's square fits the room its stage got, never spilling over the blocks around it */
+qp-page.qp-home qp-hero-column > qp-figure-stage {
+	container-type: size;
+}
+
+qp-page.qp-home qp-hero-column > qp-figure-stage .qp-figure-square {
+	width: min(100cqw, 100cqh);
+}
+
+/* a window too short for the figure's least height beside the chip and the foot (the largest sizes in a short window):
+ * no figure, rather than one the sticky foot cuts at its waist */
+@media (max-height: 400px) {
+	qp-page.qp-home qp-hero-column > qp-figure-stage {
+		display: none;
+	}
+}
+
+qp-page.qp-home qp-hero-column > :not([data-hero]), qp-page.qp-hero qp-hero-column > :not([data-hero]) {
+	flex-shrink: 0;
+}
+
+qp-page.qp-home qp-hero-column > qp-chip {
+	align-self: flex-start;
+}
+
+/* the recent games (2026-10-27; a Carousel of GameStat tiles since 2026-10-28): Moves this week or Moves all time with
+ * the This week | All time switch at its right, over the row; the column's own gap stands above the head instead of the
+ * section's */
+.qp-recent-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	margin-bottom: var(--qp-layout-section-below);
+}
+
+.qp-recent-head qp-section-label {
+	flex: 1;
+	min-width: 0;
+	margin: 0 var(--qp-layout-space4);
+}
+
+.qp-recent-span {
+	flex: none;
+}
+
+.qp-foot {
+	position: sticky;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+	width: 100%;
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+	padding: var(--qp-layout-space8) var(--qp-layout-margin);
+	background: var(--qp-color-page);
+	text-align: center;
+}
+
+.qp-foot-buttons {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-foot-buttons:empty {
+	display: none;
+}
+
+/* the rest after feeling unwell: the lock beside its title and its line */
+qp-card.qp-rest {
+	display: flex;
+	gap: var(--qp-layout-space14);
+	align-items: flex-start;
+	padding: var(--qp-layout-space20);
+}
+
+qp-card.qp-rest > qp-art {
+	width: var(--qp-layout-glyph);
+	height: var(--qp-layout-glyph);
+	color: var(--qp-color-text2);
+}
+
+/* the banked window's moves, each its tile and name with its Skip at the line's end */
+.qp-waiting-moves {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-waiting-move {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space8);
+	min-height: var(--qp-layout-quiet-height);
+}
+
+.qp-banked-name {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	min-width: 0;
+}
+
+.qp-waiting-move qp-quiet-button {
+	flex: none;
+}
+
+/* chips that wrap as a flow: the check-in's answers, Hero's chips row */
+.qp-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space4) var(--qp-layout-space8);
+}
+
+/* The streak page (views/home/streak.js; slice 51, surface.StreakPage) --------------------------------------------- */
+
+/* the days, Day streak and the line, the standard-bearer figureHeight high beside them at the hero's foot */
+.qp-streak-hero {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	padding-inline: var(--qp-layout-space4);
+}
+
+.qp-streak-hero-words {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space2);
+	min-width: 0;
+	padding-bottom: var(--qp-layout-space8);
+}
+
+.qp-streak-hero qp-figure-stage {
+	flex: none;
+	width: var(--qp-surface-streak-page-figure-height);
+}
+
+/* the month's name between its earlier and later month, the month's WeekDots under them */
+.qp-streak-month-head {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	margin-bottom: var(--qp-layout-space12);
+	text-align: center;
+}
+
+.qp-streak-month-head qp-round-button[inert] {
+	visibility: hidden;
+}
+
+.qp-streak-tokens, .qp-streak-next, .qp-streak-best {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+/* the rest tokens' slots, slotGap apart: a held one the raised disc with the rest mark in frost, an empty one its line
+ * edge alone */
+.qp-streak-tokens-row {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space16);
+}
+
+.qp-streak-tokens-words {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space2);
+	min-width: 0;
+}
+
+.qp-streak-slots {
+	display: flex;
+	flex: none;
+	gap: var(--qp-surface-streak-page-slot-gap);
+}
+
+.qp-streak-slot {
+	display: grid;
+	place-items: center;
+	width: var(--qp-surface-streak-page-slot-size);
+	height: var(--qp-surface-streak-page-slot-size);
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-streak-page-slot-edge);
+}
+
+.qp-streak-slot.qp-streak-held {
+	background: var(--qp-surface-streak-page-slot-fill);
+	color: var(--qp-surface-streak-page-slot-held);
+}
+
+.qp-streak-slot qp-art {
+	width: var(--qp-surface-streak-page-slot-glyph);
+	height: var(--qp-surface-streak-page-slot-glyph);
+}
+
+/* the next milestone's bar in StepsBar's look: done goldLo to the days reached, the track after */
+.qp-streak-bar {
+	height: var(--qp-surface-streak-page-bar-height);
+	border-radius: calc(var(--qp-surface-streak-page-bar-height) / 2);
+	background: var(--qp-surface-steps-bar-track);
+	overflow: hidden;
+}
+
+.qp-streak-bar > i {
+	display: block;
+	width: calc(var(--qp-share, 0) * 100%);
+	height: 100%;
+	background: var(--qp-surface-steps-bar-done);
+}

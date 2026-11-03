@@ -1,0 +1,85 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "QuestPump",
+  "version": "1.0.0",
+  "identifier": "ai.pluxia.questpump.bridge",
+  "build": { "frontendDist": "../dist" },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "QuestPump",
+        "width": 1280,
+        "height": 860,
+        "resizable": true,
+        "create": false,
+        "visible": false,
+        "center": true,
+        "theme": "Dark",
+        "backgroundColor": "#0F0D0A",
+        "zoomHotkeysEnabled": false,
+        "backgroundThrottling": "disabled"
+      },
+      {
+        "label": "card",
+        "url": "card.html",
+        "title": "QuestPump",
+        "width": 360,
+        "height": 168,
+        "create": false,
+        "visible": false,
+        "focus": false,
+        "focusable": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "acceptFirstMouse": true,
+        "decorations": false,
+        "resizable": false,
+        "shadow": true,
+        "theme": "Dark",
+        "backgroundColor": "#0F0D0A"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data: asset: http://asset.localhost; media-src 'self' asset: http://asset.localhost; font-src 'self'; style-src 'self'; script-src 'self'",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$RESOURCE/resources/**", "$LOCALDATA/QuestPump/figures/**", "$LOCALDATA/QuestPump/icons/**", "$APPCACHE/reels/**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "nsis"],
+    "publisher": "Pluxia GmbH",
+    "category": "HealthcareAndFitness",
+    "shortDescription": "Keeps your QuestPump progress and pairs your phone",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/AppIcon.icon"
+    ],
+    "resources": {
+      "../../Media/Voice/*.ogg": "resources/voice/",
+      "../../contract/figures/stills/*.png": "resources/figures/stills/",
+      "../../contract/figures/pairs/*.png": "resources/figures/pairs/",
+      "../../contract/figures/films/*.mp4": "resources/figures/films/",
+      "../../contract/design/scenes/*.webp": "resources/scenes/",
+      "resources/sounds/*.ogg": "resources/sounds/"
+    },
+    "macOS": { "minimumSystemVersion": "14.0", "hardenedRuntime": true },
+    "windows": { "nsis": { "installMode": "currentUser", "installerHooks": "windows/hooks.nsh" } }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBOEEyMDQxMzNDMTZENkUKUldSdWJjRXpRU0NLR3ZvM2NtbVdncjIvWkR5OXNaMFY4Y1l4TVZHY3lKUjdmOEVOV3lSb1hpd1AK",
+      "endpoints": ["https://github.com/Pluxia-GmbH/questpump/releases/download/helper-updater/latest.json"],
+      "requireSignedVersion": true,
+      "windows": { "installMode": "passive" }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "move": "staggered_wall_sit",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 6},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": -30, "behind": true}],
+  "poses": {
+    "stand": {
+      "from": "in",
+      "pelvis": [-15.5, 81.5, 0],
+      "head": [2, 0, 0],
+      "leg_far": {"foot": [29.5, 14], "turn": 10, "knee_out": 6}
+    },
+    "far_up": {
+      "from": "in",
+      "pelvis": [-15.5, 72.0, 0],
+      "head": [3, 0, 0],
+      "leg_far": {"foot": [41, 14], "y": 8, "lift": 10, "turn": 10, "knee_out": 5},
+      "contacts": ["toe_near", "pelvis"]
+    },
+    "step": {"from": "in", "pelvis": [-15.5, 60.0, 0]},
+    "in": {
+      "pelvis": [-15.5, 50.0, 0],
+      "trunk": [0, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"fk": [4, 10, 16]},
+      "contacts": ["toe_near", "toe_far", "pelvis"],
+      "leg_near": {"foot": [29.5, 14], "turn": 10, "knee_out": 6},
+      "leg_far": {"foot": [52, 14], "turn": 10, "knee_out": 4}
+    },
+    "out": {"from": "in", "pelvis": [-15.5, 50.4, 0], "chest": [-1, 0, 0]},
+    "knee_fwd": {"from": "in", "leg_near": {"foot": [8, 14], "turn": 10, "knee_out": 6}}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "back_on_wall"},
+    {"to": "far_up", "s": 0.5, "ease": "in", "phase": "step_forward", "effort": 0.4},
+    {"to": "step", "s": 0.5, "ease": "out", "phase": "step_forward", "effort": 0.5},
+    {"to": "in", "s": 0.9, "phase": "slide_down", "effort": 0.7},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "step", "s": 0.9, "phase": "slide_up", "effort": 0.6},
+    {"to": "far_up", "s": 0.5, "ease": "in", "phase": "step_back", "effort": 0.5},
+    {"to": "stand", "s": 0.6, "ease": "out", "phase": "step_back", "effort": 0.4}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "knee_fwd",
+    "caption": "knee_past_toes",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "f", "max": 6}
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 84, "max": 96},
+    {"at": "in", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 115}
+  ]
+}

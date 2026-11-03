@@ -1,0 +1,1286 @@
+{
+ "about": "The Bluetooth link (docs/plan.md slice 43, with its fixes after the review of 2026-10-17; contract/companion-api.yaml, \"The Bluetooth link\"): the computer a GATT peripheral, the phones centrals, every call the HTTP request the phone would send, sealed again whole. A fourth value comes from the 32-byte pairing key with HKDF-SHA256, salt empty: the ble key (info \"questpump ble v1\", 32 bytes; seal.json's key_hex gives ble_key_hex). Each connection begins with the hello (gatt): the helper makes it for the central that reads it, with a random challenge (16 bytes) it keeps for that central's connection, and a proof of the pairing key, keyed hourly with the hello key (seal.json's hello_key_hex) over the challenge, that no stranger can link to another hello. A message is one envelope, AES-256-GCM under the ble key as nonce (12 bytes), ciphertext, tag (16 bytes), its associated data (aad) the direction's label, the message's id and the connection's challenge: \"questpump ble v1 rx\" (phone to helper, on rx) or \"questpump ble v1 tx\" (helper to phone, on tx), then the id as one byte, then the challenge's 16 bytes. So an envelope opens only on the connection it was sealed for: one captured and written again from another central, or on a later connection, opens nowhere. A request's plain text is its method (1 byte: 1 GET, 2 POST), its path's length (2 bytes, big-endian), the path with its query (\"/v1/...\", 1-1024 bytes of visible ASCII, 0x21-0x7E), the agent's length (1 byte), the agent (the User-Agent the LAN request would carry, 0-255 bytes of 0x20-0x7E) and the body (the rest: the LAN body as sent, sealed under seal.json's seal key and its route for a POST, empty for a GET); a response's is its HTTP status (2 bytes, big-endian) and the body (the rest: the LAN response's body, sealed under the seal key and its route's answer for a 200, empty otherwise; body_route names the route a sealed case's body is sealed for). No bearer travels: the helper adds its own and calls the routes the LAN serves. A message travels in chunks, each a 4-byte header (the id, then the chunk's index from 0 as 3 bytes, big-endian) and its part; the first chunk's part starts with the envelope's length (4 bytes, big-endian). A sender fills every chunk but the last to min(ATT MTU - 3, 512) bytes, so `chunks` holds each case cut at MTU 23 and 185; a receiver takes any cut. Every app derives ble_key_hex from key_hex; makes and judges each hello case (the helper makes hello_text from `made`, a phone judges hello_text against `phone`, its pairing and its clock); builds each sealed case's plain text from its fields to plain_hex, seals it under its nonce and challenge to envelope_hex and cuts it to its chunks, opens and reads each envelope back to its fields; refuses each refused case under its challenge (`seal`: it does not open; `head`: it opens and does not read); and replays every frame case through its Reassembly (`limits`; each step's outcome: partial, a whole message, dropped with why, or ignored, the steps' times in at_ms and each tick's in tick_ms). `route` is the rule each phone core's LinkRoute follows, checked once by a probe (no test replays it). The UUIDs were drawn once (2026-10-16) and never change. Written with Python's hmac and the cryptography package and checked with Apple's CryptoKit, not with any app's code (2026-10-16; the challenge, the hello's v 2, the 503 and the new cases 2026-10-17; the hello's v 3 and the bodies' routes written with Node's crypto, 2026-11-01).",
+ "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+ "info": "questpump ble v1",
+ "ble_key_hex": "eaf55d468f0ddcf3b0baeef556217e764c4d0e77bba9c485f5d7cb351e899b31",
+ "uuids": {
+  "service": "dbd1d980-bd49-46d6-a353-d4d1ea3a6672",
+  "hello": "dbd1d981-bd49-46d6-a353-d4d1ea3a6672",
+  "rx": "dbd1d982-bd49-46d6-a353-d4d1ea3a6672",
+  "tx": "dbd1d983-bd49-46d6-a353-d4d1ea3a6672"
+ },
+ "gatt": {
+  "about": "One primary service. hello: read, plain, made for the central that reads it: compact JSON {\"v\":3,\"k\":...,\"c\":...} in this key order, v the Bluetooth layout's version (3 since 2026-11-01, the release security review of 2026-10-31, L3: 2 keyed its hashes with the install's id, which the pair link, every answer and until then the LAN's hello and the Bonjour record show, so anyone who once saw it could follow the computer; 1 carried the ids in plain). The epoch is the UTC hour, floor(unix seconds / 3600), on the helper's clock as it makes the hello. k is the first 8 bytes of HMAC-SHA256 keyed with the hello key (seal.json's hello_key_hex: HKDF-SHA256 of the pairing key, salt empty, info \"questpump hello v1\", 32 bytes) over \"questpump ble hello key\" (23 bytes of ASCII), the epoch (8 bytes, big-endian) and c; c the challenge, 16 random bytes; each base64url without padding, so the hello is 54 bytes. Only a holder of the pairing key tells whose hello it is, and no two hellos link, within an hour or across one. The helper draws a new challenge whenever a central reads the hello from its start (offset 0) and keeps it, with the hello's bytes, for that central's connection: a read at a later offset (a long read: the hello passes the 22 bytes of ATT MTU 23) is answered from the bytes kept. The challenge ends when that central reads the hello from its start again (its calls in flight end unanswered and its reassembly empties, as at an unsubscribe), unsubscribes, goes or the link stops, and every central's at a new pairing code; a central without one has no write that opens. A phone reads the hello once at each connection, after it discovered the service anew and before it subscribes or sends anything, and judges it against its pairing at the epoch before, the current one and the one after on its own clock: k of one epoch the pairing's, paired; else other (another computer, the pairing's computer with a new pairing code, which nothing on the air tells apart, a v it does not read, or a value that is no such hello, c included). Paired, it keeps c for that connection and seals every request on it under c; it reads the hello again only at a new connection or when the service changed (its calls in flight then end as at a disconnect) and drops c at a disconnect. A read that fails (an ATT error, a timeout) judges nothing: the phone lets the connection go and tries again. `cases`: `made` (when present) is what the helper makes hello_text from, with the epoch and k as hex; `phone` is the pairing and the phone's clock it judges hello_text with; `expect` paired or other. rx: write without response and write, phone to helper, taken only from a central whose tx subscription stands (another's chunks are ignored and call nothing). tx: notify only, helper to phone, each message to the central that asked it alone. No characteristic asks for encryption or bonding: the envelope does that work.",
+  "epoch_s": 3600,
+  "info": "questpump hello v1",
+  "labels": {
+   "k": "questpump ble hello key"
+  },
+  "challenge_bytes": 16,
+  "hello": {
+   "v": 3,
+   "k": "e1hDqwz_R6U",
+   "c": "wMHCw8TFxsfIycrLzM3Ozw"
+  },
+  "hello_text": "{\"v\":3,\"k\":\"e1hDqwz_R6U\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+  "cases": [
+   {
+    "about": "the pairing's computer with its key, read in the hour the phone's clock says",
+    "made": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234,
+     "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+     "epoch": 497820,
+     "k_hex": "7b5843ab0cff47a5"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"e1hDqwz_R6U\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153239
+    },
+    "expect": "paired"
+   },
+   {
+    "about": "made in the last second of an hour and judged in the first of the next (the phone's clock a little ahead): the epoch before matches",
+    "made": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792151999,
+     "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+     "epoch": 497819,
+     "k_hex": "f9aa095f3144fbdc"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"-aoJXzFE-9w\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792152001
+    },
+    "expect": "paired"
+   },
+   {
+    "about": "made in the first second of an hour and judged in the last of the one before (the phone's clock a little behind): the epoch after matches",
+    "made": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792152000,
+     "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+     "epoch": 497820,
+     "k_hex": "7b5843ab0cff47a5"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"e1hDqwz_R6U\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792151999
+    },
+    "expect": "paired"
+   },
+   {
+    "about": "the same computer and key an hour later: k is new, so a stranger cannot tell the two hours' hellos apart from two computers'",
+    "made": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792156834,
+     "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+     "epoch": 497821,
+     "k_hex": "2ce5bbc00dff066f"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"LOW7wA3_Bm8\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792156834
+    },
+    "expect": "paired"
+   },
+   {
+    "about": "the same hour and key under another challenge: k is new, so two reads in one hour do not link either",
+    "made": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234,
+     "challenge_hex": "d0d1d2d3d4d5d6d7d8d9dadbdcdddedf",
+     "epoch": 497820,
+     "k_hex": "9f85035d24bc7eaa"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"n4UDXSS8fqo\",\"c\":\"0NHS09TV1tfY2drb3N3e3w\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153239
+    },
+    "expect": "paired"
+   },
+   {
+    "about": "two hours apart: no epoch the phone checks matches",
+    "made": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234,
+     "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+     "epoch": 497820,
+     "k_hex": "7b5843ab0cff47a5"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"e1hDqwz_R6U\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792160434
+    },
+    "expect": "other"
+   },
+   {
+    "about": "the pairing's computer with a new pairing code, or another computer: k is another key's, and nothing on the air tells the two apart",
+    "made": {
+     "hello_key_hex": "10ead35c28ca344c1ec73c4789da66f6c87c576b49cb9d06a41d44cdbe990b23",
+     "at_s": 1792153234,
+     "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+     "epoch": 497820,
+     "k_hex": "e838a3292175edce"
+    },
+    "hello_text": "{\"v\":3,\"k\":\"6DijKSF17c4\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153239
+    },
+    "expect": "other"
+   },
+   {
+    "about": "a hello whose c was swapped for another challenge: k is the first one's",
+    "hello_text": "{\"v\":3,\"k\":\"e1hDqwz_R6U\",\"c\":\"0NHS09TV1tfY2drb3N3e3w\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153239
+    },
+    "expect": "other"
+   },
+   {
+    "about": "a hello of the second layout (v 2, h and k keyed by the install's id, which the pair link and every answer show)",
+    "hello_text": "{\"v\":2,\"h\":\"28xAMtHFhJM\",\"k\":\"-HoqfSDYUiI\",\"c\":\"wMHCw8TFxsfIycrLzM3Ozw\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234
+    },
+    "expect": "other"
+   },
+   {
+    "about": "a hello of the first layout (v 1, the ids in plain)",
+    "hello_text": "{\"v\":1,\"hid\":\"AAECAwQFBgcICQoLDA0ODw\",\"kid\":\"Ks6YfiYRqH4\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234
+    },
+    "expect": "other"
+   },
+   {
+    "about": "a hello whose challenge is 15 bytes",
+    "hello_text": "{\"v\":3,\"k\":\"e1hDqwz_R6U\",\"c\":\"wMHCw8TFxsfIycrLzM3O\"}",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234
+    },
+    "expect": "other"
+   },
+   {
+    "about": "a value that is no hello",
+    "hello_text": "QuestPump",
+    "phone": {
+     "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+     "at_s": 1792153234
+    },
+    "expect": "other"
+   }
+  ]
+ },
+ "advertising": {
+  "about": "The Mac advertises the service UUID and the local name, the only two keys CBPeripheralManager advertises (Apple's startAdvertising(_:), checked 2026-10-17); Windows the service UUID (IsDiscoverable) and the service data on it, \"QP\" and the layout's version, 3 since 2026-11-01 (a Windows peripheral sets no local name of its own). Neither carries an id of the computer: a Mac cannot, and an hourly hash in a PC's service data would have it restart its advertising each hour and leave a phone's standing scan filter matching nothing after the hour, so a picker or a scan finds any QuestPump computer in range and the hello tells the pairing's. A phone looks for either: the iPhone's two AccessorySetupKit display items (the Mac's by the service UUID and the name, the PC's by the service UUID and the service data under its mask), Android's scan filters alike.",
+  "local_name": "QuestPump",
+  "service_data_hex": "515003",
+  "service_data_mask_hex": "ffffff"
+ },
+ "aad": {
+  "about": "A message's associated data: the direction's label (19 bytes of ASCII), the message's id (1 byte), then the challenge of the connection it travels on (16 bytes, the hello's c): 36 bytes. A phone seals each request under the challenge it read on that connection and opens each answer under the same; the helper opens a central's writes only under the challenge it keeps for that central and seals each answer under its request's id and challenge. rx_id_1_hex and tx_id_255_hex are two, under challenge_hex.",
+  "rx": "questpump ble v1 rx",
+  "tx": "questpump ble v1 tx",
+  "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+  "rx_id_1_hex": "717565737470756d7020626c6520763120727801c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+  "tx_id_255_hex": "717565737470756d7020626c65207631207478ffc0c1c2c3c4c5c6c7c8c9cacbcccdcecf"
+ },
+ "limits": {
+  "about": "header_bytes and length_bytes: a chunk's header and the first chunk's length; envelope_min_bytes: a nonce and a tag, the least a length may say; request_max_bytes (288 KiB): an envelope toward the helper, response_max_bytes (2 MiB): toward the phone, each refused at its first chunk; chunk_gap_ms: a message whose next chunk comes more than 10 s after the one before goes (a chunk exactly 10 s later still counts), and a look at the clock (tick) drops one that waits longer; in_flight_max: the messages a receiver puts together at once (a whole message in its first chunk takes no place among them), and the calls one central has at the helper, each from its envelope's opening until its answer's last chunk went to the radio (an answer queued and not yet sent counts), a request that opens beyond them answered 503 with no body under its id (`sealed`), and a phone's own calls, a fifth waiting for a free one within its own deadline; att_value_max: an ATT value's most, so a chunk is at most min(ATT MTU - 3, 512) bytes; path_max_bytes and agent_max_bytes: a request's head; failed_max within failed_window_ms: a central with 10 failures within a minute has its writes ignored until a minute after the last (the LAN's throttle, by central instead of address), a failure being an envelope that does not open, or a message its reassembly dropped (any why) while no envelope of it has opened on its connection; once one opened, its dropped messages count for nothing (the radio loses chunks), nor does a 503; ble_wait_max_ms: the most a held or standing sync waits on Bluetooth (its wait clamped to 5,000-600,000, the LAN's to 5,000-15,000; a standing one, hold false with a wait, since the review of 2026-10-17); pages: the limit a phone sends on each paged route on Bluetooth.",
+  "header_bytes": 4,
+  "length_bytes": 4,
+  "envelope_min_bytes": 28,
+  "request_max_bytes": 294912,
+  "response_max_bytes": 2097152,
+  "chunk_gap_ms": 10000,
+  "in_flight_max": 4,
+  "att_value_max": 512,
+  "path_max_bytes": 1024,
+  "agent_max_bytes": 255,
+  "failed_max": 10,
+  "failed_window_ms": 60000,
+  "ble_wait_max_ms": 600000,
+  "pages": {
+   "history": 500,
+   "app_rows": 500,
+   "sheets": 50
+  }
+ },
+ "sealed": [
+  {
+   "about": "a ping on Bluetooth: GET with its query, no body, the iPhone's agent",
+   "direction": "rx",
+   "id": 1,
+   "nonce_hex": "424c45000000000000000001",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "method": "GET",
+   "path": "/v1/ping?t0=1789999999000",
+   "agent": "QuestPump/0.1.0 (15; ios)",
+   "body_b64": "",
+   "plain_hex": "0100192f76312f70696e673f74303d3137383939393939393930303019517565737450756d702f302e312e30202831353b20696f7329",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2",
+   "chunks": {
+    "23": [
+     "0100000000000052424c45000000000000000001",
+     "01000001adea697712dc3b200926b67bf09a95aa",
+     "01000002a8cd8a7ca89809ae9e05939f52bda745",
+     "01000003cd554e83411fa0774319b6f57d302ae6",
+     "0100000497555dfdd5b9c607e4e8750455bcbbc9",
+     "01000005e1620ec481e2"
+    ],
+    "185": [
+     "0100000000000052424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2"
+    ]
+   }
+  },
+  {
+   "about": "the ping's answer: 200 and the response body as the LAN seals it (seal.json's seal key), here a ping response whose helper block says ble on",
+   "direction": "tx",
+   "id": 1,
+   "nonce_hex": "424c45000000000000000002",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "status": 200,
+   "body_b64": "AAAAAAAAAAAAAAsBAAB/ipkoP3x3vzDrkox19aXpo1nOuAEkFrcNAqku7iCZJmIoIENGtbZEW8VWn1ZvJPK5c0HjejLSpCOLkOCgfod8srsL9MweEHu1iHhwXc/REE6tyChN9Q4RQUqOLSgcR6EVpVIgH2bLSRd40zNtzDq8PfKPpKeFw+o3IXn53XKcr+IjcuI4gkXIQ3COAsRW1RI8sGL73BbukI4P2X4VFyG+TVQPEL29I3WIzgwbT/ANDlNUvM6zN9CXHpdUdoYzdWWCrE8l8e5C5nOlwec3vsycDh5GbEBSgsto/MnIUhSAUxMS0IL7fLo3UTPJHm29gwOapSAulcUrRb80Z8dpCw6a6J4=",
+   "plain_hex": "00c8000000000000000000000b0100007f8a99283f7c77bf30eb928c75f5a5e9a359ceb8012416b70d02a92eee2099266228204346b5b6445bc5569f566f24f2b97341e37a32d2a4238b90e0a07e877cb2bb0bf4cc1e107bb58878705dcfd1104eadc8284df50e11414a8e2d281c47a115a552201f66cb491778d3336dcc3abc3df28fa4a785c3ea372179f9dd729cafe22372e2388245c843708e02c456d5123cb062fbdc16ee908e0fd97e151721be4d540f10bdbd237588ce0c1b4ff00d0e5354bcceb337d0971e9754768633756582ac4f25f1ee42e673a5c1e737becc9c0e1e466c405282cb68fcc9c8521480531312d082fb7cba375133c91e6dbd83039aa5202e95c52b45bf3467c7690b0e9ae89e",
+   "envelope_hex": "424c45000000000000000002dca13bf3db8fad6ea73a38ecd5c6dc500bceb4cfa031eb68510a2701407e3c00e6c7fb500030a6c4a4a4a8466064810e8740db4c633cd96264eb55c540a36b710840319a0236efb4c329c5c2ba3db897c4cc178f8dff5101ccee76f42d9181c9b3d9a6d0a79dd78bc5b6ea1939a86bfd594eb7d90148656ca63ba81f237eec628baf5b1ffc2cd8c55073d1b9fc63f8087a948724e5088bb2224d35c0ef26996eac10c8f55f13d24c13a437d5fef47ca6d2b1588aa791c57990c0cd513d96a0ed4188f7ecd3200d4aa44cf8e232e09bb25b759671b620c81e96ad6dc63abfe3365c9a57dd765683d2b7fcbce1afafa968ca6fd39c59253596513734fdcc238d629dcb28f4bd39b270cc591d4071663104122af1c2c7c611a720f34e5543f9dfc9526c",
+   "body_plain": "{\"helper\":{\"name\":\"David's MacBook Pro\",\"host\":\"192.168.1.20\",\"port\":8787,\"version\":\"0.1.0\",\"t\":1790000000501,\"mdns\":\"Davids-MacBook-Pro.local\",\"hid\":\"AAECAwQFBgcICQoLDA0ODw\",\"ble\":\"on\"},\"t0\":1789999999000,\"t1\":1790000000500,\"t2\":1790000000501}",
+   "body_nonce_hex": "000000000000000000000b01",
+   "body_route": {
+    "way": "answer",
+    "method": "GET",
+    "path": "/v1/ping"
+   },
+   "chunks": {
+    "23": [
+     "010000000000012e424c45000000000000000002",
+     "01000001dca13bf3db8fad6ea73a38ecd5c6dc50",
+     "010000020bceb4cfa031eb68510a2701407e3c00",
+     "01000003e6c7fb500030a6c4a4a4a8466064810e",
+     "010000048740db4c633cd96264eb55c540a36b71",
+     "010000050840319a0236efb4c329c5c2ba3db897",
+     "01000006c4cc178f8dff5101ccee76f42d9181c9",
+     "01000007b3d9a6d0a79dd78bc5b6ea1939a86bfd",
+     "01000008594eb7d90148656ca63ba81f237eec62",
+     "010000098baf5b1ffc2cd8c55073d1b9fc63f808",
+     "0100000a7a948724e5088bb2224d35c0ef26996e",
+     "0100000bac10c8f55f13d24c13a437d5fef47ca6",
+     "0100000cd2b1588aa791c57990c0cd513d96a0ed",
+     "0100000d4188f7ecd3200d4aa44cf8e232e09bb2",
+     "0100000e5b759671b620c81e96ad6dc63abfe336",
+     "0100000f5c9a57dd765683d2b7fcbce1afafa968",
+     "01000010ca6fd39c59253596513734fdcc238d62",
+     "010000119dcb28f4bd39b270cc591d4071663104",
+     "01000012122af1c2c7c611a720f34e5543f9dfc9",
+     "01000013526c"
+    ],
+    "185": [
+     "010000000000012e424c45000000000000000002dca13bf3db8fad6ea73a38ecd5c6dc500bceb4cfa031eb68510a2701407e3c00e6c7fb500030a6c4a4a4a8466064810e8740db4c633cd96264eb55c540a36b710840319a0236efb4c329c5c2ba3db897c4cc178f8dff5101ccee76f42d9181c9b3d9a6d0a79dd78bc5b6ea1939a86bfd594eb7d90148656ca63ba81f237eec628baf5b1ffc2cd8c55073d1b9fc63f8087a948724e5088bb2224d35c0ef26996eac10",
+     "01000001c8f55f13d24c13a437d5fef47ca6d2b1588aa791c57990c0cd513d96a0ed4188f7ecd3200d4aa44cf8e232e09bb25b759671b620c81e96ad6dc63abfe3365c9a57dd765683d2b7fcbce1afafa968ca6fd39c59253596513734fdcc238d629dcb28f4bd39b270cc591d4071663104122af1c2c7c611a720f34e5543f9dfc9526c"
+    ]
+   }
+  },
+  {
+   "about": "the held sync on Bluetooth: POST with its sealed body, a phone that follows the game idle and may wait 10 minutes (wait 600000)",
+   "direction": "rx",
+   "id": 2,
+   "nonce_hex": "424c45000000000000000003",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "method": "POST",
+   "path": "/v1/sync",
+   "agent": "QuestPump/0.1.0 (15; ios)",
+   "body_b64": "AAAAAAAAAAAAAAsCwZ0LmstUIID7z1/qOk5LX7DJKKp2JyVM9TEoFvQgKYeWQzMSP2aVfHhDGQ3EMfieE1IvszbzqpgjHO/eqmHnDM2EoxefLK5jOlvfnqPtk1FSa+OR+R3YkgYaicFMMy1sj7jn2Muyl1r/f2fOqmMl8ygZdlIU5wUg7lQ/WMw+Y3MrMncvj/u0PmUAN6C0qsj/18/bZXJgJ9BgJs/IEtVKbwYnOiicDcnQJJGoUEyk",
+   "plain_hex": "0200082f76312f73796e6319517565737450756d702f302e312e30202831353b20696f7329000000000000000000000b02c19d0b9acb542080fbcf5fea3a4e4b5fb0c928aa7627254cf5312816f4202987964333123f66957c7843190dc431f89e13522fb336f3aa98231cefdeaa61e70ccd84a3179f2cae633a5bdf9ea3ed9351526be391f91dd892061a89c14c332d6c8fb8e7d8cbb2975aff7f67ceaa6325f32819765214e70520ee543f58cc3e63732b32772f8ffbb43e650037a0b4aac8ffd7cfdb65726027d06026cfc812d54a6f06273a289c0dc9d02491a8504ca4",
+   "envelope_hex": "424c450000000000000000039b9db1c48fe7c1a445705d1dd586630127166f2258ebc8b3f55ae872089d8cedb29af7053bee69eb2ad7a9d916cc4b2f8b4c65d1ea8b6a5718532cdabd806deb7c59adc3f9cbc4a4ebf9d4e68ca711ea5cc60f87362bdb134a15c63156996485815e5183e1de64c2b7d910a9149cedc9541855e473fb76631e4b22418d95f43952fceba52ee13127061d695b0b6361be23f0460322f7cc60825deb5f41c74a21826be0f70238968cbb8316710fb3d675455fa65564c0b115f6f04dc6b5a06b84519072daa2a0c88e163a1689f6af19478d40638a745776a8a7456ab79d49d970618c006b3d881f679d17c8340d51bd",
+   "body_plain": "{\"device\":\"ios\",\"client\":\"0C7E1F2A-3B4D-4C5E-8F60-718293A4B5C6\",\"t0\":1790000000000,\"sent_at\":1790000000100,\"since\":1789999980016,\"wait\":600000,\"battery\":0.81}",
+   "body_nonce_hex": "000000000000000000000b02",
+   "body_route": {
+    "way": "request",
+    "method": "POST",
+    "path": "/v1/sync"
+   },
+   "chunks": {
+    "23": [
+     "02000000000000fb424c45000000000000000003",
+     "020000019b9db1c48fe7c1a445705d1dd5866301",
+     "0200000227166f2258ebc8b3f55ae872089d8ced",
+     "02000003b29af7053bee69eb2ad7a9d916cc4b2f",
+     "020000048b4c65d1ea8b6a5718532cdabd806deb",
+     "020000057c59adc3f9cbc4a4ebf9d4e68ca711ea",
+     "020000065cc60f87362bdb134a15c63156996485",
+     "02000007815e5183e1de64c2b7d910a9149cedc9",
+     "02000008541855e473fb76631e4b22418d95f439",
+     "0200000952fceba52ee13127061d695b0b6361be",
+     "0200000a23f0460322f7cc60825deb5f41c74a21",
+     "0200000b826be0f70238968cbb8316710fb3d675",
+     "0200000c455fa65564c0b115f6f04dc6b5a06b84",
+     "0200000d519072daa2a0c88e163a1689f6af1947",
+     "0200000e8d40638a745776a8a7456ab79d49d970",
+     "0200000f618c006b3d881f679d17c8340d51bd"
+    ],
+    "185": [
+     "02000000000000fb424c450000000000000000039b9db1c48fe7c1a445705d1dd586630127166f2258ebc8b3f55ae872089d8cedb29af7053bee69eb2ad7a9d916cc4b2f8b4c65d1ea8b6a5718532cdabd806deb7c59adc3f9cbc4a4ebf9d4e68ca711ea5cc60f87362bdb134a15c63156996485815e5183e1de64c2b7d910a9149cedc9541855e473fb76631e4b22418d95f43952fceba52ee13127061d695b0b6361be23f0460322f7cc60825deb5f41c74a21826b",
+     "02000001e0f70238968cbb8316710fb3d675455fa65564c0b115f6f04dc6b5a06b84519072daa2a0c88e163a1689f6af19478d40638a745776a8a7456ab79d49d970618c006b3d881f679d17c8340d51bd"
+    ]
+   }
+  },
+  {
+   "about": "a refusal from the routes: 422 with no body",
+   "direction": "tx",
+   "id": 2,
+   "nonce_hex": "424c45000000000000000004",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "status": 422,
+   "body_b64": "",
+   "plain_hex": "01a6",
+   "envelope_hex": "424c45000000000000000004f911de7d7d86bd3e09f1559a6445f153f82a",
+   "chunks": {
+    "23": [
+     "020000000000001e424c45000000000000000004",
+     "02000001f911de7d7d86bd3e09f1559a6445f153",
+     "02000002f82a"
+    ],
+    "185": [
+     "020000000000001e424c45000000000000000004f911de7d7d86bd3e09f1559a6445f153f82a"
+    ]
+   }
+  },
+  {
+   "about": "a history page on Bluetooth with its limit, the Android phone's agent, the highest id",
+   "direction": "rx",
+   "id": 255,
+   "nonce_hex": "424c45000000000000000005",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "method": "GET",
+   "path": "/v1/history?after=0&proofs_since=1789913600&limit=500",
+   "agent": "QuestPump/0.1.0 (3701000; android)",
+   "body_b64": "",
+   "plain_hex": "0100352f76312f686973746f72793f61667465723d302670726f6f66735f73696e63653d31373839393133363030266c696d69743d35303022517565737450756d702f302e312e302028333730313030303b20616e64726f696429",
+   "envelope_hex": "424c45000000000000000005eb4f76c2f56de89a9c03d24ce40379fd8a536dbc3898d1d3ec1e13b9182925db52c5d2bb120e524a31fad3322b219afffa39fcfc9e9aa734afa8709348c1e3a667e573e70cd1e198339586bb3922545965d2cf8c9613156152480af1b346ae18976bc73dbdcc6f7dd0c176",
+   "chunks": {
+    "23": [
+     "ff00000000000077424c45000000000000000005",
+     "ff000001eb4f76c2f56de89a9c03d24ce40379fd",
+     "ff0000028a536dbc3898d1d3ec1e13b9182925db",
+     "ff00000352c5d2bb120e524a31fad3322b219aff",
+     "ff000004fa39fcfc9e9aa734afa8709348c1e3a6",
+     "ff00000567e573e70cd1e198339586bb39225459",
+     "ff00000665d2cf8c9613156152480af1b346ae18",
+     "ff000007976bc73dbdcc6f7dd0c176"
+    ],
+    "185": [
+     "ff00000000000077424c45000000000000000005eb4f76c2f56de89a9c03d24ce40379fd8a536dbc3898d1d3ec1e13b9182925db52c5d2bb120e524a31fad3322b219afffa39fcfc9e9aa734afa8709348c1e3a667e573e70cd1e198339586bb3922545965d2cf8c9613156152480af1b346ae18976bc73dbdcc6f7dd0c176"
+    ]
+   }
+  },
+  {
+   "about": "the held sync's answer as the game's pump comes, many chunks at MTU 23 and several at 185, id 0",
+   "direction": "tx",
+   "id": 0,
+   "nonce_hex": "424c45000000000000000006",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "status": 200,
+   "body_b64": "AAAAAAAAAAAAAAsDQ7e9gPqSQ7NDpw8tb5LUKsqLOgcltYzzIb8/gx8CNcaZ3rbT/JqUjiNrHGbEEQM4ELevcFb2WvC7pz8Yzivkwp0EPlr9VCHu/7Rdd/I1caRd/s8KfTegHWmCu4VleBRj2ii97LVVoNttjGavzGQk2fRG22gEFZLwqonH6bXo8VHhYSAYorWSOvRNNZJgp7WlD87DwxbKnYGQ5k6PUBgm6CKPD1KzGDO4CdXRggFYVHZyHN8NQ/VC+JUGMVq/IutQDRn/xjZlpv9J6BXawRgA2RqDbTIiVGApOQV2n6vRnoMj6kPg/hHhfm0c5d3m8vq5fuqgaF/Xrv9kezI1lRBKs2r9op4y8u6r3B/Kh7Ecj/ZCxM/5octiW8hiFHvvSVDVCaXVoa2l5Nh1oK/btAXS5zmfPp+kZiAIxvbFaR7corHsfakj/bt7n6ZjFJMJBK69MhpeL6S7Bk9b+Yw8CJ71+AsXZBjMz32Fb9CkJrmW8J5cOBGxY35xy/32zmEERscRG6/x4Ai9pjeHh7LbHnJ1ANhCY8Que5RYNNtobz/EKGqyfIIyzV6IDLsR/gvd8gXpcRwj4oJxUR+QeoLnebYzGoKSB4kY7FFBjR4UkgochlzG7O2aW1bbHl8PVubEwlw82hWwGT89OuJHoU9bnAjpddWVX9aBesESQ2O/DmKYNUN4EsbDj1ClFC5SbAdzsS6Z2jsm6I3PwhJxprn+W9mYNOlXg8ETbObXhKjOkk1rIryNJkqNSl8gh5d7yEwIrB6bhxuH1b5w9luEj/8TFPu5rjft/iYO7qJbDEWD5NqWIbGgbd01YpWwsxAHsoRr/c6Yl66PPoEjQijH+a5ATG0AzDoASybnIOhtRofMFYDZXmCIObt4ZZzCvg==",
+   "plain_hex": "00c8000000000000000000000b0343b7bd80fa9243b343a70f2d6f92d42aca8b3a0725b58cf321bf3f831f0235c699deb6d3fc9a948e236b1c66c411033810b7af7056f65af0bba73f18ce2be4c29d043e5afd5421eeffb45d77f23571a45dfecf0a7d37a01d6982bb8565781463da28bdecb555a0db6d8c66afcc6424d9f446db68041592f0aa89c7e9b5e8f151e1612018a2b5923af44d359260a7b5a50fcec3c316ca9d8190e64e8f501826e8228f0f52b31833b809d5d18201585476721cdf0d43f542f89506315abf22eb500d19ffc63665a6ff49e815dac11800d91a836d32225460293905769fabd19e8323ea43e0fe11e17e6d1ce5dde6f2fab97eeaa0685fd7aeff647b323595104ab36afda29e32f2eeabdc1fca87b11c8ff642c4cff9a1cb625bc862147bef4950d509a5d5a1ada5e4d875a0afdbb405d2e7399f3e9fa4662008c6f6c5691edca2b1ec7da923fdbb7b9fa66314930904aebd321a5e2fa4bb064f5bf98c3c089ef5f80b176418cccf7d856fd0a426b996f09e5c3811b1637e71cbfdf6ce610446c7111baff1e008bda6378787b2db1e727500d84263c42e7b945834db686f3fc4286ab27c8232cd5e880cbb11fe0bddf205e9711c23e28271511f907a82e779b6331a8292078918ec51418d1e14920a1c865cc6eced9a5b56db1e5f0f56e6c4c25c3cda15b0193f3d3ae247a14f5b9c08e975d5955fd6817ac1124363bf0e629835437812c6c38f50a5142e526c0773b12e99da3b26e88dcfc21271a6b9fe5bd99834e95783c1136ce6d784a8ce924d6b22bc8d264a8d4a5f2087977bc84c08ac1e9b871b87d5be70f65b848fff1314fbb9ae37edfe260eeea25b0c4583e4da9621b1a06ddd356295b0b31007b2846bfdce9897ae8f3e81234228c7f9ae404c6d00cc3a004b26e720e86d4687cc1580d95e608839bb78659cc2be",
+   "envelope_hex": "424c45000000000000000006d5eff8b465207a5ae46e6740e9babffe5ef7a60dc33a86634d933f482a33ef55b19000fce906b9548aa8bb87692e7f1a3d47ddf98d677d588234a565102713f726bf771d6c0690bd8a91f0b61ae1ec328a6b3a93c86a782d01cbef24df46230db2118f523522eca4544e672720ab1c319ed1850f04653e0c2175112ab10b7c5a2b16c53411bf038c8d473c4f389c0d518129be3e125c3c15a2795ce552b31ea2f81c50afc0957800424d9b149ac9e6ef3d216e8133d891a8bb23ded21671f9e3a3e532b8da36774b46a23201518c1274e9fb3de3b6d1cdffb23a9c9f3614f1475035f1294229254382a2a6e85cf3b98a32e5d7415c3d770b7868fa462b924e3c2913f9f08804b7cdf5fd2ff45bf80f1a048fc6c1c72fffb887d4cb49c728b687f65d3483c4cace9d17ead14732a36a8a18ddc7f542de30dedf439799e1903411c6bee41d84e4bcf4ab8d023ec12783b81dc2f3d3377d9f749b5e725c2fcbc23fa25e8d35c87d99f94c58afb6d166643dc731f36d9ebe34821f0c1534822c77ed2bbe6e6210efe87f4b954ba0f646f632d5c502141887ad557b99215b5a0bb293aa3316b1fc6be2bc73bdecf837f1244c595e497258ffc543c12611a83e1cf1c04deb72aec15d28260cee59cd0bf79a198067bf82c359557c3603671ee280f207d64072063c1a4f165acae2fede514d01080bfe250a69bcd304dbcfd6ed54e522f80928a1347849062c73348ea680c1ed8f964ba888ab20b15c2f23b49f77a2b92d0229255ba887c00477e4df4a78704094927e87510d3f5760c2c29c68207b74a0e76b0edb6b688e714a17a3d07e4f7007743d5338b31ea5a83e1400eb603956bfd5e1d2db74d478dc85decf030b0de547ba723b8b8688210f55453802c1c2a6028234c7e00b7d216fc95f906d5654f8b389a505fce62aef78f133af6e9d05d37760c9f9fd503939f60c54273a9b1882f55d46e51d8d",
+   "body_plain": "{\"helper\":{\"name\":\"David's MacBook Pro\",\"host\":\"192.168.1.20\",\"port\":8787,\"version\":\"0.1.0\",\"t\":1790000012400,\"mdns\":\"Davids-MacBook-Pro.local\",\"hid\":\"AAECAwQFBgcICQoLDA0ODw\",\"wow\":\"addon\",\"sight\":\"sees\",\"step\":\"none\",\"ble\":\"on\"},\"t0\":1790000000000,\"t1\":1790000000110,\"t2\":1790000012400,\"next\":1789999980019,\"commands\":[{\"seq\":1789999980018,\"type\":\"turn_in\",\"sent_at\":1790000012380,\"expires_at\":1790000612380,\"quest_id\":26389,\"tier\":2},{\"seq\":1789999980019,\"type\":\"pump_offered\",\"sent_at\":1790000012390,\"expires_at\":1790000612390,\"pump_id\":\"g-513-1790000012\",\"moves\":[{\"slot\":0,\"move\":12,\"target\":22},{\"slot\":1,\"move\":95,\"target\":45}],\"streak\":6}]}",
+   "body_nonce_hex": "000000000000000000000b03",
+   "body_route": {
+    "way": "answer",
+    "method": "POST",
+    "path": "/v1/sync"
+   },
+   "chunks": {
+    "23": [
+     "00000000000002c2424c45000000000000000006",
+     "00000001d5eff8b465207a5ae46e6740e9babffe",
+     "000000025ef7a60dc33a86634d933f482a33ef55",
+     "00000003b19000fce906b9548aa8bb87692e7f1a",
+     "000000043d47ddf98d677d588234a565102713f7",
+     "0000000526bf771d6c0690bd8a91f0b61ae1ec32",
+     "000000068a6b3a93c86a782d01cbef24df46230d",
+     "00000007b2118f523522eca4544e672720ab1c31",
+     "000000089ed1850f04653e0c2175112ab10b7c5a",
+     "000000092b16c53411bf038c8d473c4f389c0d51",
+     "0000000a8129be3e125c3c15a2795ce552b31ea2",
+     "0000000bf81c50afc0957800424d9b149ac9e6ef",
+     "0000000c3d216e8133d891a8bb23ded21671f9e3",
+     "0000000da3e532b8da36774b46a23201518c1274",
+     "0000000ee9fb3de3b6d1cdffb23a9c9f3614f147",
+     "0000000f5035f1294229254382a2a6e85cf3b98a",
+     "0000001032e5d7415c3d770b7868fa462b924e3c",
+     "000000112913f9f08804b7cdf5fd2ff45bf80f1a",
+     "00000012048fc6c1c72fffb887d4cb49c728b687",
+     "00000013f65d3483c4cace9d17ead14732a36a8a",
+     "0000001418ddc7f542de30dedf439799e1903411",
+     "00000015c6bee41d84e4bcf4ab8d023ec12783b8",
+     "000000161dc2f3d3377d9f749b5e725c2fcbc23f",
+     "00000017a25e8d35c87d99f94c58afb6d166643d",
+     "00000018c731f36d9ebe34821f0c1534822c77ed",
+     "000000192bbe6e6210efe87f4b954ba0f646f632",
+     "0000001ad5c502141887ad557b99215b5a0bb293",
+     "0000001baa3316b1fc6be2bc73bdecf837f1244c",
+     "0000001c595e497258ffc543c12611a83e1cf1c0",
+     "0000001d4deb72aec15d28260cee59cd0bf79a19",
+     "0000001e8067bf82c359557c3603671ee280f207",
+     "0000001fd64072063c1a4f165acae2fede514d01",
+     "00000020080bfe250a69bcd304dbcfd6ed54e522",
+     "00000021f80928a1347849062c73348ea680c1ed",
+     "000000228f964ba888ab20b15c2f23b49f77a2b9",
+     "000000232d0229255ba887c00477e4df4a787040",
+     "0000002494927e87510d3f5760c2c29c68207b74",
+     "00000025a0e76b0edb6b688e714a17a3d07e4f70",
+     "0000002607743d5338b31ea5a83e1400eb603956",
+     "00000027bfd5e1d2db74d478dc85decf030b0de5",
+     "0000002847ba723b8b8688210f55453802c1c2a6",
+     "00000029028234c7e00b7d216fc95f906d5654f8",
+     "0000002ab389a505fce62aef78f133af6e9d05d3",
+     "0000002b7760c9f9fd503939f60c54273a9b1882",
+     "0000002cf55d46e51d8d"
+    ],
+    "185": [
+     "00000000000002c2424c45000000000000000006d5eff8b465207a5ae46e6740e9babffe5ef7a60dc33a86634d933f482a33ef55b19000fce906b9548aa8bb87692e7f1a3d47ddf98d677d588234a565102713f726bf771d6c0690bd8a91f0b61ae1ec328a6b3a93c86a782d01cbef24df46230db2118f523522eca4544e672720ab1c319ed1850f04653e0c2175112ab10b7c5a2b16c53411bf038c8d473c4f389c0d518129be3e125c3c15a2795ce552b31ea2f81c",
+     "0000000150afc0957800424d9b149ac9e6ef3d216e8133d891a8bb23ded21671f9e3a3e532b8da36774b46a23201518c1274e9fb3de3b6d1cdffb23a9c9f3614f1475035f1294229254382a2a6e85cf3b98a32e5d7415c3d770b7868fa462b924e3c2913f9f08804b7cdf5fd2ff45bf80f1a048fc6c1c72fffb887d4cb49c728b687f65d3483c4cace9d17ead14732a36a8a18ddc7f542de30dedf439799e1903411c6bee41d84e4bcf4ab8d023ec12783b81dc2f3d3",
+     "00000002377d9f749b5e725c2fcbc23fa25e8d35c87d99f94c58afb6d166643dc731f36d9ebe34821f0c1534822c77ed2bbe6e6210efe87f4b954ba0f646f632d5c502141887ad557b99215b5a0bb293aa3316b1fc6be2bc73bdecf837f1244c595e497258ffc543c12611a83e1cf1c04deb72aec15d28260cee59cd0bf79a198067bf82c359557c3603671ee280f207d64072063c1a4f165acae2fede514d01080bfe250a69bcd304dbcfd6ed54e522f80928a13478",
+     "0000000349062c73348ea680c1ed8f964ba888ab20b15c2f23b49f77a2b92d0229255ba887c00477e4df4a78704094927e87510d3f5760c2c29c68207b74a0e76b0edb6b688e714a17a3d07e4f7007743d5338b31ea5a83e1400eb603956bfd5e1d2db74d478dc85decf030b0de547ba723b8b8688210f55453802c1c2a6028234c7e00b7d216fc95f906d5654f8b389a505fce62aef78f133af6e9d05d37760c9f9fd503939f60c54273a9b1882f55d46e51d8d"
+    ]
+   }
+  },
+  {
+   "about": "a request with no agent (an empty one is allowed)",
+   "direction": "rx",
+   "id": 3,
+   "nonce_hex": "424c45000000000000000007",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "method": "GET",
+   "path": "/v1/sheet",
+   "agent": "",
+   "body_b64": "",
+   "plain_hex": "0100092f76312f736865657400",
+   "envelope_hex": "424c4500000000000000000785a9b62d9f6cab5ed45a943ea85dfd1c583adf3f7762b76669124b8aa9",
+   "chunks": {
+    "23": [
+     "0300000000000029424c45000000000000000007",
+     "0300000185a9b62d9f6cab5ed45a943ea85dfd1c",
+     "03000002583adf3f7762b76669124b8aa9"
+    ],
+    "185": [
+     "0300000000000029424c4500000000000000000785a9b62d9f6cab5ed45a943ea85dfd1c583adf3f7762b76669124b8aa9"
+    ]
+   }
+  },
+  {
+   "about": "the answer to a request that opened while its central had 4 calls at the helper (an answer not yet sent among them): 503 with no body, under its id; it counts toward no throttle, and the phone keeps what it sent and tries again, as after the LAN's 503",
+   "direction": "tx",
+   "id": 5,
+   "nonce_hex": "424c45000000000000000008",
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "status": 503,
+   "body_b64": "",
+   "plain_hex": "01f7",
+   "envelope_hex": "424c45000000000000000008aeacfaa80febc3a09713ce082e9e3ea58fd6",
+   "chunks": {
+    "23": [
+     "050000000000001e424c45000000000000000008",
+     "05000001aeacfaa80febc3a09713ce082e9e3ea5",
+     "050000028fd6"
+    ],
+    "185": [
+     "050000000000001e424c45000000000000000008aeacfaa80febc3a09713ce082e9e3ea58fd6"
+    ]
+   }
+  }
+ ],
+ "refused": [
+  {
+   "about": "the tag's last byte changed",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e3",
+   "why": "seal"
+  },
+  {
+   "about": "a ciphertext byte changed",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001acea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2",
+   "why": "seal"
+  },
+  {
+   "about": "sealed under another pairing key",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001e30f4315817efc47cdea6b82aceb5115f9a650e80a1fc9e038278491fa6a1da9a82316a5cf434aadcbebd8673312b6dd1f10406e26050939975e36f568fa67b86dda81dd5765",
+   "why": "seal"
+  },
+  {
+   "about": "shorter than a nonce and a tag",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95",
+   "why": "seal"
+  },
+  {
+   "about": "the phone's ping read as the helper's message (the other direction's associated data): a reflected message never opens",
+   "direction": "tx",
+   "id": 1,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2",
+   "why": "seal"
+  },
+  {
+   "about": "the phone's ping under another id: an envelope opens only under the id it was sealed for",
+   "direction": "rx",
+   "id": 2,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2",
+   "why": "seal"
+  },
+  {
+   "about": "a LAN body passed as an envelope (seal.json's seal key, the sync request's route as its associated data)",
+   "direction": "rx",
+   "id": 2,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "000000000000000000000b02c19d0b9acb542080fbcf5fea3a4e4b5fb0c928aa7627254cf5312816f4202987964333123f66957c7843190dc431f89e13522fb336f3aa98231cefdeaa61e70ccd84a3179f2cae633a5bdf9ea3ed9351526be391f91dd892061a89c14c332d6c8fb8e7d8cbb2975aff7f67ceaa6325f32819765214e70520ee543f58cc3e63732b32772f8ffbb43e650037a0b4aac8ffd7cfdb65726027d06026cfc812d54a6f06273a289c0dc9d02491a8504ca4",
+   "why": "seal"
+  },
+  {
+   "about": "a captured request written again from another central: the helper opens that central's writes only under the challenge it keeps for it",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "d0d1d2d3d4d5d6d7d8d9dadbdcdddedf",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2",
+   "why": "seal"
+  },
+  {
+   "about": "the same request written again on a later connection of its central: that connection's hello gave it a new challenge",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "e0e1e2e3e4e5e6e7e8e9eaebecedeeef",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9c607e4e8750455bcbbc9e1620ec481e2",
+   "why": "seal"
+  },
+  {
+   "about": "the ping's answer opened under another connection's challenge",
+   "direction": "tx",
+   "id": 1,
+   "challenge_hex": "d0d1d2d3d4d5d6d7d8d9dadbdcdddedf",
+   "envelope_hex": "424c45000000000000000002dca13bf3db8fad6ea73a38ecd5c6dc500bceb4cfa031eb68510a2701407e3c00e6c7fb500030a6c4a4a4a8466064810e8740db4c633cd96264eb55c540a36b710840319a0236efb4c329c5c2ba3db897c4cc178f8dff5101ccee76f42d9181c9b3d9a6d0a79dd78bc5b6ea1939a86bfd594eb7d90148656ca63ba81f237eec628baf5b1ffc2cd8c55073d1b9fc63f8087a948724e5088bb2224d35c0ef26996eac10c8f55f13d24c13a437d5fef47ca6d2b1588aa791c57990c0cd513d96a0ed4188f7ecd3200d4aa44cf8e232e09bb25b759671b620c81e96ad6dc63abfe3365c9a57dd765683d2b7fcbce1afafa968ca6fd39c59253596513734fdcc238d629dcb28f4bd39b270cc591d4071663104122af1c2c7c611a720f34e5543f9dfc9526c",
+   "why": "seal"
+  },
+  {
+   "about": "sealed with the first layout's associated data (the label and the id, no challenge)",
+   "direction": "rx",
+   "id": 1,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "envelope_hex": "424c45000000000000000001adea697712dc3b200926b67bf09a95aaa8cd8a7ca89809ae9e05939f52bda745cd554e83411fa0774319b6f57d302ae697555dfdd5b9029fbeff75ea1f5ba346febeab1819a9",
+   "why": "seal"
+  },
+  {
+   "about": "opens, but its method is no GET (1) or POST (2)",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0300192f76312f70696e673f74303d3137383939393939393930303019517565737450756d702f302e312e30202831353b20696f7329",
+   "envelope_hex": "424c450000000000000000a1995227da339d4f87e8cfcec3f264bc28d40f70b79c5f61db2f3c3f5be641e2ca82712e62d26fa15c2b7c1b7ce50e34f84a4607311155f015af62014d7f7fac40c38316e1b1a4",
+   "why": "head"
+  },
+  {
+   "about": "opens, but its path's length runs past the end",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0100ff2f76312f70696e67",
+   "envelope_hex": "424c450000000000000000a2863dd38745a842604dc74552c6c3a3c388cbbef795462a33cda2ef",
+   "why": "head"
+  },
+  {
+   "about": "opens, but its path is not under /v1/",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0100082f76322f73796e6300",
+   "envelope_hex": "424c450000000000000000a33ebf230811e2f0092c14cf65c3b525c48503f513788532c1c9f297fc",
+   "why": "head"
+  },
+  {
+   "about": "opens, but its path holds a space",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0100092f76312f2070696e6700",
+   "envelope_hex": "424c450000000000000000a42a165e1ff4deeadd25d56c97414a49517f20cff3f80a70b8339484bf9c",
+   "why": "head"
+  },
+  {
+   "about": "opens, but its path is empty",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "01000000",
+   "envelope_hex": "424c450000000000000000a551d76e2c597f42d6e424f9210d34dec7fe6ee57a",
+   "why": "head"
+  },
+  {
+   "about": "opens, but its agent's length runs past the end",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0100082f76312f70696e670a517565737450756d70",
+   "envelope_hex": "424c450000000000000000a6536bccc07a1cbbd1c55f8951037ebe08be8576aa2afa1717f7cec458d2dc9efb0fe05c899f",
+   "why": "head"
+  },
+  {
+   "about": "opens, but its agent holds a byte that is no visible ASCII or space",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0100082f76312f70696e67020a41",
+   "envelope_hex": "424c450000000000000000a77df11ac21351c6eae3c952f13ba206965b8643cbb553aedb6939fce348c3",
+   "why": "head"
+  },
+  {
+   "about": "opens, but a response shorter than its status",
+   "direction": "tx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "00",
+   "envelope_hex": "424c450000000000000000a826c87a8138cb6645358cbb4619e3d50ee5",
+   "why": "head"
+  },
+  {
+   "about": "opens, but a GET that carries a body",
+   "direction": "rx",
+   "id": 4,
+   "challenge_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecf",
+   "plain_hex": "0100082f76312f70696e67007b7d",
+   "envelope_hex": "424c450000000000000000a92e4f89dd510fbaa547122f9cd82f8040521541599bcf1e53608f0047dd5f",
+   "why": "head"
+  }
+ ],
+ "frames": [
+  {
+   "about": "one message in three chunks: the first carries the length",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000002801080f161d242b323940474e"
+    },
+    {
+     "at_ms": 5,
+     "chunk_hex": "01000001555c636a71787f868d949ba2a9b0b7be"
+    },
+    {
+     "at_ms": 9,
+     "chunk_hex": "01000002c5ccd3dae1e8eff6fd040b12"
+    }
+   ],
+   "expect": [
+    "partial",
+    "partial",
+    {
+     "message": {
+      "id": 1,
+      "envelope_hex": "01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b12"
+     }
+    }
+   ]
+  },
+  {
+   "about": "a message in one chunk",
+   "limit": 2097152,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "090000000000001c020910171e252c333a41484f565d646b727980878e959ca3aab1b8bf"
+    }
+   ],
+   "expect": [
+    {
+     "message": {
+      "id": 9,
+      "envelope_hex": "020910171e252c333a41484f565d646b727980878e959ca3aab1b8bf"
+     }
+    }
+   ]
+  },
+  {
+   "about": "two messages interleaved: each id keeps its own",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000001c030a11181f262d343b424950"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "020000000000001c040b121920272e353c434a51"
+    },
+    {
+     "at_ms": 2,
+     "chunk_hex": "02000001585f666d747b828990979ea5acb3bac1"
+    },
+    {
+     "at_ms": 3,
+     "chunk_hex": "01000001575e656c737a81888f969da4abb2b9c0"
+    }
+   ],
+   "expect": [
+    "partial",
+    "partial",
+    {
+     "message": {
+      "id": 2,
+      "envelope_hex": "040b121920272e353c434a51585f666d747b828990979ea5acb3bac1"
+     }
+    },
+    {
+     "message": {
+      "id": 1,
+      "envelope_hex": "030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0"
+     }
+    }
+   ]
+  },
+  {
+   "about": "a chunk missing in between: the message goes",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000002801080f161d242b323940474e"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "01000002c5ccd3dae1e8eff6fd040b12"
+    }
+   ],
+   "expect": [
+    "partial",
+    {
+     "dropped": {
+      "id": 1,
+      "why": "gap"
+     }
+    }
+   ]
+  },
+  {
+   "about": "a later chunk with no first: it belongs to no message",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "01000001555c636a71787f868d949ba2a9b0b7be"
+    }
+   ],
+   "expect": [
+    "ignored"
+   ]
+  },
+  {
+   "about": "a first chunk whose length passes the limit toward the helper (288 KiB)",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "0100000000048001050c131a21282f363d444b52"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "0200000000048000060d141b222930373e454c53"
+    }
+   ],
+   "expect": [
+    {
+     "dropped": {
+      "id": 1,
+      "why": "large"
+     }
+    },
+    "partial"
+   ]
+  },
+  {
+   "about": "a first chunk whose length passes the limit toward the phone (2 MiB)",
+   "limit": 2097152,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "0100000000200001070e151c232a31383f464d54"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "0200000000200000080f161d242b323940474e55"
+    }
+   ],
+   "expect": [
+    {
+     "dropped": {
+      "id": 1,
+      "why": "large"
+     }
+    },
+    "partial"
+   ]
+  },
+  {
+   "about": "a length under an envelope's least (a nonce and a tag, 28 bytes)",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000001b0910171e252c333a41484f56"
+    }
+   ],
+   "expect": [
+    {
+     "dropped": {
+      "id": 1,
+      "why": "small"
+     }
+    }
+   ]
+  },
+  {
+   "about": "more bytes than the length said",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000001e0a11181f262d343b42495057"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "010000015e656c737a81888f969da4abb2b9c0c7000000"
+    }
+   ],
+   "expect": [
+    "partial",
+    {
+     "dropped": {
+      "id": 1,
+      "why": "over"
+     }
+    }
+   ]
+  },
+  {
+   "about": "a first chunk shorter than its header and length, a later one with nothing after its header, and a scrap shorter than a header",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "010000000000001e0a11181f262d343b42495057"
+    },
+    {
+     "at_ms": 2,
+     "chunk_hex": "01000001"
+    },
+    {
+     "at_ms": 3,
+     "chunk_hex": "0100"
+    }
+   ],
+   "expect": [
+    {
+     "dropped": {
+      "id": 1,
+      "why": "short"
+     }
+    },
+    "partial",
+    {
+     "dropped": {
+      "id": 1,
+      "why": "short"
+     }
+    },
+    "ignored"
+   ]
+  },
+  {
+   "about": "four messages under way: a fifth is dropped, and one finished makes room",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "0100000000000028151c232a31383f464d545b62"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "0200000000000028161d242b323940474e555c63"
+    },
+    {
+     "at_ms": 2,
+     "chunk_hex": "0300000000000028171e252c333a41484f565d64"
+    },
+    {
+     "at_ms": 3,
+     "chunk_hex": "0400000000000028181f262d343b424950575e65"
+    },
+    {
+     "at_ms": 4,
+     "chunk_hex": "05000000000000281920272e353c434a51585f66"
+    },
+    {
+     "at_ms": 5,
+     "chunk_hex": "010000016970777e858c939aa1a8afb6bdc4cbd2"
+    },
+    {
+     "at_ms": 6,
+     "chunk_hex": "01000002d9e0e7eef5fc030a11181f26"
+    },
+    {
+     "at_ms": 7,
+     "chunk_hex": "06000000000000281a21282f363d444b52596067"
+    }
+   ],
+   "expect": [
+    "partial",
+    "partial",
+    "partial",
+    "partial",
+    {
+     "dropped": {
+      "id": 5,
+      "why": "busy"
+     }
+    },
+    "partial",
+    {
+     "message": {
+      "id": 1,
+      "envelope_hex": "151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f26"
+     }
+    },
+    "partial"
+   ]
+  },
+  {
+   "about": "chunks more than 10 s apart: the next chunk finds its message gone, and a look at the clock drops one that waits; 10 s exactly still counts",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000002801080f161d242b323940474e"
+    },
+    {
+     "at_ms": 10000,
+     "chunk_hex": "01000001555c636a71787f868d949ba2a9b0b7be"
+    },
+    {
+     "at_ms": 20001,
+     "chunk_hex": "01000002c5ccd3dae1e8eff6fd040b12"
+    },
+    {
+     "at_ms": 20002,
+     "chunk_hex": "020000000000002801080f161d242b323940474e"
+    },
+    {
+     "tick_ms": 30002
+    },
+    {
+     "tick_ms": 30003
+    }
+   ],
+   "expect": [
+    "partial",
+    "partial",
+    {
+     "dropped": {
+      "id": 1,
+      "why": "slow"
+     }
+    },
+    "partial",
+    {
+     "dropped": []
+    },
+    {
+     "dropped": [
+      {
+       "id": 2,
+       "why": "slow"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "about": "a first chunk again for an id under way: the sender began that id anew, the earlier message goes unreported",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000002801080f161d242b323940474e"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "010000000000001e0a11181f262d343b42495057"
+    },
+    {
+     "at_ms": 2,
+     "chunk_hex": "010000015e656c737a81888f969da4abb2b9c0c7"
+    },
+    {
+     "at_ms": 3,
+     "chunk_hex": "01000002ced5"
+    }
+   ],
+   "expect": [
+    "partial",
+    "partial",
+    "partial",
+    {
+     "message": {
+      "id": 1,
+      "envelope_hex": "0a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5"
+     }
+    }
+   ]
+  },
+  {
+   "about": "four messages under way: a whole message in its first chunk still comes through (it takes no place among them), a first chunk with more bytes than its length is over before it is busy, a fifth to put together is busy, and one past the limit is large before busy; the checks of a first chunk go short, small, large, over, whole, busy",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000002840474e555c636a71787f868d"
+    },
+    {
+     "at_ms": 1,
+     "chunk_hex": "020000000000002841484f565d646b727980878e"
+    },
+    {
+     "at_ms": 2,
+     "chunk_hex": "0300000000000028424950575e656c737a81888f"
+    },
+    {
+     "at_ms": 3,
+     "chunk_hex": "0400000000000028434a51585f666d747b828990"
+    },
+    {
+     "at_ms": 4,
+     "chunk_hex": "050000000000001c30373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6ed"
+    },
+    {
+     "at_ms": 5,
+     "chunk_hex": "060000000000001c50575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d14"
+    },
+    {
+     "at_ms": 6,
+     "chunk_hex": "070000000000002860676e757c838a91989fa6ad"
+    },
+    {
+     "at_ms": 7,
+     "chunk_hex": "0800000000048001686f767d848b9299a0a7aeb5"
+    }
+   ],
+   "expect": [
+    "partial",
+    "partial",
+    "partial",
+    "partial",
+    {
+     "message": {
+      "id": 5,
+      "envelope_hex": "30373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6ed"
+     }
+    },
+    {
+     "dropped": {
+      "id": 6,
+      "why": "over"
+     }
+    },
+    {
+     "dropped": {
+      "id": 7,
+      "why": "busy"
+     }
+    },
+    {
+     "dropped": {
+      "id": 8,
+      "why": "large"
+     }
+    }
+   ]
+  },
+  {
+   "about": "a later chunk with nothing after its header is short, also when it comes late or out of order, and its message goes; the checks of a later chunk go (no message: ignored) short, slow, gap, over",
+   "limit": 294912,
+   "steps": [
+    {
+     "at_ms": 0,
+     "chunk_hex": "010000000000002870777e858c939aa1a8afb6bd"
+    },
+    {
+     "at_ms": 10001,
+     "chunk_hex": "01000001"
+    },
+    {
+     "at_ms": 10002,
+     "chunk_hex": "020000000000002880878e959ca3aab1b8bfc6cd"
+    },
+    {
+     "at_ms": 10003,
+     "chunk_hex": "02000002"
+    },
+    {
+     "at_ms": 10004,
+     "chunk_hex": "0200000190979ea5acb3bac1c8cfd6dde4ebf2f9"
+    }
+   ],
+   "expect": [
+    "partial",
+    {
+     "dropped": {
+      "id": 1,
+      "why": "short"
+     }
+    },
+    "partial",
+    {
+     "dropped": {
+      "id": 2,
+      "why": "short"
+     }
+    },
+    "ignored"
+   ]
+  }
+ ],
+ "route": {
+  "about": "Which transport each call takes (docs/plan.md slice 43, \"Which way each call goes\"; LinkRoute in each phone core): `linked` the Bluetooth link up (connected, tx subscribed, the hello judged paired, and a sealed ping on that connection answered: an answer that opened under the ble key and the connection's challenge with the ping's t0, so a copied hello that never answers links nothing), `lan_ms` milliseconds since the LAN last answered this phone (null: not since its app started), `locked` an iPhone whose protected data is unavailable (Android: always false). `ble`, `lan`, `later` (not now: a page waits for the unlock or the LAN) or, for a pairing, `lan_then_ble` (the LAN first, Bluetooth once it failed). A call that fails over Bluetooth fails as itself: it never starts a look for the helper on the LAN.",
+  "lan_fresh_ms": 60000,
+  "cases": [
+   {
+    "call": "sync",
+    "linked": true,
+    "lan_ms": 1000,
+    "locked": false,
+    "go": "ble"
+   },
+   {
+    "call": "sync",
+    "linked": false,
+    "lan_ms": null,
+    "locked": true,
+    "go": "lan"
+   },
+   {
+    "call": "ping",
+    "linked": true,
+    "lan_ms": null,
+    "locked": true,
+    "go": "ble"
+   },
+   {
+    "call": "sheet",
+    "linked": true,
+    "lan_ms": 5000,
+    "locked": false,
+    "go": "ble"
+   },
+   {
+    "call": "body",
+    "linked": true,
+    "lan_ms": 5000,
+    "locked": false,
+    "go": "ble"
+   },
+   {
+    "call": "unpair",
+    "linked": true,
+    "lan_ms": null,
+    "locked": false,
+    "go": "ble"
+   },
+   {
+    "call": "unpair",
+    "linked": false,
+    "lan_ms": 5000,
+    "locked": false,
+    "go": "lan"
+   },
+   {
+    "call": "history",
+    "linked": true,
+    "lan_ms": 59999,
+    "locked": false,
+    "go": "lan"
+   },
+   {
+    "call": "history",
+    "linked": true,
+    "lan_ms": 60000,
+    "locked": false,
+    "go": "lan"
+   },
+   {
+    "call": "history",
+    "linked": true,
+    "lan_ms": 60001,
+    "locked": false,
+    "go": "ble"
+   },
+   {
+    "call": "sheets",
+    "linked": true,
+    "lan_ms": null,
+    "locked": false,
+    "go": "ble"
+   },
+   {
+    "call": "app_rows",
+    "linked": true,
+    "lan_ms": null,
+    "locked": true,
+    "go": "later"
+   },
+   {
+    "call": "app_rows",
+    "linked": true,
+    "lan_ms": 3000,
+    "locked": true,
+    "go": "lan"
+   },
+   {
+    "call": "history",
+    "linked": false,
+    "lan_ms": null,
+    "locked": false,
+    "go": "lan"
+   },
+   {
+    "call": "pair",
+    "linked": false,
+    "lan_ms": null,
+    "locked": false,
+    "go": "lan_then_ble"
+   }
+  ]
+ }
+}

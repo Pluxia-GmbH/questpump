@@ -1,0 +1,78 @@
+{
+  "move": "hip_stretch_desk",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 16},
+  "working": ["thigh_far", "tasset_far"],
+  "breathe": true,
+  "props": [{"kind": "desk", "l": 40, "f": -25, "top": 74}],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.0, 0],
+      "trunk": [1, 0, 0],
+      "arm_near": {"fk": [4, 4, 10]},
+      "arm_far": {"ik": [4, 90.5, 44], "pole": [-0.3, 0, 1], "hand": [0.2, -0.97, 0.1]},
+      "leg_near": {"foot": [0, 11], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [0, 11], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-12, 88, 0],
+      "trunk": [6, 0, 0],
+      "arm_far": {"ik": [-10, 90.5, 44], "pole": [-0.3, 0, 1], "hand": [0.2, -0.97, 0.1]},
+      "leg_far": {"foot": [-48, 11], "turn": 4, "y": 12, "lift": 30, "knee_out": 2},
+      "contacts": ["toe_near", "ankle_near", "hand_tip_far"]
+    },
+    "split": {
+      "from": "tall",
+      "pelvis": [-34, 85, 0],
+      "trunk": [3, 0, 0],
+      "arm_far": {"ik": [-22.2, 90.8, 48.8], "pole": [-0.3, 0, 1], "hand": [0.2, -0.97, 0.1]},
+      "leg_far": {"foot": [-96, 11], "turn": 4, "lift": 38, "knee_out": 2},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "hand_tip_far"]
+    },
+    "pivot": {
+      "from": "split",
+      "pelvis": [-32.5, 84.75, 0],
+      "trunk": [1, 0, 0],
+      "arm_far": {"ik": [-29.4, 86.1, 45.0], "pole": [-0.35, 0.1, 1], "hand": [0.65, -0.68, 0.34]}
+    },
+    "open": {
+      "from": "split",
+      "pelvis": [-31, 84.5, 0],
+      "trunk": [-1, 0, 0],
+      "chest": [1, 0, 0],
+      "contacts": ["toe_near", "ankle_near", "toe_far", "wrist_far", "hand_tip_far"],
+      "arm_far": {"ik": [-32.4, 77.7, 42.2], "pole": [-0.4, 0.2, 1], "hand": [0.87, -0.15, 0.46]},
+      "arm_near": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]}
+    },
+    "open_in": {"from": "open", "pelvis": [-30.4, 84.3, 0], "trunk": [-2, 0, 0]},
+    "arch": {"from": "open", "trunk": [-14, 0, 0], "chest": [-16, 0, 0], "head": [18, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.8, "ease": "in", "phase": "step_back", "effort": 0.35, "dynamic": true},
+    {"to": "split", "s": 0.9, "ease": "out", "phase": "step_back", "effort": 0.45, "dynamic": true},
+    {"to": "pivot", "s": 0.8, "phase": "tuck_tailbone", "effort": 0.55},
+    {"to": "open", "s": 0.8, "phase": "tuck_tailbone", "effort": 0.6},
+    {"to": "open_in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "open", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "pivot", "s": 0.5, "phase": "release", "effort": 0.45},
+    {"to": "split", "s": 0.5, "phase": "release", "effort": 0.45},
+    {"to": "reach", "s": 0.8, "ease": "in", "phase": "step_forward", "effort": 0.4, "dynamic": true},
+    {"to": "tall", "s": 0.6, "ease": "out", "phase": "step_forward", "effort": 0.3, "dynamic": true}
+  ],
+  "key": "open",
+  "fault": {
+    "pose": "arch",
+    "caption": "low_back_arches",
+    "breaks": {"check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "min": -5}
+  },
+  "targets": [
+    {"at": "open", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "open", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "min": -5},
+    {"at": "open", "check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "f", "max": 8}
+  ],
+  "note": "The back leg is the far one, the desk beside the figure on that side. From standing, the far foot steps back a long step onto its toes and the back knee straightens; the front knee bends a little over its ankle. The far hand rests flat on the desk for balance, the near hand goes to the hip and the tailbone tucks under, the body upright, until the front of the back hip pulls."
+}

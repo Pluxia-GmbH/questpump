@@ -1,0 +1,89 @@
+{
+  "move": "tiptoe_eagle",
+  "view": "side",
+  "camera": {"yaw": 60, "pitch": 16},
+  "working": ["thigh_near", "pauldron"],
+  "breathe": true,
+  "poses": {
+    "stand": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "sink": {
+      "from": "stand",
+      "pelvis": [-6, 86, -3],
+      "trunk": [14, 0, 0],
+      "chest": [-2, 0, 0],
+      "arms": {"fk": [88, 8, 70, 0, 0]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4}
+    },
+    "shift": {
+      "from": "sink",
+      "pelvis": [-6, 86, -4],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "lift": {
+      "from": "sink",
+      "pelvis": [-7, 85, -4],
+      "leg_far": {"ik": [36, 47, 2], "pole": [1, 0.2, 0], "toe": [0.5, -0.8, 0]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "cross": {
+      "from": "lift",
+      "pelvis": [-7, 84.5, -4],
+      "trunk": [14, 3, -12],
+      "chest": [-2, 0, 12],
+      "leg_far": {"ik": [36.1, 38.6, -34.6], "pole": [0.67, 0.73, -0.14], "toe": [0.2, -0.9, 0.3]}
+    },
+    "eagle": {
+      "from": "sink",
+      "pelvis": [-7, 84, -4],
+      "trunk": [14, 3, -12],
+      "chest": [-2, 0, 12],
+      "arm_near": {"ik": [27, 132, -11], "pole": [1, -0.6, -0.3], "hand": [-0.6, 0.4, -0.7]},
+      "arm_far": {"ik": [13, 127, -19], "pole": [1, -0.8, -0.2], "hand": [-0.5, 0.45, -0.75]},
+      "leg_far": {"ik": [12.4, 35.0, -35.6], "pole": [0.85, 0.48, -0.2], "toe": [-0.1, -0.8, 0.5]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "rise": {
+      "from": "eagle",
+      "pelvis": [-1, 93, -4],
+      "leg_near": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 32},
+      "leg_far": {"ik": [18.6, 44.5, -35.6], "pole": [0.85, 0.49, -0.2], "toe": [-0.1, -0.8, 0.5]},
+      "arm_near": {"ik": [33, 141, -11], "pole": [1, -0.6, -0.3], "hand": [-0.6, 0.4, -0.7]},
+      "arm_far": {"ik": [19, 136, -19], "pole": [1, -0.8, -0.2], "hand": [-0.5, 0.45, -0.75]}
+    },
+    "rise_in": {"from": "rise", "pelvis": [-1, 93.4, -4], "chest": [-3, 0, 12]}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.5, "phase": "stand"},
+    {"to": "sink", "s": 1.0, "phase": "sit_back", "effort": 0.4},
+    {"to": "shift", "s": 0.4, "phase": "one_leg", "effort": 0.5},
+    {"to": "lift", "s": 0.5, "phase": "one_leg", "effort": 0.5},
+    {"to": "cross", "s": 0.5, "phase": "wrap", "effort": 0.6},
+    {"to": "eagle", "s": 0.7, "phase": "wrap", "effort": 0.6},
+    {"to": "rise", "s": 1.2, "phase": "rise", "effort": 0.8},
+    {"to": "rise_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "rise", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "eagle", "s": 1.0, "phase": "heel_down", "effort": 0.6},
+    {"to": "cross", "s": 0.5, "phase": "release", "effort": 0.4},
+    {"to": "lift", "s": 0.4, "phase": "release", "effort": 0.4},
+    {"to": "shift", "s": 0.4, "phase": "release", "effort": 0.3},
+    {"to": "stand", "s": 0.9, "phase": "stand_up", "effort": 0.3}
+  ],
+  "key": "rise",
+  "fault": {"pose": "eagle", "caption": "heel_drops", "breaks": {"check": "height", "joint": "ankle_near", "min": 14}},
+  "targets": [
+    {"at": "rise", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 140},
+    {"at": "rise", "check": "height", "joint": "ankle_near", "min": 14},
+    {"at": "rise", "check": "height", "joint": "ankle_far", "min": 27},
+    {"at": "rise", "check": "height", "joint": "wrist_near", "min": 135}
+  ],
+  "note": "The eagle: the near leg bends and stands, the far thigh crosses over it with its knee above the near knee and its shin hangs down the outside of the near shin, the toes turned in at the calf, the arms cross in front of the chest, each hand on the opposite shoulder; then the near heel rises high onto the ball of the foot, the knee still bent, and lowers again."
+}

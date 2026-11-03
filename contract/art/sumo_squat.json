@@ -1,0 +1,28 @@
+{
+  "move": "sumo_squat",
+  "view": "front",
+  "camera": {"yaw": 30, "pitch": 8},
+  "working": ["thigh"],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 88, 0],
+      "trunk": [2, 0, 0],
+      "arms": {"ik": [22, -24, 5], "rel": "neck", "pole": [0, -0.6, 1], "hand": [0.3, 1, -0.3]},
+      "legs": {"foot": [0, 42], "turn": 35, "knee_out": 65},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "deep": {"from": "tall", "pelvis": [-4, 54, 0], "trunk": [14, 0, 0], "chest": [-4, 0, 0], "head": [-10, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "deep", "s": 1.3, "phase": "sit_down", "effort": 0.55},
+    {"hold": 0.25, "phase": "bottom", "effort": 0.8},
+    {"to": "tall", "s": 1.0, "phase": "stand_tall", "effort": 1.0}
+  ],
+  "key": "deep",
+  "targets": [
+    {"at": "deep", "check": "height", "joint": "pelvis", "max": 56},
+    {"at": "deep", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 100}
+  ]
+}

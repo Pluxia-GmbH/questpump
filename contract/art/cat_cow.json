@@ -1,0 +1,55 @@
+{
+  "move": "cat_cow",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 8},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -95, "f1": 85}],
+  "poses": {
+    "cat": {
+      "line": {"pivot": "knees", "at": -20, "angle": 85, "width": 12, "feet": "flat", "hips": -55, "y": 1},
+      "chest": [48, 0, 0],
+      "head": [30, 0, 0],
+      "arms": {"ik": [28, 4.3, 24], "pole": [-1, 0.2, 0.3], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "cow": {
+      "from": "cat",
+      "line": {"pivot": "knees", "at": -20, "angle": 86, "width": 12, "feet": "flat", "hips": -114, "y": 1},
+      "chest": [-66, 0, 0],
+      "head": [-4, 0, 0]
+    },
+    "back": {
+      "from": "cat",
+      "line": {"pivot": "knees", "at": -20, "angle": 114, "width": 12, "feet": "flat", "hips": -85.4, "y": 1}
+    }
+  },
+  "timeline": [
+    {"pose": "cat"},
+    {"hold": 0.6, "phase": "round_back", "effort": 0.5},
+    {"to": "cow", "s": 3.0, "phase": "sink", "effort": 0.4},
+    {"hold": 0.6, "phase": "sink", "effort": 0.4},
+    {"to": "cat", "s": 3.0, "phase": "round_back", "effort": 0.5}
+  ],
+  "key": "cat",
+  "fault": {
+    "pose": "back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "knee_near", "axis": "f", "min": -4}
+  },
+  "targets": [
+    {"at": "cat", "check": "height", "joint": "waist", "min": 62},
+    {"at": "cow", "check": "height", "joint": "waist", "max": 50},
+    {"at": "cat", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  ]
+}

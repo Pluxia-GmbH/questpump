@@ -1,0 +1,90 @@
+{
+  "move": "face_to_shins",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 4},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 8], "turn": 2, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "tall",
+      "pelvis": [-14, 93.6, 0],
+      "trunk": [72, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"fk": [72, 6, 8]}
+    },
+    "palms": {
+      "from": "tall",
+      "pelvis": [-4, 94.5, 0],
+      "trunk": [128, 0, 0],
+      "chest": [26, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [26, 4.0, 24], "pole": [-0.6, 0.2, 1], "hand": [1, -0.1, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "clasp": {
+      "from": "tall",
+      "pelvis": [0, 94.6, 0],
+      "trunk": [132, 0, 0],
+      "chest": [28, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [-6, 30, 18], "pole": [-0.2, 0.3, 1], "hand": [-0.5, 0, -0.85]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "clasp_in": {"from": "clasp", "trunk": [133, 0, 0], "chest": [29, 0, 0]},
+    "bent": {
+      "from": "clasp",
+      "pelvis": [-5, 89.5, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [-1, 23, 19], "pole": [-0.3, 0, 1], "hand": [-0.8, 0, -0.6]}
+    },
+    "wrap": {
+      "from": "clasp",
+      "arms": {"ik": [3, 24, 24], "pole": [-0.2, 0.3, 1], "hand": [-1, 0, -0.15]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hinge", "s": 1.4, "ease": "in", "phase": "fold_forward", "effort": 0.4},
+    {"to": "palms", "s": 1.4, "ease": "out", "phase": "hands_down", "effort": 0.6},
+    {"to": "wrap", "s": 0.8, "phase": "hold_calves", "effort": 0.7, "ease": "in"},
+    {"to": "clasp", "s": 0.8, "phase": "hold_calves", "effort": 0.75, "ease": "out"},
+    {"to": "clasp_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "clasp", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "clasp_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "clasp", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "wrap", "s": 0.6, "phase": "rise_slowly", "effort": 0.65, "ease": "in"},
+    {"to": "palms", "s": 0.6, "phase": "rise_slowly", "effort": 0.6, "ease": "out"},
+    {"to": "hinge", "s": 1.2, "phase": "rise_slowly", "effort": 0.45},
+    {"to": "tall", "s": 1.2, "ease": "out", "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "clasp",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "clasp", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "clasp", "check": "height", "joint": "head", "max": 34}
+  ],
+  "note": "Standing feet together: the full standing pike, hands round the backs of the calves, the trunk folded onto the thighs and the face on the shins, knees straight. The fault: the knees bend to let the face down."
+}

@@ -1,0 +1,76 @@
+{
+  "move": "desk_heel_hold",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 6},
+  "working": ["thigh_far", "thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 78, "top": 74}],
+  "poses": {
+    "stand": {
+      "pelvis": [1, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"ik": [1, 100, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "shift": {
+      "from": "stand",
+      "pelvis": [0, 94.2, -3],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "knee": {
+      "from": "stand",
+      "pelvis": [-1, 94.0, -3],
+      "leg_far": {"ik": [36, 62, 10], "pole": [1, 1, 0], "toe": [1, -0.2, 0]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "over": {
+      "from": "stand",
+      "pelvis": [-2, 94.1, -3],
+      "trunk": [-1, 0, 0],
+      "leg_far": {"ik": [80, 92, 10], "pole": [0, 1, 0], "toe": [0.3, 0.95, 0]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "hold": {
+      "from": "stand",
+      "pelvis": [-2, 94.3, -3],
+      "trunk": [-2, 0, 0],
+      "chest": [-1, 0, 0],
+      "leg_far": {"ik": [85, 81, 10], "pole": [0, 1, 0], "toe": [0.25, 0.97, 0]},
+      "contacts": ["toe_near", "ankle_near", "ankle_far"]
+    },
+    "hold_in": {"from": "hold", "pelvis": [-2, 94.6, -3], "chest": [-2, 0, 0]},
+    "rounded": {"from": "hold", "trunk": [4, 0, 0], "chest": [32, 0, 0], "head": [-8, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand"},
+    {"to": "shift", "s": 0.6, "phase": "one_leg", "effort": 0.3},
+    {"to": "knee", "s": 0.8, "phase": "knee_up", "effort": 0.4},
+    {"to": "over", "s": 0.9, "phase": "leg_out", "effort": 0.5},
+    {"to": "hold", "s": 0.7, "phase": "leg_out", "effort": 0.6},
+    {"to": "hold_in", "s": 1.3, "phase": "stand_tall", "effort": 0.7},
+    {"to": "hold", "s": 1.3, "phase": "breathe", "effort": 0.7},
+    {"to": "hold_in", "s": 1.3, "phase": "breathe", "effort": 0.7},
+    {"to": "hold", "s": 1.3, "phase": "breathe", "effort": 0.7},
+    {"to": "over", "s": 0.6, "phase": "lower", "effort": 0.4},
+    {"to": "knee", "s": 0.8, "phase": "lower", "effort": 0.4},
+    {"to": "shift", "s": 0.6, "phase": "lower", "effort": 0.3},
+    {"to": "stand", "s": 0.6, "phase": "foot_down", "effort": 0.2}
+  ],
+  "key": "hold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "hold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "hold", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "hold", "check": "height", "joint": "ankle_far", "min": 78},
+    {"at": "hold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  ],
+  "note": "Facing the desk a leg's length away, hands on the hips: one heel rests on the desk top with the leg straight and the toes up, the standing leg straight and the body tall, both hips facing the desk."
+}

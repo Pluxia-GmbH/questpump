@@ -1,0 +1,78 @@
+{
+  "move": "wide_sit_bed",
+  "view": "side",
+  "camera": {"yaw": 55, "pitch": 24},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -15, "f1": 122, "u": 45}, {"kind": "wall", "f": -14.6, "behind": true}],
+  "poses": {
+    "together": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [0, 0, 0],
+      "head": [-3, 0, 0],
+      "arms": {"ik": [20, 72, 13], "pole": [-0.2, 0, 1], "hand": [1, -0.35, 0]},
+      "legs": {
+        "ik": [0, 52.1, 11],
+        "orbit": {"r": 87.68, "deg": 0, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "toe": [0.12, 1, 0.05]
+      },
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "wide": {
+      "from": "together",
+      "legs": {
+        "ik": [0, 52.1, 11],
+        "orbit": {"r": 87.68, "deg": 45.5, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "toe": [0.12, 1, 0.05]
+      },
+      "arms": {"ik": [18, 72, 30], "pole": [-0.2, 0, 1], "hand": [0.7, -0.4, 0.6]},
+      "contacts": ["pelvis", "waist", "neck", "head", "knee_near", "knee_far"]
+    },
+    "wide_in": {"from": "wide", "chest": [-1.5, 0, 0], "head": [-4, 0, 0]},
+    "bent": {
+      "from": "wide",
+      "legs": {
+        "ik": [0, 52.1, 11],
+        "orbit": {"r": 74, "deg": 45.5, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "toe": [0.12, 1, 0.05]
+      },
+      "contacts": ["pelvis", "waist", "neck", "head"]
+    }
+  },
+  "timeline": [
+    {"pose": "together"},
+    {"hold": 0.6, "phase": "back_on_wall", "effort": 0.2},
+    {"to": "wide", "s": 2.6, "phase": "slide_out", "effort": 0.5},
+    {"to": "wide_in", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "wide", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "wide_in", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "wide", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "together", "s": 2.4, "phase": "release", "effort": 0.3}
+  ],
+  "key": "wide",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "wide", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "wide", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "wide", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "l", "min": 58}
+  ],
+  "note": "Sitting on a bed, the seat and back against the wall or the headboard, the hands resting on the thighs: the straight legs slide apart from together to a right angle or more, the kneecaps and toes pointing up, sitting tall."
+}

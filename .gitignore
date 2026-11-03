@@ -1,0 +1,45 @@
+.DS_Store
+.release/
+# the packager's externals in a checkout (make libs; the zip gets them from .pkgmeta)
+Libs/
+*.zip
+**/.build/
+helper/target/
+helper/**/gen/schemas/
+apple/build/
+apple/*.xcodeproj/
+# XcodeGen writes these from apple/project.yml on every `xcodegen generate`: project.yml is their one source; the
+# iPhone app's entitlements file is committed instead (one file since slice 60 retired slice 28's QP_SYNC switch)
+apple/*/Info.plist
+apple/*/*.entitlements
+!apple/iOS/QuestPump.entitlements
+android/**/.gradle/
+android/**/.kotlin/
+android/**/build/
+android/local.properties
+**/xcuserdata/
+**/*.xcworkspace/xcshareddata/
+site/node_modules/
+site/deploy/node_modules/
+site/dist/
+site/.astro/
+# the browser's built pages and engine (web/build.mjs) and what wrangler leaves beside its config
+web/dist/
+web/.wrangler/
+# the quest mapper's inputs (Blizzard's quest text stays local) and the harvest addon's generated id list
+tools/quests/cache/
+tools/quests/QuestPump_Harvest/Ids.lua
+__pycache__/
+# the figure build's venv, its source-built encoder and its renders (tools/figures/setup.sh, make figures)
+tools/figures/.venv/
+tools/figures/.tools/
+tools/figures/build/
+tools/figures/*.log
+# local build output: the art previews (tools/art.py), and Xcode's derived data when a build's -derivedDataPath is here
+/build/
+# the copy's merge lock (tools/copytext.py merge)
+contract/**/*.lock
+# Claude Code's per-person settings, its worktrees and its scheduler's lock (as in learnclash)
+.claude/settings.local.json
+.claude/worktrees/
+.claude/scheduled_tasks.lock

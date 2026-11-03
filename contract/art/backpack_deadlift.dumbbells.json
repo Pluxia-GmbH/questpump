@@ -1,0 +1,11 @@
+{
+  "move": "backpack_deadlift.dumbbells",
+  "gear_of": "backpack_deadlift",
+  "gear": "dumbbells",
+  "items": [{"kind": "dumbbell", "hand": "both", "grip": "neutral"}],
+  "poses": {
+    "bottom": {"arms": {"ik": [27, 48, 29], "pole": [-0.6, 0, 1], "hand": [0, -1, 0]}},
+    "top": {"arms": {"ik": [18, 87, 30], "pole": [-0.6, 0, 1], "hand": [0, -1, 0]}},
+    "lift": {"arms": {"ik": [25, 71.5, 30], "pole": [-0.6, 0, 1], "hand": [0, -1, 0]}}
+  }
+}

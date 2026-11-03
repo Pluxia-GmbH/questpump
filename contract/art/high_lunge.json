@@ -1,0 +1,70 @@
+{
+  "move": "high_lunge",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh_near", "tasset_far"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.4, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"fk": [6, 6, 16]},
+      "leg_near": {"foot": [0, 11], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [0, 11], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-22, 80, 0],
+      "trunk": [8, 0, 0],
+      "arms": {"fk": [14, 8, 20]},
+      "leg_far": {"foot": [-95, 11], "turn": 4, "y": 6, "lift": 50, "knee_out": 2},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "lunge": {
+      "from": "tall",
+      "pelvis": [-43, 51.5, 0],
+      "trunk": [3, 0, 0],
+      "arms": {"fk": [20, 8, 20]},
+      "leg_far": {"foot": [-140, 11], "turn": 4, "lift": 58, "knee_out": 2},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "reach_up": {
+      "from": "lunge",
+      "trunk": [1, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"fk": [169, 16, 10]}
+    },
+    "reach_in": {"from": "reach_up", "pelvis": [-43, 51, 0], "chest": [-6, 0, 0], "arms": {"fk": [173, 14, 6]}},
+    "knee_fwd": {
+      "from": "reach_up",
+      "pelvis": [-26, 48, 0],
+      "leg_far": {"foot": [-124, 11], "turn": 4, "lift": 58, "knee_out": 2}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.8, "ease": "in", "phase": "step_back", "effort": 0.4, "dynamic": true},
+    {"to": "lunge", "s": 1.1, "ease": "out", "phase": "step_back", "effort": 0.55, "dynamic": true},
+    {"to": "reach_up", "s": 1.4, "phase": "arms_up", "effort": 0.7},
+    {"to": "reach_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "reach_up", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "lunge", "s": 1.0, "phase": "hands_down", "effort": 0.6},
+    {"to": "reach", "s": 1.0, "ease": "in", "phase": "step_forward", "effort": 0.5, "dynamic": true},
+    {"to": "tall", "s": 0.6, "ease": "out", "phase": "step_forward", "effort": 0.3, "dynamic": true}
+  ],
+  "key": "reach_up",
+  "fault": {
+    "pose": "knee_fwd",
+    "caption": "knee_past_toes",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "f", "max": 6}
+  },
+  "targets": [
+    {"at": "reach_up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 80, "max": 105},
+    {"at": "reach_up", "check": "angle", "joints": ["knee_near", "hip_near", "neck"], "min": 80, "max": 105},
+    {"at": "reach_up", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "reach_up", "check": "height", "joint": "wrist_near", "min": 130}
+  ]
+}

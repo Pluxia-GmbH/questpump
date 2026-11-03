@@ -1,0 +1,49 @@
+package-as: QuestPump
+enable-nolib-creation: no
+# the release's notes on CurseForge, Wago and GitHub: CHANGELOG.md as written, never the commits (the public repository
+# has one commit a release); the packager reads it from the checkout, so the zip leaves it out
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+# The libraries the TOC loads first (docs/plan.md slice 15: the HUD in Edit Mode). LibStub's home is CurseForge's
+# Subversion repository (the packager action installs svn on CI; a local dry run needs it too), LibEditMode's is git.
+# `make libs` fetches the same tags into the gitignored Libs/ of a checkout.
+externals:
+  Libs/LibStub:
+    url: https://repos.curseforge.com/wow/libstub/trunk
+    tag: 1.0.3
+  Libs/LibEditMode:
+    url: https://github.com/p3lim-wow/LibEditMode
+    tag: 18
+# the quests' flavour lines: a second top-level load-on-demand folder in the same zip (docs/plan.md slice 4)
+move-folders:
+  QuestPump/QuestPump_Lines: QuestPump_Lines
+  # the move figures: a load-on-demand folder in the same zip, never its own store project (docs/plan.md slice 2)
+  QuestPump/QuestPump_FigArmor: QuestPump_FigArmor
+ignore:
+  # LibStub's tag carries its own tests/, which nothing loads (LibEditMode's .pkgmeta keeps its tests out the same way)
+  - Libs/LibStub/tests
+  - QuestPump_FigArmor/pack.json
+  - helper
+  - apple
+  - android
+  - contract
+  - docs
+  - tools
+  - site
+  - web
+  - .github
+  - .githooks
+  - .vscode
+  - .luacheckrc
+  - .editorconfig
+  - .gitattributes
+  - .gitleaks.toml
+  - .coderabbit.yaml
+  - AGENTS.md
+  - CLAUDE.md
+  - Makefile
+  - README.md
+  - SECURITY.md
+  - CHANGELOG.md
+  - TRADEMARKS.md

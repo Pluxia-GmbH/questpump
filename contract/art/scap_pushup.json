@@ -1,0 +1,34 @@
+{
+  "move": "scap_pushup",
+  "view": "side",
+  "camera": {"yaw": -15, "pitch": 6},
+  "working": ["pauldron", "chest"],
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -45, "angle": 47.1, "width": 14},
+      "chest": [11.2, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [102, 77.3, 24], "pole": [-1, 0, 0.7], "hand": [1, -0.15, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "sink": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": -45, "angle": 43.5, "width": 14},
+      "chest": [-11.11, 0, 0],
+      "head": [4, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "sink", "s": 1.2, "phase": "chest_sinks", "effort": 0.4},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.5},
+    {"to": "top", "s": 1.0, "phase": "push_away", "effort": 0.9}
+  ],
+  "key": "sink",
+  "targets": [
+    {"at": "top", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "sink", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ]
+}

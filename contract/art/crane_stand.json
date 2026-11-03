@@ -1,0 +1,88 @@
+{
+  "move": "crane_stand",
+  "view": "side",
+  "camera": {"yaw": 8, "pitch": 4},
+  "working": ["forearm", "upper_arm", "pauldron", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -50, "f1": 100, "l0": -40, "l1": 40}],
+  "poses": {
+    "squat": {
+      "pelvis": [-30, 38, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [100, 8, 30, 0, 0]},
+      "legs": {"foot": [-16, 16], "y": 1, "turn": 10, "lift": 0, "knee_out": 0, "pole": [1, 0, 1.05]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "squat",
+      "pelvis": [-24, 44, 0],
+      "trunk": [72, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"ik": [30, 4.3, 22], "pole": [-1, 0.3, 0.3], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prep": {
+      "pelvis": [-2.0, 73.5, 0],
+      "trunk": [105.0, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [30, 4.3, 22], "pole": [-1, 0.3, 0.3], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-16, 16], "y": 1, "turn": 10, "lift": 70, "knee_out": 0, "pole": [1, 0, 1.2]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "crane": {
+      "pelvis": [10, 76, 0],
+      "trunk": [111, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [-50, 0, 0],
+      "arms": {"ik": [30, 4.3, 22], "pole": [-1, 0.3, 0.3], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [8, 58, 10], "pole": [0.6, -1, 0.8], "toe": [-1, 0.3, 0]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "crane_in": {"from": "crane", "pelvis": [10, 76.4, 0], "chest": [11, 0, 0]},
+    "bent": {
+      "from": "crane",
+      "pelvis": [8, 66, 0],
+      "trunk": [111, 0, 0],
+      "legs": {"ik": [6, 48, 10], "pole": [0.6, -1, 0.8], "toe": [-1, 0.3, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.4, "phase": "squat_deep"},
+    {"to": "hands", "s": 1.0, "phase": "hands_down", "effort": 0.3},
+    {"to": "prep", "s": 1.2, "phase": "onto_toes", "effort": 0.6},
+    {"to": "crane", "s": 1.2, "phase": "float", "effort": 0.8},
+    {"to": "crane_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "crane", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "crane_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "crane", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "prep", "s": 1.2, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "hands", "s": 1.1, "phase": "rock_back", "effort": 0.4},
+    {"to": "squat", "s": 0.9, "phase": "sit_back", "effort": 0.2}
+  ],
+  "key": "crane",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "crane", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "crane", "check": "height", "joint": "toe_near", "min": 30},
+    {"at": "crane", "check": "height", "joint": "knee_near", "min": 45},
+    {"at": "crane", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "min": 6}
+  ]
+}

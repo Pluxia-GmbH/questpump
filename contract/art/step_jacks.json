@@ -1,0 +1,58 @@
+{
+  "move": "step_jacks",
+  "view": "front",
+  "camera": {"yaw": 12, "pitch": 5},
+  "working": ["thigh", "pauldron"],
+  "fast_phase": 0.6,
+  "poses": {
+    "in": {
+      "pelvis": [0, 94, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"fk": [4, 10, 12]},
+      "legs": {"foot": [0, 11], "turn": 8, "lift": 0, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "near_lift": {
+      "from": "in",
+      "pelvis": [0, 93.6, 2.5],
+      "arms": {"fk": [4, 80, 10]},
+      "leg_near": {"foot": [2, 24], "turn": 14, "y": 9, "lift": 0, "knee_out": 10},
+      "contacts": ["toe_far"]
+    },
+    "near_out": {
+      "from": "in",
+      "pelvis": [0, 92.0, -4],
+      "arms": {"fk": [4, 168, 8]},
+      "leg_near": {"foot": [0, 38], "turn": 20, "lift": 0, "knee_out": 12}
+    },
+    "far_lift": {
+      "from": "in",
+      "pelvis": [0, 93.6, -2.5],
+      "arms": {"fk": [4, 80, 10]},
+      "leg_far": {"foot": [2, 24], "turn": 14, "y": 9, "lift": 0, "knee_out": 10},
+      "contacts": ["toe_near"]
+    },
+    "far_out": {
+      "from": "in",
+      "pelvis": [0, 92.0, 4],
+      "arms": {"fk": [4, 168, 8]},
+      "leg_far": {"foot": [0, 38], "turn": 20, "lift": 0, "knee_out": 12}
+    }
+  },
+  "timeline": [
+    {"pose": "in"},
+    {"to": "near_lift", "s": 0.25, "ease": "in", "phase": "step_out", "effort": 0.6},
+    {"to": "near_out", "s": 0.25, "ease": "out", "phase": "step_out", "effort": 0.7},
+    {"hold": 0.12, "phase": "arms_up", "effort": 0.7},
+    {"to": "near_lift", "s": 0.25, "ease": "in", "phase": "back_in", "effort": 0.6},
+    {"to": "in", "s": 0.25, "ease": "out", "phase": "back_in", "effort": 0.5},
+    {"hold": 0.06, "phase": "back_in", "effort": 0.4},
+    {"to": "far_lift", "s": 0.25, "ease": "in", "phase": "other_side", "effort": 0.6},
+    {"to": "far_out", "s": 0.25, "ease": "out", "phase": "other_side", "effort": 0.7},
+    {"hold": 0.12, "phase": "arms_up", "effort": 0.7},
+    {"to": "far_lift", "s": 0.25, "ease": "in", "phase": "back_in", "effort": 0.6},
+    {"to": "in", "s": 0.25, "ease": "out", "phase": "back_in", "effort": 0.5},
+    {"hold": 0.06, "phase": "back_in", "effort": 0.4}
+  ],
+  "key": "near_out"
+}

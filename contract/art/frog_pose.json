@@ -1,0 +1,70 @@
+{
+  "move": "frog_pose",
+  "view": "side",
+  "camera": {"yaw": -35, "pitch": 38},
+  "working": ["thigh"],
+  "items": [{"kind": "towel", "under": "knee_near"}, {"kind": "towel", "under": "knee_far"}],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -70, "f1": 95, "l0": -80, "l1": 80}],
+  "poses": {
+    "frog": {
+      "pelvis": [0, 29, 0],
+      "trunk": [78, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [72, 4.3, 24], "pole": [-0.2, -1, 0.2], "hand": [1, -0.05, 0]},
+      "legs": {"ik": [-43, 7.5, 55], "pole": [0.75, -0.3, 0.65], "toe": [0, 0.1, 1]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "fit": {"joint": "knee_near", "u": 10.5}
+    },
+    "fwd": {
+      "from": "frog",
+      "pelvis": [14, 29, 0],
+      "trunk": [77, 0, 0],
+      "arms": {"ik": [76, 4.3, 24], "pole": [-0.2, -1, 0.2], "hand": [1, -0.05, 0]}
+    },
+    "frog_in": {"from": "frog", "pelvis": [-1.5, 29, 0], "trunk": [79, 0, 0]},
+    "high": {
+      "from": "frog",
+      "pelvis": [-16, 29, 0],
+      "trunk": [78, 0, 0],
+      "arms": {"ik": [64, 4.3, 24], "pole": [-0.2, -1, 0.2], "hand": [1, -0.05, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "fwd"},
+    {"hold": 0.6, "phase": "knees_out", "effort": 0.2},
+    {"to": "frog", "s": 2.6, "phase": "hips_back", "effort": 0.5},
+    {"to": "frog_in", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "frog", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "frog_in", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "frog", "s": 1.6, "phase": "breathe", "effort": 0.6},
+    {"to": "fwd", "s": 2.0, "phase": "rock_forward", "effort": 0.3}
+  ],
+  "key": "frog",
+  "fault": {
+    "pose": "high",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "min": -6}
+  },
+  "targets": [
+    {"at": "frog", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "min": -6, "max": 6},
+    {"at": "frog", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "l", "min": 38},
+    {"at": "frog", "check": "offset", "joint": "ankle_near", "from": "knee_near", "axis": "l", "min": -6, "max": 6},
+    {"at": "frog", "check": "height", "joint": "pelvis", "min": 26, "max": 32}
+  ],
+  "note": "On a mat on the forearms and knees, the knees wide and the shins parallel behind them, the feet turned out: the hips ease back from in front of the knees until they are in line with them, the belly about a hand above the mat and the back long and nearly level (the halfway frog; the chest-down frog lowers it all the way)."
+}

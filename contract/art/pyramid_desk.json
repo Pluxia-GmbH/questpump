@@ -1,0 +1,79 @@
+{
+  "move": "pyramid_desk",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 50}],
+  "poses": {
+    "set": {
+      "pelvis": [-8, 91.5, 0],
+      "trunk": [52, 0, 0],
+      "head": [-18, 0, 0],
+      "arms": {"ik": [56, 77.3, 20], "pole": [-0.3, -1, 0.3], "hand": [1, -0.12, 0]},
+      "leg_near": {"foot": [0, 14], "turn": 14, "knee_out": 6},
+      "leg_far": {"foot": [0, 10], "turn": 8, "knee_out": 4},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "step": {
+      "from": "set",
+      "pelvis": [-26, 87, 0],
+      "trunk": [68, 0, 0],
+      "leg_far": {"foot": [-42, 11], "turn": 20, "y": 12, "lift": 30, "knee_out": 2},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "stance": {
+      "from": "set",
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [81, 0, 0],
+      "head": [-14, 0, 0],
+      "leg_far": {"foot": [-88, 10], "turn": 28, "knee_out": 2}
+    },
+    "fold": {
+      "from": "stance",
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [84, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [-12, 0, 0]
+    },
+    "fold_in": {"from": "fold", "trunk": [85, 0, 0], "chest": [2.5, 0, 0]},
+    "rounded": {"from": "fold", "trunk": [72, 0, 0], "chest": [38, 0, 0], "head": [18, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.4, "phase": "hands_on_desk"},
+    {"to": "step", "s": 0.6, "ease": "in", "phase": "step_back", "effort": 0.3, "dynamic": true},
+    {"to": "stance", "s": 0.7, "ease": "out", "phase": "step_back", "effort": 0.35, "dynamic": true},
+    {"to": "fold", "s": 2.0, "phase": "back_flat", "effort": 0.65},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "stance", "s": 1.6, "phase": "rise_slowly", "effort": 0.4},
+    {"to": "step", "s": 0.7, "ease": "in", "phase": "step_forward", "effort": 0.35, "dynamic": true},
+    {"to": "set", "s": 0.6, "ease": "out", "phase": "step_forward", "effort": 0.3, "dynamic": true}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 160}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "fold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "fold", "check": "height", "joint": "neck", "max": 92},
+    {"at": "fold", "check": "offset", "joint": "neck", "from": "ankle_near", "axis": "f", "min": 0}
+  ],
+  "note": "The pyramid with the hands on the desk: from a long step away, hands on its edge, the far foot steps back and both feet stay flat, the hips square to the desk and the front leg straight; the chest goes forward over the front thigh with a long back and the head up, never down past the desk."
+}

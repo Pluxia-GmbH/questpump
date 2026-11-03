@@ -1,0 +1,60 @@
+{
+  "move": "locust",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 10},
+  "working": ["back", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -115, "f1": 80}],
+  "poses": {
+    "down": {
+      "pelvis": [0, 16, 0],
+      "trunk": [90, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"ik": [-6, 4.3, 19], "pole": [0, 1, 0.3], "hand": [-1, -0.05, 0]},
+      "legs": {"fk": [7, 1, 0, -97]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "up": {
+      "from": "down",
+      "trunk": [90, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [-9, 17, 21], "pole": [0, 1, 0.3], "hand": [-1, 0.1, 0]},
+      "legs": {"fk": [-6, 1, 0, -90]},
+      "contacts": ["pelvis", "waist"]
+    },
+    "up_in": {"from": "up", "trunk": [90, 0, 0], "chest": [-42, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.6, "phase": "lie", "effort": 0.2},
+    {"to": "up", "s": 2.0, "phase": "lift", "effort": 0.55},
+    {"to": "up_in", "s": 1.8, "phase": "breathe", "effort": 0.6},
+    {"to": "up", "s": 1.8, "phase": "breathe", "effort": 0.6},
+    {"to": "up_in", "s": 1.8, "phase": "breathe", "effort": 0.6},
+    {"to": "down", "s": 2.0, "phase": "lower", "effort": 0.3}
+  ],
+  "key": "up",
+  "targets": [
+    {"at": "up", "check": "height", "joint": "pelvis", "max": 17},
+    {"at": "up", "check": "height", "joint": "neck", "min": 28},
+    {"at": "up", "check": "height", "joint": "wrist_near", "min": 12},
+    {"at": "up", "check": "height", "joint": "ankle_near", "min": 14}
+  ],
+  "note": "Face down, the arms by the sides, palms down: breathe in and lift the chest, the arms and both straight legs together off the floor, the feet a hand's height up and below the head, the weight on the belly, the neck long and the eyes on the floor ahead; hold and breathe, then lower slowly."
+}

@@ -1,0 +1,60 @@
+{
+  "move": "bound_side_angle",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 14},
+  "working": ["abdomen", "thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -120, "f1": 80}],
+  "poses": {
+    "lunge": {
+      "pelvis": [0, 52, 0],
+      "trunk": [4, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [44, 12], "y": 1, "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [-92.6, 12], "y": 1, "turn": 0, "lift": 45, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "hook": {
+      "from": "lunge",
+      "trunk": [66, 0, 0],
+      "chest": [10, 0, -60],
+      "head": [0, 0, -20],
+      "arm_far": {"ik": [52, 20, -36], "pole": [0.5, -1, -1], "hand": [0.2, -1, 0]},
+      "arm_near": {"ik": [10, 70, 30], "pole": [-0.5, 1, 0.3], "hand": [-0.3, -1, 0.1]}
+    },
+    "bind": {
+      "from": "lunge",
+      "trunk": [74, 0, 0],
+      "chest": [16, 0, -80],
+      "head": [0, 0, -20],
+      "arm_far": {"ik": [25, 41, -30], "pole": [0.5, -1, -1], "hand": [-1, 0, 0]},
+      "arm_near": {"ik": [19, 41, 30], "pole": [-0.5, 1, 0.3], "hand": [1, 0, 0]}
+    },
+    "bind_in": {"from": "bind", "trunk": [73, 0, 0], "chest": [15, 0, -82]},
+    "sag": {
+      "from": "bind",
+      "leg_far": {"foot": [-86, 12], "y": 1, "turn": 0, "lift": 45, "knee_out": 0, "pole": [1, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.5, "phase": "lunge", "effort": 0.4},
+    {"to": "hook", "s": 1.6, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "bind", "s": 1.2, "phase": "hands_together", "effort": 0.7},
+    {"to": "bind_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "bind", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "hook", "s": 1.2, "phase": "release", "effort": 0.5},
+    {"to": "lunge", "s": 1.6, "phase": "rise_slowly", "effort": 0.4}
+  ],
+  "key": "bind",
+  "fault": {
+    "pose": "sag",
+    "caption": "back_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165}
+  },
+  "targets": [
+    {"at": "bind", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "bind", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 80, "max": 100}
+  ],
+  "note": "The front leg is the near one, its thigh level, the back leg straight on the ball of the foot. The chest folds over the front thigh and turns toward it, the far arm wraps down the outside of the front shin and under the thigh, and the near arm reaches over the back to clasp it beneath the thigh."
+}

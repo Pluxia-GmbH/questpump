@@ -1,0 +1,58 @@
+## Interface: 16001, 120105
+## Title: QuestPump
+## Notes: Every quest you turn in asks for a few moves at your desk. Beat your own records. A character sheet for your body.
+## Author: Pluxia GmbH
+## Version: @project-version@
+## Category: Quests
+## Category-deDE: Quests
+## Category-esES: Misiones
+## Category-esMX: Misiones
+## Category-frFR: Quêtes
+## Category-itIT: Missioni
+## Category-koKR: 퀘스트
+## Category-ptBR: Missões
+## Category-ruRU: Задания
+## Category-zhCN: 任务
+## Category-zhTW: 任務
+## IconTexture: Interface\AddOns\QuestPump\Media\Icon
+## SavedVariables: QuestPumpDB, QuestPumpLog
+## AddonCompartmentFunc: QuestPump_OnAddonCompartmentClick
+## X-License: MIT
+## X-Website: https://questpump.com
+## X-Curse-Project-ID: 1776368
+## X-Wago-ID: aNerod62
+
+Libs\LibStub\LibStub.lua
+Libs\LibEditMode\embed.xml
+Locales\enUS.lua
+Core.lua
+Constants.lua
+Log.lua
+FigureIcons.lua
+Style.lua
+Kit.lua
+BodyArt.lua
+Popups.lua
+DB.lua
+Library.lua
+Quests.lua
+Engine.lua
+Progress.lua
+Stats.lua
+Odometer.lua
+Events.lua
+VoiceClips.lua
+Speech.lua
+Figure.lua
+Panel.lua
+Sheet.lua
+Tree.lua
+SheetPages.lua
+Settings.lua
+Bridge.lua
+Social.lua
+Badges.lua
+Streamer.lua
+QR.lua
+Skins.lua
+QuestPump.xml

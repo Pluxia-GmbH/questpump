@@ -1,0 +1,43 @@
+{
+  "move": "bed_hip_stretch",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 14},
+  "working": ["thigh_near", "tasset_near"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -98, "f1": 8, "u": 52}],
+  "poses": {
+    "hug": {
+      "pelvis": [0, 67, 0],
+      "trunk": [-90, 0, 0],
+      "head": [-4, 0, 0],
+      "arm_near": {"ik": [-44.0, 103.8, 16.8], "pole": [-0.3, 0.3, 1], "hand": [0.38, 0.92, 0.06]},
+      "arm_far": {"ik": [-44.0, 103.8, 16.8], "pole": [-0.3, 0.3, 1], "hand": [0.38, 0.92, 0.06]},
+      "legs": {"fk": [123, 6, 110, -20]},
+      "contacts": ["head", "neck", "waist", "pelvis"]
+    },
+    "hang": {
+      "from": "hug",
+      "leg_near": {"fk": [-10, 2, 60, -8]},
+      "arm_near": {"ik": [-8, 55.6, 24], "pole": [0, 0.3, 1], "hand": [1, 0, 0]},
+      "contacts": ["head", "neck", "waist", "pelvis", "wrist_near"]
+    },
+    "hang_in": {"from": "hang", "leg_near": {"fk": [-16, 2, 64, -8]}}
+  },
+  "timeline": [
+    {"pose": "hug"},
+    {"hold": 0.6, "phase": "knees_up"},
+    {"to": "hang", "s": 2.4, "phase": "lower_slowly", "effort": 0.5},
+    {"to": "hang_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hang", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hang_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hang", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hug", "s": 2.0, "phase": "knee_up", "effort": 0.3}
+  ],
+  "key": "hang",
+  "targets": [
+    {"at": "hang", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "u", "max": -4},
+    {"at": "hang", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 105, "max": 135},
+    {"at": "hang", "check": "height", "joint": "waist", "max": 68}
+  ],
+  "note": "Lying on the back on a bed, the seat at its end: both knees hugged to the chest, then the near leg lowers until its thigh hangs a little below level off the bed's end, the leg relaxed so the knee opens past a right angle and the shin hangs forward, the foot clear of the floor, while the far hand keeps the far knee hugged so the low back stays flat and the near hand rests on the bed."
+}

@@ -1,0 +1,60 @@
+{
+  "move": "shrimp_squat_held",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["thigh_far"],
+  "props": [{"kind": "mat", "f0": -44, "f1": 4, "l0": -36, "l1": 10}],
+  "poses": {
+    "top": {
+      "pelvis": [2, 94.6, 0],
+      "trunk": [16, 0, 0],
+      "chest": [0, -4, 0],
+      "arm_far": {"fk": [84, 4, 6]},
+      "arm_near": {"ik": [-10.5, 95.7, 14.6], "pole": [-1, 0.2, 0.8], "hand": [-0.48, -0.83, -0.29]},
+      "leg_far": {"foot": [0, 12], "turn": 8, "knee_out": 6},
+      "leg_near": {"fk": [14, 2, 160, 20]},
+      "contacts": ["toe_far"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-20, 55.2, 0],
+      "trunk": [48, 0, 0],
+      "chest": [-4, -8, 0],
+      "head": [-24, 0, 0],
+      "arm_far": {"fk": [118, 6, 4]},
+      "arm_near": {"ik": [-29.9, 56.6, 14.7], "pole": [-1, 0.2, 0.8], "hand": [-0.76, -0.58, -0.3]},
+      "leg_near": {"fk": [41, 2, 162, 20]},
+      "contacts": ["toe_far", "knee_near"]
+    },
+    "tipped": {
+      "from": "bottom",
+      "pelvis": [-8, 60, 0],
+      "trunk": [70, 0, 0],
+      "chest": [4, -8, 0],
+      "head": [-14, 0, 0],
+      "arm_far": {"fk": [96, 8, 10]},
+      "arm_near": {"ik": [-17.2, 60.5, 14.6], "pole": [-1, 0.2, 0.8], "hand": [-0.92, -0.26, -0.3]},
+      "leg_far": {"foot": [0, 12], "turn": 8, "knee_out": 6, "lift": 22},
+      "leg_near": {"fk": [60, 2, 162, 20]},
+      "contacts": ["toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "one_leg"},
+    {"to": "bottom", "s": 2.0, "phase": "knee_down", "effort": 0.75},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.9},
+    {"to": "top", "s": 1.4, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "height", "joint": "knee_near", "max": 12},
+    {"at": "bottom", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "max": 75},
+    {"at": "bottom", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "f", "min": -6, "max": 6}
+  ],
+  "fault": {
+    "pose": "tipped",
+    "caption": "tips_forward",
+    "breaks": {"check": "offset", "joint": "neck", "from": "toe_far", "axis": "f", "max": 12}
+  }
+}

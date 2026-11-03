@@ -1,0 +1,103 @@
+/* The Menu's own pages and the first five minutes (docs/ui.md, "The Menu on the computer" and "The first five
+ * minutes"), on the kit and the tokens only: the equipment's chips that wrap, a page's foot of buttons, a line that
+ * says how a step went, a licence's or a notice's text with its own line breaks, a crash report's text, and the
+ * welcome's column: the figure as its hero (giving up height first), the wordmark and its line centred, the foot under
+ * them, This computer's Size: a row's words with the compact Stepper at its end, under them where the row is
+ * narrow, the Quick pump length's row as it, and the equipment's groups. It holds down to 192 CSS px wide (a 480-px
+ * window at the largest size, 1.25 × 200 %). */
+
+.qp-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-foot {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space10);
+	margin-top: var(--qp-layout-space8);
+}
+
+.qp-part {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-notice {
+	white-space: pre-line;
+}
+
+/* A crash report's text exactly as it goes (the crash page's Show the report): its own line breaks, wrapped anywhere,
+ * selectable, in the details' monospace */
+.qp-report {
+	margin: 0;
+	color: var(--qp-color-text);
+	font: 400 var(--qp-type-meta-size) / var(--qp-type-meta-line-height) ui-monospace, "Cascadia Mono", Consolas,
+		monospace;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+.qp-quiet-line {
+	color: var(--qp-color-text2);
+}
+
+.qp-centre {
+	text-align: center;
+}
+
+/* the Menu's Quick pump length (2026-11-03): its row's words with the small Segmented of the lengths at its end, under
+ * them where the row is narrow */
+.qp-row-body:has(> qp-segmented) {
+	flex-wrap: wrap;
+}
+
+.qp-row-body > qp-segmented {
+	flex: none;
+	max-width: 100%;
+}
+
+/* the equipment in its groups (2026-11-03): each group's head, a Row that opens and closes its chips under it */
+.qp-gear-groups {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-gear-group > .qp-chips {
+	padding: var(--qp-layout-space8) 0 var(--qp-layout-space4);
+}
+
+/* The welcome --------------------------------------------------------------------------------------------------- */
+
+.qp-welcome {
+	min-height: 100%;
+	justify-content: center;
+}
+
+.qp-welcome-figure {
+	width: min(100%, 40vh);
+	margin-inline: auto;
+}
+
+.qp-welcome-figure.qp-small {
+	width: min(50%, 20vh);
+}
+
+.qp-welcome-words {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	text-align: center;
+	text-shadow: var(--qp-surface-fanfare-wordmark-glow);
+}
+
+.qp-welcome-map {
+	width: min(100%, 44vh);
+	margin-inline: auto;
+}

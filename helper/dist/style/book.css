@@ -1,0 +1,872 @@
+/* The Book, the Saga's Pro weeks and the share card on the computer (views/book, views/log, lib/share.js), from the
+ * tokens only. The Book's Moves grid (three to six tiles a row by width) widens to the window: its column is wider than
+ * the others' (--qp-wide-book-most against --qp-wide-column), its pages one centred column all the same. */
+
+.qp-column.qp-wide, qp-page.qp-wide > qp-top-bar {
+	max-width: var(--qp-wide-book-most);
+}
+
+.qp-book-side {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-book-loading {
+	display: grid;
+	place-items: center;
+	padding: var(--qp-layout-space16) 0;
+	color: var(--qp-color-text3);
+}
+
+.qp-dim {
+	color: var(--qp-color-text2);
+}
+
+/* A ladder's row and a step's row: a tile, its words, its end ------------------------------------------------------- */
+
+.qp-book-rows, .qp-log-day {
+	display: flex;
+	flex-direction: column;
+}
+
+.qp-ladder-body {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space14);
+	width: 100%;
+	min-height: var(--qp-layout-row-height-ladder);
+	padding: var(--qp-layout-row-padding-v) var(--qp-layout-row-padding-h);
+	text-align: start;
+	transition: background-color var(--qp-motion-press);
+}
+
+button.qp-ladder-body:hover {
+	background: var(--qp-wide-hover);
+}
+
+button.qp-ladder-body:active {
+	background: rgb(0 0 0 / var(--qp-surface-press-shade-opacity));
+}
+
+button.qp-ladder-body:focus-visible, button.qp-step-row:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+.qp-ladder-words, .qp-step-words {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+	min-width: 0;
+	overflow-wrap: break-word;
+}
+
+.qp-ladder-words > .qp-type-body-strong, .qp-step-words > .qp-type-body-strong {
+	color: var(--qp-color-text);
+}
+
+.qp-ladder-lock {
+	flex: none;
+	width: var(--qp-layout-space20);
+	height: var(--qp-layout-space20);
+	color: var(--qp-color-text3);
+}
+
+.qp-ladder-chevron::after {
+	content: "";
+	display: block;
+	width: 8px;
+	height: 8px;
+	margin-inline: 4px;
+	border-right: 2px solid var(--qp-color-text3);
+	border-bottom: 2px solid var(--qp-color-text3);
+	transform: rotate(-45deg);
+}
+
+.qp-quality-line {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space4) var(--qp-layout-space10);
+}
+
+.qp-book-value {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	align-items: flex-end;
+	text-align: end;
+}
+
+.qp-book-value.qp-leading {
+	align-items: center;
+	text-align: center;
+}
+
+.qp-book-value .qp-type-caps {
+	color: var(--qp-color-text2);
+}
+
+.qp-book-value .qp-type-num-medium {
+	color: var(--qp-color-text);
+}
+
+.qp-book-value .qp-type-body.qp-dim {
+	color: var(--qp-color-text2);
+}
+
+/* The Moves side ---------------------------------------------------------------------------------------------------- */
+
+.qp-filter-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-book-families {
+	display: flex;
+	flex-direction: column;
+}
+
+/* three to six tiles a row, by width: as many as fit at --qp-wide-move-cell-least, three at the least, six at most */
+.qp-move-grid {
+	--qp-gap: var(--qp-layout-space12);
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(clamp(calc((100% - 5 * var(--qp-gap)) / 6),
+		var(--qp-wide-move-cell-least), calc((100% - 2 * var(--qp-gap)) / 3)), 1fr));
+	gap: var(--qp-layout-space16) var(--qp-gap);
+	padding-top: var(--qp-layout-space6);
+}
+
+.qp-move-cell {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space2);
+	min-width: 0;
+	text-align: center;
+	overflow-wrap: break-word;
+}
+
+.qp-move-cell qp-move-tile {
+	margin-bottom: var(--qp-layout-space6);
+}
+
+.qp-move-cell > .qp-type-meta {
+	max-width: 100%;
+	color: var(--qp-color-text);
+}
+
+.qp-move-cell > .qp-type-meta.qp-dim {
+	color: var(--qp-color-text2);
+}
+
+/* A ladder's page and a move's page --------------------------------------------------------------------------------- */
+
+qp-card.qp-book-hero, qp-card.qp-trains, qp-card.qp-pump-card, qp-card.qp-pro-weeks {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+qp-card.qp-book-hero {
+	align-items: center;
+}
+
+.qp-book-hero qp-figure-stage {
+	width: min(200px, 100%);
+}
+
+.qp-centred {
+	text-align: center;
+	color: var(--qp-color-text);
+}
+
+.qp-hero-numbers {
+	display: flex;
+	justify-content: center;
+	gap: var(--qp-layout-space32);
+	padding-top: var(--qp-layout-space4);
+}
+
+.qp-mark {
+	display: flex;
+	flex-direction: column;
+	align-self: stretch;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-standing {
+	display: flex;
+	flex-wrap: wrap;
+	align-self: stretch;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-book-foot {
+	position: sticky;
+	bottom: 0;
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+	padding: var(--qp-layout-space8) var(--qp-layout-margin);
+	background: var(--qp-color-page);
+}
+
+.qp-book-foot:empty {
+	display: none;
+}
+
+.qp-steps .qp-step-head {
+	padding: var(--qp-layout-space12) var(--qp-layout-row-padding-h) var(--qp-layout-space8);
+}
+
+.qp-step-row, .qp-pump-move {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--qp-layout-space12);
+	width: 100%;
+	min-height: var(--qp-layout-row-height);
+	padding: var(--qp-layout-row-padding-v) var(--qp-layout-row-padding-h);
+	text-align: start;
+	border-top: var(--qp-layout-hairline) solid var(--qp-color-line);
+}
+
+.qp-pump-move {
+	align-items: center;
+}
+
+.qp-step-head + .qp-step-row, .qp-step-head + .qp-step-shared .qp-step-row, qp-card > .qp-pump-move:first-child {
+	border-top: none;
+}
+
+.qp-step-row.qp-dim {
+	opacity: 0.55;
+}
+
+button.qp-step-row:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-step-shared {
+	position: relative;
+}
+
+.qp-step-shared .qp-step-row {
+	padding-inline-end: calc(var(--qp-layout-row-padding-h) + 44px);
+}
+
+.qp-step-share {
+	position: absolute;
+	top: 50%;
+	right: var(--qp-layout-row-padding-h);
+	transform: translateY(-50%);
+}
+
+.qp-step-now {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space4) var(--qp-layout-space10);
+}
+
+.qp-sentence .qp-row-title {
+	font: var(--qp-type-body-font);
+}
+
+.qp-pair-row {
+	padding: var(--qp-layout-space16) var(--qp-layout-row-padding-h);
+}
+
+.qp-pair-row:has(> qp-move-figure-pair[hidden]) {
+	display: none;
+}
+
+qp-card.qp-trains qp-muscle-map {
+	height: var(--qp-surface-body-map-card-height);
+}
+
+.qp-stat-line {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-stat-line qp-art {
+	flex: none;
+	width: var(--qp-layout-glyph-small);
+	height: var(--qp-layout-glyph-small);
+	color: var(--qp-color-text2);
+}
+
+.qp-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+/* The Saga's Pro weeks ---------------------------------------------------------------------------------------------- */
+
+.qp-week-row {
+	display: grid;
+	grid-template-columns: 4.5em minmax(0, 1fr);
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-initials {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: var(--qp-layout-space4);
+	text-align: center;
+	color: var(--qp-color-text3);
+}
+
+.qp-chart-date {
+	color: var(--qp-color-text2);
+	white-space: nowrap;
+}
+
+.qp-pro-weeks qp-week-dots {
+	--qp-surface-week-dots-size: var(--qp-surface-chart-week-cell);
+}
+
+/* The share window -------------------------------------------------------------------------------------------------- */
+
+/* the window's content: the preview beside its choices where it is wide enough, over them where it is not, then the
+   foot (the status line, Copy image and the gold Save image), which stays in view while the rest scrolls */
+.qp-share-window .qp-window-body {
+	container-type: inline-size;
+}
+
+.qp-share {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--qp-layout-space16);
+	align-items: start;
+}
+
+.qp-share-choices {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+	min-width: 0;
+}
+
+/* the card as it will be saved, in its format's shape (--qp-share-ratio, its width over its height), outlined on its
+   own edge, as tall as the room the window's head, the choices and the foot leave it */
+.qp-share-preview {
+	aspect-ratio: var(--qp-share-ratio, 1);
+	width: min(100%, max(var(--qp-desktop-share-preview-least), calc((100vh - var(--qp-desktop-share-stacked-chrome))
+		* var(--qp-share-ratio, 1))));
+	margin-inline: auto;
+	border-radius: var(--qp-layout-tile-radius);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	overflow: hidden;
+}
+
+/* 384px: --qp-desktop-share-beside */
+@container (width >= 384px) {
+	.qp-share {
+		grid-template-columns: max-content minmax(0, 1fr);
+	}
+
+	.qp-share-preview {
+		width: min(40cqi, calc((100vh - var(--qp-desktop-share-chrome)) * var(--qp-share-ratio, 1)));
+	}
+}
+
+.qp-share-foot {
+	position: sticky;
+	bottom: calc(var(--qp-layout-margin) * -1);
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+	margin-bottom: calc(var(--qp-layout-margin) * -1);
+	padding-bottom: var(--qp-layout-margin);
+	background: var(--qp-surface-card-fill);
+}
+
+.qp-share-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-share-actions > * {
+	flex: 1 1 max-content;
+}
+
+/* the sticker's clear ground shown as a quiet check */
+.qp-share-preview.qp-share-clear {
+	background: repeating-conic-gradient(var(--qp-color-raised) 0 25%, var(--qp-color-card) 0 50%) 0 0 /
+		var(--qp-layout-space16) var(--qp-layout-space16);
+}
+
+.qp-share-preview canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* the day reel (slice 45): while it is made the still Story card under the kit's pips with Making your reel…; made,
+   the ReelPreview in the card's place, the whole preview its button, its round mark (the RoundButton's look, 36) at the
+   bottom-trailing corner */
+.qp-share-preview {
+	position: relative;
+}
+
+.qp-reel-making {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--qp-layout-space8);
+	background: var(--qp-surface-window-dim);
+	color: var(--qp-color-text);
+}
+
+.qp-reel-preview {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+
+.qp-reel-video {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.qp-reel-mark {
+	position: absolute;
+	right: var(--qp-layout-space8);
+	bottom: var(--qp-layout-space8);
+	display: grid;
+	place-items: center;
+	width: var(--qp-layout-round-button-pump);
+	height: var(--qp-layout-round-button-pump);
+	border-radius: 50%;
+	background: var(--qp-surface-round-button-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-round-button-edge);
+	color: var(--qp-surface-round-button-glyph);
+}
+
+.qp-reel-mark qp-art {
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+}
+
+/* the preview clips what lies outside it: its focus ring inside its edge */
+.qp-reel-preview:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+.qp-reel-preview:hover .qp-reel-mark {
+	background: var(--qp-color-raised);
+}
+
+.qp-share-styles {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-share-status {
+	min-height: 1lh;
+	text-align: center;
+	color: var(--qp-color-text2);
+}
+
+.qp-quality-line qp-step-pips {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+.qp-quality-line qp-step-pips i {
+	flex: 0 1 var(--qp-layout-pip-width);
+	min-width: 2px;
+}
+
+/* The Book's ladders and paths (views/book/book.js and ladder.js; docs/ui.md, "The Book's ladders and paths"), their
+ * marks in surface.LadderTree's and StepsBar's tokens --------------------------------------------------------------- */
+
+/* a tree's Up next under its label, none while it shows nothing */
+.qp-book-next {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-book-next:empty {
+	display: none;
+}
+
+/* a ladder's meter: a segment a step that holds a move, one the player has in its quality's tone */
+.qp-step-meter {
+	display: flex;
+	gap: var(--qp-surface-steps-bar-gap);
+	width: 100%;
+}
+
+.qp-step-meter i {
+	flex: 1;
+	height: var(--qp-layout-step-bar-height);
+	border-radius: var(--qp-surface-steps-bar-radius);
+	background: var(--qp-surface-steps-bar-track);
+}
+
+.qp-step-meter i[data-on] {
+	background: var(--qp-tone);
+}
+
+/* Up next's climb that counts no days: its ring's share as a bar */
+.qp-fill-bar {
+	display: block;
+	width: 100%;
+	height: var(--qp-layout-step-bar-height);
+	border-radius: var(--qp-surface-steps-bar-radius);
+	background: linear-gradient(to right, var(--qp-surface-steps-bar-done) calc(var(--qp-fill) * 100%),
+		var(--qp-surface-steps-bar-track) 0);
+}
+
+/* a step's tile on its path, with room round it for the ring's gap and stroke, and under it for the beads; its quality
+ * glow off, so the ring's gap stays dark (the phones' MoveTile `path`) */
+.qp-path-tile {
+	position: relative;
+	flex: none;
+	display: grid;
+	place-items: center;
+	padding: calc(var(--qp-layout-ring-gap) + var(--qp-layout-ring-width));
+}
+
+.qp-path-tile qp-move-tile {
+	--qp-surface-move-tile-glow-radius: 0px;
+}
+
+.qp-path-tile:has(.qp-path-beads) {
+	margin-bottom: var(--qp-layout-tree-bead-row);
+}
+
+/* a step the setup shuts: a dashed edge */
+.qp-path-tile[data-shut] .qp-tile-well {
+	outline: var(--qp-layout-tree-halo) dashed var(--qp-surface-ladder-tree-quiet);
+	outline-offset: calc(var(--qp-layout-tree-halo) * -1);
+}
+
+/* the ring: a gold stroke round the tile's rounded square, a dark gap inside it, its star ticks cut across it */
+.qp-path-ring {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.qp-path-ring path {
+	fill: none;
+	stroke-width: var(--qp-layout-ring-width);
+}
+
+.qp-path-ring-track {
+	stroke: var(--qp-surface-ladder-tree-ring-track);
+}
+
+.qp-path-ring-fill {
+	stroke: var(--qp-surface-ladder-tree-ring-fill);
+}
+
+/* a hairline wider each side than the ring: named under the ring, so it outranks `.qp-path-ring path`'s width */
+.qp-path-ring .qp-path-ring-ticks {
+	stroke: var(--qp-surface-ladder-tree-cut);
+	stroke-width: calc(var(--qp-layout-ring-width) + var(--qp-layout-hairline) * 2);
+}
+
+/* the beads of the player's step's path under its tile: a stage done filled in gold, open a hollow ring, waiting a
+ * small dim dot, so fill and size tell them apart, never colour alone */
+.qp-path-beads {
+	position: absolute;
+	top: 100%;
+	inset-inline: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--qp-layout-tree-bead-gap);
+	height: var(--qp-layout-tree-bead-row);
+}
+
+.qp-path-beads i {
+	flex: none;
+	width: var(--qp-layout-tree-bead);
+	height: var(--qp-layout-tree-bead);
+	border-radius: 50%;
+	background: var(--qp-surface-ladder-tree-bead-done);
+}
+
+.qp-path-beads i[data-state="open"] {
+	background: var(--qp-surface-ladder-tree-cut);
+	box-shadow: inset 0 0 0 var(--qp-surface-ladder-tree-bead-stroke) var(--qp-surface-ladder-tree-bead-open);
+}
+
+.qp-path-beads i[data-state="waiting"] {
+	width: calc(var(--qp-layout-tree-bead) * var(--qp-surface-ladder-tree-bead-waiting-fraction));
+	height: calc(var(--qp-layout-tree-bead) * var(--qp-surface-ladder-tree-bead-waiting-fraction));
+	background: var(--qp-surface-ladder-tree-bead-waiting);
+}
+
+/* a step the player has below theirs: a check at the row's end */
+.qp-path-check {
+	flex: none;
+	align-self: center;
+	width: var(--qp-layout-space20);
+	height: var(--qp-layout-space20);
+	color: var(--qp-color-gold);
+}
+
+.qp-card-quiet, .qp-card-next, .qp-card-measure, .qp-card-how {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+/* a card's header clear of its close: the card Window's, whose × stands over its head row */
+qp-window.qp-card-window .qp-card-head {
+	padding-inline-end: calc(var(--qp-layout-round-button) + var(--qp-layout-space4));
+}
+
+/* the card Window's content carries its own heading: its × stands at the head row's corner, no empty band over it */
+qp-window.qp-card-window .qp-window-head {
+	position: absolute;
+	top: var(--qp-layout-space16);
+	inset-inline-end: var(--qp-layout-margin);
+	z-index: 1;
+	margin: 0;
+}
+
+/* a card's title takes the focus only as it opens with no Start that runs (a screen reader starts at its name): no
+ * ring round the words */
+.qp-card-title[tabindex="-1"]:focus-visible {
+	outline: none;
+}
+
+/* a measure's or climb's row (slice 52: Pace, Full moves, Now; since 2026-10-29 the climb's line with its count, and
+ * Master this step's progress): its label, its value at the row's end with the day pips and Pro's date after it */
+.qp-card-pair {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space4) var(--qp-layout-space12);
+}
+
+.qp-card-pair-value {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--qp-layout-space8);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Pro's date at the end of a climb's row or line */
+.qp-card-forecast {
+	color: var(--qp-color-text2);
+}
+
+.qp-card-climb .qp-card-forecast {
+	margin-inline-start: var(--qp-layout-space8);
+}
+
+.qp-card-quiet {
+	padding-top: var(--qp-layout-space8);
+	border-top: var(--qp-layout-hairline) solid var(--qp-color-line);
+	color: var(--qp-color-text2);
+}
+
+.qp-card-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space4) var(--qp-layout-space12);
+}
+
+.qp-card-title {
+	color: var(--qp-tone, var(--qp-color-text));
+}
+
+.qp-window .qp-card-head ~ qp-figure-stage {
+	width: min(var(--qp-surface-move-window-figure), 100%);
+	margin-inline: auto;
+}
+
+.qp-card-check {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-card-check qp-art {
+	flex: none;
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+	color: var(--qp-color-text3);
+}
+
+.qp-card-check-words {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-card-check.qp-done qp-art {
+	color: var(--qp-quality-uncommon);
+}
+
+/* a step of another ladder the climb waits for, a button to that step's card */
+button.qp-card-check.qp-card-link {
+	width: 100%;
+	margin: calc(var(--qp-layout-space4) * -1);
+	padding: var(--qp-layout-space4);
+	border-radius: var(--qp-layout-tile-radius-small);
+	text-align: start;
+	color: inherit;
+}
+
+button.qp-card-check.qp-card-link:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-card-moves {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-card-opens {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+/* a group of the step's moves (slice 42: Your main move, Then, for the next step, For variety; since 2026-10-29 To step
+ * up and Master this step) under its caps label */
+.qp-card-group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-card-main, .qp-card-check-row {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-card-check-row > qp-secondary-button {
+	margin-inline-start: auto;
+}
+
+/* a stage of the step's path: its moves' tiles, what it takes with its state's line, and its mark */
+.qp-card-stage {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-card-stage-tiles {
+	display: flex;
+	flex: none;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-card-stage-words {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+	min-width: 0;
+}
+
+.qp-card-stage > qp-art {
+	flex: none;
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+	color: var(--qp-color-text3);
+}
+
+.qp-card-stage[data-state="done"] > qp-art {
+	color: var(--qp-quality-uncommon);
+}
+
+/* a stage the setup or the player's list skips: dimmed, its words still read at text2 */
+.qp-card-stage[data-state="skipped"] {
+	color: var(--qp-color-text2);
+}
+
+.qp-card-stage[data-state="skipped"] qp-move-tile {
+	opacity: var(--qp-surface-move-tile-off-opacity);
+}
+
+/* Windows' high contrast and every forced palette: the system's colours, each state kept by its shape */
+@media (forced-colors: active) {
+	.qp-path-ring path, .qp-path-beads i, .qp-step-meter i, .qp-fill-bar {
+		forced-color-adjust: none;
+	}
+
+	.qp-path-ring-track {
+		stroke: CanvasText;
+	}
+
+	.qp-path-ring-fill {
+		stroke: Highlight;
+	}
+
+	.qp-path-ring .qp-path-ring-ticks {
+		stroke: Canvas;
+	}
+
+	.qp-path-tile[data-shut] .qp-tile-well {
+		outline-color: GrayText;
+	}
+
+	/* the beads keep their shapes: done filled, open a ring, waiting a small grey dot */
+	.qp-path-beads i {
+		background: CanvasText;
+	}
+
+	.qp-path-beads i[data-state="open"] {
+		background: Canvas;
+		box-shadow: inset 0 0 0 var(--qp-surface-ladder-tree-bead-stroke) CanvasText;
+	}
+
+	.qp-path-beads i[data-state="waiting"] {
+		background: GrayText;
+	}
+
+	/* a step the player has: filled; one ahead: an outline */
+	.qp-step-meter i {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid GrayText;
+	}
+
+	.qp-step-meter i[data-on] {
+		background: CanvasText;
+	}
+
+	.qp-fill-bar {
+		background: linear-gradient(to right, Highlight calc(var(--qp-fill) * 100%), Canvas 0);
+		outline: var(--qp-layout-hairline) solid CanvasText;
+	}
+}

@@ -1,0 +1,109 @@
+{
+  "move": "pad_brisk",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 8},
+  "working": ["thigh", "shin"],
+  "props": [{"kind": "pad", "f0": -64, "f1": 66, "belt": -139.0, "rail": true}],
+  "poses": {
+    "k0": {
+      "pelvis": [0, 104.99, 0],
+      "trunk": [4, 0, 5],
+      "chest": [0, 0, -8],
+      "head": [-4, 0, 3],
+      "arm_near": {"fk": [-29, 6, 80]},
+      "arm_far": {"fk": [23, 6, 88]},
+      "leg_near": {"foot": [27, 8], "y": 12, "turn": 5, "lift": -16, "knee_out": 4},
+      "leg_far": {"foot": [-42.5, 8], "y": 12, "turn": 5, "lift": 40, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "k1": {
+      "pelvis": [0, 105.74, 0],
+      "trunk": [4, 0, 3.5],
+      "chest": [0, 0, -5.7],
+      "head": [-4, 0, 2.1],
+      "arm_near": {"fk": [-21.4, 6, 80]},
+      "arm_far": {"fk": [15.4, 6, 85.7]},
+      "leg_near": {"foot": [9.62, 8], "y": 12, "turn": 5, "lift": 0, "knee_out": 4},
+      "leg_far": {"foot": [-50.4, 8], "y": 16.5, "turn": 5, "lift": 58, "knee_out": 4},
+      "contacts": ["toe_near"]
+    },
+    "k2": {
+      "pelvis": [0, 106.49, 0],
+      "trunk": [4, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arm_near": {"fk": [-3, 6, 80]},
+      "arm_far": {"fk": [-3, 6, 80]},
+      "leg_near": {"foot": [-7.75, 8], "y": 12, "turn": 5, "lift": 0, "knee_out": 4},
+      "leg_far": {"foot": [-9.75, 8], "y": 15.5, "turn": 5, "lift": 8, "knee_out": 4},
+      "contacts": ["toe_near"]
+    },
+    "k3": {
+      "pelvis": [0, 105.24, 0],
+      "trunk": [4, 0, -3.5],
+      "chest": [0, 0, 5.7],
+      "head": [-4, 0, -2.1],
+      "arm_near": {"fk": [15.4, 6, 85.7]},
+      "arm_far": {"fk": [-21.4, 6, 80]},
+      "leg_near": {"foot": [-25.12, 8], "y": 12, "turn": 5, "lift": 7, "knee_out": 4},
+      "leg_far": {"foot": [29, 8], "y": 14.5, "turn": 5, "lift": -10, "knee_out": 4},
+      "contacts": ["toe_near"]
+    },
+    "k4": {
+      "pelvis": [0, 104.99, 0],
+      "trunk": [4, 0, -5],
+      "chest": [0, 0, 8],
+      "head": [-4, 0, -3],
+      "arm_near": {"fk": [23, 6, 88]},
+      "arm_far": {"fk": [-29, 6, 80]},
+      "leg_near": {"foot": [-42.5, 8], "y": 12, "turn": 5, "lift": 40, "knee_out": 4},
+      "leg_far": {"foot": [27, 8], "y": 12, "turn": 5, "lift": -16, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "k5": {
+      "pelvis": [0, 105.74, 0],
+      "trunk": [4, 0, -3.5],
+      "chest": [0, 0, 5.7],
+      "head": [-4, 0, -2.1],
+      "arm_near": {"fk": [15.4, 6, 85.7]},
+      "arm_far": {"fk": [-21.4, 6, 80]},
+      "leg_near": {"foot": [-50.4, 8], "y": 16.5, "turn": 5, "lift": 58, "knee_out": 4},
+      "leg_far": {"foot": [9.62, 8], "y": 12, "turn": 5, "lift": 0, "knee_out": 4},
+      "contacts": ["toe_far"]
+    },
+    "k6": {
+      "pelvis": [0, 106.49, 0],
+      "trunk": [4, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arm_near": {"fk": [-3, 6, 80]},
+      "arm_far": {"fk": [-3, 6, 80]},
+      "leg_near": {"foot": [-9.75, 8], "y": 15.5, "turn": 5, "lift": 8, "knee_out": 4},
+      "leg_far": {"foot": [-7.75, 8], "y": 12, "turn": 5, "lift": 0, "knee_out": 4},
+      "contacts": ["toe_far"]
+    },
+    "k7": {
+      "pelvis": [0, 105.24, 0],
+      "trunk": [4, 0, 3.5],
+      "chest": [0, 0, -5.7],
+      "head": [-4, 0, 2.1],
+      "arm_near": {"fk": [-21.4, 6, 80]},
+      "arm_far": {"fk": [15.4, 6, 85.7]},
+      "leg_near": {"foot": [29, 8], "y": 14.5, "turn": 5, "lift": -10, "knee_out": 4},
+      "leg_far": {"foot": [-25.12, 8], "y": 12, "turn": 5, "lift": 7, "knee_out": 4},
+      "contacts": ["toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "k0"},
+    {"to": "k1", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6},
+    {"to": "k2", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6},
+    {"to": "k3", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6, "dynamic": true},
+    {"to": "k4", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6},
+    {"to": "k5", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6},
+    {"to": "k6", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6},
+    {"to": "k7", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6, "dynamic": true},
+    {"to": "k0", "s": 0.125, "ease": "linear", "phase": "walk_briskly", "effort": 0.6}
+  ],
+  "key": "k0"
+}

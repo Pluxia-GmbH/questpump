@@ -1,0 +1,87 @@
+{
+  "move": "half_moon_bow",
+  "view": "front",
+  "camera": {"yaw": -20, "pitch": 22},
+  "working": ["thigh_far", "abdomen", "back"],
+  "breathe": true,
+  "props": [{"kind": "step", "f0": -4, "f1": 24, "u": 25, "l0": 42, "l1": 68}],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "tip": {
+      "pelvis": [2, 95, 4],
+      "trunk": [0, 75, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "leg_near": {"fk": [0, -45, 10, 0]},
+      "arm_far": {"ik": [10, 28.5, 56], "pole": [0, 0.3, 1], "hand": [1, -0.1, 0]},
+      "arm_near": {"fk": [0, 70, 6]},
+      "contacts": ["toe_far", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "moon": {
+      "pelvis": [2, 105.5, 8],
+      "trunk": [0, 85, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "leg_near": {"fk": [0, 2, 0, 0]},
+      "arm_far": {"ik": [7, 28.4, 57], "pole": [0, 0.3, 1], "hand": [1, -0.1, 0]},
+      "arm_near": {"fk": [0, 90, 0]},
+      "contacts": ["toe_far", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "bow": {
+      "from": "moon",
+      "pelvis": [2, 105.2, -2],
+      "trunk": [0, 76, 0],
+      "leg_near": {"ik": [-20, 117.5, 5.7], "pole": [-0.4, -0.05, 1], "toe": [-0.6, 0.5, 0.3]},
+      "arm_near": {"ik": [-17.6, 119.1, 0.5], "pole": [-0.2, 1, 0.3], "hand": [-0.4, -0.27, 0.87]},
+      "arm_far": {"ik": [5, 36, 50], "pole": [0, 0.3, 1], "hand": [1, -0.25, 0]},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "bend": {
+      "from": "moon",
+      "leg_near": {"ik": [-20, 118, -6], "pole": [-0.4, -0.05, 1], "toe": [-0.6, 0.5, 0.3]},
+      "arm_near": {"fk": [0, 90, 0]}
+    },
+    "bow_in": {"from": "bow", "chest": [0, 2, 0]},
+    "knee_down": {
+      "from": "bow",
+      "leg_near": {"ik": [-26, 121.5, 13.7], "pole": [-0.5, -0.6, 0.6], "toe": [-0.3, 0.8, -0.5]},
+      "arm_near": {"ik": [-18, 121.5, 3.7], "pole": [0.3, 1, 0], "hand": [-0.4, 0.3, 0.85]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "tip", "s": 1.6, "phase": "lean_forward", "effort": 0.5},
+    {"to": "moon", "s": 1.3, "phase": "top_leg_up", "effort": 0.7},
+    {"to": "bend", "s": 1.0, "phase": "heel_to_buttock", "effort": 0.8},
+    {"to": "bow", "s": 0.9, "phase": "catch", "effort": 0.8},
+    {"to": "bow_in", "s": 1.2, "phase": "breathe", "effort": 0.9},
+    {"to": "bow", "s": 1.2, "phase": "breathe", "effort": 0.9},
+    {"to": "bend", "s": 0.8, "phase": "lower", "effort": 0.8},
+    {"to": "moon", "s": 0.9, "phase": "lower", "effort": 0.7},
+    {"to": "tip", "s": 1.2, "phase": "lower", "effort": 0.5},
+    {"to": "tall", "s": 1.4, "phase": "stand_up", "effort": 0.3}
+  ],
+  "key": "bow",
+  "fault": {
+    "pose": "knee_down",
+    "caption": "knee_drops",
+    "breaks": {"check": "height", "joint": "knee_near", "min": 105}
+  },
+  "targets": [
+    {"at": "bow", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "bow", "check": "height", "joint": "knee_near", "min": 105},
+    {"at": "bow", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 70},
+    {"at": "bow", "check": "height", "joint": "wrist_far", "min": 34}
+  ],
+  "note": "The half moon bow over books 25 cm high, seen from the front: the far leg stands straight, the chest to the camera; the near knee bends, the thigh level, and the near hand reaches back to hold the near foot behind the hips, while the far hand lifts a fist off the books and floats there."
+}

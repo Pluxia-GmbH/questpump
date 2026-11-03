@@ -1,0 +1,65 @@
+{
+  "move": "standing_calf_backbend",
+  "view": "side",
+  "camera": {"yaw": 4, "pitch": 4},
+  "working": ["abdomen", "back"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 13], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "tall",
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "arms": {"ik": [-15.0, 106.2, 9], "pole": [-1, -0.3, 0.6], "hand": [0, -1, -0.25]}
+    },
+    "arch": {
+      "from": "hands",
+      "pelvis": [38, 86, 0],
+      "trunk": [-52, 0, 0],
+      "chest": [-56, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [3, 41, 12.6], "pole": [-1, -0.3, 0.6], "hand": [-0.41, -0.91, 0]}
+    },
+    "arch_in": {"from": "arch", "pelvis": [38.4, 85.8, 0], "trunk": [-53, 0, 0], "chest": [-56, 0, 0]},
+    "drop": {"from": "arch", "head": [-60, 0, 0]},
+    "thighs": {
+      "from": "hands",
+      "pelvis": [18, 91.5, 0],
+      "trunk": [-32, 0, 0],
+      "chest": [-46, 0, 0],
+      "head": [-16, 0, 0],
+      "arms": {"ik": [0.6, 69.1, 15], "pole": [-1, -0.3, 0.6], "hand": [0.15, -1, -0.25]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "hands", "s": 1.0, "phase": "hands_on_back", "effort": 0.3},
+    {"to": "thighs", "s": 1.8, "phase": "hands_slide_down", "effort": 0.5},
+    {"to": "arch", "s": 1.8, "phase": "hands_to_calves", "effort": 0.7},
+    {"to": "arch_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "arch", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "thighs", "s": 1.6, "phase": "rise_slowly", "effort": 0.55},
+    {"to": "hands", "s": 1.2, "phase": "rise_slowly", "effort": 0.4},
+    {"to": "tall", "s": 0.8, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "arch",
+  "fault": {
+    "pose": "drop",
+    "caption": "head_drops_back",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 125}
+  },
+  "targets": [
+    {"at": "arch", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 160},
+    {"at": "arch", "check": "height", "joint": "wrist_near", "max": 42},
+    {"at": "arch", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 15}
+  ],
+  "note": "Standing, the palms on the backs of the hips: press the hips well forward over the toes and let the palms slide down the backs of the thighs and the knees to the calves as the back arches, the legs nearly straight and the head following the arch; rise slowly the same way."
+}

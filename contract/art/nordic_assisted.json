@@ -1,0 +1,64 @@
+{
+  "move": "nordic_assisted",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh"],
+  "props": [{"kind": "bench", "f0": -72, "f1": -33, "u": 27}],
+  "poses": {
+    "tall": {
+      "line": {"pivot": "knees", "at": 0, "angle": 90, "width": 12, "feet": "flat"},
+      "head": [0, 0, 0],
+      "arms": {"fk": [40, 12, 100]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "lean": {
+      "from": "tall",
+      "line": {"pivot": "knees", "at": 0, "angle": 54, "width": 12, "feet": "flat", "hips": 5},
+      "head": [-14, 0, 0],
+      "arms": {"fk": [62, 12, 84]}
+    },
+    "catch": {
+      "from": "tall",
+      "line": {"pivot": "knees", "at": 0, "angle": 24, "width": 12, "feet": "flat"},
+      "head": [-12, 0, 0],
+      "arms": {"ik": [94, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "push": {"from": "catch", "line": {"pivot": "knees", "at": 0, "angle": 31, "width": 12, "feet": "flat"}},
+    "folded": {
+      "from": "lean",
+      "line": {"pivot": "knees", "at": 0, "angle": 76, "hips": -44, "width": 12, "feet": "flat"},
+      "head": [-10, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "kneel_tall"},
+    {"to": "lean", "s": 2.6, "ease": "in", "phase": "lower_slowly", "effort": 0.9, "dynamic": true},
+    {"to": "catch", "s": 0.9, "phase": "catch", "effort": 0.6, "dynamic": true},
+    {"to": "push", "s": 0.8, "phase": "push_back", "effort": 0.5},
+    {"to": "tall", "s": 1.2, "phase": "kneel_tall", "effort": 0.6, "dynamic": true}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "folded",
+    "caption": "hips_bend",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170},
+    {"at": "catch", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170}
+  ],
+  "note": "Lean as far as you control, then the hands catch: the lean scales itself (2026-10-12; a quicker table on the lowering's frames until then)."
+}

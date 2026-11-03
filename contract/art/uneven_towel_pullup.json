@@ -1,0 +1,79 @@
+{
+  "move": "uneven_towel_pullup",
+  "view": "side",
+  "camera": {"yaw": 60, "pitch": 4},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "bar", "f": 8, "u": 222, "ground": true}],
+  "items": [
+    {
+      "kind": "doortowel",
+      "over": [8, 222, 16],
+      "ends": [{"at": "grip_far", "off": [0, 0, -1.5]}, {"at": "grip_far", "off": [0, 0, 1.5]}]
+    }
+  ],
+  "poses": {
+    "hang": {
+      "pelvis": [8, 113.5, 0],
+      "trunk": [0, 0, 0],
+      "arm_near": {"ik": [8, 215.6, 24], "pole": [-0.2, -1, 0.6], "hand": [0.6, 0.8, 0]},
+      "arm_far": {"ik": [9, 190, 22], "pole": [0.3, -1, 0], "hand": [0, 1, 0]},
+      "legs": {"fk": [4, 2, 8, -30]},
+      "contacts": ["wrist_near", "hand_tip_near"],
+      "head": [-8, 0, 0]
+    },
+    "top": {
+      "from": "hang",
+      "pelvis": [-6, 166, 0],
+      "trunk": [-8, 0, 0],
+      "head": [-6, 0, 0],
+      "arm_near": {"ik": [8, 215.6, 24], "pole": [0, -1, 0.3], "hand": [0.6, 0.8, 0]},
+      "arm_far": {"ik": [9, 190, 22], "pole": [-0.2, -1, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [16, 2, 26, -30]}
+    },
+    "turned": {"from": "top", "pelvis": [-5, 165.5, 1], "trunk": [-8, 0, -22], "head": [-4, 0, 12]},
+    "mid": {
+      "from": "top",
+      "pelvis": [-7, 147, 0],
+      "trunk": [-9, 0, 0],
+      "head": [-12, 0, 0],
+      "arm_far": {"ik": [9, 190, 22], "pole": [0.2, -1, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [12, 2, 22, -30]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.3, "phase": "hang"},
+    {"to": "mid", "s": 0.6, "phase": "chin_over_bar", "effort": 1.0, "ease": "in"},
+    {"to": "top", "s": 0.6, "phase": "chin_over_bar", "effort": 1.0, "ease": "out"},
+    {"hold": 0.2, "phase": "top", "effort": 0.9},
+    {"to": "mid", "s": 1.0, "phase": "lower_slowly", "effort": 0.6, "ease": "in"},
+    {"to": "hang", "s": 1.0, "phase": "lower_slowly", "effort": 0.6, "ease": "out"}
+  ],
+  "key": "top",
+  "fault": {
+    "pose": "turned",
+    "caption": "chest_turns",
+    "breaks": {
+      "check": "offset",
+      "joint": "shoulder_far",
+      "from": "shoulder_near",
+      "axis": "f",
+      "min": -12,
+      "max": 12
+    }
+  },
+  "targets": [
+    {"at": "top", "check": "height", "joint": "head", "min": 230},
+    {"at": "hang", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {
+      "at": "top",
+      "check": "offset",
+      "joint": "shoulder_far",
+      "from": "shoulder_near",
+      "axis": "f",
+      "min": -12,
+      "max": 12
+    }
+  ],
+  "note": "One hand on the bar, the other holding both ends of a towel hung over the bar, that fist at forehead height in the hang; the fist stays where it grips while the body rises, the bar arm doing most of the pull."
+}

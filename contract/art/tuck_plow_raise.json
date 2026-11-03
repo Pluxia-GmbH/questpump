@@ -1,0 +1,77 @@
+{
+  "move": "tuck_plow_raise",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 6},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -40, "f1": 90}],
+  "poses": {
+    "down": {
+      "pelvis": [52, 15, 0],
+      "fit": {"joint": "neck", "u": 15},
+      "trunk": [-90, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [50, 4.3, 30], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "legs": {"fk": [112, 4, 125, -20]},
+      "contacts": ["neck", "waist", "pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "m3": {
+      "from": "down",
+      "pelvis": [50.9, 25, 0],
+      "fit": {"joint": "neck", "u": 13.5},
+      "trunk": [-102, 0, 0],
+      "head": [14, 0, 0],
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "m2": {
+      "from": "m3",
+      "pelvis": [45.3, 40, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-119.5, 0, 0],
+      "head": [31.5, 0, 0]
+    },
+    "m1": {
+      "from": "m3",
+      "pelvis": [35.5, 50, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-137, 0, 0],
+      "head": [49, 0, 0]
+    },
+    "up": {
+      "from": "m3",
+      "pelvis": [16, 62, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-160, 0, 0],
+      "head": [72, 0, 0]
+    },
+    "rolled": {
+      "from": "m3",
+      "pelvis": [7, 63, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-170, 0, 0],
+      "head": [82, 0, 0],
+      "legs": {"fk": [55, 4, 138, -20]}
+    }
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.3, "phase": "lie"},
+    {"to": "m2", "s": 0.7, "ease": "in", "phase": "lift_breathe_out", "effort": 0.9},
+    {"to": "up", "s": 0.6, "ease": "out", "phase": "lift_breathe_out", "effort": 1.0},
+    {"hold": 0.2, "phase": "top", "effort": 0.9},
+    {"to": "m1", "s": 0.9, "ease": "in", "phase": "lower_slowly", "effort": 0.8},
+    {"to": "m2", "s": 0.6, "ease": "linear", "phase": "lower_slowly", "effort": 0.75},
+    {"to": "m3", "s": 0.7, "ease": "linear", "phase": "lower_slowly", "effort": 0.7},
+    {"to": "down", "s": 0.8, "ease": "out", "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "rolled",
+    "caption": "neck_takes_weight",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "neck", "axis": "f", "min": 10}
+  },
+  "targets": [
+    {"at": "up", "check": "height", "joint": "pelvis", "min": 50},
+    {"at": "up", "check": "offset", "joint": "pelvis", "from": "neck", "axis": "f", "min": 10},
+    {"at": "down", "check": "height", "joint": "pelvis", "max": 17}
+  ]
+}

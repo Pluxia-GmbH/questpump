@@ -1,0 +1,34 @@
+{
+  "move": "face_pull",
+  "view": "side",
+  "camera": {"yaw": -22, "pitch": 8},
+  "working": ["back", "pauldron"],
+  "props": [{"kind": "door", "f": 92}],
+  "items": [{"kind": "band", "strands": [[[91.4, 166, 0], "grip_near"], [[91.4, 166, 0], "grip_far"]]}],
+  "poses": {
+    "reach": {
+      "pelvis": [0, 92.5, 0],
+      "trunk": [2, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [52, 154, 14], "pole": [-0.2, -1, 0.6], "hand": [1, 0.25, 0]},
+      "legs": {"foot": [0, 14], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "pulled": {
+      "from": "reach",
+      "trunk": [-2, 0, 0],
+      "chest": [-2, 0, 0],
+      "head": [2, 0, 0],
+      "arms": {"ik": [8, 161, 42], "pole": [-0.5, -0.4, 1], "hand": [0.35, 1, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "reach"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "pulled", "s": 1.1, "phase": "pull_to_face", "effort": 1.0},
+    {"hold": 0.4, "phase": "elbows_high", "effort": 0.9},
+    {"to": "reach", "s": 1.3, "phase": "return_slowly", "effort": 0.5}
+  ],
+  "key": "pulled",
+  "targets": [{"at": "pulled", "check": "height", "joint": "elbow_near", "min": 136}]
+}

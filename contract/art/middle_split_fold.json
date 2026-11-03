@@ -1,0 +1,124 @@
+{
+  "move": "middle_split_fold",
+  "view": "front",
+  "camera": {"yaw": 52, "pitch": 18},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -40, "f1": 75, "l0": -112, "l1": 112}],
+  "poses": {
+    "wide": {
+      "pelvis": [0, 68.4, 0],
+      "trunk": [105, 0, 0],
+      "chest": [5, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [40, 4.3, 30], "pole": [-0.6, 0, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 74.96], "y": 1, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "split": {
+      "from": "wide",
+      "pelvis": [0, 15.5, 0],
+      "trunk": [26, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-15, 0, 0],
+      "arms": {"ik": [31, 4.3, 30], "pole": [-0.6, 0, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 98.6], "y": 1, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "pelvis",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "mid": {
+      "from": "wide",
+      "pelvis": [0, 40, 0],
+      "trunk": [68, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"ik": [35, 4.3, 30], "pole": [-0.6, 0, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 93], "y": 1, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]}
+    },
+    "fold": {
+      "from": "split",
+      "pelvis": [2, 15.5, 0],
+      "trunk": [66, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [90.0, 4.3, 22], "pole": [-0.3, -1, 0.2], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "pelvis",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold_in": {"from": "fold", "trunk": [67, 0, 0], "chest": [6.5, 0, 0]},
+    "rounded": {
+      "from": "fold",
+      "trunk": [34, 0, 0],
+      "chest": [46, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [70, 4.3, 22], "pole": [-0.3, -0.5, 1], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "pelvis",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "wide"},
+    {"hold": 0.6, "phase": "feet_wide", "effort": 0.3},
+    {"to": "mid", "s": 1.6, "phase": "slide_out", "effort": 0.5},
+    {"to": "split", "s": 1.6, "phase": "slide_out", "effort": 0.6},
+    {"to": "fold", "s": 2.0, "phase": "fold_forward", "effort": 0.7},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "split", "s": 1.6, "phase": "sit_up", "effort": 0.5},
+    {"to": "mid", "s": 1.4, "phase": "rise_slowly", "effort": 0.5},
+    {"to": "wide", "s": 1.4, "phase": "rise_slowly", "effort": 0.4}
+  ],
+  "key": "fold",
+  "targets": [
+    {"at": "fold", "check": "height", "joint": "pelvis", "max": 16.5},
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "fold", "check": "angle", "joints": ["ankle_near", "pelvis", "ankle_far"], "min": 168},
+    {"at": "fold", "check": "height", "joint": "elbow_near", "max": 12}
+  ],
+  "note": "Seen from behind, as the middle split: from the wide-legged fold the feet slide out until the hips rest on the floor, then the hips tip forward and the chest folds over the long back until the forearms rest on the floor in front.",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 155}
+  }
+}

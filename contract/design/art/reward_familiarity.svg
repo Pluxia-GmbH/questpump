@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Familiarity step: two boot prints climbing to the upper right, a left print below and the right print a step
+       ahead and higher, each a sole with a round toe and a heel apart from it; the lower print, the step behind, lies
+       in shadow. One plate in the tint, so the caller colours it by state; the right print is the left one mirrored
+       inside the drawing, so the caller draws it as is. -->
+  <path data-token="tint" fill="currentColor" d="
+    M4.48 15.62 C4.1 13.03 4.79 9.81 6.31 8.26 C7.51 7.08 9.78 7.08 10.95 8.28 C12.13 9.48 11.76 11.88 10.69 13.88
+    C10.05 15.09 9.39 15.94 9.17 16.79 C7.71 17.22 5.57 16.69 4.48 15.62 Z
+    M4.24 17.49 C5.62 17.38 7.55 17.86 8.72 18.61 C8.59 20.05 7.95 21.7 5.63 21.46
+    C3.65 20.75 3.54 18.9 4.24 17.49 Z
+    M18.42 11.04 C16.96 11.47 14.82 10.94 13.73 9.87 C13.94 9.02 13.75 7.95 13.75 6.59
+    C13.75 4.32 14.55 2.03 16.15 1.52 C17.75 1.01 19.75 2.08 20.26 3.68 C20.87 5.76 19.97 8.93 18.42 11.04 Z
+    M17.76 12.8 C17.7 14.38 16.74 15.95 14.66 15.66 C12.5 14.78 12.71 13.02 13.27 11.69
+    C14.66 11.58 16.58 12.06 17.76 12.8 Z"/>
+  <path data-token="void" fill-opacity="0.4" d="
+    M4.48 15.62 C4.1 13.03 4.79 9.81 6.31 8.26 C7.51 7.08 9.78 7.08 10.95 8.28 C12.13 9.48 11.76 11.88 10.69 13.88
+    C10.05 15.09 9.39 15.94 9.17 16.79 C7.71 17.22 5.57 16.69 4.48 15.62 Z
+    M4.24 17.49 C5.62 17.38 7.55 17.86 8.72 18.61 C8.59 20.05 7.95 21.7 5.63 21.46
+    C3.65 20.75 3.54 18.9 4.24 17.49 Z"/>
+</svg>

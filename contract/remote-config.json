@@ -1,0 +1,14 @@
+{
+  "parameters": {
+    "coach_model": {
+      "defaultValue": { "value": "gemini-3.8-flash" },
+      "description": "The Pro coach's model id (docs/plan.md slice 9): one change here moves every app to another model.",
+      "valueType": "STRING"
+    },
+    "coach_daily_lines": {
+      "defaultValue": { "value": "45" },
+      "description": "The coach's calls a player gets a game day (from 04:00 local), its talks and Chronicles alike, then none until the next (docs/plan.md slices 9 and 34).",
+      "valueType": "NUMBER"
+    }
+  }
+}

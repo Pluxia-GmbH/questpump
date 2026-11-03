@@ -1,0 +1,43 @@
+{
+  "move": "bed_foot_lunge",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh_far", "tasset_far"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -133, "f1": -66, "u": 50}],
+  "poses": {
+    "top": {
+      "pelvis": [-8, 85, 0],
+      "trunk": [6, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [30, 12], "turn": 6, "knee_out": 4},
+      "leg_far": {"ik": [-62, 55, 13], "pole": [0, -1, 0.2], "toe": [-1, -0.12, 0]},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "low": {"from": "top", "pelvis": [-16, 53, 0], "trunk": [1, 0, 0], "chest": [-1, 0, 0]},
+    "low_in": {"from": "low", "pelvis": [-15.5, 52.2, 0], "trunk": [0, 0, 0]},
+    "lean": {"from": "low", "trunk": [34, 0, 0], "chest": [6, 0, 0], "head": [-20, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.5, "phase": "stand_tall"},
+    {"to": "low", "s": 2.4, "phase": "hips_down", "effort": 0.6},
+    {"to": "low_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "low", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "low_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "low", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "top", "s": 2.0, "phase": "rise", "effort": 0.4}
+  ],
+  "key": "low",
+  "fault": {
+    "pose": "lean",
+    "caption": "chest_leans",
+    "breaks": {"check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "max": 8}
+  },
+  "targets": [
+    {"at": "low", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "max": 8},
+    {"at": "low", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 75, "max": 105},
+    {"at": "low", "check": "height", "joint": "knee_far", "max": 24}
+  ],
+  "note": "The back leg is the far one: the top of its foot rests on a bed's edge behind the figure, the front foot a long step ahead. The body sinks straight down, upright with the hands on the hips, until the front thigh is about level and the back knee hangs a hand above the floor, the front shin upright."
+}

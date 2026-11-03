@@ -1,0 +1,6 @@
+{
+  "move": "kb_suitcase_carry.dumbbells",
+  "gear_of": "kb_suitcase_carry",
+  "gear": "dumbbells",
+  "items": [{"kind": "dumbbell", "hand": "near"}]
+}

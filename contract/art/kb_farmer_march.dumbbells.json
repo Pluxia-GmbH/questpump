@@ -1,0 +1,6 @@
+{
+  "move": "kb_farmer_march.dumbbells",
+  "gear_of": "kb_farmer_march",
+  "gear": "dumbbells",
+  "items": [{"kind": "dumbbell", "hand": "near"}]
+}

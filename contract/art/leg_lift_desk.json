@@ -1,0 +1,53 @@
+{
+  "move": "leg_lift_desk",
+  "view": "side",
+  "camera": {"yaw": -16, "pitch": 2},
+  "working": ["thigh_near", "tasset_near"],
+  "props": [{"kind": "desk", "l": 40, "f": -30, "top": 74}],
+  "poses": {
+    "stand": {
+      "pelvis": [0, 94.0, 0],
+      "trunk": [1, 0, 0],
+      "arm_near": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "arm_far": {"ik": [4, 90.5, 44], "pole": [-0.3, 0, 1], "hand": [0.2, -0.97, 0.1]},
+      "leg_near": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_far"]
+    },
+    "lift": {
+      "from": "stand",
+      "pelvis": [-1, 95.0, 0],
+      "trunk": [3, 0, 0],
+      "leg_near": {"fk": [68, 2, 2, 12]},
+      "contacts": ["toe_far", "ankle_far", "hand_tip_far"]
+    },
+    "lift_in": {"from": "lift", "leg_near": {"fk": [69.5, 2, 2, 12]}},
+    "bent": {"from": "lift", "leg_near": {"fk": [82, 2, 40, 12]}}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.6, "phase": "stand_tall"},
+    {"to": "lift", "s": 1.2, "phase": "leg_out", "effort": 0.8},
+    {"to": "lift_in", "s": 1.5, "phase": "hold", "effort": 0.95},
+    {"to": "lift", "s": 1.5, "phase": "hold", "effort": 0.95},
+    {"to": "stand", "s": 1.2, "phase": "lower_slowly", "effort": 0.5},
+    {"hold": 0.5, "phase": "stand"},
+    {"to": "lift", "s": 1.2, "phase": "leg_out", "effort": 0.8},
+    {"to": "lift_in", "s": 1.5, "phase": "hold", "effort": 0.95},
+    {"to": "lift", "s": 1.5, "phase": "hold", "effort": 0.95},
+    {"to": "stand", "s": 1.2, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "lift",
+  "fault": {
+    "pose": "bent",
+    "caption": "long_knee_lifts",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}
+  },
+  "targets": [
+    {"at": "lift", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "lift", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "lift", "check": "height", "joint": "ankle_near", "min": 54},
+    {"at": "lift", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "min": -3}
+  ],
+  "note": "Standing side-on to the desk, the far hand resting on it and the near hand on the hip: the near leg lifts straight forward, knee straight and toes up, until the toes are level with the desk top (the heel lower), and holds there with the body tall, then lowers slowly; twice in a loop. The desk stands behind the figure and ends short of the lifted leg, so the leg is seen held up by its own muscles, never resting on the desk."
+}

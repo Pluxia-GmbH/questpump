@@ -1,0 +1,63 @@
+{
+  "move": "wrist_lean_press",
+  "view": "side",
+  "camera": {"yaw": -30, "pitch": 8},
+  "working": ["forearm"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": 47.6, "angle": 69, "width": 14, "lift": 0},
+      "head": [4, 0, 0],
+      "arms": {"ik": [104, 77.3, 24], "pole": [-1, 0, 0.7], "hand": [1, -0.15, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 47.6, "angle": 61.5, "width": 14, "lift": 23},
+      "head": [8, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean1": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 47.6, "angle": 64.5, "width": 14, "lift": 16},
+      "head": [6, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean2": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 47.6, "angle": 63, "width": 14, "lift": 20},
+      "head": [7, 0, 0],
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.4, "phase": "arms_straight"},
+    {"to": "lean1", "s": 1.4, "phase": "lean_in", "effort": 0.4},
+    {"hold": 1.4, "phase": "press", "effort": 0.6},
+    {"to": "lean2", "s": 1.0, "phase": "sink", "effort": 0.3},
+    {"hold": 1.4, "phase": "press", "effort": 0.6},
+    {"to": "lean", "s": 1.0, "phase": "sink", "effort": 0.3},
+    {"hold": 1.4, "phase": "press", "effort": 0.6},
+    {"hold": 0.8, "phase": "sink", "effort": 0.3},
+    {"to": "top", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 170},
+    {"at": "lean", "check": "angle", "joints": ["hand_tip_near", "wrist_near", "shoulder_near"], "max": 88},
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "lean", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "min": 10}
+  ],
+  "note": "The wrist lean pressed and sunk: palms flat on the desk, fingers forward, the body one line from the feet. Three rounds: a gentle press of the fingers into the desk (the forearms glow), then the shoulders ease a little further past the wrists, ending a fist past them with the arms straight."
+}

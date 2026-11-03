@@ -1,0 +1,60 @@
+{
+  "move": "standing_backbend",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 6},
+  "working": ["abdomen", "back"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 13], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "tall",
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "arms": {"ik": [-15.0, 106.2, 9], "pole": [-1, -0.3, 0.6], "hand": [0, -1, -0.25]}
+    },
+    "arch": {
+      "from": "hands",
+      "pelvis": [6, 93.6, 0],
+      "trunk": [-15, 0, 0],
+      "chest": [-26, 0, 0],
+      "head": [-34, 0, 0],
+      "arms": {"ik": [-14.5, 100.5, 9], "pole": [-1, -0.3, 0.6], "hand": [0.26, -1, -0.25]}
+    },
+    "arch_in": {
+      "from": "arch",
+      "pelvis": [6.5, 93.4, 0],
+      "trunk": [-16, 0, 0],
+      "chest": [-29, 0, 0],
+      "arms": {"ik": [-14.1, 100.0, 9], "pole": [-1, -0.3, 0.6], "hand": [0.28, -1, -0.25]}
+    },
+    "drop": {"from": "arch", "head": [-72, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hands", "s": 1.2, "phase": "hands_on_back", "effort": 0.3},
+    {"to": "arch", "s": 2.2, "phase": "chest_up", "effort": 0.5},
+    {"to": "arch_in", "s": 2.0, "phase": "breathe", "effort": 0.6},
+    {"to": "arch", "s": 2.0, "phase": "breathe", "effort": 0.6},
+    {"to": "hands", "s": 2.0, "phase": "rise_slowly", "effort": 0.4},
+    {"to": "tall", "s": 1.0, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "arch",
+  "fault": {
+    "pose": "drop",
+    "caption": "head_drops_back",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 125}
+  },
+  "targets": [
+    {"at": "arch", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 158},
+    {"at": "arch", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "max": 160},
+    {"at": "arch", "check": "angle", "joints": ["waist", "neck", "head"], "max": 150}
+  ]
+}

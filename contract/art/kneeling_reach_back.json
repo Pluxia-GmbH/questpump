@@ -1,0 +1,67 @@
+{
+  "move": "kneeling_reach_back",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["abdomen", "thigh", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -110, "f1": 30}],
+  "poses": {
+    "kneel": {
+      "pelvis": [0, 55, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "arms": {"fk": [4, 6, 10]},
+      "legs": {"foot": [-42.7, 12], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "arms_up": {"from": "kneel", "pelvis": [1, 55, 0], "arms": {"fk": [178, 8, 4]}},
+    "lean": {
+      "from": "kneel",
+      "pelvis": [5, 54.8, 0],
+      "trunk": [-25, 0, 0],
+      "chest": [-35, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"fk": [178, 8, 4]}
+    },
+    "reach": {
+      "from": "kneel",
+      "pelvis": [9, 54.2, 0],
+      "trunk": [-52, 0, 0],
+      "chest": [-64, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [194, 8, 4]}
+    },
+    "reach_in": {
+      "from": "reach",
+      "pelvis": [9.4, 54.1, 0],
+      "trunk": [-53, 0, 0],
+      "chest": [-66, 0, 0],
+      "arms": {"fk": [196, 8, 4]}
+    },
+    "sit_back": {"from": "reach", "pelvis": [-5, 53.6, 0], "trunk": [-55, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "kneel"},
+    {"hold": 0.5, "phase": "kneel_tall", "effort": 0.2},
+    {"to": "arms_up", "s": 1.2, "phase": "arms_up", "effort": 0.3},
+    {"to": "lean", "s": 1.5, "phase": "hips_forward_chest_up", "effort": 0.55},
+    {"to": "reach", "s": 1.6, "phase": "reach_back", "effort": 0.8},
+    {"to": "reach_in", "s": 1.5, "phase": "breathe", "effort": 0.85},
+    {"to": "reach", "s": 1.5, "phase": "breathe", "effort": 0.85},
+    {"to": "lean", "s": 1.5, "phase": "rise_slowly", "effort": 0.7},
+    {"to": "arms_up", "s": 1.2, "phase": "rise_slowly", "effort": 0.45},
+    {"to": "kneel", "s": 1.0, "phase": "arms_down", "effort": 0.2}
+  ],
+  "key": "reach",
+  "fault": {
+    "pose": "sit_back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "min": 3}
+  },
+  "targets": [
+    {"at": "reach", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "min": 3},
+    {"at": "reach", "check": "height", "joint": "wrist_near", "max": 30},
+    {"at": "reach", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  ],
+  "note": "Kneeling tall, the knees hip-width: arms up by the ears, press the hips forward over the knees and arch back, reaching the hands overhead and back toward the floor behind the feet; hold and breathe with the hips still forward, then rise slowly with the arms by the ears."
+}

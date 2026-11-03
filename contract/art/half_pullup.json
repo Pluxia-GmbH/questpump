@@ -1,0 +1,57 @@
+{
+  "move": "half_pullup",
+  "view": "side",
+  "camera": {"yaw": 50, "pitch": 4},
+  "working": ["upper_arm", "pauldron"],
+  "props": [
+    {"kind": "bar", "f": 8, "u": 222, "ground": true},
+    {"kind": "step", "f0": -40, "f1": -4, "u": 46, "l0": -21, "l1": 21}
+  ],
+  "poses": {
+    "right": {
+      "pelvis": [-4, 140, 0],
+      "trunk": [-7, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-0.1, -1, 0.7], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [12, 2, 22, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "top": {
+      "from": "right",
+      "pelvis": [-6, 165, 0],
+      "trunk": [-8, 0, 0],
+      "head": [-6, 0, 0],
+      "legs": {"fk": [18, 2, 30, -30]},
+      "arms": {"ik": [8, 215.6, 30], "pole": [0, -1, 0.8], "hand": [0.6, 0.8, 0]}
+    },
+    "short": {
+      "from": "top",
+      "pelvis": [-5, 151, 0],
+      "trunk": [-7, 0, 0],
+      "head": [-6, 0, 0],
+      "legs": {"fk": [15, 2, 26, -30]}
+    }
+  },
+  "timeline": [
+    {"pose": "right"},
+    {"hold": 0.2, "phase": "halfway_down"},
+    {"to": "top", "s": 1.0, "phase": "chin_over_bar", "effort": 1.0},
+    {"hold": 0.2, "phase": "top", "effort": 0.9},
+    {"to": "right", "s": 1.2, "phase": "halfway_down", "effort": 0.6}
+  ],
+  "key": "top",
+  "fault": {"pose": "short", "caption": "chin_below_bar", "breaks": {"check": "height", "joint": "head", "min": 228}},
+  "targets": [
+    {"at": "top", "check": "height", "joint": "head", "min": 228},
+    {
+      "at": "right",
+      "check": "offset",
+      "joint": "shoulder_near",
+      "from": "wrist_near",
+      "axis": "u",
+      "min": -33,
+      "max": -23
+    }
+  ],
+  "note": "The pull-up's top half: from the elbows at a right angle (the stool behind to start there) to the chin over the bar and back to the right angle, never to straight arms."
+}

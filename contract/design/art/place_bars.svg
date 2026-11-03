@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Pull-up bars (the Outdoor park template, slice 51): a bar across two posts on the ground's line, a lower bar
+       between them; one stroke weight, round caps, no shading. One colour: the caller tints it (text2 in a Row's
+       KindTile). -->
+  <path data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" d="
+    M3 5.5 H21 M6 5.5 V20.5 M18 5.5 V20.5 M6 12.5 H18 M2 20.5 H22"/>
+</svg>

@@ -1,0 +1,135 @@
+{
+  "about": "The pair link in the helper's window (rust-helper protocol-and-mirror.md, \"The pair link\"): every app parses these, builds the same text back from the fields, and refuses each link under \"refused\" for the reason given. The payload rides in the URL fragment, which a browser never sends; key_hex is the 32-byte pairing key, base64url without padding in the link. mdns (the computer's own .local host name) and hid_hex (the helper install's 16-byte id, base64url without padding in the link) come after name when present; a case without them is a link that carries neither (an older helper's), and each is read on its own.",
+  "links": [
+    {
+      "about": "a Mac on a home network",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=David%27s%20MacBook%20Pro",
+      "host": "192.168.1.20",
+      "port": 8787,
+      "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "name": "David's MacBook Pro"
+    },
+    {
+      "about": "the same helper after a DHCP change: the key stays, the address moves",
+      "link": "https://questpump.com/pair#v=1&host=10.0.0.7&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=David%27s%20MacBook%20Pro",
+      "host": "10.0.0.7",
+      "port": 8787,
+      "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "name": "David's MacBook Pro"
+    },
+    {
+      "about": "an IPv6 unique local address and a name with a character past ASCII",
+      "link": "https://questpump.com/pair#v=1&host=fd12%3A3456%3A789a%3A%3A5&port=9000&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=B%C3%BCro",
+      "host": "fd12:3456:789a::5",
+      "port": 9000,
+      "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "name": "Büro"
+    },
+    {
+      "about": "a helper since 2026-09-30: the computer's .local name, to find it by when the address moves, and the install's id, to tell it from another helper",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=David%27s%20MacBook%20Pro&mdns=Davids-MacBook-Pro.local&hid=EBESExQVFhcYGRobHB0eHw",
+      "host": "192.168.1.20",
+      "port": 8787,
+      "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "name": "David's MacBook Pro",
+      "mdns": "Davids-MacBook-Pro.local",
+      "hid_hex": "101112131415161718191a1b1c1d1e1f"
+    },
+    {
+      "about": "a .local name without an install id",
+      "link": "https://questpump.com/pair#v=1&host=10.0.0.7&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Gaming%20PC&mdns=Gaming-PC-2.local",
+      "host": "10.0.0.7",
+      "port": 8787,
+      "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "name": "Gaming PC",
+      "mdns": "Gaming-PC-2.local"
+    }
+  ],
+  "refused": [
+    {
+      "about": "another site",
+      "link": "https://example.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "not_a_link"
+    },
+    {
+      "about": "a version this app does not read",
+      "link": "https://questpump.com/pair#v=2&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "version"
+    },
+    {
+      "about": "a public address",
+      "link": "https://questpump.com/pair#v=1&host=8.8.8.8&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "host"
+    },
+    {
+      "about": "a privileged port",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=80&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "port"
+    },
+    {
+      "about": "a key of 31 bytes",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHg&name=Mac",
+      "error": "key"
+    },
+    {
+      "about": "no computer name",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=",
+      "error": "name"
+    },
+    {
+      "about": "an address with a leading zero, which a resolver may read as octal, a public address",
+      "link": "https://questpump.com/pair#v=1&host=010.0.0.7&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "host"
+    },
+    {
+      "about": "a key in standard base64 rather than base64url",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/s&name=Mac",
+      "error": "key"
+    },
+    {
+      "about": "a hex group with a sign (a lenient number parser would read +1 as 1)",
+      "link": "https://questpump.com/pair#v=1&host=fd00::%2B1&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "host"
+    },
+    {
+      "about": "an IPv4 tail that is not at the address's end",
+      "link": "https://questpump.com/pair#v=1&host=fd00:1.2.3.4::&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac",
+      "error": "host"
+    },
+    {
+      "about": "a name whose escapes are not UTF-8",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac%FF",
+      "error": "not_a_link"
+    },
+    {
+      "about": "a host name outside .local (a router's own DNS suffix)",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac&mdns=Davids-Mac.lan",
+      "error": "mdns"
+    },
+    {
+      "about": "a label that starts and ends with a hyphen",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac&mdns=-bad-.local",
+      "error": "mdns"
+    },
+    {
+      "about": "an empty label",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac&mdns=Davids..local",
+      "error": "mdns"
+    },
+    {
+      "about": "an install id of 15 bytes",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac&mdns=Mac.local&hid=EBESExQVFhcYGRobHB0e",
+      "error": "hid"
+    },
+    {
+      "about": "an install id of 17 bytes",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac&hid=EBESExQVFhcYGRobHB0eHyA",
+      "error": "hid"
+    },
+    {
+      "about": "an install id with stray bits after its last byte (x for w): only the canonical text",
+      "link": "https://questpump.com/pair#v=1&host=192.168.1.20&port=8787&key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8&name=Mac&hid=EBESExQVFhcYGRobHB0eHx",
+      "error": "hid"
+    }
+  ]
+}

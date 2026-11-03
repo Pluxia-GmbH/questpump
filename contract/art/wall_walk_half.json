@@ -1,0 +1,109 @@
+{
+  "move": "wall_walk_half",
+  "view": "side",
+  "camera": {"yaw": 5, "pitch": 8},
+  "working": ["back", "pauldron", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": -88.0, "behind": true}, {"kind": "mat", "f0": -88.0, "f1": 32}],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [5, 94, 0],
+      "trunk": [-6, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-15, 0, 0],
+      "arms": {"fk": [172, 8, 4]}
+    },
+    "wall_high": {
+      "pelvis": [4.0, 88.0, 0],
+      "trunk": [-46.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-58, 0, 0],
+      "arms": {"ik": [-84.2, 136, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "step_150": {
+      "pelvis": [6.0, 88.0, 0],
+      "trunk": [-60.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-60, 0, 0],
+      "arm_near": {"ik": [-84.2, 95, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "arm_far": {"ik": [-84.2, 136, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wall_mid": {
+      "pelvis": [8.0, 88.0, 0],
+      "trunk": [-80.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-55, 0, 0],
+      "arms": {"ik": [-84.2, 95, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wall_mid_in": {"from": "wall_mid", "pelvis": [8.6, 88.0, 0], "trunk": [-81.0, 0, 0], "chest": [-6.0, 0, 0]},
+    "back": {"from": "wall_mid", "pelvis": [-5, 84, 0], "trunk": [-45, 0, 0], "chest": [-5, 0, 0], "head": [10, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.8, "phase": "arms_up", "effort": 0.3},
+    {"to": "wall_high", "s": 1.1, "phase": "lean_back", "effort": 0.5},
+    {"to": "step_150", "s": 0.6, "phase": "walk_hands_down", "effort": 0.6},
+    {"to": "wall_mid", "s": 0.6, "phase": "walk_hands_down", "effort": 0.6},
+    {"to": "wall_mid_in", "s": 0.9, "phase": "breathe", "effort": 0.7},
+    {"to": "wall_mid", "s": 0.9, "phase": "breathe", "effort": 0.7},
+    {"to": "step_150", "s": 0.6, "phase": "walk_hands_up", "effort": 0.6},
+    {"to": "wall_high", "s": 0.6, "phase": "walk_hands_up", "effort": 0.6},
+    {"to": "reach", "s": 1.0, "phase": "stand_tall", "effort": 0.4},
+    {"to": "tall", "s": 0.8, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "wall_mid",
+  "fault": {
+    "pose": "back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 2}
+  },
+  "targets": [
+    {"at": "wall_mid", "check": "height", "joint": "wrist_near", "min": 85, "max": 105},
+    {"at": "wall_mid", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 2}
+  ],
+  "note": "The wall walk (wall_walk) stopped at hip height: the hands walk down the wall behind to about the hips' height (the wrists at 95 cm, the pelvis at 88), breathe there with the hips pressing forward, and walk back up the same way."
+}

@@ -1,0 +1,85 @@
+{
+  "move": "tuck_front_lever",
+  "view": "side",
+  "camera": {"yaw": -35, "pitch": 18},
+  "working": ["pauldron", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "bar", "f": 8, "u": 222}],
+  "poses": {
+    "hang": {
+      "pelvis": [6.1, 113.3, 0],
+      "trunk": [-6, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-1, -0.3, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [4, 2, 8, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "shrug": {
+      "pelvis": [7.3, 114.6, 0],
+      "trunk": [-4, 0, 0],
+      "chest": [-12, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-1, -0.3, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [8, 2, 14, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "tuck": {
+      "pelvis": [18.5, 119.7, 0],
+      "trunk": [-28, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-1, -0.3, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [114, -2, 128, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean": {
+      "pelvis": [31.5, 139.2, 0],
+      "trunk": [-60, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-1, -0.3, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [114, -2, 128, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "in": {
+      "pelvis": [32, 165, 0],
+      "trunk": [-90, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-1, -0.3, 0.4], "hand": [0, 1, 0]},
+      "legs": {"fk": [114, -2, 128, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "out": {"from": "in", "pelvis": [31.9, 167.7, 0], "trunk": [-93, 0, 0]},
+    "bent": {
+      "from": "in",
+      "pelvis": [32, 170, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [0.3, -1, 0.15], "hand": [0, 1, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.4, "phase": "dead_hang"},
+    {"to": "shrug", "s": 0.5, "phase": "shoulders_down", "effort": 0.5},
+    {"to": "tuck", "s": 0.8, "phase": "knees_up", "effort": 0.7},
+    {"to": "lean", "s": 0.6, "phase": "lean_back", "effort": 0.8},
+    {"to": "in", "s": 0.6, "phase": "lean_back", "effort": 0.9},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.9},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.9},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "lean", "s": 0.6, "phase": "lower_slowly", "effort": 0.7},
+    {"to": "tuck", "s": 0.6, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "hang", "s": 0.8, "phase": "knees_down", "effort": 0.3}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "in", "check": "offset", "joint": "pelvis", "from": "neck", "axis": "u", "min": -8, "max": 8},
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "about": "The coach's demo lines (docs/plan.md slice 15; rewritten 2026-10-09 for the talk after a set and the Chronicle): while Settings' Demo helper is on, both phone apps show Pro as a demo over the demo's own data, a demo pump's saved set that the coach would talk about takes one of `talks`, in order, one a set, from the first, starting over after the last (the place in the list lives in memory only), and the demo's Chronicle is `chronicle`. A demo line is chosen on the phone: never a network call, never Gemini, never App Check, never counted against the day's calls or the free taste, never kept in the coach's log or memory, never sent to the helper, the watch or the game, and always shown with the label \"Demo line\". Each fits any move and any week, so it names no number, follows contract/coach-prompt.md's rules and passes the coach's checks (a talk: one or two sentences, at most 30 words and 200 characters; a Chronicle: a title of 2 to 6 words and 40 characters, a story of 60 to 220 words and 1,400 characters; printable ASCII; no digit; no stem of deny-list.txt or urge-list.txt). Hand-written; both apps bundle this file.",
+  "label": "Demo line",
+  "talks": [
+    { "line": "Clean set, and every rep counted. That is how the colours climb." },
+    { "line": "A record, earned the slow way. The forge remembers sets like that one." },
+    { "line": "Steady work today. Rest well, and the next set will be ready for you." },
+    { "line": "That count moved your family closer to its next colour. Good, honest work." },
+    { "line": "You came back and did the set. That is the part that matters most." }
+  ],
+  "chronicle": {
+    "title": "The Forge Stays Warm",
+    "story": "This week the armour heard the bellows more than once. You came to the forge between your games, did your sets, and typed your counts, one honest number at a time.\n\nSome days the hammer rang loud: a record here, a cleaner rep there, a family edging toward its next colour. Other days the forge only glowed, and that was enough, because embers keep their heat for the next morning. Nothing about the climb asks you to rush it.\n\nThe plates are a little brighter than they were on Monday. Next week, the forge stays warm, and the first set is waiting whenever you are."
+  }
+}

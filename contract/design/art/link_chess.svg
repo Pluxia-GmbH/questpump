@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- A chess knight (the linked chess sites, slice 33; no site's own mark): a horse's head facing left with one ear
+       up, the eye cut through and the jaw notched over the throat, on a collar and a wide base; lit from the top left,
+       the mane's crescent and the right half of the collar and the base in shadow. One colour, never mirrored: the
+       caller tints it (text2 leading a Row). -->
+  <path data-token="tint" fill="currentColor" fill-rule="evenodd" d="
+    M7 17.5 C7 14.5 8.5 12.75 10.5 11.75 L7.6 12.9 C6.5 13.3 5.3 12.6 5.2 11.4 L5.1 10.6 C5.05 10 5.3 9.5 5.8 9.1
+    L10.2 5.2 L10.6 2.25 L12.6 4.1 C16.1 4.6 18 8.2 17.8 12.3 C17.7 14.4 17.2 16.2 16.5 17.5 Z
+    M10.5 7.25 C10.5 7.66 10.16 8 9.75 8 C9.34 8 9 7.66 9 7.25 C9 6.84 9.34 6.5 9.75 6.5
+    C10.16 6.5 10.5 6.84 10.5 7.25 Z"/>
+  <path data-token="tint" fill="currentColor" d="M6.25 18 H17.75 V19.5 H6.25 Z"/>
+  <path data-token="tint" fill="currentColor" d="
+    M4.75 20 H19.25 C19.8 20 20.25 20.45 20.25 21 V22.25 H3.75 V21 C3.75 20.45 4.2 20 4.75 20 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12.6 4.1 C16.1 4.6 18 8.2 17.8 12.3 C17.7 14.4 17.2 16.2 16.5 17.5 H12.75 C13.75 15 14.25 12.6 14.05 10.2
+    C13.85 7.6 13.3 5.6 12.6 4.1 Z
+    M12 18 H17.75 V19.5 H12 Z
+    M12 20 H19.25 C19.8 20 20.25 20.45 20.25 21 V22.25 H12 Z"/>
+</svg>

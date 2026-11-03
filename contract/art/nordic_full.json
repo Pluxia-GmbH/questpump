@@ -1,0 +1,51 @@
+{
+  "move": "nordic_full",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh"],
+  "props": [{"kind": "bench", "f0": -72, "f1": -33, "u": 27}],
+  "poses": {
+    "tall": {
+      "line": {"pivot": "knees", "at": 0, "angle": 90, "width": 12, "feet": "flat"},
+      "head": [0, 0, 0],
+      "arms": {"fk": [40, 12, 100]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "lean": {
+      "from": "tall",
+      "line": {"pivot": "knees", "at": 0, "angle": 34, "width": 12, "feet": "flat", "hips": 5},
+      "head": [-20, 0, 0],
+      "arms": {"fk": [70, 12, 80]}
+    },
+    "low": {
+      "from": "tall",
+      "line": {"pivot": "knees", "at": 0, "angle": 17, "width": 12, "feet": "flat"},
+      "head": [-14, 0, 0],
+      "arms": {"ik": [106, 16, 24], "pole": [-1, 1, 0.3], "hand": [1, -0.3, 0]}
+    },
+    "folded": {
+      "from": "lean",
+      "line": {"pivot": "knees", "at": 0, "angle": 62, "hips": -44, "width": 12, "feet": "flat"},
+      "head": [-10, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "kneel_tall"},
+    {"to": "lean", "s": 1.8, "ease": "in", "phase": "lower_slowly", "effort": 0.9, "dynamic": true},
+    {"to": "low", "s": 1.7, "ease": "out", "phase": "lower_slowly", "effort": 1.0, "dynamic": true},
+    {"to": "lean", "s": 1.3, "ease": "in", "phase": "pull_back", "effort": 1.0, "dynamic": true},
+    {"to": "tall", "s": 1.1, "ease": "out", "phase": "pull_back", "effort": 0.8, "dynamic": true}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "folded",
+    "caption": "hips_bend",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170},
+    {"at": "low", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170},
+    {"at": "low", "check": "height", "joint": "neck", "max": 40}
+  ]
+}

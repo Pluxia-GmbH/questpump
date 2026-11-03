@@ -1,0 +1,74 @@
+{
+  "move": "roller_thoracic",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 12},
+  "working": ["back"],
+  "props": [{"kind": "roller", "f": -20}],
+  "poses": {
+    "a_up": {
+      "pelvis": [22, 14.5, 0],
+      "trunk": [-70, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [15, 0, 0],
+      "arms": {"ik": [-12, 21, 21], "rel": "neck", "pole": [0.6, 0.8, 1.0], "hand": [-0.8, 0.25, -0.55]},
+      "legs": {"foot": [74, 15], "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["waist", "pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "a_ext": {
+      "from": "a_up",
+      "pelvis": [20, 14.5, 0],
+      "trunk": [-54, 0, 0],
+      "chest": [-36, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"ik": [-12, 21, 21], "rel": "neck", "pole": [-0.1, 1, 1.0], "hand": [-0.8, 0.25, -0.55]},
+      "contacts": ["neck", "pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "a_lift": {
+      "from": "a_up",
+      "pelvis": [22, 21, 0],
+      "trunk": [-80, 0, 0],
+      "arms": {"ik": [-12, 21, 21], "rel": "neck", "pole": [0.3, 0.95, 1.0], "hand": [-0.8, 0.25, -0.55]},
+      "contacts": ["neck", "toe_near", "toe_far", "ankle_near", "ankle_far"],
+      "chest": [0, 0, 0],
+      "head": [10, 0, 0]
+    },
+    "b_lift": {"from": "a_lift", "pelvis": [25, 21, 0], "trunk": [-80, 0, 0]},
+    "b_up": {"from": "a_up", "pelvis": [24, 14.5, 0], "trunk": [-70, 0, 0]},
+    "b_ext": {
+      "from": "a_ext",
+      "pelvis": [23, 14.5, 0],
+      "trunk": [-54, 0, 0],
+      "contacts": ["neck", "pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "lifted": {
+      "from": "a_ext",
+      "pelvis": [24, 26, 0],
+      "trunk": [-86, 0, 0],
+      "chest": [-4, 0, 0],
+      "contacts": ["neck", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "a_soft": {"from": "a_ext", "chest": [-38, 0, 0], "head": [-16, 0, 0]},
+    "b_soft": {"from": "b_ext", "chest": [-37, 0, 0], "head": [-13, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "a_up"},
+    {"to": "a_ext", "s": 2.0, "phase": "lean_back", "effort": 0.4},
+    {"to": "a_soft", "s": 2.0, "phase": "breathe", "effort": 0.3},
+    {"to": "a_up", "s": 1.5, "phase": "rise", "effort": 0.4},
+    {"to": "a_lift", "s": 0.6, "phase": "move_an_inch", "effort": 0.4},
+    {"to": "b_lift", "s": 1.0, "phase": "move_an_inch", "effort": 0.4},
+    {"to": "b_up", "s": 0.6, "phase": "move_an_inch", "effort": 0.3},
+    {"to": "b_ext", "s": 2.0, "phase": "lean_back", "effort": 0.4},
+    {"to": "b_soft", "s": 2.0, "phase": "breathe", "effort": 0.3},
+    {"to": "b_up", "s": 1.5, "phase": "rise", "effort": 0.4},
+    {"to": "b_lift", "s": 0.6, "phase": "move_an_inch", "effort": 0.4},
+    {"to": "a_lift", "s": 1.0, "phase": "move_an_inch", "effort": 0.4},
+    {"to": "a_up", "s": 0.6, "phase": "move_an_inch", "effort": 0.3}
+  ],
+  "key": "a_ext",
+  "fault": {"pose": "lifted", "caption": "hips_lift", "breaks": {"check": "height", "joint": "pelvis", "max": 15}},
+  "targets": [
+    {"at": "a_ext", "check": "height", "joint": "pelvis", "max": 15},
+    {"at": "b_ext", "check": "height", "joint": "pelvis", "max": 15}
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "move": "dragon_flag_negative",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 6},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "bench", "f0": -88, "f1": -33, "u": 44}],
+  "poses": {
+    "tuck": {
+      "pelvis": [22.0, 60.1, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-155, 0, 0],
+      "head": [67, 0, 0],
+      "arms": {"ik": [-30, 36, 26], "pole": [-1, -0.1, 0.2], "hand": [-0.3, 1, 0]},
+      "legs": {"fk": [95, 4, 105, -25]},
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "top": {
+      "from": "tuck",
+      "pelvis": [13.5, 63.2, 0],
+      "trunk": [-165, 0, 0],
+      "head": [77, 0, 0],
+      "legs": {"fk": [0, 3, 3, -45]}
+    },
+    "m1": {"from": "top", "pelvis": [29.8, 55.6, 0], "trunk": [-145, 0, 0], "head": [57, 0, 0]},
+    "m2": {"from": "top", "pelvis": [42.6, 42.8, 0], "trunk": [-125, 0, 0], "head": [37, 0, 0]},
+    "m3": {"from": "top", "pelvis": [48.9, 30.8, 0], "trunk": [-110, 0, 0], "head": [22, 0, 0]},
+    "low": {"from": "top", "pelvis": [51.7, 18.4, 0], "trunk": [-96, 0, 0], "head": [8, 0, 0]},
+    "t1": {
+      "from": "tuck",
+      "pelvis": [45.0, 39.0, 0],
+      "trunk": [-120, 0, 0],
+      "head": [32, 0, 0],
+      "legs": {"fk": [55, 4, 60, -30]}
+    },
+    "piked": {
+      "from": "m2",
+      "pelvis": [48.9, 30.8, 0],
+      "trunk": [-110, 0, 0],
+      "head": [22, 0, 0],
+      "legs": {"fk": [35, 3, 3, -45]}
+    }
+  },
+  "timeline": [
+    {"pose": "tuck"},
+    {"hold": 0.3, "phase": "top"},
+    {"to": "top", "s": 1.0, "phase": "open_out", "effort": 0.7},
+    {"to": "m1", "s": 1.33, "ease": "in", "phase": "lower_slowly", "effort": 0.8},
+    {"to": "m2", "s": 0.67, "ease": "linear", "phase": "lower_slowly", "effort": 0.85},
+    {"to": "m3", "s": 0.5, "ease": "linear", "phase": "lower_slowly", "effort": 0.9},
+    {"to": "low", "s": 1.0, "ease": "out", "phase": "lower_slowly", "effort": 0.95},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.95},
+    {"to": "t1", "s": 0.8, "ease": "in", "phase": "knees_up", "effort": 0.7},
+    {"to": "tuck", "s": 0.9, "ease": "out", "phase": "knees_up", "effort": 0.8}
+  ],
+  "key": "m2",
+  "fault": {
+    "pose": "piked",
+    "caption": "hips_bend",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "m2", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "low", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "low", "check": "height", "joint": "ankle_near", "max": 28},
+    {"at": "tuck", "check": "offset", "joint": "pelvis", "from": "neck", "axis": "f", "min": 10}
+  ]
+}

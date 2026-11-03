@@ -1,0 +1,203 @@
+{
+  "about": "The countdown's schedule (docs/companion.md, \"Countdown sync\"; QuestPumpCore Countdown.swift and the Kotlin core's Countdown.kt): the device where Start was pressed owns the timeline; the go comes a 0.5 s lead plus 5 digits after the press; every digit n shows at go - n; a device told late joins at the digit on screen (the first listed may already be due and shows at once), one told after the go runs the move with the time since the go, one told after expires_at drops it. Times are seconds on the device's clock.",
+  "presses": [
+    {
+      "about": "a pump pressed on the wrist: the go 5.5 s later",
+      "press": 100.0,
+      "go": 105.5
+    }
+  ],
+  "cases": [
+    {
+      "about": "told at the press: every digit ahead",
+      "input": {
+        "go": 105.5,
+        "now": 100.0,
+        "expires_at": null
+      },
+      "plan": {
+        "kind": "count",
+        "digits": [
+          {
+            "n": 5,
+            "at": 100.5
+          },
+          {
+            "n": 4,
+            "at": 101.5
+          },
+          {
+            "n": 3,
+            "at": 102.5
+          },
+          {
+            "n": 2,
+            "at": 103.5
+          },
+          {
+            "n": 1,
+            "at": 104.5
+          }
+        ],
+        "go": 105.5
+      }
+    },
+    {
+      "about": "told inside the lead: every digit still ahead",
+      "input": {
+        "go": 105.5,
+        "now": 100.3,
+        "expires_at": null
+      },
+      "plan": {
+        "kind": "count",
+        "digits": [
+          {
+            "n": 5,
+            "at": 100.5
+          },
+          {
+            "n": 4,
+            "at": 101.5
+          },
+          {
+            "n": 3,
+            "at": 102.5
+          },
+          {
+            "n": 2,
+            "at": 103.5
+          },
+          {
+            "n": 1,
+            "at": 104.5
+          }
+        ],
+        "go": 105.5
+      }
+    },
+    {
+      "about": "told mid-count: joins at the digit on screen, which shows at once",
+      "input": {
+        "go": 105.5,
+        "now": 102.1,
+        "expires_at": null
+      },
+      "plan": {
+        "kind": "count",
+        "digits": [
+          {
+            "n": 4,
+            "at": 101.5
+          },
+          {
+            "n": 3,
+            "at": 102.5
+          },
+          {
+            "n": 2,
+            "at": 103.5
+          },
+          {
+            "n": 1,
+            "at": 104.5
+          }
+        ],
+        "go": 105.5
+      }
+    },
+    {
+      "about": "told exactly as a digit shows: from that digit",
+      "input": {
+        "go": 105.5,
+        "now": 102.5,
+        "expires_at": null
+      },
+      "plan": {
+        "kind": "count",
+        "digits": [
+          {
+            "n": 3,
+            "at": 102.5
+          },
+          {
+            "n": 2,
+            "at": 103.5
+          },
+          {
+            "n": 1,
+            "at": 104.5
+          }
+        ],
+        "go": 105.5
+      }
+    },
+    {
+      "about": "told during the last digit",
+      "input": {
+        "go": 105.5,
+        "now": 105.0,
+        "expires_at": null
+      },
+      "plan": {
+        "kind": "count",
+        "digits": [
+          {
+            "n": 1,
+            "at": 104.5
+          }
+        ],
+        "go": 105.5
+      }
+    },
+    {
+      "about": "told after the go: the move runs, the time since the go counted",
+      "input": {
+        "go": 105.5,
+        "now": 106.75,
+        "expires_at": null
+      },
+      "plan": {
+        "kind": "running",
+        "elapsed": 1.25
+      }
+    },
+    {
+      "about": "told after its expiry: dropped, even though the move would run",
+      "input": {
+        "go": 105.5,
+        "now": 107.5,
+        "expires_at": 106.5
+      },
+      "plan": {
+        "kind": "dropped"
+      }
+    },
+    {
+      "about": "an expiry still ahead changes nothing",
+      "input": {
+        "go": 105.5,
+        "now": 103.0,
+        "expires_at": 135.5
+      },
+      "plan": {
+        "kind": "count",
+        "digits": [
+          {
+            "n": 3,
+            "at": 102.5
+          },
+          {
+            "n": 2,
+            "at": 103.5
+          },
+          {
+            "n": 1,
+            "at": 104.5
+          }
+        ],
+        "go": 105.5
+      }
+    }
+  ]
+}

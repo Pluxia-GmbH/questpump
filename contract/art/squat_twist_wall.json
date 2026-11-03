@@ -1,0 +1,92 @@
+{
+  "move": "squat_twist_wall",
+  "view": "side",
+  "camera": {"yaw": -12, "pitch": 14},
+  "working": ["back", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": 55}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 94.2, 0],
+      "trunk": [1, 0, -90],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "leg_near": {"foot": [-7.5, 0], "turn": 90, "pole": [0, 0, 1]},
+      "leg_far": {"foot": [7.5, 0], "turn": -90, "pole": [0, 0, -1]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "squat": {
+      "from": "tall",
+      "pelvis": [0, 34, 15],
+      "trunk": [28, 0, -90],
+      "chest": [0, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_near": {"ik": [-30, 55, 65], "pole": [-0.6, -1, 0], "hand": [0, 0.4, 1]},
+      "arm_far": {"ik": [30, 55, -65], "pole": [0.6, -1, 0], "hand": [0, 0.4, -1]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "twist": {
+      "from": "squat",
+      "pelvis": [0, 36, 13.5],
+      "trunk": [15, 0, -75],
+      "chest": [30, 0, 90],
+      "head": [-10, 0, -6],
+      "arm_near": {"ik": [36, 56, 46], "pole": [0, -0.3, 1], "hand": [0.4, -1, 0.2]},
+      "arm_far": {"ik": [42, 106, 16], "pole": [-0.8, -0.3, 1], "hand": [0.2, 1, 0]}
+    },
+    "wall": {
+      "from": "twist",
+      "chest": [60, -15, 90],
+      "arm_near": {"ik": [51.7, 30, 24], "pole": [0, -0.3, 1], "hand": [0.05, -1, 0.2]},
+      "arm_far": {"ik": [51.7, 106, 18], "pole": [-0.8, -0.3, 1], "hand": [0.05, 1, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "head": [-48, 0, -6]
+    },
+    "wall_in": {"from": "wall", "chest": [60, -15, 93], "head": [-48, 0, -3]},
+    "heels_up": {
+      "from": "wall",
+      "pelvis": [0, 47, 12],
+      "arm_near": {"ik": [51.7, 41, 24], "pole": [0, -0.3, 1], "hand": [0.05, -1, 0.2]},
+      "arm_far": {"ik": [51.7, 117, 18], "pole": [-0.8, -0.3, 1], "hand": [0.05, 1, 0]},
+      "leg_near": {"foot": [-7.5, 0], "turn": 90, "pole": [0, 0, 1], "lift": 30},
+      "leg_far": {"foot": [7.5, 0], "turn": -90, "pole": [0, 0, -1], "lift": 30}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "squat", "s": 2.0, "phase": "squat_deep", "effort": 0.5},
+    {"to": "twist", "s": 1.6, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "wall", "s": 0.9, "phase": "to_wall", "effort": 0.6},
+    {"to": "wall_in", "s": 1.5, "phase": "breathe_out", "effort": 0.7},
+    {"to": "wall", "s": 1.5, "phase": "heels_down", "effort": 0.7},
+    {"to": "wall_in", "s": 1.5, "phase": "breathe_out", "effort": 0.7},
+    {"to": "wall", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 0.8, "phase": "release", "effort": 0.5},
+    {"to": "squat", "s": 1.0, "phase": "release", "effort": 0.4},
+    {"to": "tall", "s": 2.0, "phase": "stand_up", "effort": 0.6}
+  ],
+  "key": "wall",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "wall", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "wall", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2},
+    {"at": "wall", "check": "offset", "joint": "shoulder_near", "from": "knee_far", "axis": "f", "min": 10},
+    {"at": "wall", "check": "height", "joint": "wrist_near", "max": 45},
+    {"at": "wall", "check": "height", "joint": "wrist_far", "min": 80}
+  ],
+  "note": "Feet and knees together in a deep squat facing the camera, the wall a forearm's length to the side: the body turns to the wall, the arm away from it hooks outside both knees with its hand low on the wall, the other hand high on it, the heels down (the pump mirrors it for the other side)."
+}

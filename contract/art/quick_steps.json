@@ -1,0 +1,38 @@
+{
+  "move": "quick_steps",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 8},
+  "working": ["shin", "thigh"],
+  "fast_phase": 0.6,
+  "poses": {
+    "near_up": {
+      "pelvis": [-2, 92.5, 0],
+      "trunk": [12, 0, 0],
+      "head": [-8, 0, 0],
+      "arm_near": {"fk": [-10, 10, 92]},
+      "arm_far": {"fk": [48, 10, 86]},
+      "leg_near": {"foot": [3, 16], "turn": 8, "y": 6, "lift": 8, "knee_out": 6},
+      "leg_far": {"foot": [3, 16], "turn": 8, "lift": 14, "knee_out": 6},
+      "contacts": ["toe_far"]
+    },
+    "far_up": {
+      "from": "near_up",
+      "arm_near": {"fk": [48, 10, 86]},
+      "arm_far": {"fk": [-10, 10, 92]},
+      "leg_near": {"foot": [3, 16], "turn": 8, "lift": 14, "knee_out": 6},
+      "leg_far": {"foot": [3, 16], "turn": 8, "y": 6, "lift": 8, "knee_out": 6},
+      "contacts": ["toe_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "near_up"},
+    {"to": "far_up", "s": 0.1333, "phase": "quick_steps", "effort": 0.85},
+    {"to": "near_up", "s": 0.1333, "phase": "quick_steps", "effort": 0.85},
+    {"to": "far_up", "s": 0.1333, "phase": "quick_steps", "effort": 0.85},
+    {"to": "near_up", "s": 0.1333, "phase": "quick_steps", "effort": 0.85},
+    {"to": "far_up", "s": 0.1333, "phase": "quick_steps", "effort": 0.85},
+    {"to": "near_up", "s": 0.1333, "phase": "quick_steps", "effort": 0.85}
+  ],
+  "key": "near_up",
+  "targets": [{"at": "near_up", "check": "height", "joint": "ankle_near", "min": 6, "max": 16}]
+}

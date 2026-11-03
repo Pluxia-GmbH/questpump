@@ -1,0 +1,56 @@
+{
+  "move": "straddle_heel_lift",
+  "view": "side",
+  "camera": {"yaw": 42, "pitch": 4},
+  "working": ["thigh", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -40, "f1": 110, "l0": -110, "l1": 110}],
+  "poses": {
+    "down": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [-2, 0, 0],
+      "head": [2, 0, 0],
+      "arms": {"ik": [4, 17.5, 37], "pole": [-0.6, 0, 1], "hand": [0.2, -1, 0.1]},
+      "legs": {"ik": [50.3, 8.1, 82.8], "pole": [0, 1, 0], "toe": [0.1, 1, 0.05]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "rest": {
+      "from": "down",
+      "legs": {"ik": [50.3, 8.1, 82.8], "pole": [-0.58, 0.71, 0.4], "toe": [-0.58, 0.71, 0.4]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lift": {
+      "from": "down",
+      "trunk": [-3, 0, 0],
+      "legs": {"ik": [50.45, 14, 83.1], "pole": [0, 1, 0], "toe": [0.1, 1, 0.05]},
+      "contacts": ["pelvis", "hand_tip_near", "hand_tip_far"]
+    },
+    "lift_in": {"from": "lift", "legs": {"ik": [50.45, 13.5, 83.1], "pole": [0, 1, 0], "toe": [0.1, 1, 0.05]}},
+    "bent": {"from": "lift", "legs": {"ik": [40, 14, 70], "pole": [0, 1, 0], "toe": [0.1, 1, 0.05]}}
+  },
+  "timeline": [
+    {"pose": "rest"},
+    {"hold": 0.5, "phase": "sit_tall", "effort": 0.3},
+    {"to": "down", "s": 0.8, "phase": "toes_up", "effort": 0.5},
+    {"to": "lift", "s": 1.4, "phase": "lift_breathe_out", "effort": 0.8},
+    {"to": "lift_in", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "lift", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "lift_in", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "lift", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "rest", "s": 1.6, "phase": "lower", "effort": 0.4}
+  ],
+  "key": "lift",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "lift", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "lift", "check": "height", "joint": "ankle_near", "min": 12, "max": 15},
+    {"at": "lift", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "l", "min": 60},
+    {"at": "lift", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "lift", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "min": -6}
+  ],
+  "note": "Sitting tall in a straddle, each leg 55 degrees out from forward, the fingertips on the floor beside the hips: the resting legs, rolled out, turn their kneecaps and toes up, then both straight legs lift the heels just off the floor (about 6 cm, the step-7 active lift) and hold for five counts, then lower and rest."
+}

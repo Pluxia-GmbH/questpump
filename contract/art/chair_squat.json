@@ -1,0 +1,47 @@
+{
+  "move": "chair_squat",
+  "view": "side",
+  "camera": {"yaw": 26, "pitch": 8},
+  "working": ["thigh"],
+  "props": [{"kind": "chair", "f": -33, "back": "-f"}],
+  "poses": {
+    "tall": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [8, 4, 12]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "seat": {
+      "from": "tall",
+      "pelvis": [-17, 61, 0],
+      "trunk": [30, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-18, 0, 0],
+      "arms": {"fk": [86, 6, 6]},
+      "contacts": ["toe_near", "toe_far", "pelvis"]
+    },
+    "heels_up": {
+      "from": "seat",
+      "pelvis": [-16, 66, 0],
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10, "lift": 40},
+      "arms": {"fk": [82, 6, 6]},
+      "contacts": ["toe_near", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "seat", "s": 1.2, "phase": "sit_back", "effort": 0.5},
+    {"hold": 0.2, "phase": "chair_height", "effort": 0.7},
+    {"to": "tall", "s": 1.0, "phase": "stand_tall", "effort": 0.9}
+  ],
+  "key": "seat",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [{"at": "seat", "check": "height", "joint": "pelvis", "min": 58, "max": 68}]
+}

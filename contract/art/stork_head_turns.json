@@ -1,0 +1,48 @@
+{
+  "move": "stork_head_turns",
+  "view": "side",
+  "camera": {"yaw": 36, "pitch": 8},
+  "working": ["thigh_near", "shin_near", "abdomen"],
+  "props": [{"kind": "desk", "l": 52, "f": 0, "top": 74}],
+  "poses": {
+    "stand": {
+      "pelvis": [1, 94.3, -1],
+      "trunk": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {"fk": [4, 4, 10]},
+      "arm_far": {"ik": [4, 95, 50], "pole": [-0.3, -1, 0.4], "hand": [0.1, -1, 0.3]},
+      "leg_near": {"foot": [0, 8], "turn": 8, "knee_out": 4},
+      "leg_far": {"foot": [0, 10], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "shift": {
+      "from": "stand",
+      "pelvis": [1, 94.0, -4],
+      "leg_far": {"foot": [0, 10], "turn": 8, "knee_out": 4, "lift": 65}
+    },
+    "lift": {"from": "stand", "pelvis": [1, 94.2, -5], "leg_far": {"fk": [-4, 3, 92, 20]}, "contacts": ["toe_near"]},
+    "hips": {"from": "lift", "arms": {"ik": [1, 101, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]}},
+    "look_far": {"from": "hips", "head": [0, 0, 62]},
+    "look_near": {"from": "hips", "head": [0, 0, -62]}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.5, "phase": "stand"},
+    {"to": "shift", "s": 0.4, "phase": "one_leg", "effort": 0.4},
+    {"to": "lift", "s": 0.7, "phase": "one_leg", "effort": 0.5},
+    {"to": "hips", "s": 0.6, "phase": "one_leg", "effort": 0.5},
+    {"to": "look_far", "s": 1.4, "phase": "turn_head", "effort": 0.6},
+    {"to": "look_near", "s": 2.6, "phase": "turn_head", "effort": 0.6},
+    {"to": "look_far", "s": 2.6, "phase": "turn_head", "effort": 0.6},
+    {"to": "hips", "s": 1.4, "phase": "turn_head", "effort": 0.6},
+    {"to": "lift", "s": 0.6, "phase": "lower", "effort": 0.4},
+    {"to": "shift", "s": 0.5, "phase": "lower", "effort": 0.3},
+    {"to": "stand", "s": 0.4, "phase": "lower", "effort": 0.3}
+  ],
+  "key": "look_far",
+  "targets": [
+    {"at": "look_far", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "look_far", "check": "height", "joint": "ankle_far", "min": 40}
+  ],
+  "note": "The near leg stands, the far foot lifts behind with the shin level and the hands go to the hips; the head turns slowly to the far side, across to the near side and back, the body still. The far fingertips hover over the desk while the foot comes up and goes down."
+}

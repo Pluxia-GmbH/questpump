@@ -1,0 +1,6 @@
+{
+  "move": "desk_squat_press",
+  "variant_of": "desk_squat",
+  "phases": {"heels_down": 2.5, "breathe": 2.5},
+  "note": "The desk squat's frames with its press and its sink held longer: press the feet down at half effort, relax, breathe out and sink."
+}

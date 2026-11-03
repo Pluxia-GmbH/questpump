@@ -1,0 +1,28 @@
+{
+  "move": "pallof_press",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 35},
+  "working": ["abdomen"],
+  "props": [{"kind": "door", "l": 70, "f": 25}],
+  "items": [{"kind": "band", "strands": [[[25, 123, 69.4], "grips"]]}],
+  "poses": {
+    "chest": {
+      "pelvis": [0, 89.5, 0],
+      "trunk": [4, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [24, 122, 4], "pole": [-0.2, -1, 0.6], "hand": [0.6, 0.6, -0.5]},
+      "legs": {"foot": [0, 19], "turn": 10, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "pressed": {"from": "chest", "arms": {"ik": [52.5, 127, 4], "pole": [-0.2, -1, 0.3], "hand": [1, 0.1, -0.4]}}
+  },
+  "timeline": [
+    {"pose": "chest"},
+    {"hold": 0.4, "phase": "hands_at_chest", "effort": 0.4},
+    {"to": "pressed", "s": 1.0, "phase": "press", "effort": 1.0},
+    {"hold": 1.0, "phase": "resist_twist", "effort": 1.0},
+    {"to": "chest", "s": 1.2, "phase": "back_in", "effort": 0.5}
+  ],
+  "key": "pressed",
+  "targets": [{"at": "pressed", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}]
+}

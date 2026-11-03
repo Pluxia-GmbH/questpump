@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The Character button: the armour figure's great helm from the front, its crest on top, the eye slit either side
+       of the centre ridge and the seam above its rim plate wound against the plate, so they cut it while the crest and
+       the helm overlap as one; lit from the top left, its right half in shadow behind the ridge. -->
+  <path data-token="tint" fill="currentColor" d="
+    M10.75 5.5 V3.75 C10.75 2.75 11.3 2 12 2 C12.7 2 13.25 2.75 13.25 3.75 V5.5 Z
+    M4.75 9.5 C4.75 6.75 8 4.75 12 4.75 C16 4.75 19.25 6.75 19.25 9.5 V18.75 L17.75 21 H6.25 L4.75 18.75 Z
+    M6.5 10.5 V12.25 H11 V10.5 Z
+    M13 10.5 V12.25 H17.5 V10.5 Z
+    M4.75 17.5 V18.5 H19.25 V17.5 Z"/>
+  <path data-token="void" fill-opacity="0.35" fill-rule="evenodd" d="
+    M12 2 C12.7 2 13.25 2.75 13.25 3.75 V4.82 C16.65 5.2 19.25 7.05 19.25 9.5 V18.75 L17.75 21 H12 Z
+    M13 10.5 H17.5 V12.25 H13 Z
+    M12 17.5 H19.25 V18.5 H12 Z"/>
+</svg>

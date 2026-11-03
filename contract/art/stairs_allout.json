@@ -1,0 +1,103 @@
+{
+  "move": "stairs_allout",
+  "view": "side",
+  "camera": {"yaw": -14, "pitch": 9},
+  "working": ["thigh", "shin"],
+  "fast_phase": 0.85,
+  "props": [
+    {
+      "kind": "stairs",
+      "f": 12,
+      "rise": 18,
+      "run": 28,
+      "steps": [-8, 12],
+      "rail": "far",
+      "frame": [1, 3],
+      "scroll": [-56, -36]
+    }
+  ],
+  "poses": {
+    "near_off": {
+      "pelvis": [0, 98.9, 0.5],
+      "trunk": [36, 0, 0],
+      "head": [-28, 0, 0],
+      "arm_near": {"fk": [12, 8, 88, 0, 0]},
+      "arm_far": {"fk": [12, 8, 88, 0, 0]},
+      "leg_near": {"foot": [-14, 12], "y": 0, "turn": 6, "lift": 40, "knee_out": 4},
+      "leg_far": {"foot": [14, 12], "y": 18, "turn": 6, "lift": 0, "knee_out": 4},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "near_lift": {
+      "from": "near_off",
+      "pelvis": [0, 100.8, 1.3],
+      "arm_near": {"fk": [-19.1, 8, 97.9, 0, 0]},
+      "arm_far": {"fk": [43.1, 8, 78.1, 0, 0]},
+      "leg_near": {"ik": [-14, 35.5, 12], "toe": [0.94, -0.342, 0.1], "pole": [1, 0.1, 0.12]},
+      "leg_far": {"foot": [7, 12], "y": 13.5, "turn": 6, "lift": 1.1, "knee_out": 4},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "near_over": {
+      "from": "near_off",
+      "pelvis": [0, 99.9, 1.4],
+      "arm_near": {"fk": [-32, 8, 102, 0, 0]},
+      "arm_far": {"fk": [56, 8, 74, 0, 0]},
+      "leg_near": {"ik": [4, 44.5, 12], "toe": [0.998, -0.07, 0.1], "pole": [1, 0.1, 0.12]},
+      "leg_far": {"foot": [0, 12], "y": 9, "turn": 6, "lift": 11.2, "knee_out": 4},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "near_reach": {
+      "from": "near_off",
+      "pelvis": [0, 98, 0.7],
+      "arm_near": {"fk": [-19.1, 8, 97.9, 0, 0]},
+      "arm_far": {"fk": [43.1, 8, 78.1, 0, 0]},
+      "leg_near": {"ik": [17, 36.5, 12], "toe": [0.996, 0.087, 0.1], "pole": [1, 0.1, 0.12]},
+      "leg_far": {"foot": [-7, 12], "y": 4.5, "turn": 6, "lift": 24.6, "knee_out": 4},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "far_off": {
+      "from": "near_off",
+      "pelvis": [0, 98.9, -0.5],
+      "leg_near": {"foot": [14, 12], "y": 18, "turn": 6, "lift": 0, "knee_out": 4},
+      "leg_far": {"foot": [-14, 12], "y": 0, "turn": 6, "lift": 40, "knee_out": 4}
+    },
+    "far_lift": {
+      "from": "near_off",
+      "pelvis": [0, 100.8, -1.3],
+      "arm_near": {"fk": [43.1, 8, 78.1, 0, 0]},
+      "arm_far": {"fk": [-19.1, 8, 97.9, 0, 0]},
+      "leg_near": {"foot": [7, 12], "y": 13.5, "turn": 6, "lift": 1.1, "knee_out": 4},
+      "leg_far": {"ik": [-14, 35.5, 12], "toe": [0.94, -0.342, 0.1], "pole": [1, 0.1, 0.12]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "far_over": {
+      "from": "near_off",
+      "pelvis": [0, 99.9, -1.4],
+      "arm_near": {"fk": [56, 8, 74, 0, 0]},
+      "arm_far": {"fk": [-32, 8, 102, 0, 0]},
+      "leg_near": {"foot": [0, 12], "y": 9, "turn": 6, "lift": 11.2, "knee_out": 4},
+      "leg_far": {"ik": [4, 44.5, 12], "toe": [0.998, -0.07, 0.1], "pole": [1, 0.1, 0.12]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "far_reach": {
+      "from": "near_off",
+      "pelvis": [0, 98, -0.7],
+      "arm_near": {"fk": [43.1, 8, 78.1, 0, 0]},
+      "arm_far": {"fk": [-19.1, 8, 97.9, 0, 0]},
+      "leg_near": {"foot": [-7, 12], "y": 4.5, "turn": 6, "lift": 24.6, "knee_out": 4},
+      "leg_far": {"ik": [17, 36.5, 12], "toe": [0.996, 0.087, 0.1], "pole": [1, 0.1, 0.12]},
+      "contacts": ["toe_near", "ankle_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "near_off"},
+    {"to": "near_lift", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "near_over", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "near_reach", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "far_off", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "far_lift", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "far_over", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "far_reach", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "near_off", "s": 0.1, "ease": "linear", "phase": "all_out", "effort": 1.0}
+  ],
+  "key": "near_over"
+}

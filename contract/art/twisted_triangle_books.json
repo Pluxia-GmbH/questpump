@@ -1,0 +1,96 @@
+{
+  "move": "twisted_triangle_books",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 12},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "step", "f0": 12, "f1": 36, "u": 15, "l0": -40, "l1": -19}],
+  "poses": {
+    "stance": {
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [0, 10], "turn": 4, "knee_out": 4},
+      "leg_far": {"foot": [-88, 10], "turn": 28, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "stance",
+      "trunk": [86, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_far": {"ik": [8, 31, 24], "pole": [-0.3, 0, 1], "hand": [0.4, -1, 0]},
+      "arm_near": {
+        "ik": [4.5, 106.3, 1],
+        "orbit": {"r": 79.0, "deg": 162.3, "plane": "ul"},
+        "pole": [-0.3, 0, 1],
+        "hand": [0.4, -1, 0]
+      }
+    },
+    "hand_down": {
+      "from": "stance",
+      "trunk": [88, 0, 0],
+      "chest": [0, 0, -76],
+      "head": [-6, 0, 0],
+      "arm_far": {"ik": [22, 18.3, -28], "pole": [-0.5, 0, -1], "hand": [1, -0.1, 0]},
+      "arm_near": {
+        "ik": [4.5, 106.3, 1],
+        "orbit": {"r": 60, "deg": 125, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0, -0.65, 0.76]
+      },
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "twist": {
+      "from": "stance",
+      "trunk": [82, 0, 0],
+      "chest": [0, 0, -88],
+      "head": [0, 0, -40],
+      "arm_far": {"ik": [22, 18.3, -28], "pole": [-0.5, 0, -1], "hand": [1, -0.1, 0]},
+      "arm_near": {
+        "ik": [4.5, 106.3, 1],
+        "orbit": {"r": 55.5, "deg": 0, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0, 1, 0]
+      },
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "twist_in": {"from": "twist", "chest": [0, 0, -91]},
+    "bent": {
+      "from": "twist",
+      "pelvis": [-42, 81.2, 0],
+      "trunk": [82, 0, 0],
+      "head": [0, 35, -40],
+      "arm_near": {
+        "ik": [11.7, 100.4, 1],
+        "orbit": {"r": 55.5, "deg": 0, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0, 1, 0]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "stance"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "hinge", "s": 1.2, "phase": "back_flat", "effort": 0.5},
+    {"to": "hand_down", "s": 1.2, "phase": "hand_down", "effort": 0.6},
+    {"to": "twist", "s": 1.6, "phase": "arm_to_ceiling", "effort": 0.75},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "hand_down", "s": 1.4, "phase": "return_slowly", "effort": 0.6},
+    {"to": "hinge", "s": 0.8, "phase": "rise", "effort": 0.5, "ease": "in"},
+    {"to": "stance", "s": 1.0, "phase": "rise", "effort": 0.4, "ease": "out"}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "twist", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "twist", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "twist", "check": "height", "joint": "wrist_far", "min": 15, "max": 22},
+    {"at": "twist", "check": "height", "joint": "hand_tip_near", "min": 150}
+  ],
+  "note": "The twisted triangle (revolved_triangle) with the lower palm on a stack of books 15 cm high just outside the front (near) foot, by its toes: the same straight legs and turn, the fold 15 cm shorter."
+}

@@ -1,0 +1,48 @@
+{
+  "move": "chair_leg_lift",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 8},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "chair", "f": -27, "back": "-f"}],
+  "poses": {
+    "sit": {
+      "pelvis": [-14, 60.5, 0],
+      "trunk": [3, 0, 0],
+      "leg_near": {"foot": [24, 12], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [24, 12], "turn": 6, "knee_out": 4},
+      "contacts": ["pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"],
+      "arm_near": {"ik": [-9, 70, 24], "pole": [-0.1, 0, 1], "hand": [0.5, -0.8, -0.3]},
+      "arm_far": {"ik": [-9, 70, 24], "pole": [-0.1, 0, 1], "hand": [0.5, -0.8, -0.3]}
+    },
+    "lift": {
+      "from": "sit",
+      "leg_near": {"ik": [74.0, 59.5, 11], "pole": [0, 1, 0], "toe": [0.05, 1, 0]},
+      "contacts": ["pelvis", "toe_far", "ankle_far"]
+    },
+    "lift_in": {"from": "lift", "chest": [-3, 0, 0], "head": [2, 0, 0]},
+    "slump": {"from": "lift", "trunk": [-8, 0, 0], "chest": [24, 0, 0], "head": [8, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.5, "phase": "sit_tall", "effort": 0.2},
+    {"to": "lift", "s": 1.8, "phase": "leg_straight", "effort": 0.7},
+    {"to": "lift_in", "s": 1.6, "phase": "hold", "effort": 0.8},
+    {"to": "lift", "s": 1.6, "phase": "hold", "effort": 0.8},
+    {"to": "lift_in", "s": 1.6, "phase": "hold", "effort": 0.8},
+    {"to": "lift", "s": 1.6, "phase": "hold", "effort": 0.8},
+    {"to": "sit", "s": 1.8, "phase": "lower_slowly", "effort": 0.4}
+  ],
+  "key": "lift",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "lift", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 172},
+    {"at": "lift", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "lift", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "u", "min": -6}
+  ],
+  "note": "Sitting tall near the front of a chair, the back off its backrest and the hands on the hips: the near knee straightens until the leg is straight and level with the seat, held there by the leg's own muscles, toes up. The fault: the back slumps to let the leg up."
+}

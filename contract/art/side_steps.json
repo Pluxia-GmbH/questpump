@@ -1,0 +1,62 @@
+{
+  "move": "side_steps",
+  "view": "front",
+  "camera": {"yaw": 12, "pitch": 5},
+  "working": ["thigh"],
+  "fast_phase": 0.6,
+  "poses": {
+    "in": {
+      "pelvis": [0, 93.4, 0],
+      "trunk": [2, 0, 0],
+      "arms": {"fk": [16, 12, 78]},
+      "legs": {"foot": [0, 11], "turn": 8, "lift": 0, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "near_lift": {
+      "from": "in",
+      "pelvis": [0, 92.8, 6],
+      "trunk": [2, -2, 0],
+      "arms": {"fk": [16, 18, 76]},
+      "leg_near": {"foot": [1, 28], "turn": 10, "y": 8, "lift": 0, "knee_out": 10},
+      "contacts": ["toe_far"]
+    },
+    "wide": {
+      "from": "in",
+      "pelvis": [0, 90.6, -17],
+      "trunk": [3, 0, 0],
+      "arms": {"fk": [16, 24, 74]},
+      "leg_near": {"foot": [0, 45], "turn": 14, "lift": 0, "knee_out": 12},
+      "leg_far": {"foot": [0, 11], "turn": 10, "lift": 0, "knee_out": 10}
+    },
+    "far_lift": {
+      "from": "in",
+      "pelvis": [0, 92.8, -40],
+      "trunk": [2, 2, 0],
+      "arms": {"fk": [16, 18, 76]},
+      "leg_near": {"foot": [0, 45], "turn": 10, "lift": 0, "knee_out": 10},
+      "leg_far": {"foot": [1, -6], "turn": 10, "y": 8, "lift": 0, "knee_out": 10},
+      "contacts": ["toe_near"]
+    },
+    "left": {
+      "from": "in",
+      "pelvis": [0, 93.4, -34],
+      "leg_near": {"foot": [0, 45], "turn": 8, "lift": 0, "knee_out": 8},
+      "leg_far": {"foot": [0, -23], "turn": 8, "lift": 0, "knee_out": 8}
+    }
+  },
+  "timeline": [
+    {"pose": "in"},
+    {"to": "near_lift", "s": 0.2, "ease": "in", "phase": "side_step", "effort": 0.5},
+    {"to": "wide", "s": 0.22, "ease": "out", "phase": "side_step", "effort": 0.6},
+    {"to": "far_lift", "s": 0.2, "ease": "in", "phase": "side_step", "effort": 0.5},
+    {"to": "left", "s": 0.22, "ease": "out", "phase": "side_step", "effort": 0.5},
+    {"hold": 0.06, "phase": "side_step", "effort": 0.4},
+    {"to": "far_lift", "s": 0.2, "ease": "in", "phase": "other_way", "effort": 0.5},
+    {"to": "wide", "s": 0.22, "ease": "out", "phase": "other_way", "effort": 0.6},
+    {"to": "near_lift", "s": 0.2, "ease": "in", "phase": "other_way", "effort": 0.5},
+    {"to": "in", "s": 0.22, "ease": "out", "phase": "other_way", "effort": 0.5},
+    {"hold": 0.06, "phase": "other_way", "effort": 0.4}
+  ],
+  "key": "wide",
+  "targets": [{"at": "wide", "check": "offset", "joint": "ankle_near", "from": "ankle_far", "axis": "l", "min": 50}]
+}

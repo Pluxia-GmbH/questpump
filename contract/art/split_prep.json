@@ -1,0 +1,75 @@
+{
+  "move": "split_prep",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 14},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -110, "f1": 100}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-15, 45.8, 0],
+      "trunk": [66, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"ik": [56, 17, 42], "pole": [1, 0.3, 0.3], "hand": [0.35, -0.94, 0]},
+      "leg_near": {"foot": [-85, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [28, 28], "y": 1, "turn": 22, "knee_out": 4, "pole": [1, 0, 0.9]},
+      "contacts": ["knee_near", "ankle_near", "toe_near", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "slide": {
+      "from": "prep",
+      "pelvis": [-10, 43.5, 0],
+      "trunk": [62, 0, 0],
+      "head": [-22, 0, 0],
+      "leg_far": {"foot": [58, 17], "y": 1, "turn": 11, "lift": -15, "knee_out": 2, "pole": [0.5, 0.4, 0.9]}
+    },
+    "slide2": {
+      "from": "prep",
+      "pelvis": [-6, 42, 0],
+      "trunk": [58, 0, 0],
+      "head": [-20, 0, 0],
+      "leg_far": {"foot": [78, 12.5], "y": 1, "turn": 4, "lift": -22, "knee_out": 1, "pole": [0.4, 0.4, 0.95]}
+    },
+    "prep": {
+      "from": "lunge",
+      "pelvis": [-5, 41, 0],
+      "trunk": [56, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-18, 0, 0],
+      "leg_near": {"foot": [-85.08, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [88.2, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0.2, 0.4, 1]},
+      "contacts": ["ankle_near", "toe_near", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "prep_in": {"from": "prep", "pelvis": [-5, 40.2, 0], "trunk": [57, 0, 0], "chest": [5, 0, 0]},
+    "knee_bent": {
+      "from": "prep",
+      "leg_far": {"foot": [78, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0.2, 0.4, 1]}
+    }
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.6, "phase": "lunge", "effort": 0.3},
+    {"to": "slide", "s": 1.2, "ease": "in", "phase": "slide_out", "effort": 0.6},
+    {"to": "slide2", "s": 0.81, "ease": "linear", "phase": "slide_out", "effort": 0.6},
+    {"to": "prep", "s": 0.59, "ease": "out", "phase": "slide_out", "effort": 0.6},
+    {"to": "prep_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "prep", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "prep_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "prep", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "slide2", "s": 0.6, "ease": "in", "phase": "slide_back", "effort": 0.3},
+    {"to": "slide", "s": 0.79, "ease": "linear", "phase": "slide_back", "effort": 0.3},
+    {"to": "lunge", "s": 1.01, "ease": "out", "phase": "slide_back", "effort": 0.3}
+  ],
+  "key": "prep",
+  "fault": {
+    "pose": "knee_bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  },
+  "targets": [
+    {"at": "prep", "check": "height", "joint": "pelvis", "max": 44},
+    {"at": "prep", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "prep", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  ],
+  "note": "The front leg is the far one. From a low lunge with the fingertips down ahead of and beside the front foot (the hands wide, the front knee falling out over a foot turned out a little, so the knee rises beside the chest and inside the far arm), the front heel slides out (toes up) and both knees straighten; the pelvis's underside stays within 30 cm of the floor (its centre at 41, the armour 14.5 below it)."
+}

@@ -1,0 +1,58 @@
+{
+  "move": "firefly",
+  "view": "side",
+  "camera": {"yaw": 62, "pitch": 8},
+  "working": ["upper_arm", "forearm", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -60, "f1": 100, "l0": -75, "l1": 75}],
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.4, "phase": "hands_to_heels"},
+    {"to": "lift", "s": 1.2, "phase": "toes_off", "effort": 0.8},
+    {"to": "fly", "s": 1.4, "phase": "open_out", "effort": 0.9},
+    {"to": "fly_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "lift", "s": 1.2, "phase": "lower_slowly", "effort": 0.8},
+    {"to": "set", "s": 1.2, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "fly",
+  "targets": [
+    {"at": "fly", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "fly", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 150},
+    {"at": "fly", "check": "height", "joint": "ankle_near", "min": 55},
+    {"at": "fly", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "l", "min": 40}
+  ],
+  "note": "Tittibhasana: from a wide squat the shoulders slide under the knees and the hands go flat behind the heels; the backs of the thighs rest high on the upper arms, the arms press nearly straight, the feet lift and the legs straighten forward and out in a V above the floor, the chest forward.",
+  "poses": {
+    "set": {
+      "pelvis": [-10, 46, 0],
+      "trunk": [76, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [-34, 0, 0],
+      "arms": {"ik": [16, 4.3, 20], "pole": [-1, 0, -0.3], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [28, 50], "y": 0, "turn": 15, "lift": 30, "knee_out": 0, "pole": [0.8, 0.5, 1.0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lift": {
+      "pelvis": [-10, 47, 0],
+      "trunk": [76, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [-46, 0, 0],
+      "arms": {"ik": [16, 4.3, 20], "pole": [-1, 0, -0.3], "hand": [1, -0.14, 0]},
+      "legs": {"fk": [188, 40, 45, -25]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fly": {
+      "pelvis": [-10, 48, 0],
+      "trunk": [76, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [-58, 0, 0],
+      "arms": {"ik": [16, 4.3, 20], "pole": [-1, 0, -0.3], "hand": [1, -0.14, 0]},
+      "legs": {"fk": [192, 36, 0, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fly_in": {"from": "fly", "pelvis": [-10, 49.5, 0], "chest": [12, 0, 0], "head": [-56, 0, 0]}
+  }
+}

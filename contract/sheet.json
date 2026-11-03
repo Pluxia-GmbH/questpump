@@ -1,0 +1,1184 @@
+{
+  "about": "The names of the sheet summary's fields as the addon shows them (tools/gen-fixtures.lua; Stats.lua ns.SheetSummary, the apps bundle it): st and wk follow stats, lad follows ladders, every id from 1 (each with its rung count, its kind: strength, cardio, pose or retired (the pull and the core hold, split on 2026-10-04: a zero entry), the stat it feeds, the dose of its rung-1 anchor (\"pose\" for a family that climbs by a mark); a family that is not open yet (slice 22: the handstand and the planche before the push-up, power before the jumping jacks) is a zero entry in lad until it opens; a record's unit is that of the move standing for the rung, contract/moves.json; the step on the one scale of each of its rungs, from 1; lad's fourth number for a pose family the days its mark was reached (since slice 47, 2026-10-19, the days toward its next step, ns.PoseNeeds' have: a goal pose of its step counts a day, and the count reaches the days the step takes only with its main pose's and Perfect days in; 0 while a stand-in from below holds the step; marks: each pose's mark by its move key, the sentence players read as its goal pose); order lists the ids grouped by the stat each feeds, as the game names them), mq and mw follow muscles (1-16 on the paper doll), mq's values index qualities from 1 (0 none), build names a key of builds; map_steps are the This week map's steps (under the first one fill, from it the next, from the second the dashed outline too); a rung's colour is its step's quality (contract/library.json's quality_by_step, 0 Starter to 6 Artifact, plus 1 indexing qualities: quality_by_step[steps[rung]]). The summary's version 5 (slice 27): ttl is the id of an entry of titles (each code with its key and name), which the sheet joins to the character's name with words.titled_suffix when the title starts in lower case (\"the Relentless\") and with words.titled else (\"Hand of Iron\"), each formatting the name first and the title second; rest is the rested pool as the last performed move left it and rt that move's time (absent before one): the rested XP at a later moment adds rested_per_day of the level's xp to next a day since rt, from rested_min_h, up to rested_cap_levels of it (Stats.lua ns.Rested), and the XP bar's rested part runs from into to into plus that, at most need; the streak at a later moment is streak while the game days since rt's, the last active one, less one and less the locked days of lk before it, are at most tokens, else 0 (Stats.lua ns.Streak; since at's in a summary without rt); lk (slice 32; absent: none) lists the game days after rt's that hold a felt-unwell row and no performed move, as days after it (each 1 or more, ascending), which the streak skips: they neither break it nor add a day to it; ad (slice 32; absent: unknown) is the active days the fold counted, of which every token_days-th earns a rest token while fewer than token_max are held (a new player starts holding token_start of them, slice 51), and rs (slice 32; absent: unknown) the streak as rt's day left it, which streak reads as 0 once the gap runs past the tokens and a reader projecting days the game has not folded yet continues from (Stats.lua activeDay); ls follows stats (the last pump's points); lu lists the last pump's unlocks, each { ladder id, rung, the move standing for it (0 none), its quality as mq counts it, 1 Rekindled else 0, since 2026-10-09 how it came: 0 a climb, 1 an orange or gold rung its climb only opened (one fresh set at its floor earns it), 2 such a rung a set earned (absent from an older addon: a climb) }; ld is the last pump's day { the streak's day it began (0 none), Welcome back's XP, 1 a rest token earned, the days rest tokens covered, the milestone of streak_milestones its streak reached that day (0 none; slice 32, absent before: 0) }; ear follows ladders, each { best rung (an orange or gold rung once a set earned it, since 2026-10-09), then per rung from 1 the game day it was first reached (such a rung's: earned), as days since 1970-01-01 (0 yours from the start, 1 a day not known) }, { 0 } where lad is all zeros and for an open ladder not yet placed (no best rung yet); nx follows ladders, each { have, need, have2, need2 } toward the next rung (a strength or hold ladder: the days at the top of the range of the days its unlock takes, then 1 while an orange or gold step still asks for its second proof; a pose family: the days its mark was held of the days it takes, since slice 47 the days toward its step (ns.PoseNeeds' have) of pose_unlock_days and then a fifth and sixth number, the days still to come on its main pose and answered Perfect (mainLeft, perfectLeft; absent from an older addon), which its card names; the cardio ladder on a counted rung: the top counts of 2 (from purple up the top count's game days of 2, or 3 to orange, since 2026-10-09), on a timed rung the finished moves and then their days of what each takes; all 0 where no climb is open; a pain flag holds a climb but keeps what it counted); fig, in the strip's sheet event and the snapshot only, is the figure's colour as the game draws it, 0xRRGGBB (crimson where it is absent); lt, in the strip's sheet event only (slice 29), names the game pump the summary's last pump is (the one last, ls, lu and ld tell of) while it is the addon session's last game pump that ended done: p, that pump's offered time (its pump row's ts, which ends the game pump's id g-<load>-<ts>), and t, the titles it earned, each an id of titles, in the order the game lists and toasts them (Stats.lua ns.Titles, not the codes' order), absent (or empty) when it earned none; lt is absent while a newer pump runs or ended another way, after a /reload and from an older addon, so a phone takes a game pump's rewards only from a summary whose lt.p is that pump's; lx (slice 34; absent: none) lists the pumps of the sheet's Log (its last sheet_log_pumps) that paid XP, the game's, a catch-up's and an app pump's alike, in the Log's order, each { the pump's offered time (its pump row's ts), the XP it paid }, by which a phone's Log shows each pump's XP (the newest sheet that names a pump gives its number); the strip's sheet event and the export carry it, the snapshot leaves it out; va (2026-10-09; absent: unknown) is the weekly vault at at: { the moves done (2026-10-27; the pumps until then), the records or stars and the embers counted this week (slice 55; the cardio minutes until then), each up to its goal's last tier (contract/library.json vault_moves, vault_records, vault_embers: the embers' three tiers, 3, 9 and 15; a tier at its need is reached and paid xp_vault_goal), then the time the week turns (the region's reset in the game, outside it Monday's game day) }, which a reader at or past that time reads as every goal at 0, the week turning 7 days after the one before; lv (2026-10-09; absent: none) lists the vault's goals the last pump reached, each 1 the moves (2026-10-27; the pumps until then), 2 records or stars, 3 an embers tier (slice 55; the cardio minutes until then), as they came, which the Result shows as Weekly goal reached; the snapshot leaves both out; em (slice 55, 2026-10-23; absent: an older addon) is the embers lit on at's game day (up to embers_day), which a reader on a later game day reads as 0: a phone's home shows it while Hero shows the game's sheet; the snapshot leaves it out; dxFrom (2026-10-15; absent: an older addon) is the first game day, \"YYYY-MM-DD\", that dx covers: the later of the dx_days-th game day back from at's (contract/library.json, at's own day the first of them) and the first the sheet holds whole (the save's baseline keeps the rating_days before the last move its ring let go, a baseline from before 2026-10-15 none before its last counted day; the desktop app's fold of the game's rows begins the day after its earliest row unless they begin the history), so a day before it is unknown; dx (2026-10-15; absent: no covered day gained XP, or an older addon, which sends no dxFrom either) lists the XP the fold counted on each covered game day, by each gain's own row time and every character's (the save is the account's), ascending, a day with XP alone (a covered day absent gained none), each { \"YYYY-MM-DD\", the XP }, a day dated after at's (a clock set back) among them; the Saga's XP tile and cards show a day's, a week's the sum of its days' (unknown for a week reaching before dxFrom), and the level at a day's start is the one of xp less that day's and every later day's (contract/fixtures/history.json saga rule 15); bd (2026-10-15; absent: before a move) lists the game's two best days of all time, each { \"YYYY-MM-DD\", the moves }, the most first and of two alike the earlier, which an app whose rows begin later weighs for a day's old best (rule 4); the snapshot leaves all three out; rh (slice 44, 2026-10-18; absent: an app's own summary, or an older addon, which bounds nothing) is the save's ring horizon, the latest row time its baseline folded (0 while no row has left the ring), which the game's own summaries carry, the strip's and the export's (the snapshot leaves it out): an app's Correct a count lists only the sets after it of the last correct_days game days (contract/library.json), the ones the game's fold still reads, so a correction from any device reaches every fold. Beside them the addon's other words the apps show: the joints of the pain flags, the exercise groups and the equipment and body switches by key, the experience question the apps ask with its answers, the safety note, which the Menu's Safety note page shows, and the words of the early-days steps the apps' own pumps take from the game (docs/plan.md slice 17): the joint picker, the day-2 check-in, the count's hints, buttons and limits (with the Really? lines of a count far above or far below the record), the felt-unwell view's title, Swap and the target lines the phones' Ready view shows under a move (Panel.lua goalOf: a first max set's, a hold's, and each with the rung's top that is enough for the next rung; a placement's with the record that stays; an all-out window's build and fast seconds and a counted set's count seconds, each from the window's go); %d stands for a number and %s for a name or an amount, as the addon formats them. Since slice 30: focus lists the player's focus choices by code (the focus row's reps, ns.Enum.focus; 1 Balanced, the default and the one the game recommends), each with its name as the game's focus window shows it (no line under it since 2026-10-22: what each does is the game's tooltip); regions names the body's regions a move's region takes (contract/library.json), in the order the Book's filters list them; blocks names the day plan's blocks a move's block takes (contract/library.json) beside strength, whose moves the regions filter (a strength move without a region, a carry or the good morning, shows under All alone), in the order the Book's filters list them after the regions; fc, the summary's focus, is the code of the latest focus row (an id of focus), absent before one (Balanced, which the game has still to ask about), which a phone folds as the oldest focus row, so any focus row it holds wins over it; the snapshot keeps it. Since slice 34: gear_order lists the equipment keys of gear in the game's order (ns.Gear: the two supports first, the pole outdoors last), the order the phones' Your setup lists its equipment in, any key it lacks after them. Since 2026-10-13: gear_tips holds each equipment key's explanation, the words of the game's equipment tooltip (what counts as the piece and what it is for), which the desktop app's Your setup shows on hover and keyboard focus over a gear chip and the phones' on a touch and hold of one, beside what it would open now. Since slice 36: trees lists the three talent trees (Core.lua ns.TREES) in their order, each with its key, its name as the game's Talents tab names it and its branches, each a key (a gap between columns with no name of its own) and its ladders in column order, every live ladder once; order stays for the list. Since 2026-11-03: gear_groups sorts gear_order into the equipment's five groups in order (Library.lua ns.GearGroups), each its key and its gear, every key of gear_order in exactly one group and in gear_order's order within it; a group's name is copy's places.gear.group.<key>, the head the phones' and the desktop app's place page and Your setup open and close",
+  "blocks": [
+    {
+      "key": "cardio",
+      "name": "Cardio"
+    },
+    {
+      "key": "mobility",
+      "name": "Mobility"
+    },
+    {
+      "key": "yoga",
+      "name": "Yoga"
+    }
+  ],
+  "builds": {
+    "bear": "of the Bear",
+    "boar": "of the Boar",
+    "eagle": "of the Eagle",
+    "falcon": "of the Falcon",
+    "gorilla": "of the Gorilla",
+    "monkey": "of the Monkey",
+    "owl": "of the Owl",
+    "tiger": "of the Tiger",
+    "whale": "of the Whale",
+    "wolf": "of the Wolf"
+  },
+  "experience": {
+    "none": "None",
+    "some": "Some",
+    "title": "Strength training so far",
+    "training": "Training now"
+  },
+  "focus": [
+    {
+      "id": 1,
+      "key": "balanced",
+      "name": "Balanced"
+    },
+    {
+      "id": 2,
+      "key": "strength",
+      "name": "Strength"
+    },
+    {
+      "id": 3,
+      "key": "endurance",
+      "name": "Endurance"
+    },
+    {
+      "id": 4,
+      "key": "flexibility",
+      "name": "Flexibility"
+    }
+  ],
+  "gear": {
+    "backpack": "Backpack you can load to 5-15 kg (books or water bottles)",
+    "ball": "Medicine ball",
+    "bands": "Bands with a door anchor",
+    "bar": "Pull-up bar",
+    "barbell": "Barbell and rack",
+    "bike": "Exercise bike",
+    "door_towel": "Towel and door",
+    "dumbbells": "Dumbbells",
+    "fixed_bar": "Fixed pull-up bar (not a doorway bar)",
+    "floor": "Floor moves",
+    "kettlebell": "Kettlebell",
+    "noheaddown": "Avoid head-down positions",
+    "nojump": "No jumping",
+    "nostrain": "Avoid breath-hold strain",
+    "pad": "Walking pad",
+    "parallettes": "Parallettes or two stacks of hard books",
+    "pole": "A pole outdoors (a steel post fixed in the ground)",
+    "quiet": "Quiet mode",
+    "rings": "Rings or straps",
+    "roller": "Foam roller",
+    "rope": "Jump rope",
+    "space": "Room to move",
+    "stable_chair": "Stable chair (no wheels, or a sofa)",
+    "stairs": "Stairs",
+    "step": "Step or box",
+    "table": "Sturdy table",
+    "vest": "Weighted vest",
+    "wheel": "Ab wheel"
+  },
+  "gear_groups": [
+    {
+      "gear": ["stable_chair", "table", "door_towel", "stairs", "backpack"],
+      "key": "home"
+    },
+    {
+      "gear": ["bar", "fixed_bar", "parallettes", "rings", "pole"],
+      "key": "bars"
+    },
+    {
+      "gear": ["bands", "kettlebell", "dumbbells", "barbell", "vest"],
+      "key": "weights"
+    },
+    {
+      "gear": ["rope", "bike", "pad", "step"],
+      "key": "cardio"
+    },
+    {
+      "gear": ["wheel", "ball", "roller"],
+      "key": "core"
+    }
+  ],
+  "gear_order": ["stable_chair", "table", "door_towel", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell", "rope", "bike", "stairs", "pad", "step", "wheel", "parallettes", "rings", "vest", "ball", "roller", "backpack", "pole"],
+  "gear_tips": {
+    "backpack": "A backpack you load with books or water bottles, straps tight. For backpack squats, squat drives and suitcase carries. A kettlebell, dumbbells or a vest take its place in some moves when you have them.",
+    "ball": "A medicine ball. Slams want a slam ball that does not bounce, chest passes one that bounces back off a solid wall. For squats, carries, chops, slams and passes.",
+    "bands": "Resistance bands, and a door anchor you shut in a closed door. Check each band for nicks or tears. For rows, face pulls, curls and help in pull-ups. A small band goes round your knees for the monster walk.",
+    "bar": "A pull-up bar fixed firmly, in a doorway or on a wall, with a stool to step down on. For hangs, pull-ups, hanging knee raises and the front lever.",
+    "barbell": "A barbell with plates in a rack. Set the safeties and put the collars on. For light squats, deadlifts, overhead presses and the landmine press.",
+    "bike": "An exercise bike, its seat at hip height and your feet secure on the pedals. For quick spins, hard rides and short sprints as cardio.",
+    "door_towel": "A bath towel and a solid door that you push to open, its hinges on the far side. Never glass, sliding or folding. For the towel rows, the towel knotted at one end and laid over the door's top.",
+    "dumbbells": "A pair of dumbbells, light ones of 2-5 kg for raises to start. For goblet squats, lunges, curls, raises and carries. In rows, deadlifts and hip thrusts they take the place of a bag or a jug.",
+    "fixed_bar": "A bar bolted to a wall, a ceiling or a rack, with room above it. Never a doorway bar. For muscle-ups, bar dips and fast pull-ups, and it counts for every pull-up bar move too.",
+    "kettlebell": "A kettlebell, 8-16 kg to start. For swings, goblet squats, halos and carries. In rows, deadlifts and hip thrusts it takes the place of a bag or a jug.",
+    "pad": "A walking pad or a treadmill, its safety key clipped on or a hand rail in reach. For quick, brisk and fast walks as cardio.",
+    "parallettes": "Parallettes, or two equal stacks of hard books on a firm floor, never chairs on wheels. They raise your hands in the L-sits.",
+    "pole": "A steel pole fixed in the ground outdoors that does not turn, with soft ground under you. Never a sign post. For the human flag and the steps that lead up to it.",
+    "rings": "Gymnastics rings or straps, fixed firmly to something that holds your full weight. For ring rows, presses, Y-raises, fallouts, hamstring curls, help in pistols and the front lever.",
+    "roller": "A foam roller. For slow rolls along your calves, thighs, hips and back, leaning your upper back over it, and the dead bug lying along it.",
+    "rope": "A jump rope. Wear shoes, with clear space overhead and around you. For rope cardio, from slow bounces up to double-unders.",
+    "stable_chair": "A chair with no wheels, its back against a wall, or a sofa. For incline push-ups, single-leg hip thrusts and a foot rest in assisted pull-ups. Nordic curls want a heavy sofa, never a chair.",
+    "stairs": "Stairs with a handrail, kept clear. For stair climbs, step push-ups, step-downs and heel drops. The all-out climb wants three clear flights.",
+    "step": "A sturdy step or box that cannot slide or wobble. For step-ups, step-overs and split squats with the back foot up. It stands in for the bottom stair, and goes under a fixed bar for muscle-ups.",
+    "table": "A heavy table on four legs that does not lift, slide or creak when you lean on its edge and pull. Never glass, folding, a standing desk or one with monitors. You lie under it and pull your chest to the edge.",
+    "vest": "A weighted vest, 5-10 kg to start, snug and even. It adds load to squats, step-ups, wall sits and stair climbs, and takes the backpack's place in squat drives.",
+    "wheel": "An ab wheel, with a folded towel under your knees. For rollouts, from short ones to a wall up to full ones standing."
+  },
+  "groups": {
+    "backpack": "Backpack loaded with books or bottles",
+    "ball": "Medicine ball",
+    "bands": "Bands",
+    "bar": "Pull-up bar",
+    "barbell": "Barbell",
+    "bike": "Exercise bike",
+    "calf": "Calves",
+    "cardio": "Cardio",
+    "carry": "Carries",
+    "core": "Core",
+    "dumbbells": "Dumbbells",
+    "hinge": "Hinge",
+    "kettlebell": "Kettlebell",
+    "lunge": "Lunges",
+    "mobility": "Mobility",
+    "pad": "Walking pad",
+    "pole": "A pole outdoors",
+    "pull": "Pull",
+    "push": "Push",
+    "rings": "Rings",
+    "roller": "Foam roller",
+    "rope": "Jump rope",
+    "situp": "Sit-ups",
+    "squat": "Squats",
+    "stairs": "Stairs",
+    "step": "Step or box",
+    "vest": "Weighted vest",
+    "wheel": "Ab wheel",
+    "yoga": "Yoga"
+  },
+  "joints": [
+    {
+      "id": 1,
+      "key": "wrist",
+      "name": "Wrist"
+    },
+    {
+      "id": 2,
+      "key": "elbow",
+      "name": "Elbow"
+    },
+    {
+      "id": 3,
+      "key": "knee",
+      "name": "Knee"
+    },
+    {
+      "id": 4,
+      "key": "achilles",
+      "name": "Achilles"
+    },
+    {
+      "id": 5,
+      "key": "back",
+      "name": "Low back"
+    },
+    {
+      "id": 6,
+      "key": "shoulder",
+      "name": "Shoulder"
+    },
+    {
+      "id": 7,
+      "key": "neck",
+      "name": "Neck"
+    },
+    {
+      "id": 8,
+      "key": "hip",
+      "name": "Hip"
+    }
+  ],
+  "ladders": [
+    {
+      "dose": "rep",
+      "id": 1,
+      "key": "push",
+      "kind": "strength",
+      "name": "Push",
+      "rungs": 9,
+      "stat": "strength",
+      "steps": [1, 2, 3, 4, 5, 6, 9, 11, 13]
+    },
+    {
+      "dose": "rep",
+      "id": 2,
+      "key": "squat",
+      "kind": "strength",
+      "name": "Squat",
+      "rungs": 11,
+      "stat": "strength",
+      "steps": [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
+    },
+    {
+      "dose": "none",
+      "id": 3,
+      "key": "pull",
+      "kind": "retired",
+      "rungs": 0,
+      "steps": []
+    },
+    {
+      "dose": "rep",
+      "id": 4,
+      "key": "hinge",
+      "kind": "strength",
+      "name": "Hinge",
+      "rungs": 9,
+      "stat": "strength",
+      "steps": [1, 2, 3, 4, 7, 8, 9, 10, 11]
+    },
+    {
+      "dose": "none",
+      "id": 5,
+      "key": "corehold",
+      "kind": "retired",
+      "rungs": 0,
+      "steps": []
+    },
+    {
+      "dose": "cardio",
+      "id": 6,
+      "key": "cardio",
+      "kind": "cardio",
+      "name": "Cardio",
+      "rungs": 9,
+      "stat": "agility",
+      "steps": [1, 2, 3, 4, 5, 6, 8, 10, 11]
+    },
+    {
+      "dose": "hold",
+      "id": 7,
+      "key": "wallsit",
+      "kind": "strength",
+      "name": "Wall sit",
+      "rungs": 5,
+      "stat": "stamina",
+      "steps": [2, 4, 5, 6, 7]
+    },
+    {
+      "dose": "hold",
+      "id": 8,
+      "key": "pullup",
+      "kind": "strength",
+      "name": "Pull-up",
+      "rungs": 9,
+      "stat": "strength",
+      "steps": [4, 5, 6, 7, 8, 9, 12, 13, 14]
+    },
+    {
+      "dose": "rep",
+      "id": 9,
+      "key": "row",
+      "kind": "strength",
+      "name": "Row",
+      "rungs": 11,
+      "stat": "strength",
+      "steps": [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13]
+    },
+    {
+      "dose": "hold",
+      "id": 10,
+      "key": "core",
+      "kind": "strength",
+      "name": "Core",
+      "rungs": 11,
+      "stat": "stamina",
+      "steps": [1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13]
+    },
+    {
+      "dose": "hold",
+      "id": 11,
+      "key": "side",
+      "kind": "strength",
+      "name": "Side core",
+      "rungs": 9,
+      "stat": "stamina",
+      "steps": [4, 5, 6, 7, 9, 10, 11, 12, 13]
+    },
+    {
+      "dose": "pose",
+      "id": 12,
+      "key": "frontsplit",
+      "kind": "pose",
+      "name": "Front split",
+      "rungs": 6,
+      "stat": "spirit",
+      "steps": [1, 3, 5, 7, 9, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 13,
+      "key": "midsplit",
+      "kind": "pose",
+      "name": "Middle split",
+      "rungs": 6,
+      "stat": "spirit",
+      "steps": [1, 3, 5, 7, 9, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 14,
+      "key": "pike",
+      "kind": "pose",
+      "name": "Pike",
+      "rungs": 6,
+      "stat": "spirit",
+      "steps": [1, 2, 4, 6, 8, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 15,
+      "key": "backbend",
+      "kind": "pose",
+      "name": "Backbend",
+      "rungs": 6,
+      "stat": "spirit",
+      "steps": [1, 2, 4, 6, 9, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 16,
+      "key": "twist",
+      "kind": "pose",
+      "name": "Twist",
+      "rungs": 5,
+      "stat": "spirit",
+      "steps": [1, 3, 5, 8, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 17,
+      "key": "ankle",
+      "kind": "pose",
+      "name": "Ankles and squat",
+      "rungs": 6,
+      "stat": "spirit",
+      "steps": [1, 2, 4, 6, 8, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 18,
+      "key": "balance",
+      "kind": "pose",
+      "name": "Balance",
+      "rungs": 6,
+      "stat": "intellect",
+      "steps": [1, 3, 5, 7, 9, 11]
+    },
+    {
+      "dose": "pose",
+      "id": 19,
+      "key": "armbalance",
+      "kind": "pose",
+      "name": "Arm balance",
+      "rungs": 5,
+      "stat": "intellect",
+      "steps": [1, 3, 8, 10, 11]
+    },
+    {
+      "dose": "rep",
+      "id": 20,
+      "key": "handstand",
+      "kind": "strength",
+      "name": "Handstand",
+      "rungs": 6,
+      "stat": "intellect",
+      "steps": [6, 7, 8, 9, 10, 11]
+    },
+    {
+      "dose": "hold",
+      "id": 21,
+      "key": "lsit",
+      "kind": "strength",
+      "name": "L-sit",
+      "rungs": 7,
+      "stat": "stamina",
+      "steps": [4, 5, 6, 7, 8, 10, 12]
+    },
+    {
+      "dose": "hold",
+      "id": 22,
+      "key": "planche",
+      "kind": "strength",
+      "name": "Planche",
+      "rungs": 6,
+      "stat": "strength",
+      "steps": [5, 8, 9, 10, 11, 13]
+    },
+    {
+      "dose": "rep",
+      "id": 23,
+      "key": "power",
+      "kind": "strength",
+      "name": "Power",
+      "rungs": 7,
+      "stat": "agility",
+      "steps": [5, 6, 7, 8, 9, 10, 12]
+    },
+    {
+      "dose": "rep",
+      "id": 24,
+      "key": "situp",
+      "kind": "strength",
+      "name": "Sit-up",
+      "rungs": 6,
+      "stat": "stamina",
+      "steps": [2, 3, 4, 5, 6, 7]
+    }
+  ],
+  "map_steps": [4, 10],
+  "marks": {
+    "bag_hug_squat": "A bag hugged to your chest, heels flat, thighs below level, elbows inside the knees.",
+    "bed_drop_back": "Heels a forearm from the edge, hands down on it and back up to standing, five times.",
+    "bed_foot_lunge": "Back foot on the bed, front thigh level, front shin upright, body tall, hands off.",
+    "bed_heel_hamstring": "Hand halfway down the raised thigh, both legs straight, back flat.",
+    "bed_hip_stretch": "Back flat on the bed, other knee hugged, hanging thigh level or lower, leg relaxed.",
+    "bed_leg_pull": "Raised foot over your chest, both knees straight, the other leg flat on the bed.",
+    "bed_wheel": "Arms straight, hips up, head free.",
+    "big_toe_hold": "Leg straight at hip height, held by the big toe or a towel round the foot, hand on hip.",
+    "bound_revolved_triangle": "Knees straight, lower arm under the front thigh, hands clasped behind or on a towel.",
+    "bound_side_angle": "Back knee straight, arms round the front thigh, hands clasped behind or on a towel.",
+    "bound_squat": "Feet together, heels on the floor, arms round the shins, hands clasped or on a towel.",
+    "bound_twist": "Arm round the bent knee, hands clasped behind your back or on a towel, long leg flat.",
+    "bow": "Hands round the ankles, arms straight, chest and thighs off the floor.",
+    "butterfly": "Knees two fists off the bed, soles together, heels a forearm from your body, sitting tall.",
+    "butterfly_deep": "Knees a fist from the bed, heels a hand from your body, fingertips ahead, back long.",
+    "calf_stretch": "Back heel flat, back knee straight, back foot pointing forward.",
+    "camel": "Both palms on the heels, thighs upright.",
+    "chair_hamstring": "Leg straight, heel down, fingertips touch the ankle.",
+    "chair_hamstring_press": "Leg straight, heel down, fingertips touch the ankle.",
+    "chair_leg_lift": "Leg straight and level with the seat, back tall, no hands.",
+    "chair_toe_reach": "Leg straight, heel down, fingers curled over the tips of the toes.",
+    "chair_twist": "Chest turned halfway to the side, knees forward, hands on the desk edge and chair back.",
+    "chair_twist_press": "After the third round, chest halfway to the side, knees forward, hands on desk and chair.",
+    "chest_opener": "Hands clasped, arms straight, hands a hand's width off your back, chest up.",
+    "chest_to_knees_bed": "Forehead to the knees, hands round the soles, knees straight.",
+    "chest_to_knees_press": "Forehead to the knees, hands round the soles, knees straight.",
+    "cobra": "Hips on the floor, belly button off it, elbows bent by your sides, shoulders down.",
+    "couch_arms_up": "Back shin up the bed or sofa, body upright, arms straight up by your ears.",
+    "couch_stretch": "Back shin up the bed or sofa, body upright, hands off the front knee.",
+    "crane": "Knees high on the upper arms, arms straight, both feet off the floor for 10 s.",
+    "crow": "Both feet off the floor for 20 s, knees on the upper arms.",
+    "crow_books": "Both feet off the books for 10 s, knees on the upper arms.",
+    "crow_one_foot": "One foot off the floor for the whole hold on each side, knees on the upper arms.",
+    "crow_prep": "Shins on the upper arms, both heels up, shoulders over the fingertips.",
+    "dancer": "Both hands hold the back foot, or a towel round it, over your head, thigh level.",
+    "deep_squat": "Heels on the floor, palms together, elbows inside the knees, no hands down.",
+    "deep_squat_press": "Heels on the floor, hips low, palms together, elbows inside the knees, no hands down.",
+    "desk_chest_sink": "Forearms on the desk, hips over the feet, chest sunk below the elbows.",
+    "desk_half_fold": "Back flat and level with the floor, knees straight, head between the arms.",
+    "desk_heel_hold": "Heel on the desk, both knees straight, standing tall, hips level.",
+    "desk_planche_lean": "Body straight on tiptoes, arms straight, upper back round, shoulders over the fingertips.",
+    "desk_planche_press": "After three presses: body straight, arms straight, shoulders over the fingertips.",
+    "desk_squat": "Heels flat on the floor, thighs below level, hands light on the desk.",
+    "desk_squat_press": "Heels flat on the floor, hips sunk below the knees, hands light on the desk.",
+    "desk_updog": "Arms straight, hips a hand's width from the desk's edge, chest lifted, shoulders down.",
+    "doorway_hamstring": "Seat a foot's length from the wall, leg straight up it, the other leg flat.",
+    "doorway_hamstring_wall": "Seat at the wall, leg straight up it, the other leg flat through the door.",
+    "downward_dog": "Knees straight, back flat, hips high, arms in line with your ears.",
+    "eagle": "Thighs crossed, top foot hooked or hanging, arms crossed at the elbows, no touch-down.",
+    "eagle_towel": "On the folded towel, thighs crossed, foot hooked or hanging, arms crossed, no touch-down.",
+    "easy_twist": "Sitting tall and cross-legged, chest turned halfway to the side, hand on the floor behind.",
+    "face_to_shins": "Face on the shins, chest on the thighs, knees straight.",
+    "feet_together_press": "Feet and knees together, heels on the floor, hips low, hands round the ankles.",
+    "feet_together_reach": "Feet and knees together, heels down, arms reaching forward, no hands on the legs.",
+    "feet_together_squat": "Feet and knees together, heels on the floor, hands round the ankles.",
+    "figure_four": "Crossed shin level, its knee no higher than its ankle, back flat.",
+    "figure_four_fold": "Ankle across the standing knee, back long, chest directly over the crossed shin.",
+    "fingertip_lean": "Only fingertips and thumbs down, palms lifted, arms straight, shoulders over the fingers.",
+    "firefly": "Legs straight over the arms, both feet off the floor, arms straight for 10 s.",
+    "floor_reverse_lean": "Fingers toward your knees, palms flat, arms straight, shoulders a fist behind the wrists.",
+    "floor_wrist_lean": "Knees down, palms flat, fingers forward, arms straight, shoulders over the fingertips.",
+    "flying_pigeon": "Shin across both upper arms, back leg straight and off the floor for 10 s.",
+    "flying_pigeon_prep": "Shin across both upper arms, foot hooked, back foot on the books, hips level.",
+    "flying_splits": "Front leg straight over the arm, back leg straight, both off the floor for 10 s.",
+    "flying_splits_prep": "Front leg straight and lifted, back toes down, back leg straight, for the whole hold.",
+    "foot_up_twist": "Foot on the bed edge, hips level, far upper arm against the outside of the raised knee.",
+    "forehead_to_knees": "Palms flat beside the feet, forehead to the knees.",
+    "forward_fold": "Fingertips touch the floor, both knees straight.",
+    "frog_chest": "Chest and belly on the floor, hips in line with the knees, shins parallel, arms long.",
+    "frog_pose": "Hips in line with your knees, belly a hand from the floor, shins parallel, forearms down.",
+    "front_split": "Both thighs flat on the floor, no books under the hips, hips square, knees straight.",
+    "half_fish_bound": "Bottom heel by your hip, arm round the raised knee, hands clasped behind or on a towel.",
+    "half_fish_foot_hold": "Foot over the long knee, far arm straight outside the bent knee, hand holding that foot.",
+    "half_fish_twist": "Foot over the long knee, far armpit against the outside of the bent knee, eyes past it.",
+    "half_kneel_ankle": "Half kneeling, front heel flat, front knee a fist past the toes, body upright.",
+    "half_moon_books": "Palm on the books, top leg level, hips stacked, top arm straight up.",
+    "half_moon_bow": "Bottom hand a fist off the books, top hand on the foot or towel, thigh level, chest open.",
+    "half_moon_float": "Top leg level, hips stacked, bottom hand a fist above the books, top arm straight up.",
+    "half_split_books": "Back knee under the hip, front knee straight, back long, hands on books by the hips.",
+    "half_split_lift": "Front heel a finger off the floor, knee straight, toes up, back long, hands on books.",
+    "head_knee_chest": "Forehead to the knee, hands round the foot, knee down.",
+    "head_knee_face": "Face on the shin, chest on the thigh, knee down.",
+    "head_knee_hold": "Both hands round the foot, knee down, back long.",
+    "head_knee_reach": "Fingertips touch the toes, knee straight and down on the bed.",
+    "heel_raised_desk_squat": "Heels raised on a book or towel, thighs below level, hands light on the desk.",
+    "heel_raised_squat": "Heels raised on a book or towel, thighs below level, palms together, no hands down.",
+    "heel_reach_fold": "Fingertips on the floor beside the heels, both knees straight.",
+    "high_lunge": "Front thigh level, back knee straight, arms up, no hand on the knee or the desk.",
+    "hip_flexor_stretch": "Back knee down, tailbone tucked, front shin upright, chest tall, hands off the knee.",
+    "hip_stretch_desk": "Feet a long step apart, back knee straight, seat squeezed, standing tall and steady.",
+    "horse_stance": "Thighs halfway to level, feet twice shoulder-width, toes ahead, knees out, chest up.",
+    "horse_stance_deep": "Thighs level, feet twice shoulder-width, toes ahead, knees over the toes, chest up.",
+    "knee_hug_stand": "Knee hugged to your chest, standing leg straight, standing tall, no touch-down.",
+    "knee_out_hold": "Bent knee out to the side at hip height, hands on hips for 5 s, hips level.",
+    "knee_over_toe_hover": "Front heel flat, front thigh on the calf, back knee off the floor, body upright, no hands.",
+    "knee_over_toe_kneel": "Front heel flat, front thigh resting on the calf, back knee down, body upright.",
+    "knee_to_wall": "Front toes four fingers from the wall, front knee touching it, front heel flat.",
+    "kneeling_reach_back": "Hips forward over the knees, arms by the ears, hands a hand's height off the floor.",
+    "kneeling_turn": "Hips over the knees, hand behind your head, elbow pointing straight at the ceiling.",
+    "leg_lift_desk": "Toes up and level with the desk top, both knees straight, standing tall and steady.",
+    "leg_lift_hip": "Heel held at hip height, both knees straight, toes up, standing tall and steady.",
+    "leg_up_no_hands": "Leg straight ahead at hip height, hands on hips, held with no hands for 5 s.",
+    "lizard_books": "Forearms on books inside the front foot, back knee straight and off the floor, hips low.",
+    "lizard_forearms": "Forearms flat on the floor inside the front foot, back knee straight and lifted.",
+    "locust": "Chest, arms and both straight legs off the floor, belly down, neck long.",
+    "locust_hands_head": "Elbows wide and level with the ears, chest and straight legs off the floor.",
+    "low_lunge": "Back knee down, hips sunk lower than the front knee, chest tall, arms up.",
+    "lunge_foot_hold": "Back knee on the towel, back heel a hand from the seat, body upright and steady.",
+    "lunge_prayer_twist": "Back knee straight, far elbow outside the front knee, palms together, chest up.",
+    "lying_butterfly": "Knees two fists from the bed, soles together, heels a hand from your seat, back resting.",
+    "lying_hamstring": "Heel above the middle of the other thigh, leg straight, the other leg flat on the bed.",
+    "lying_hamstring_deep": "Heel over the belly button, leg straight, the other leg flat on the bed.",
+    "lying_leg_lift": "Heel above the other knee, leg straight, no hands, the other leg flat.",
+    "lying_leg_to_face": "Shin a hand's width from the face, leg straight, the other leg flat.",
+    "lying_toes_to_chin": "Toes over the chin, leg straight, head and the other leg flat on the bed.",
+    "middle_split": "Legs out to the sides, hips on the floor or a folded towel, hands on floor or books.",
+    "middle_split_fold": "Forearms on the floor, hips on the floor or a folded towel, legs out to the sides.",
+    "middle_split_prep": "Hips a hand from the floor, both knees straight, hands on the floor or books.",
+    "middle_split_press": "Hips on the floor or a folded towel, legs out to the sides, hands on the floor or books.",
+    "narrow_squat": "Feet a fist apart, toes ahead, heels on the floor, thighs below level, no hands down.",
+    "ninety_ninety": "Both shins at right angles, sitting tall, hands off the bed.",
+    "ninety_ninety_lift": "Back shin and foot off the bed, both knees at right angles, sitting tall.",
+    "noose": "Heels on the floor, feet together, arm round both thighs, hands or a towel clasped behind.",
+    "noose_press": "Feet together, heels on the floor, arm round both thighs, hands or a towel clasped.",
+    "noose_reach": "Feet together, heels on the floor, armpit past both knees, both arms reaching, no bind.",
+    "one_leg_wheel": "One leg straight up, arms straight, hips high and level, head free.",
+    "overhead_squat": "Heels flat, thighs below level, arms reaching up and forward, elbows straight.",
+    "pancake": "Legs wide, kneecaps up, chest and chin on the floor.",
+    "pancake_press": "Chest and chin on the floor, legs wide, kneecaps up, back long.",
+    "peacock": "Elbows in the belly, fingers back, body level and both feet off the floor for 10 s.",
+    "pec_stretch": "Elbow at shoulder height on the frame, chest stepped through level with the frame.",
+    "pendant": "Hands on the books, shins crossed, knees and feet off the floor for 10 s.",
+    "pendant_prep": "Hands on the books, shins crossed, seat and knees off the floor, back round.",
+    "pigeon": "Front shin across, both hips level and down, no cushion, back leg long behind you.",
+    "pike_fold": "Chest on the thighs, chin on the shins, knees down.",
+    "pike_fold_bed": "Face on the shins, knees straight.",
+    "pike_fold_bed_press": "Face on the shins, knees straight.",
+    "prasarita": "Palms flat on the floor between the feet, no books, both knees straight.",
+    "pyramid": "Fingertips on the floor beside the front foot, both knees straight, hips square.",
+    "pyramid_desk": "Front leg straight, hips square, back flat and level with the floor.",
+    "pyramid_desk_press": "Front leg straight, hips square, back level with the floor after the last round.",
+    "quad_stretch": "Heel on the buttock, held by the hand or a towel, knees side by side, standing tall.",
+    "quad_stretch_press": "Heel on the buttock after the last round, knees side by side, standing tall.",
+    "reverse_wrist_lean": "Fingers pointing at you, palms flat, arms straight, shoulders a fist behind the wrists.",
+    "revolved_chair": "Palms together, elbow outside the opposite knee, knees level.",
+    "revolved_half_moon": "Standing knee straight, back leg level, hand on the floor, chest turned, top arm up.",
+    "revolved_half_moon_books": "Standing knee straight, back leg level, hand on the books, chest turned, top arm up.",
+    "revolved_triangle": "Palm flat on the floor outside the front foot, no book, knees straight, arm up.",
+    "revolved_wide_fold": "Knees straight, back flat, palm flat on the floor under your shoulder, top arm up.",
+    "seated_fold": "Hands hold the soles, backs of the knees on the floor.",
+    "seated_fold_bed": "Hands hold the soles, backs of the knees down.",
+    "seated_fold_bed_press": "Hands hold the soles, backs of the knees down.",
+    "side_crane": "Knees stacked on one upper arm, arms straight, both feet off the floor for 10 s.",
+    "side_crow": "Both feet in the air (no book under them), knees stacked on one arm, for the whole hold.",
+    "side_crow_one_leg": "Bottom knee on the arm, top leg straight to the side, both feet up for 10 s.",
+    "side_crow_straight": "Hip on one arm, both legs straight to the side and off the floor for 10 s.",
+    "side_lunge": "Bent thigh level, other leg straight with its heel down, feet five foot-lengths apart.",
+    "side_lunge_press": "Bent thigh level, other leg straight with its heel down, feet five foot-lengths apart.",
+    "side_lying_twist": "Top knee resting on the bottom knee, back of the top hand resting on the floor.",
+    "side_split_press_bed": "Hips a hand from the floor, knees straight, kneecaps forward, hands on the bed.",
+    "side_toe_hold": "Straight leg out to the side, foot at knee height, toe or towel held, hips level.",
+    "side_wrist_lean": "Fingers pointing out, palms flat, arms straight, shoulders a fist past the leaning wrist.",
+    "soleus_stretch": "Back heel flat, back knee bent over the toes, back foot pointing at the wall.",
+    "sphinx": "Elbows under the shoulders, forearms flat, chest lifted, hips on the floor.",
+    "spinal_twist": "Sitting tall, elbow outside the bent knee, chest turned past that knee.",
+    "spinal_twist_press": "After the third round, sitting tall, elbow outside the bent knee, chest past that knee.",
+    "split_arms_up": "Both thighs flat on the floor, hips square, body upright, both arms straight up.",
+    "split_fold": "Both thighs flat on the floor, hips square, back long, chest low over the front thigh.",
+    "split_low": "Hips within 15 cm of the floor, both knees straight, hands on the floor or books.",
+    "split_low_press": "Hips within 15 cm of the floor, both knees straight, hips square, hands on books.",
+    "split_low_tall": "Hips within 15 cm of the floor, body upright, both knees straight, hands on books.",
+    "split_prep": "Hips within 30 cm of the floor, both knees straight, hands on the floor or books.",
+    "split_prep_press": "Hips within 30 cm of the floor, both knees straight, hips square, hands on books.",
+    "squat_prayer_twist": "Feet together, heels on the floor, elbow outside both knees, palms pressed together.",
+    "squat_twist_wall": "Feet together, heels on the floor, armpit outside the knees, both hands on the wall.",
+    "staff_pose_bed": "Back on the wall, legs straight and together, backs of the knees down, hands off the bed.",
+    "stand_to_stand": "Down to the wheel and back up to standing, no wall, three times.",
+    "standing_backbend": "Hands on the low back, chest lifted, hips over the feet, eyes on the ceiling.",
+    "standing_calf_backbend": "Palms on the calves, hips forward over the toes, legs nearly straight.",
+    "standing_figure_four": "Ankle across the standing knee, crossed shin level, seat back, palms together.",
+    "standing_hang_back": "Hands at knee height behind you, hips forward over the toes, arms by the ears.",
+    "standing_knee_backbend": "Palms halfway down the backs of the thighs, hips over the toes, chest lifted.",
+    "standing_straddle_bed": "Seat a forearm from the floor, knees straight, kneecaps forward, hands on the bed.",
+    "stork_head_turns": "Shin level behind you, hands on hips, head turning slowly side to side, no touch-down.",
+    "straddle_desk": "Feet wide, knees straight, back long, chest level with the desk.",
+    "straddle_fold": "Legs at least a right angle apart, kneecaps up, forearms on the floor.",
+    "straddle_heel_lift": "Both heels just off the floor, legs a right angle or wider, knees straight, sitting tall.",
+    "straddle_press": "Legs at least a right angle apart, kneecaps up, forearms on the floor, back long.",
+    "tiptoe_eagle": "Heel high for 10 s, thighs crossed, foot hooked or hanging, arms crossed, no touch-down.",
+    "tiptoe_tree": "Heel high for 10 s, sole on the inner calf or thigh, hands together, no touch-down.",
+    "toe_hold_fold": "Big toes hooked by two fingers, both knees straight.",
+    "towel_eyes_closed": "On the folded towel, eyes closed for 5 s of the hold, hands on hips, no touch-down.",
+    "towel_reach": "Towel under the shoulder blades, arms straight overhead, backs of the hands on the floor.",
+    "towel_stand": "On the folded towel, thigh level in front, hands on hips, no touch-down.",
+    "tree_eyes_closed": "Eyes closed for 10 s of the hold, no touch-down and no hand on the desk.",
+    "tree_eyes_up": "Sole on the inner calf or thigh, arms straight up, eyes on the ceiling, no touch-down.",
+    "tree_pose": "Sole on the inner calf or thigh, hands together, no touch-down.",
+    "twisted_triangle_books": "Palm flat on the books outside the front foot, knees straight, top arm up.",
+    "upward_plank": "Arms straight under the shoulders, body one straight line, soles reaching down.",
+    "wall_angels": "Arms straight by your ears, thumbs a fist from the wall, low back within a hand of it.",
+    "wall_books_wheel": "Hands on the books, arms straight, hips up, head free.",
+    "wall_lean_back": "Hands down the wall to head height, hips forward, arms straight.",
+    "wall_straddle": "Legs open two thirds of the way to the floor, knees straight, heels on the wall.",
+    "wall_twist": "Hips and knees facing ahead, both palms flat on the wall at chest height.",
+    "wall_walk": "Walk down the wall to the wheel and back up, five times.",
+    "wall_walk_half": "Walk down the wall to hip height and back up, five times.",
+    "wall_warrior3": "Hands on the wall, body and back leg level with the floor, standing leg straight.",
+    "warrior3": "Arms, body and back leg level with the floor, standing leg straight, hands off the desk.",
+    "wheel": "Up to the wheel five times, arms straight, head off the floor, last held 20 s.",
+    "wheel_foot_lift": "Each foot a hand's height off the floor for 2 s, arms straight, hips high.",
+    "wheel_heels": "Fingertips on the heels, arms straight, hips high over the feet.",
+    "wheel_lean": "Shoulders over the wrists, arms straight, up on the balls of the feet.",
+    "wheel_walk_in": "Hands a shin's length from the heels, arms straight, hips high.",
+    "wide_chair_stretch": "Hands on your knees, heels four foot-lengths apart, knees straight, back flat.",
+    "wide_childs_pose": "Seat on your heels, knees twice hip-width apart, big toes touching, forehead down.",
+    "wide_sit_bed": "Legs a right angle apart or more, knees straight, kneecaps up, sitting tall, hands off.",
+    "wrist_lean": "Palms flat, fingers forward, arms straight, shoulders a fist past the wrists.",
+    "wrist_lean_press": "After three presses: palms flat, fingers forward, shoulders a fist past the wrists."
+  },
+  "muscles": [
+    {
+      "id": 1,
+      "name": "Shoulders"
+    },
+    {
+      "id": 2,
+      "name": "Chest"
+    },
+    {
+      "id": 3,
+      "name": "Biceps"
+    },
+    {
+      "id": 4,
+      "name": "Forearms and grip"
+    },
+    {
+      "id": 5,
+      "name": "Abs"
+    },
+    {
+      "id": 6,
+      "name": "Obliques"
+    },
+    {
+      "id": 7,
+      "name": "Quads"
+    },
+    {
+      "id": 8,
+      "name": "Inner thighs"
+    },
+    {
+      "id": 9,
+      "name": "Neck and traps"
+    },
+    {
+      "id": 10,
+      "name": "Upper back"
+    },
+    {
+      "id": 11,
+      "name": "Lats"
+    },
+    {
+      "id": 12,
+      "name": "Triceps"
+    },
+    {
+      "id": 13,
+      "name": "Lower back"
+    },
+    {
+      "id": 14,
+      "name": "Glutes"
+    },
+    {
+      "id": 15,
+      "name": "Hamstrings"
+    },
+    {
+      "id": 16,
+      "name": "Calves and shins"
+    },
+    {
+      "id": 17,
+      "name": "Heart"
+    },
+    {
+      "id": 18,
+      "name": "Breath"
+    },
+    {
+      "id": 19,
+      "name": "Balance"
+    }
+  ],
+  "order": [1, 2, 8, 9, 4, 22, 24, 6, 23, 10, 11, 7, 21, 18, 19, 20, 12, 13, 14, 15, 16, 17],
+  "qualities": ["Starter", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Artifact"],
+  "ratings": {
+    "crit": "Crit Chance",
+    "defense": "Defense",
+    "expertise": "Expertise"
+  },
+  "regions": [
+    {
+      "key": "push",
+      "name": "Push"
+    },
+    {
+      "key": "pull",
+      "name": "Pull"
+    },
+    {
+      "key": "legs",
+      "name": "Legs"
+    },
+    {
+      "key": "trunk",
+      "name": "Trunk"
+    }
+  ],
+  "safety": "A game, not medical advice. Stop and get help for chest pain, fainting, unusual breathlessness or a racing heart. Severe muscle pain, swelling or dark urine after a session needs a doctor that day. Ask a clinician first if you have heart, lung, kidney or metabolic disease or high blood pressure, are pregnant or had recent surgery.",
+  "stats": [
+    {
+      "key": "strength",
+      "name": "Strength"
+    },
+    {
+      "key": "agility",
+      "name": "Agility"
+    },
+    {
+      "key": "stamina",
+      "name": "Stamina"
+    },
+    {
+      "key": "intellect",
+      "name": "Intellect"
+    },
+    {
+      "key": "spirit",
+      "name": "Spirit"
+    }
+  ],
+  "titles": [
+    {
+      "id": 1,
+      "key": "initiate",
+      "name": "the Initiate"
+    },
+    {
+      "id": 2,
+      "key": "tested",
+      "name": "the Tested"
+    },
+    {
+      "id": 3,
+      "key": "recordBreaker",
+      "name": "the Record Breaker"
+    },
+    {
+      "id": 4,
+      "key": "circuitRider",
+      "name": "Circuit Rider"
+    },
+    {
+      "id": 5,
+      "key": "hubHopper",
+      "name": "Hub Hopper"
+    },
+    {
+      "id": 6,
+      "key": "cleanSlate",
+      "name": "Clean Slate"
+    },
+    {
+      "id": 7,
+      "key": "steadfast",
+      "name": "the Steadfast"
+    },
+    {
+      "id": 8,
+      "key": "ding",
+      "name": "Ding!"
+    },
+    {
+      "id": 9,
+      "key": "starryEyed",
+      "name": "Starry-eyed"
+    },
+    {
+      "id": 10,
+      "key": "relentless",
+      "name": "the Relentless"
+    },
+    {
+      "id": 11,
+      "key": "wallSitter",
+      "name": "Wall-sitter"
+    },
+    {
+      "id": 12,
+      "key": "ironLegged",
+      "name": "Iron-legged"
+    },
+    {
+      "id": 13,
+      "key": "unbroken",
+      "name": "the Unbroken"
+    },
+    {
+      "id": 14,
+      "key": "sprinter",
+      "name": "Sprinter"
+    },
+    {
+      "id": 15,
+      "key": "longRoad",
+      "name": "of the Long Road"
+    },
+    {
+      "id": 16,
+      "key": "wanderer",
+      "name": "the Wanderer"
+    },
+    {
+      "id": 17,
+      "key": "climber1",
+      "name": "Push Climber"
+    },
+    {
+      "id": 18,
+      "key": "climber2",
+      "name": "Squat Climber"
+    },
+    {
+      "id": 19,
+      "key": "climber3",
+      "name": "Pull Climber"
+    },
+    {
+      "id": 20,
+      "key": "climber4",
+      "name": "Hinge Climber"
+    },
+    {
+      "id": 21,
+      "key": "climber5",
+      "name": "Core Climber"
+    },
+    {
+      "id": 22,
+      "key": "climber6",
+      "name": "Cardio Climber"
+    },
+    {
+      "id": 23,
+      "key": "climber7",
+      "name": "Wall-sit Climber"
+    },
+    {
+      "id": 24,
+      "key": "mighty",
+      "name": "the Mighty"
+    },
+    {
+      "id": 25,
+      "key": "swift",
+      "name": "the Swift"
+    },
+    {
+      "id": 26,
+      "key": "poised",
+      "name": "the Poised"
+    },
+    {
+      "id": 27,
+      "key": "tireless",
+      "name": "the Tireless"
+    },
+    {
+      "id": 28,
+      "key": "serene",
+      "name": "the Serene"
+    },
+    {
+      "id": 29,
+      "key": "proven",
+      "name": "the Proven"
+    },
+    {
+      "id": 30,
+      "key": "allRounder",
+      "name": "the All-Rounder"
+    },
+    {
+      "id": 31,
+      "key": "exalted",
+      "name": "the Exalted"
+    },
+    {
+      "id": 32,
+      "key": "legendary",
+      "name": "the Legendary"
+    },
+    {
+      "id": 33,
+      "key": "handOfIron",
+      "name": "Hand of Iron"
+    },
+    {
+      "id": 34,
+      "key": "masterOfTheBar",
+      "name": "Master of the Bar"
+    },
+    {
+      "id": 35,
+      "key": "flagbearer",
+      "name": "Flagbearer"
+    },
+    {
+      "id": 36,
+      "key": "defierOfGravity",
+      "name": "Defier of Gravity"
+    },
+    {
+      "id": 37,
+      "key": "worldlifter",
+      "name": "Worldlifter"
+    },
+    {
+      "id": 38,
+      "key": "wingsOfStone",
+      "name": "Wings of Stone"
+    },
+    {
+      "id": 39,
+      "key": "dragonstrider",
+      "name": "Dragonstrider"
+    },
+    {
+      "id": 40,
+      "key": "dragonbane",
+      "name": "Dragonbane"
+    },
+    {
+      "id": 41,
+      "key": "championOfTheNorth",
+      "name": "Champion of the North"
+    },
+    {
+      "id": 42,
+      "key": "stormvaulter",
+      "name": "Stormvaulter"
+    },
+    {
+      "id": 43,
+      "key": "stormrunner",
+      "name": "Stormrunner"
+    },
+    {
+      "id": 44,
+      "key": "duelist",
+      "name": "the Duelist"
+    },
+    {
+      "id": 45,
+      "key": "unwavering",
+      "name": "the Unwavering"
+    },
+    {
+      "id": 46,
+      "key": "unfailing",
+      "name": "the Unfailing"
+    },
+    {
+      "id": 47,
+      "key": "evergreen",
+      "name": "the Evergreen"
+    },
+    {
+      "id": 48,
+      "key": "undying",
+      "name": "the Undying"
+    },
+    {
+      "id": 49,
+      "key": "paragon",
+      "name": "the Paragon"
+    },
+    {
+      "id": 50,
+      "key": "ascendant",
+      "name": "the Ascendant"
+    },
+    {
+      "id": 51,
+      "key": "ageless",
+      "name": "the Ageless"
+    },
+    {
+      "id": 52,
+      "key": "eternal",
+      "name": "the Eternal"
+    },
+    {
+      "id": 53,
+      "key": "kindled",
+      "name": "the Kindled"
+    }
+  ],
+  "trees": [
+    {
+      "branches": [
+        {
+          "key": "push",
+          "ladders": [1, 20, 22]
+        },
+        {
+          "key": "pull",
+          "ladders": [8, 9]
+        },
+        {
+          "key": "legs",
+          "ladders": [2, 4, 24]
+        }
+      ],
+      "key": "strength",
+      "name": "Strength"
+    },
+    {
+      "branches": [
+        {
+          "key": "cardio",
+          "ladders": [6, 23]
+        },
+        {
+          "key": "core",
+          "ladders": [10, 11, 21, 7]
+        }
+      ],
+      "key": "endurance",
+      "name": "Endurance"
+    },
+    {
+      "branches": [
+        {
+          "key": "hips",
+          "ladders": [12, 13, 14, 17]
+        },
+        {
+          "key": "spine",
+          "ladders": [15, 16]
+        },
+        {
+          "key": "balance",
+          "ladders": [18, 19]
+        }
+      ],
+      "key": "flexibility",
+      "name": "Flexibility"
+    }
+  ],
+  "version": 3,
+  "words": {
+    "checkin": {
+      "dark": "Very sore, or dark urine",
+      "fine": "Fine",
+      "question": "Muscles today?",
+      "sore": "Sore"
+    },
+    "count": {
+      "confirm": "%s is far above your record of %s. Is that right?",
+      "confirm_best": "%d clean reps is far above your best of %d. Is that right?",
+      "confirm_first": "%s is far above this step's top of %s. Is that right?",
+      "confirm_kg": "%s kg is far above the %s kg planned. Is that right?",
+      "confirm_low": "%s is far below your record of %s. Is that right?",
+      "could_not": "Could not do one",
+      "could_not_hold": "Could not hold it",
+      "empty": "Done without a count",
+      "hint": "How many did you do?",
+      "hint_side": "How many on your weaker side?",
+      "hold_hint": "How many seconds did you hold?",
+      "hold_hint_side": "How many seconds on your weaker side?",
+      "max": "Max %d: count one set",
+      "really_change": "Change it",
+      "really_keep": "Yes, keep %s",
+      "really_yes": "Yes, record %s",
+      "seconds": "%d s"
+    },
+    "goal": {
+      "at_least": "%d+",
+      "climb": "%s with %d kg or more",
+      "climb_each": "%s with %d kg or more in each hand",
+      "reps": "reps",
+      "reps_one": "rep",
+      "reps_side": "reps each side",
+      "reps_side_one": "rep each side",
+      "secs": "seconds",
+      "secs_side": "seconds each side"
+    },
+    "pain": {
+      "confirm": "Confirm",
+      "where": "Where does it hurt?"
+    },
+    "swap": {
+      "another": "Another move: %s",
+      "back": "Back to: %s",
+      "backup": "Same level: %s",
+      "closest": "Closest your setup allows: %s",
+      "easier": "Easier version: %s",
+      "title": "Swap this move"
+    },
+    "target": {
+      "allout": "All out: %d s build, then %d s as fast as you can.",
+      "count": "%d s all out from the go.",
+      "first": "Stop one rep before your form breaks.",
+      "first_hi": "Stop one rep before your form breaks. At %s you can stop: that starts you a step higher.",
+      "first_hi_hold": "Stop when your form starts to break. At %s you can stop: that starts you a step higher.",
+      "first_hold": "Stop when your form starts to break.",
+      "next": "Your next step opens at %s on this move, on %d more days.",
+      "next_clean": "Your next step needs %d more clean days on this move.",
+      "next_clean_one": "Your next step needs %d more clean day on this move.",
+      "next_one": "Your next step opens at %s on this move, on %d more day.",
+      "next_perfect": "Your next step opens once this pose is Perfect on %d more days.",
+      "next_perfect_one": "Your next step opens once this pose is Perfect on %d more day.",
+      "next_pose": "Your next step opens once this pose is close enough on %d more days.",
+      "next_pose_one": "Your next step opens once this pose is close enough on %d more day.",
+      "placing": "Back from a break · your record: %s"
+    },
+    "titled": "%s, %s",
+    "titled_suffix": "%s %s",
+    "unwell": {
+      "title": "Felt unwell"
+    }
+  }
+}

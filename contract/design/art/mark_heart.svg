@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- The heart-rate proof mark: a heart (two round lobes over a pointed base) split by a pulse line, a flat beat, a
+       spike up and one down; the line is a gap between the heart's two plates, so the ground shows through it. No
+       shade: at 12-16 px beside the record chip's words the gap is the detail that has to read. One colour, never
+       mirrored: the caller tints it (gold on the chip's card). -->
+  <path data-token="tint" fill="currentColor" d="
+    M1.96 7.45 C0.76 5.78 1.12 3.45 2.77 2.23 C4.43 1.01 6.76 1.35 8 3 C9.24 1.35 11.57 1.01 13.23 2.23
+    C14.88 3.45 15.24 5.78 14.04 7.45 L9.79 7.45 L8.55 9.57 L5.55 3.57 L3.29 7.45 Z
+    M12.76 9.05 L8 15 L3.24 9.05 L4.21 9.05 L5.45 6.93 L8.45 12.93 L10.71 9.05 Z"/>
+</svg>

@@ -1,0 +1,31 @@
+{
+ "samples": 32,
+ "card": "#0E0D0B",
+ "floor": {
+  "sun_angle_deg": 20.0,
+  "pool_rgb": "#4a4238",
+  "pool_alpha": 1.0,
+  "pool_power": 3.0,
+  "pool_margin_m": 0.45,
+  "pool_depth_m": 0.8,
+  "shadow_rgb": "#050403",
+  "shadow_alpha": 0.95,
+  "sun_src_cam": [0.0, 1.0, -0.2],
+  "shadow_reach": 2.5
+ },
+ "props": {
+  "gold_w": 1.8,
+  "stone_ramp": [[0.0, "#423a31"], [0.45, "#4e453b"], [0.55, "#51483e"], [1.0, "#71665a"]],
+  "wood_ramp": [[0.0, "#5b402d"], [0.45, "#5b412d"], [0.55, "#604530"], [1.0, "#8c6849"]],
+  "iron_ramp": [[0.0, "#414651"], [0.5, "#515765"], [1.0, "#6a7282"]],
+  "leather_ramp": [[0.0, "#5e3f2a"], [0.5, "#67452f"], [1.0, "#7d553b"]],
+  "gold_ramp": [[0.0, "#2a1a07"], [0.5, "#6b4a18"], [1.0, "#a37a33"]],
+  "mat_ramp": [[0.0, "#313845"], [0.5, "#3b4352"], [1.0, "#4b5567"]],
+  "brick": {"mortar": 0.012, "width": 0.62, "height": 0.3, "block_var": 0.08, "joint": 0.55},
+  "key_src": [0.62, 0.78, 0.52],
+  "key_energy": 1.0,
+  "key_angle_deg": 2.0,
+  "fill_energy": 0.45,
+  "fill_angle_deg": 100.0
+ }
+}

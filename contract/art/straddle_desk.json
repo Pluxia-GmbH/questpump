@@ -1,0 +1,60 @@
+{
+  "move": "straddle_desk",
+  "view": "side",
+  "camera": {"yaw": 40, "pitch": 12},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 89}],
+  "poses": {
+    "set": {
+      "pelvis": [-3.5, 75.2, 0],
+      "trunk": [74, 0, 0],
+      "head": [-16, 0, 0],
+      "arms": {"ik": [96, 77.3, 23], "pole": [0, -1, 0.2], "hand": [1, -0.12, 0]},
+      "legs": {"foot": [0, 66.3], "turn": 0, "knee_out": 0, "pole": [0.2, 0, 1]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {"from": "set", "pelvis": [-6, 75.1, 0], "trunk": [86, 0, 0], "chest": [2, 0, 0], "head": [-14, 0, 0]},
+    "fold_in": {
+      "from": "fold",
+      "pelvis": [-6.5, 74.9, 0],
+      "trunk": [87, 0, 0],
+      "chest": [2.5, 0, 0],
+      "head": [-12, 0, 0]
+    },
+    "rounded": {"from": "fold", "pelvis": [-2, 75.2, 0], "trunk": [76, 0, 0], "chest": [34, 0, 0], "head": [20, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.6, "phase": "hands_on_desk", "effort": 0.4},
+    {"to": "fold", "s": 2.0, "phase": "back_flat", "effort": 0.65},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "set", "s": 2.0, "phase": "rise_slowly", "effort": 0.45}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 160}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "fold", "check": "height", "joint": "neck", "max": 84},
+    {"at": "fold", "check": "offset", "joint": "ankle_far", "from": "pelvis", "axis": "l", "min": 50}
+  ],
+  "note": "The wide-leg fold with the hands on the desk: the hands on its edge, the feet wide with the toes forward, walked back far enough that the back can come level; from there the chest lowers level with the desk with a long back, the head up and the knees straight, and rises again."
+}

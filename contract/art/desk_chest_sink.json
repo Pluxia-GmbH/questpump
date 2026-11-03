@@ -1,0 +1,114 @@
+{
+  "move": "desk_chest_sink",
+  "view": "side",
+  "camera": {"yaw": -24, "pitch": 8},
+  "working": ["back", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 57}],
+  "poses": {
+    "set": {
+      "from": "back",
+      "pelvis": [-17.6, 85.0, 0],
+      "trunk": [91.9, 0, 0],
+      "head": [71.1, 0, 0],
+      "legs": {"foot": [10, 12], "turn": 6, "knee_out": 4}
+    },
+    "near_step": {
+      "from": "set",
+      "pelvis": [-17.7, 87.0, 0],
+      "trunk": [95.6, 0, 0],
+      "head": [67.4, 0, 0],
+      "leg_near": {"foot": [-1, 12], "y": 2, "lift": 0, "turn": 5, "knee_out": 3},
+      "contacts": [
+        "toe_far",
+        "ankle_far",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "near_back": {
+      "from": "set",
+      "pelvis": [-17.6, 90.0, 0],
+      "trunk": [99.9, 0, 0],
+      "head": [63.1, 0, 0],
+      "leg_near": {"foot": [-12, 12], "turn": 6, "knee_out": 4}
+    },
+    "far_step": {
+      "from": "near_back",
+      "pelvis": [-17.5, 91.0, 0],
+      "trunk": [102.4, 0, 0],
+      "head": [60.6, 0, 0],
+      "leg_far": {"foot": [-1, 12], "y": 2, "lift": 0, "turn": 5, "knee_out": 3},
+      "contacts": [
+        "toe_near",
+        "ankle_near",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "back": {
+      "pelvis": [-17.0, 93.5, 0],
+      "trunk": [106, 0, 0],
+      "chest": [-10, 0, 0],
+      "head": [55, 0, 0],
+      "arms": {"ik": [84, 77.3, 21], "pole": [0, 1, 0], "hand": [1, -0.03, 0]},
+      "legs": {"foot": [-12, 12], "turn": 6, "knee_out": 4},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "sink": {"from": "back", "pelvis": [-16.0, 94.0, 0], "trunk": [107, 0, 0], "chest": [0, 0, 0], "head": [50, 0, 0]},
+    "press": {
+      "from": "back",
+      "pelvis": [-17.0, 93.5, 0],
+      "trunk": [103, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [52, 0, 0]
+    },
+    "deep": {"from": "back", "pelvis": [-15.5, 94.0, 0], "trunk": [109, 0, 0], "chest": [0, 0, 0], "head": [48, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.4, "phase": "forearms_down", "effort": 0.2},
+    {"to": "near_step", "s": 0.35, "phase": "walk_back", "effort": 0.25, "ease": "in"},
+    {"to": "near_back", "s": 0.35, "phase": "walk_back", "effort": 0.25, "ease": "out"},
+    {"to": "far_step", "s": 0.35, "phase": "walk_back", "effort": 0.25, "ease": "in"},
+    {"to": "back", "s": 0.35, "phase": "walk_back", "effort": 0.25, "ease": "out"},
+    {"hold": 0.3, "phase": "hips_back", "effort": 0.25},
+    {"to": "sink", "s": 1.6, "phase": "chest_sinks", "effort": 0.4},
+    {"to": "press", "s": 1.0, "phase": "press_gently", "effort": 0.55},
+    {"hold": 0.8, "phase": "press_gently", "effort": 0.55},
+    {"to": "deep", "s": 1.4, "phase": "breathe_out_sink", "effort": 0.4},
+    {"to": "press", "s": 1.0, "phase": "press_gently", "effort": 0.55},
+    {"hold": 0.8, "phase": "press_gently", "effort": 0.55},
+    {"to": "deep", "s": 1.4, "phase": "breathe_out_sink", "effort": 0.4},
+    {"hold": 0.6, "phase": "breathe", "effort": 0.4},
+    {"to": "back", "s": 1.6, "phase": "ease_up", "effort": 0.25},
+    {"to": "far_step", "s": 0.35, "phase": "step_in", "effort": 0.25, "ease": "in"},
+    {"to": "near_back", "s": 0.35, "phase": "step_in", "effort": 0.25, "ease": "out"},
+    {"to": "near_step", "s": 0.35, "phase": "step_in", "effort": 0.25, "ease": "in"},
+    {"to": "set", "s": 0.35, "phase": "step_in", "effort": 0.2, "ease": "out"}
+  ],
+  "key": "deep",
+  "targets": [
+    {"at": "deep", "check": "offset", "joint": "shoulder_near", "from": "elbow_near", "axis": "u", "max": 0}
+  ],
+  "note": "Facing the desk, the forearms flat on its top shoulder-width apart: the hips walk back over the feet and the chest sinks between the upper arms, the head hanging. Press the elbows gently into the desk for a few seconds, let go, breathe out and let the chest sink a little lower: three rounds."
+}

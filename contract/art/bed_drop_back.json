@@ -1,0 +1,89 @@
+{
+  "move": "bed_drop_back",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 8},
+  "working": ["back", "pauldron", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -100, "f1": -36, "u": 44}, {"kind": "mat", "f0": -36, "f1": 40}],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "pelvis": [5, 94, 0],
+      "trunk": [-6, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-15, 0, 0],
+      "from": "tall",
+      "arms": {"fk": [172, 8, 4]}
+    },
+    "arch": {
+      "pelvis": [24, 90, 0],
+      "trunk": [-38, 0, 0],
+      "chest": [-35, 0, 0],
+      "head": [-25, 0, 0],
+      "from": "tall",
+      "arms": {"fk": [170, 8, 6]}
+    },
+    "lean": {
+      "from": "tall",
+      "pelvis": [22, 88, 0],
+      "trunk": [-55, 0, 0],
+      "chest": [-30, 0, 0],
+      "head": [-28, 0, 0],
+      "arms": {"fk": [175, 8, 6]}
+    },
+    "land": {
+      "pelvis": [18, 86, 0],
+      "trunk": [-66, 0, 0],
+      "chest": [-32, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [-54, 47.3, 20], "pole": [0, 0.3, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "land_in": {"from": "land", "pelvis": [19.5, 84.5, 0], "chest": [-36, 0, 0]},
+    "back": {"from": "land", "pelvis": [2, 84, 0], "trunk": [-80, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.9, "phase": "arms_up", "effort": 0.3},
+    {"to": "arch", "s": 1.3, "phase": "hips_forward", "effort": 0.5},
+    {"to": "lean", "s": 0.9, "phase": "lean_back", "effort": 0.7},
+    {"to": "land", "s": 0.8, "phase": "hands_down", "effort": 0.8},
+    {"to": "land_in", "s": 0.8, "phase": "breathe", "effort": 0.8},
+    {"to": "land", "s": 0.8, "phase": "breathe", "effort": 0.8},
+    {"to": "lean", "s": 0.9, "phase": "stand_up", "effort": 0.9},
+    {"to": "arch", "s": 1.0, "phase": "stand_up", "effort": 0.7},
+    {"to": "reach", "s": 0.9, "phase": "stand_tall", "effort": 0.4},
+    {"to": "tall", "s": 0.8, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "land",
+  "fault": {
+    "pose": "back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 10}
+  },
+  "targets": [
+    {"at": "land", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 10},
+    {"at": "land", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 150},
+    {"at": "arch", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "max": 125}
+  ],
+  "note": "The stand-to-stand's drop back onto the edge of a bed or sofa behind (heels a forearm, about 36 cm, from its edge): hips forward, the chest arches back until both hands land on the edge, fingers toward the feet, then the hips press forward and the chest leads back up to standing."
+}

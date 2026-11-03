@@ -1,0 +1,75 @@
+{
+  "move": "forehead_to_knees",
+  "view": "side",
+  "camera": {"yaw": 8, "pitch": 6},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 8], "turn": 2, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "tall",
+      "pelvis": [-14, 93.6, 0],
+      "trunk": [72, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"fk": [72, 6, 8]}
+    },
+    "palms": {
+      "from": "tall",
+      "pelvis": [-19, 92.7, 0],
+      "trunk": [128, 0, 0],
+      "chest": [15, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [13, 4.0, 24], "pole": [-0.6, 0.2, 1], "hand": [1, -0.1, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {
+      "from": "palms",
+      "trunk": [128, 0, 0],
+      "chest": [15, 0, 0],
+      "head": [20, 0, 0],
+      "arms": {"ik": [13, 4.0, 24], "pole": [-1, 0.3, 0.6], "hand": [1, -0.1, 0]},
+      "pelvis": [-19, 93.0, 0]
+    },
+    "fold_in": {"from": "fold", "trunk": [128.5, 0, 0], "chest": [15.5, 0, 0], "head": [22, 0, 0]},
+    "bent": {"from": "fold", "pelvis": [-16, 87, 0], "trunk": [128, 0, 0], "chest": [15, 0, 0], "head": [20, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hinge", "s": 1.4, "ease": "in", "phase": "fold_forward", "effort": 0.4},
+    {"to": "palms", "s": 1.4, "ease": "out", "phase": "hands_down", "effort": 0.6},
+    {"to": "fold", "s": 1.6, "phase": "head_down", "effort": 0.75},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "palms", "s": 1.2, "phase": "rise_slowly", "effort": 0.6},
+    {"to": "hinge", "s": 1.2, "phase": "rise_slowly", "effort": 0.45},
+    {"to": "tall", "s": 1.2, "ease": "out", "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "fold", "check": "height", "joint": "wrist_near", "max": 6},
+    {"at": "fold", "check": "height", "joint": "head", "max": 40}
+  ]
+}

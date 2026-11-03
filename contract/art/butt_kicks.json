@@ -1,0 +1,77 @@
+{
+  "move": "butt_kicks",
+  "view": "side",
+  "camera": {"yaw": -24, "pitch": 8},
+  "working": ["thigh", "shin"],
+  "fast_phase": 0.3,
+  "poses": {
+    "near_kick": {
+      "pelvis": [4, 99.6, 0],
+      "trunk": [5, 0, 0],
+      "arm_near": {"fk": [34, 6, 95]},
+      "arm_far": {"fk": [-30, 6, 95]},
+      "leg_near": {"fk": [10, 2, 150, -12]},
+      "leg_far": {"fk": [14, 2, 26, -4]},
+      "contacts": ["toe_far"]
+    },
+    "near_drop": {
+      "pelvis": [4, 103.0, 0],
+      "trunk": [5, 0, 0],
+      "arm_near": {"fk": [20, 6, 95]},
+      "arm_far": {"fk": [-16, 6, 95]},
+      "leg_near": {"fk": [7, 2, 118, -18]},
+      "leg_far": {"fk": [11, 2, 20, -16]},
+      "contacts": ["toe_far"]
+    },
+    "switch_a": {
+      "pelvis": [4, 103.0, 0],
+      "trunk": [5, 0, 0],
+      "arm_near": {"fk": [0, 6, 95]},
+      "arm_far": {"fk": [4, 6, 95]},
+      "leg_near": {"fk": [22, 2, 48, -15]},
+      "leg_far": {"fk": [2, 2, 64, -22]},
+      "contacts": []
+    },
+    "far_kick": {
+      "pelvis": [4, 99.6, 0],
+      "trunk": [5, 0, 0],
+      "arm_near": {"fk": [-30, 6, 95]},
+      "arm_far": {"fk": [34, 6, 95]},
+      "leg_near": {"fk": [14, 2, 26, -4]},
+      "leg_far": {"fk": [10, 2, 150, -12]},
+      "contacts": ["toe_near"]
+    },
+    "far_drop": {
+      "pelvis": [4, 103.0, 0],
+      "trunk": [5, 0, 0],
+      "arm_near": {"fk": [-16, 6, 95]},
+      "arm_far": {"fk": [20, 6, 95]},
+      "leg_near": {"fk": [11, 2, 20, -16]},
+      "leg_far": {"fk": [7, 2, 118, -18]},
+      "contacts": ["toe_near"]
+    },
+    "switch_b": {
+      "pelvis": [4, 103.0, 0],
+      "trunk": [5, 0, 0],
+      "arm_near": {"fk": [4, 6, 95]},
+      "arm_far": {"fk": [0, 6, 95]},
+      "leg_near": {"fk": [2, 2, 64, -22]},
+      "leg_far": {"fk": [22, 2, 48, -15]},
+      "contacts": []
+    }
+  },
+  "timeline": [
+    {"pose": "near_kick"},
+    {"to": "near_drop", "s": 0.12, "ease": "in", "phase": "heels_back", "effort": 0.8},
+    {"to": "switch_a", "s": 0.12, "ease": "linear", "phase": "heels_back", "effort": 0.8, "dynamic": true},
+    {"to": "far_kick", "s": 0.1267, "ease": "linear", "phase": "heels_back", "effort": 0.8},
+    {"to": "far_drop", "s": 0.12, "ease": "in", "phase": "heels_back", "effort": 0.8},
+    {"to": "switch_b", "s": 0.12, "ease": "linear", "phase": "heels_back", "effort": 0.8, "dynamic": true},
+    {"to": "near_kick", "s": 0.1267, "ease": "linear", "phase": "heels_back", "effort": 0.8}
+  ],
+  "key": "near_kick",
+  "targets": [
+    {"at": "near_kick", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 45},
+    {"at": "near_kick", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "f", "min": -4, "max": 8}
+  ]
+}

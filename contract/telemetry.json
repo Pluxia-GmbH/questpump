@@ -1,0 +1,1020 @@
+{
+ "about": "QuestPump's telemetry catalog (contract/telemetry-api.yaml is the design; David, 2026-10-12: \"lets do a full telemetry pass and implementation for questpump\", choosing crash reports, usage analytics like learnclash and anonymous counts). The one source of every name that leaves a device: the purposes and their switches, the Google Analytics events, parameters, values and user properties the phones may log, the screens a screen_view may name, the anonymous count points every app sends to the report Worker, and the crash context words. tools/telemetry.py writes the apps' and the Worker's catalogs from it (make telemetry) and `make check` fails on a stale one and on a parameter, blob or double whose name the never list holds; the apps name events and points only through their catalog's types, and drop a value outside it (a debug build stops on it), as the Worker refuses one. A point grows only at its end, and a double renamed in place keeps its old name in the point's `was` (old name to new, its column unchanged): the Worker reads an older app's point under the new name and fills a double a newer catalog grew at the point's end, which that point lacks, with 0 (slice 42's fix round, 2026-10-17). Every value is from a closed list or a bounded number; nothing here carries a count the player typed, a record, health data, a name or free text.",
+ "purposes": {
+  "crash": {
+   "switch": "menu.crash",
+   "about": "Crash reports (contract/crash-api.yaml)."
+  },
+  "usage": {
+   "switch": "menu.usage",
+   "about": "Usage statistics: the phones' Google Analytics events and user properties, and every app's anonymous counts. A point marked fitness goes from a phone only while the player's own answer is on (Apple 5.1.3: fitness-context data only with permission), from the desktop app while the switch reads on."
+  }
+ },
+ "copyVersion": "privacy.v2",
+ "never": [
+  "count",
+  "reps",
+  "seconds",
+  "record",
+  "goal",
+  "hr",
+  "heart",
+  "bpm",
+  "pain",
+  "unwell",
+  "joint",
+  "body",
+  "health",
+  "steps",
+  "name",
+  "realm",
+  "character",
+  "guild",
+  "battletag",
+  "quest",
+  "zone",
+  "user",
+  "username",
+  "email",
+  "ip",
+  "address",
+  "key",
+  "token",
+  "text",
+  "words",
+  "lat",
+  "lon",
+  "location"
+ ],
+ "analytics": {
+  "events": {
+   "setup_step": {
+    "q": "activation",
+    "params": {
+     "step": [
+      "experience",
+      "add_game",
+      "pairing",
+      "local_network",
+      "countdown_permissions",
+      "motion",
+      "done"
+     ],
+     "result": [
+      "shown",
+      "done",
+      "skipped",
+      "back"
+     ]
+    }
+   },
+   "pairing_result": {
+    "q": "pairing",
+    "params": {
+     "target": [
+      "computer",
+      "watch"
+     ],
+     "method": [
+      "qr",
+      "paste",
+      "link",
+      "app"
+     ],
+     "result": [
+      "done",
+      "failed",
+      "cancelled",
+      "replaced"
+     ],
+     "reason": [
+      "none",
+      "unreachable",
+      "local_network_denied",
+      "bad_link",
+      "expired",
+      "refused",
+      "other"
+     ]
+    }
+   },
+   "privacy_choice": {
+    "q": "consent",
+    "params": {
+     "usage": [
+      "on",
+      "off"
+     ],
+     "crash": [
+      "on",
+      "off"
+     ],
+     "from": [
+      "window",
+      "menu"
+     ]
+    }
+   },
+   "notification_permission": {
+    "q": "reminders",
+    "params": {
+     "result": [
+      "shown",
+      "granted",
+      "denied"
+     ]
+    }
+   },
+   "reminder_offer": {
+    "q": "reminders",
+    "params": {
+     "result": [
+      "shown",
+      "accepted",
+      "not_now"
+     ]
+    }
+   },
+   "reminder_set": {
+    "q": "reminders",
+    "params": {
+     "kind": [
+      "daily",
+      "streak",
+      "sitting",
+      "game"
+     ],
+     "state": [
+      "on",
+      "off"
+     ]
+    }
+   },
+   "game_link": {
+    "q": "features",
+    "params": {
+     "service": [
+      "lichess",
+      "chesscom",
+      "twitch",
+      "steam"
+     ],
+     "result": [
+      "linked",
+      "failed",
+      "unlinked"
+     ]
+    }
+   },
+   "game_offer": {
+    "q": "features",
+    "params": {
+     "service": [
+      "lichess",
+      "chesscom",
+      "twitch",
+      "steam",
+      "computer",
+      "phone"
+     ],
+     "result": [
+      "shown",
+      "opened",
+      "dismissed"
+     ]
+    }
+   },
+   "part_offer": {
+    "q": "pairing",
+    "params": {
+     "offer": [
+      "watch",
+      "computer",
+      "links",
+      "pumpfirst"
+     ],
+     "result": [
+      "shown",
+      "accepted",
+      "not_now"
+     ]
+    }
+   },
+   "pro_offer": {
+    "q": "monetisation",
+    "params": {
+     "result": [
+      "shown",
+      "plans",
+      "not_now",
+      "blocked"
+     ]
+    }
+   },
+   "pro_page": {
+    "q": "monetisation",
+    "params": {
+     "from": [
+      "offer",
+      "menu",
+      "feature",
+      "computer"
+     ],
+     "result": [
+      "shown",
+      "purchase_started",
+      "purchased",
+      "cancelled",
+      "failed",
+      "restored"
+     ],
+     "plan": [
+      "monthly",
+      "yearly",
+      "none"
+     ]
+    }
+   },
+   "trial_start": {
+    "q": "monetisation",
+    "params": {
+     "plan": [
+      "monthly",
+      "yearly"
+     ]
+    }
+   },
+   "tip_jar": {
+    "q": "monetisation",
+    "params": {
+     "result": [
+      "shown",
+      "purchased",
+      "cancelled",
+      "failed"
+     ]
+    }
+   },
+   "coach_consent": {
+    "q": "coach",
+    "params": {
+     "result": [
+      "shown",
+      "granted",
+      "declined",
+      "withdrawn"
+     ]
+    }
+   },
+   "share": {
+    "q": "features",
+    "params": {
+     "result": [
+      "shown",
+      "shared"
+     ]
+    }
+   },
+   "sync_change": {
+    "q": "features",
+    "params": {
+     "kind": [
+      "sync",
+      "email",
+      "restore",
+      "link",
+      "backup_file"
+     ],
+     "result": [
+      "on",
+      "off",
+      "failed",
+      "deleted"
+     ]
+    }
+   },
+   "feedback_sent": {
+    "q": "quality",
+    "params": {
+     "numbers": [
+      "yes",
+      "no"
+     ]
+    }
+   },
+   "crash_ask": {
+    "q": "quality",
+    "params": {
+     "result": [
+      "send",
+      "always",
+      "dont"
+     ]
+    }
+   }
+  },
+  "screens": [
+   "home.tabs",
+   "pump.tab",
+   "character.tab",
+   "character.focus",
+   "character.title",
+   "character.stat",
+   "ladders.tab",
+   "ladders.detail",
+   "ladders.step_card",
+   "ladders.move",
+   "correct.window",
+   "ladders.share_card",
+   "log.tab",
+   "log.weeks",
+   "share.window",
+   "coach.consent",
+   "coach.page",
+   "coach.chronicle",
+   "coach.report",
+   "pro.entry",
+   "pro.offer",
+   "pro.purchase",
+   "pro.moment",
+   "menu.settings",
+   "menu.helper",
+   "menu.backup",
+   "menu.email",
+   "menu.email.code",
+   "menu.restore",
+   "menu.linkdevice",
+   "menu.demo",
+   "menu.tips",
+   "menu.free_mode",
+   "menu.moves",
+   "menu.import",
+   "menu.about",
+   "menu.acknowledgements",
+   "menu.feedback",
+   "menu.reminders",
+   "menu.reminder",
+   "menu.links",
+   "menu.link",
+   "menu.phonegames",
+   "menu.pumpfirst",
+   "setup.screen",
+   "setup.experience",
+   "setup.paste",
+   "setup.scanner",
+   "setup.pairing",
+   "setup.local_network",
+   "setup.countdown_permissions",
+   "setup.motion",
+   "offers.watch",
+   "offers.computer",
+   "offers.links",
+   "offers.pumpfirst",
+   "reminders.offer",
+   "crash.ask",
+   "privacy.ask"
+  ],
+  "userProperties": {
+   "pair_computer": [
+    "yes",
+    "no"
+   ],
+   "watch": [
+    "none",
+    "apple",
+    "wear"
+   ],
+   "has_game": [
+    "yes",
+    "no"
+   ],
+   "pro": [
+    "free",
+    "trial",
+    "monthly",
+    "yearly",
+    "demo"
+   ],
+   "coach": [
+    "on",
+    "off",
+    "unasked"
+   ],
+   "reminders": [
+    "on",
+    "off"
+   ],
+   "links": [
+    "0",
+    "1",
+    "2+"
+   ],
+   "sync": [
+    "on",
+    "email",
+    "off"
+   ],
+   "region_group": [
+    "opt_in",
+    "other"
+   ]
+  }
+ },
+ "counts": {
+  "sources": [
+   "iphone",
+   "android",
+   "desktop",
+   "game"
+  ],
+  "maxPoints": 40,
+  "points": {
+   "install": {
+    "q": "activation",
+    "fitness": false,
+    "cadence": "once",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {},
+    "doubles": {},
+    "country": true
+   },
+   "active": {
+    "q": "retention",
+    "fitness": false,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "cohort_week": "week",
+     "age": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8-13",
+      "14-29",
+      "30-59",
+      "60-89",
+      "90-179",
+      "180+"
+     ]
+    },
+    "doubles": {}
+   },
+   "build": {
+    "q": "quality",
+    "fitness": false,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "tier": [
+      "free",
+      "pro",
+      "demo"
+     ]
+    },
+    "doubles": {
+     "crashed": 1
+    }
+   },
+   "pairing": {
+    "q": "pairing",
+    "fitness": false,
+    "cadence": "event",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "target": [
+      "computer",
+      "phone",
+      "watch",
+      "strap",
+      "pad"
+     ],
+     "result": [
+      "done",
+      "failed"
+     ],
+     "reason": [
+      "none",
+      "unreachable",
+      "local_network_denied",
+      "bad_link",
+      "expired",
+      "refused",
+      "other"
+     ]
+    },
+    "doubles": {}
+   },
+   "link_day": {
+    "q": "quality",
+    "fitness": false,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "state": [
+      "ok",
+      "dropped",
+      "unreachable",
+      "never"
+     ]
+    },
+    "doubles": {}
+   },
+   "link_ble": {
+    "q": "quality",
+    "fitness": false,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "ble": [
+      "on",
+      "ask",
+      "no_grant",
+      "off",
+      "no_peripheral",
+      "none",
+      "stopped",
+      "unknown"
+     ],
+     "link": [
+      "linked",
+      "away",
+      "unlinked",
+      "denied",
+      "bluetooth_off"
+     ],
+     "transport": [
+      "ble",
+      "lan",
+      "both",
+      "none"
+     ]
+    },
+    "doubles": {}
+   },
+   "capture_day": {
+    "q": "quality",
+    "fitness": false,
+    "cadence": "day",
+    "sources": [
+     "desktop"
+    ],
+    "blobs": {
+     "os": [
+      "mac",
+      "win"
+     ],
+     "backend": [
+      "sck",
+      "wgc",
+      "dxgi",
+      "gdi",
+      "none"
+     ],
+     "state": [
+      "reading",
+      "no_strip",
+      "unreadable",
+      "denied",
+      "error"
+     ]
+    },
+    "doubles": {}
+   },
+   "feature_day": {
+    "about": "One count a day for each feature a source used that day (one about a pump or health is fitness_feature_day's; its moved values went there on 2026-11-01, and the Worker drops a point an older app still sends with one, never reading it as fitness_feature_day's). Its games is the games used that day: on the desktop app a game's offer shown or started, or the Games tab opened (slice 56; lib/router.js's seen, as hero, book, log and menu are their tab or the Menu chosen), on the phones a game offer opened.",
+    "q": "features",
+    "fitness": false,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "feature": [
+      "hero",
+      "book",
+      "log",
+      "menu",
+      "reminders",
+      "links",
+      "widget",
+      "complication",
+      "tile",
+      "games",
+      "sync",
+      "share",
+      "tree",
+      "pumpfirst"
+     ]
+    },
+    "doubles": {},
+    "moved": {
+     "feature": [
+      "live",
+      "strap",
+      "pad",
+      "health_sync",
+      "watch_app",
+      "coach"
+     ]
+    }
+   },
+   "game_offer_desk": {
+    "q": "features",
+    "fitness": true,
+    "cadence": "event",
+    "sources": [
+     "desktop"
+    ],
+    "blobs": {
+     "game": [
+      "cs2",
+      "dota2",
+      "lol",
+      "tft",
+      "rocket",
+      "sc2",
+      "mtga",
+      "hearthstone",
+      "lor",
+      "f1",
+      "forza",
+      "iracing",
+      "acc",
+      "elite",
+      "mechabellum",
+      "sts2",
+      "ac",
+      "gw2",
+      "poe",
+      "warframe",
+      "wows",
+      "r6",
+      "eft",
+      "deadlock",
+      "fortnite",
+      "tf2",
+      "naraka",
+      "fallguys",
+      "dbd",
+      "hunt",
+      "valorant",
+      "pubg",
+      "mcc",
+      "brawlhalla",
+      "rf2",
+      "lmu",
+      "ams2",
+      "osu",
+      "stardew",
+      "wc3",
+      "eldenring",
+      "nightreign",
+      "custom"
+     ],
+     "result": [
+      "shown",
+      "started",
+      "dismissed",
+      "capped"
+     ]
+    },
+    "doubles": {}
+   },
+   "return": {
+    "q": "retention",
+    "fitness": false,
+    "cadence": "event",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "away": [
+      "3-6",
+      "7-13",
+      "14-29",
+      "30+"
+     ]
+    },
+    "doubles": {}
+   },
+   "first_pump": {
+    "q": "activation",
+    "fitness": true,
+    "cadence": "once",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "surface": [
+      "phone",
+      "watch",
+      "computer",
+      "game"
+     ],
+     "delay": [
+      "<5m",
+      "5-30m",
+      "30-120m",
+      "2-24h",
+      "1-7d",
+      ">7d"
+     ]
+    },
+    "doubles": {}
+   },
+   "day_pumps": {
+    "q": "cost_rule",
+    "fitness": true,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "surface": [
+      "phone",
+      "watch",
+      "computer",
+      "game"
+     ]
+    },
+    "doubles": {
+     "finished": 50,
+     "banked": 50,
+     "skipped_moves": 50,
+     "unfinished_end": 50
+    }
+   },
+   "review_numbers": {
+    "q": "cost_rule",
+    "fitness": true,
+    "cadence": "week",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "done_ratio": [
+      "<50",
+      "50-59",
+      "60-69",
+      "70-79",
+      "80-89",
+      "90-100"
+     ],
+     "max_sets": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5-6",
+      "7+"
+     ],
+     "age_week": [
+      "0-12",
+      "13+"
+     ]
+    },
+    "doubles": {}
+   },
+   "move_quality": {
+    "q": "quality",
+    "fitness": true,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "move": "library_move"
+    },
+    "doubles": {
+     "easier": 20,
+     "stopped": 20
+    }
+   },
+   "setup_week": {
+    "q": "setup",
+    "fitness": true,
+    "cadence": "week",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop",
+     "game"
+    ],
+    "blobs": {
+     "pace": [
+      "light",
+      "balanced",
+      "extreme",
+      "unset"
+     ],
+     "focus": [
+      "balanced",
+      "strength",
+      "endurance",
+      "flexibility",
+      "unset"
+     ],
+     "floor": [
+      "yes",
+      "no"
+     ],
+     "room": [
+      "yes",
+      "no"
+     ],
+     "quiet": [
+      "yes",
+      "no"
+     ],
+     "equipment": [
+      "0",
+      "1-2",
+      "3-5",
+      "6+"
+     ]
+    },
+    "doubles": {}
+   },
+   "tree_day": {
+    "q": "features",
+    "fitness": true,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {},
+    "doubles": {
+     "cards": 50,
+     "starts_own": 20,
+     "starts_held": 20,
+     "starts_climb": 20,
+     "starts_path": 20,
+     "starts_earn": 20,
+     "starts_place": 20,
+     "refused_setup": 20,
+     "refused_off": 20,
+     "refused_game": 20,
+     "refused_reading": 20,
+     "refused_busy": 20,
+     "starts_check": 20,
+     "starts_haul": 20
+    },
+    "was": {
+     "starts_proof": "starts_path"
+    }
+   },
+   "standing": {
+    "q": "standing",
+    "fitness": true,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "streak_best": [
+      "0",
+      "1",
+      "2",
+      "3-6",
+      "7-13",
+      "14-29",
+      "30-59",
+      "60-99",
+      "100-179",
+      "180-364",
+      "365+"
+     ],
+     "colour_top": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7"
+     ]
+    },
+    "doubles": {}
+   },
+   "fitness_feature_day": {
+    "about": "One count a day for each feature about a pump or health a source used that day, fitness since 2026-11-01 (the release security review: health_sync went by the regional default): live the Live Activity or Live Update of a pump shown, strap a heart-rate strap and pad a walking pad connected on the computer, health_sync a pump saved as a workout in Apple Health or Health Connect, watch_app the watch's pumps reaching the phone, coach a coach line about a set or a week's pumps reaching the player. A phone keeps and sends it only with the player's own yes.",
+    "q": "features",
+    "fitness": true,
+    "cadence": "day",
+    "sources": [
+     "iphone",
+     "android",
+     "desktop"
+    ],
+    "blobs": {
+     "feature": [
+      "live",
+      "strap",
+      "pad",
+      "health_sync",
+      "watch_app",
+      "coach"
+     ]
+    },
+    "doubles": {}
+   }
+  }
+ },
+ "crashContext": {
+  "about": "The words a phone's crash report may carry as Crashlytics custom keys and log lines (contract/crash-api.yaml, \"The context a phone report carries\"): each key a closed list, a log line '<key> <value>' or one of the app lines.",
+  "keys": {
+   "screen": [
+    "home",
+    "pump",
+    "hero",
+    "book",
+    "log",
+    "menu",
+    "setup",
+    "pump_session",
+    "door",
+    "other"
+   ],
+   "pump": [
+    "none",
+    "countdown",
+    "running",
+    "count",
+    "result"
+   ],
+   "link": [
+    "unpaired",
+    "searching",
+    "connected"
+   ],
+   "watch": [
+    "none",
+    "paired",
+    "reachable"
+   ],
+   "demo": [
+    "on",
+    "off"
+   ]
+  },
+  "appLines": [
+   "app foreground",
+   "app background",
+   "memory warning"
+  ]
+ }
+}

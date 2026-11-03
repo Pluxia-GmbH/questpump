@@ -1,0 +1,98 @@
+{
+  "move": "bike_sprint",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 6},
+  "working": ["thigh", "shin"],
+  "props": [{"kind": "bike", "f": 3, "u": 30, "seat": [-30, 91.5], "bars": [42, 104]}],
+  "items": [{"kind": "pedals", "at": [3, 30], "r": 17}],
+  "poses": {
+    "p0": {
+      "pelvis": [-22, 106.0, 0],
+      "trunk": [42, 0, 0],
+      "chest": [10, 0, 0],
+      "head": [-34, 0, 0],
+      "arms": {"ik": [36.39, 107.08, 21.0], "pole": [-0.4, -0.7, 0.8], "hand": [0.876, -0.482, 0]},
+      "contacts": ["pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "leg_near": {
+        "ik": [-10.52, 37.01, 13],
+        "orbit": {"r": 17, "deg": 30, "plane": "fu"},
+        "toe": [0.997, -0.073, 0],
+        "pole": [1, 0.25, 0.1]
+      },
+      "leg_far": {
+        "ik": [-6.98, 41.5, 13],
+        "orbit": {"r": 17, "deg": -150, "plane": "fu"},
+        "toe": [0.9, -0.436, 0],
+        "pole": [1, 0.25, 0.1]
+      }
+    },
+    "p1": {
+      "from": "p0",
+      "leg_near": {
+        "ik": [-9.28, 39.01, 13],
+        "orbit": {"r": 17, "deg": -60, "plane": "fu"},
+        "toe": [0.974, -0.226, 0],
+        "pole": [1, 0.25, 0.1]
+      },
+      "leg_far": {
+        "ik": [-8.65, 39.81, 13],
+        "orbit": {"r": 17, "deg": -240, "plane": "fu"},
+        "toe": [0.957, -0.291, 0],
+        "pole": [1, 0.25, 0.1]
+      }
+    },
+    "p2": {
+      "from": "p0",
+      "leg_near": {
+        "ik": [-6.98, 41.5, 13],
+        "orbit": {"r": 17, "deg": -150, "plane": "fu"},
+        "toe": [0.9, -0.436, 0],
+        "pole": [1, 0.25, 0.1]
+      },
+      "leg_far": {
+        "ik": [-10.52, 37.01, 13],
+        "orbit": {"r": 17, "deg": -330, "plane": "fu"},
+        "toe": [0.997, -0.073, 0],
+        "pole": [1, 0.25, 0.1]
+      }
+    },
+    "p3": {
+      "from": "p0",
+      "leg_near": {
+        "ik": [-8.65, 39.81, 13],
+        "orbit": {"r": 17, "deg": -240, "plane": "fu"},
+        "toe": [0.957, -0.291, 0],
+        "pole": [1, 0.25, 0.1]
+      },
+      "leg_far": {
+        "ik": [-9.28, 39.01, 13],
+        "orbit": {"r": 17, "deg": -420, "plane": "fu"},
+        "toe": [0.974, -0.226, 0],
+        "pole": [1, 0.25, 0.1]
+      }
+    },
+    "p4": {
+      "from": "p0",
+      "leg_near": {
+        "ik": [-10.52, 37.01, 13],
+        "orbit": {"r": 17, "deg": -330, "plane": "fu"},
+        "toe": [0.997, -0.073, 0],
+        "pole": [1, 0.25, 0.1]
+      },
+      "leg_far": {
+        "ik": [-6.98, 41.5, 13],
+        "orbit": {"r": 17, "deg": -510, "plane": "fu"},
+        "toe": [0.9, -0.436, 0],
+        "pole": [1, 0.25, 0.1]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "p0"},
+    {"to": "p1", "s": 0.1333, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "p2", "s": 0.1333, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "p3", "s": 0.1333, "ease": "linear", "phase": "all_out", "effort": 1.0},
+    {"to": "p4", "s": 0.1333, "ease": "linear", "phase": "all_out", "effort": 1.0}
+  ],
+  "key": "p0"
+}

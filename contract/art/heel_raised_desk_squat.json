@@ -1,0 +1,98 @@
+{
+  "move": "heel_raised_desk_squat",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 8},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [
+    {"kind": "desk", "f": 46, "top": 74},
+    {"kind": "step", "f0": -11, "f1": -3, "u": 6.5, "l0": -28, "l1": 28}
+  ],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [6, 4, 10]},
+      "legs": {"foot": [0, 14], "turn": 12, "knee_out": 8, "lift": 16},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hover": {
+      "from": "tall",
+      "pelvis": [-4, 80, 0],
+      "trunk": [24, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [46, 92, 22], "pole": [-0.2, -1, 0.3], "hand": [1, 0.1, 0]},
+      "legs": {"foot": [0, 14], "turn": 12, "knee_out": 10, "lift": 16}
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-8, 68, 0],
+      "trunk": [28, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [54, 76.6, 22], "pole": [-0.2, -1, 0.3], "hand": [1, -0.12, 0]},
+      "legs": {"foot": [0, 14], "turn": 12, "knee_out": 10, "lift": 16},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "squat": {
+      "from": "tall",
+      "pelvis": [-16, 33, 0],
+      "trunk": [24, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"ik": [54, 76.6, 22], "pole": [-0.2, -1, 0.3], "hand": [1, -0.12, 0]},
+      "legs": {"foot": [0, 14], "turn": 12, "knee_out": 12, "lift": 16},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "squat_in": {"from": "squat", "pelvis": [-16, 32.5, 0], "trunk": [23, 0, 0], "chest": [-8, 0, 0]},
+    "heels_up": {
+      "from": "squat",
+      "pelvis": [-15, 36, 0],
+      "legs": {"foot": [0, 14], "turn": 12, "knee_out": 12, "lift": 30, "y": 0}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hover", "s": 0.9, "phase": "hands_on_desk", "effort": 0.3},
+    {"to": "reach", "s": 0.6, "phase": "hands_on_desk", "effort": 0.3},
+    {"to": "squat", "s": 1.8, "phase": "squat_deep", "effort": 0.5},
+    {"to": "squat_in", "s": 1.8, "phase": "heels_down", "effort": 0.5},
+    {"to": "squat", "s": 1.8, "phase": "breathe", "effort": 0.5},
+    {"to": "reach", "s": 1.5, "phase": "stand_up", "effort": 0.6},
+    {"to": "hover", "s": 0.5, "phase": "stand_up", "effort": 0.4},
+    {"to": "tall", "s": 0.8, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "squat",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "height", "joint": "ankle_near", "max": 13}
+  },
+  "targets": [
+    {"at": "squat", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "squat", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "squat", "check": "height", "joint": "ankle_near", "max": 13}
+  ],
+  "note": "The desk squat with the heels on a thick book: the heels rest raised on it, the hands light on the desk's edge, the hips sink between the heels below the knees, and the knees travel forward over the toes."
+}

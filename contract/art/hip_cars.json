@@ -1,0 +1,58 @@
+{
+  "move": "hip_cars",
+  "view": "side",
+  "camera": {"yaw": 35, "pitch": 24},
+  "working": ["thigh_near", "tasset_near", "abdomen"],
+  "props": [{"kind": "desk", "l": 36, "f": -35}],
+  "poses": {
+    "stand": {
+      "pelvis": [2, 91.2, 4],
+      "trunk": [1, 11, 0],
+      "arm_near": {"ik": [0, -3, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.8, -0.35, -0.4]},
+      "arm_far": {"ik": [-2, 77.3, 40.5], "pole": [-0.3, 0, 1], "hand": [0.2, -0.1, 1]},
+      "leg_near": {"foot": [0, 13], "turn": 8, "knee_out": 6},
+      "leg_far": {"foot": [0, 12], "turn": 8, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"],
+      "head": [0, -9, 0]
+    },
+    "knee_up": {
+      "from": "stand",
+      "leg_near": {"fk": [95, 4, 100, 10]},
+      "contacts": ["toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "knee_out": {
+      "from": "stand",
+      "leg_near": {"fk": [85, 72, 95, 10]},
+      "contacts": ["toe_far", "wrist_far", "hand_tip_far"],
+      "trunk": [1, 11, 0]
+    },
+    "rotate": {
+      "from": "stand",
+      "leg_near": {"fk": [35, 85, 90, 10]},
+      "contacts": ["toe_far", "wrist_far", "hand_tip_far"],
+      "trunk": [3, 11, 0]
+    },
+    "knee_back": {
+      "from": "stand",
+      "leg_near": {"fk": [-14, 16, 58, 14]},
+      "contacts": ["toe_far", "wrist_far", "hand_tip_far"],
+      "trunk": [8, 11, 0]
+    },
+    "knee_down": {
+      "from": "stand",
+      "leg_near": {"fk": [16, 4, 48, 10]},
+      "contacts": ["toe_far", "wrist_far", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand_tall"},
+    {"to": "knee_up", "s": 1.3, "phase": "knee_up", "effort": 0.6},
+    {"to": "knee_out", "s": 2.0, "phase": "open_out", "effort": 0.8},
+    {"to": "rotate", "s": 1.6, "phase": "open_out", "effort": 0.9},
+    {"to": "knee_back", "s": 1.8, "phase": "knee_back", "effort": 0.8},
+    {"to": "knee_down", "s": 1.2, "phase": "knee_down", "effort": 0.5},
+    {"to": "stand", "s": 0.6, "phase": "knee_down", "effort": 0.3}
+  ],
+  "key": "rotate"
+}

@@ -1,0 +1,51 @@
+{
+  "move": "seated_leg_lifts",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 8},
+  "working": ["thigh", "abdomen"],
+  "poses": {
+    "down": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [26, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [39, 3.3, 25], "pole": [-1, 0.3, 0.5], "hand": [1, -0.14, 0]},
+      "legs": {"fk": [112, 0, 0, -30]},
+      "contacts": [
+        "pelvis",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "up": {
+      "from": "down",
+      "legs": {"fk": [125, 0, 0, -42]},
+      "contacts": ["pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "bent": {"from": "up", "legs": {"fk": [135, 0, 34, -38]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.4, "phase": "sit_tall", "effort": 0.3},
+    {"to": "up", "s": 1.0, "phase": "lift_breathe_out", "effort": 0.9},
+    {"hold": 1.2, "phase": "hold", "effort": 0.9},
+    {"to": "down", "s": 1.0, "phase": "lower", "effort": 0.6}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "up", "check": "height", "joint": "ankle_near", "min": 16}
+  ],
+  "note": "Seated, legs straight together, hands flat beside the knees, the chest leaning over the legs: both heels lift by the hip flexors alone, held a slow breath, lowered."
+}

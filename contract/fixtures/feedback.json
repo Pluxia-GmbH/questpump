@@ -1,0 +1,33 @@
+{
+  "about": "One feedback message as a phone posts it to POST /api/feedback (contract/feedback-api.yaml, Feedback; docs/plan.md slice 24), with \"Add my numbers\" ticked. Its moves are library.json keys, in the yaml's order (easier + stopped, the most first, then the id). Its `at` is 2026-10-01 18:25 UTC.",
+  "body": {
+    "source": "iphone",
+    "version": "0.1.0",
+    "at": 1790879100,
+    "text": "The pumps after a quest hub are great. The slow split squat comes up a lot for me, and the carry feels long.",
+    "numbers": {
+      "days": 23,
+      "finished": 41,
+      "banked": 3,
+      "owed": 4,
+      "max_sets": 2.5,
+      "moves": [
+        {
+          "move": "split_squat_slow",
+          "easier": 2,
+          "stopped": 0
+        },
+        {
+          "move": "suitcase_carry",
+          "easier": 0,
+          "stopped": 2
+        },
+        {
+          "move": "warrior2",
+          "easier": 0,
+          "stopped": 1
+        }
+      ]
+    }
+  }
+}

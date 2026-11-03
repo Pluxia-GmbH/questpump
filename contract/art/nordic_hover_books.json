@@ -1,0 +1,57 @@
+{
+  "move": "nordic_hover_books",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh"],
+  "props": [
+    {"kind": "bench", "f0": -72, "f1": -33, "u": 27},
+    {"kind": "step", "f0": 82, "f1": 112, "u": 17, "l0": -34, "l1": 34}
+  ],
+  "poses": {
+    "base": {
+      "line": {"pivot": "knees", "at": 0, "angle": 36, "width": 12, "feet": "flat", "hips": 5},
+      "head": [-14, 0, 0],
+      "arms": {"ik": [98, 20.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.12, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lift": {
+      "from": "base",
+      "arms": {"ik": [84, 40, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.1, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "folded": {
+      "from": "base",
+      "line": {"pivot": "knees", "at": 0, "angle": 56, "hips": -44, "width": 12, "feet": "flat"},
+      "head": [-10, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "base"},
+    {"hold": 0.4, "phase": "hands_down"},
+    {"to": "lift", "s": 0.8, "phase": "hands_off", "effort": 0.9, "dynamic": true},
+    {"to": "lift", "s": 1.2, "phase": "hold", "effort": 1.0, "dynamic": true},
+    {"to": "base", "s": 0.8, "phase": "hands_down", "effort": 0.6, "dynamic": true}
+  ],
+  "key": "lift",
+  "fault": {
+    "pose": "folded",
+    "caption": "hips_bend",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "lift", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 170},
+    {"at": "lift", "check": "height", "joint": "hand_tip_near", "min": 24}
+  ],
+  "note": "The Nordic hover with the hands on a stack of books 15-20 cm high: the lowering stops higher, where the lever is shorter, the hands catch on the books and lift off them for 2 s with the body straight."
+}

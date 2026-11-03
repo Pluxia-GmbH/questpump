@@ -1,0 +1,69 @@
+{
+  "move": "tuck_jump_rally",
+  "view": "side",
+  "camera": {"yaw": 34, "pitch": 8},
+  "working": ["thigh", "shin", "abdomen"],
+  "ballistic": true,
+  "fast_phase": 0.5,
+  "poses": {
+    "dip": {
+      "pelvis": [-6, 80, 0],
+      "trunk": [22, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"fk": [-30, 6, 12]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "push": {
+      "pelvis": [9, 105, 0],
+      "trunk": [4, 0, 0],
+      "arms": {"fk": [30, 6, 14]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10, "lift": 40},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "up": {
+      "from": "tuck",
+      "pelvis": [9, 120, 0],
+      "trunk": [12, 0, 0],
+      "arms": {"fk": [65, 7, 20]},
+      "legs": {"fk": [88, 8, 88, 20]}
+    },
+    "tuck": {
+      "from": "push",
+      "pelvis": [9, 130, 0],
+      "trunk": [16, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"fk": [85, 8, 26]},
+      "legs": {"fk": [128, 8, 120, 25]},
+      "contacts": []
+    },
+    "fall": {
+      "from": "push",
+      "pelvis": [9, 124.6, 0],
+      "arms": {"fk": [90, 8, 12]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10, "lift": 48, "y": 18},
+      "contacts": []
+    },
+    "land": {
+      "from": "push",
+      "pelvis": [3, 90, 0],
+      "trunk": [8, 0, 0],
+      "arms": {"fk": [40, 6, 20]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10, "lift": 12}
+    }
+  },
+  "timeline": [
+    {"pose": "dip"},
+    {"to": "push", "s": 0.2, "ease": "in", "phase": "jump", "effort": 1.0, "dynamic": true},
+    {"to": "up", "s": 0.12, "ease": "linear", "phase": "knees_up", "effort": 1.0, "dynamic": true},
+    {"to": "tuck", "s": 0.1, "ease": "out", "phase": "knees_up", "effort": 1.0, "dynamic": true},
+    {"to": "fall", "s": 0.18, "ease": "inout", "phase": "land_softly", "effort": 0.8, "dynamic": true},
+    {"to": "land", "s": 0.14, "ease": "in", "phase": "land_softly", "effort": 0.8, "dynamic": true},
+    {"to": "dip", "s": 0.2, "ease": "out", "phase": "land_softly", "effort": 0.8}
+  ],
+  "key": "tuck",
+  "targets": [
+    {"at": "tuck", "check": "offset", "joint": "knee_near", "from": "pelvis", "axis": "u", "min": 0},
+    {"at": "dip", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 140}
+  ]
+}

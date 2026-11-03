@@ -1,0 +1,61 @@
+{
+  "move": "wood_chopper",
+  "view": "side",
+  "camera": {"yaw": 55, "pitch": 10},
+  "working": ["abdomen", "pauldron"],
+  "poses": {
+    "high": {
+      "pelvis": [0, 94, 2],
+      "trunk": [-3, 3, 8],
+      "chest": [-2, 6, 55],
+      "head": [-22, 0, 8],
+      "arm_near": {"ik": [7, 180, -31], "pole": [0.4, -1, 0.5], "hand": [0.1, 1, 0]},
+      "arm_far": {"ik": [7, 180, 43], "pole": [0.2, -1, 0.5], "hand": [0.1, 1, 0]},
+      "legs": {"foot": [0, 18], "turn": 10, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "upper": {
+      "from": "high",
+      "pelvis": [-4, 89, -0.5],
+      "trunk": [8, 0.5, 3.5],
+      "chest": [1, 2, 28],
+      "head": [-11, 0, 3],
+      "arm_near": {"ik": [44, 164, -13], "pole": [0.1, -1, 0.5], "hand": [0.6, 0.8, 0]},
+      "arm_far": {"ik": [42, 164, 25], "pole": [-0.3, -1, 0.4], "hand": [0.6, 0.8, 0]}
+    },
+    "mid": {
+      "from": "high",
+      "pelvis": [-8, 84, -3],
+      "trunk": [20, -2, -1],
+      "chest": [4, -2, 2],
+      "head": [0, 0, -2],
+      "arm_near": {"ik": [66, 118, 11], "pole": [-0.6, -1, 0.5], "hand": [1, 0.1, 0]},
+      "arm_far": {"ik": [66, 118, 1], "pole": [-0.6, -1, 0.5], "hand": [1, 0.1, 0]}
+    },
+    "low": {
+      "from": "high",
+      "pelvis": [-17, 70, -6],
+      "trunk": [44, -6, -10],
+      "chest": [10, -10, -36],
+      "head": [8, 0, -12],
+      "arm_near": {"ik": [30, 67.4, 56], "pole": [-1, 0.3, 0.3], "hand": [0.3, -1, 0]},
+      "arm_far": {"ik": [30, 67.4, -45], "pole": [-0.3, -0.5, 1], "hand": [0.3, -1, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "high"},
+    {"hold": 0.3, "phase": "arms_up"},
+    {"to": "upper", "s": 0.25, "ease": "in", "phase": "chop_down", "effort": 1.0},
+    {"to": "mid", "s": 0.2, "ease": "linear", "phase": "chop_down", "effort": 1.0},
+    {"to": "low", "s": 0.45, "ease": "out", "phase": "chop_down", "effort": 1.0},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.8},
+    {"to": "mid", "s": 0.65, "ease": "in", "phase": "rise", "effort": 0.5},
+    {"to": "upper", "s": 0.3, "ease": "linear", "phase": "rise", "effort": 0.5},
+    {"to": "high", "s": 0.35, "ease": "out", "phase": "rise", "effort": 0.5}
+  ],
+  "key": "low",
+  "targets": [
+    {"at": "low", "check": "height", "joint": "wrist_near", "max": 72},
+    {"at": "high", "check": "height", "joint": "wrist_far", "min": 175}
+  ]
+}

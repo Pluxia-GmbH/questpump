@@ -1,0 +1,59 @@
+{
+  "move": "heel_drops",
+  "view": "side",
+  "camera": {"yaw": -6, "pitch": 6},
+  "working": ["shin_near"],
+  "props": [{"kind": "stairs", "f": 0, "rise": 18, "run": 28, "steps": [1, 3], "rail": "far"}],
+  "poses": {
+    "bottom_one": {
+      "pelvis": [-3.75, 104.4, -4],
+      "trunk": [8, 0, 0],
+      "head": [-5, 0, 0],
+      "arm_near": {"fk": [8, 8, 18, 0, 0]},
+      "arm_far": {"ik": [21.1, 125.4, 48.6], "pole": [-0.3, -1, 0.5], "hand": [0.45, -0.3, 0.841]},
+      "leg_near": {"ik": [-12.55, 19.25, 10], "toe": [0.883, 0.469, 0.1], "pole": [1, 0, 0.1]},
+      "leg_far": {"fk": [4, 2, 70, 24]},
+      "contacts": ["toe_near", "ankle_near", "wrist_far", "hand_tip_far"]
+    },
+    "bottom_two": {
+      "from": "bottom_one",
+      "pelvis": [-3.75, 104.4, 0],
+      "leg_far": {"ik": [-12.55, 19.25, 10], "toe": [0.883, 0.469, 0.1], "pole": [1, 0, 0.1]},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "top_two": {
+      "from": "bottom_two",
+      "pelvis": [1.9, 120.4, 0],
+      "trunk": [3, 0, 0],
+      "leg_near": {"ik": [-3, 34.8, 10], "toe": [0.819, -0.574, 0.1], "pole": [1, 0, 0.1]},
+      "leg_far": {"ik": [-3, 34.8, 10], "toe": [0.819, -0.574, 0.1], "pole": [1, 0, 0.1]}
+    },
+    "top_one": {
+      "from": "top_two",
+      "pelvis": [1.9, 120.4, -4],
+      "leg_far": {"fk": [4, 2, 70, 24]},
+      "contacts": ["toe_near", "ankle_near", "wrist_far", "hand_tip_far"]
+    },
+    "mid_one": {
+      "from": "top_one",
+      "pelvis": [-1.5, 111.6, -4],
+      "trunk": [6, 0, 0],
+      "leg_near": {"ik": [-10.5, 25, 10], "toe": [1, 0, 0.1], "pole": [1, 0, 0.1]}
+    }
+  },
+  "timeline": [
+    {"pose": "top_two"},
+    {"hold": 0.4, "phase": "top", "effort": 0.8},
+    {"to": "top_one", "s": 0.5, "phase": "lower_on_one", "effort": 0.9},
+    {"to": "mid_one", "s": 1.3, "phase": "lower_on_one", "effort": 1},
+    {"to": "bottom_one", "s": 1.7, "phase": "lower_on_one", "effort": 0.9},
+    {"hold": 0.2, "phase": "lower_on_one", "effort": 0.6},
+    {"to": "bottom_two", "s": 0.5, "phase": "rise_on_two", "effort": 0.4},
+    {"to": "top_two", "s": 1.2, "phase": "rise_on_two", "effort": 0.8}
+  ],
+  "key": "bottom_one",
+  "targets": [
+    {"at": "bottom_one", "check": "height", "joint": "ankle_near", "max": 21},
+    {"at": "top_two", "check": "height", "joint": "ankle_near", "min": 33}
+  ]
+}

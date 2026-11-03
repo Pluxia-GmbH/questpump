@@ -1,0 +1,3390 @@
+/* The kit on the computer (docs/ui.md, "What stays native, and the kit"): every component of the phones' kit as its
+ * custom element, drawn only from tokens.css (tools/tokens.py's, from contract/design/tokens.json), with the hover and
+ * focus-visible states the phones' kit lacks; the focus ring is the focusRing token, never gold. Sizes are the phones'
+ * points as CSS px; type is the type roles' rem, so the page's size (the web view's zoom: 125 % at the default step,
+ * desk/windows.rs `BASE`, times the player's step of Cmd/Ctrl + and - or the Menu's Size) grows everything together. */
+
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+html {
+	color-scheme: dark;
+	background: var(--qp-color-page);
+	-webkit-text-size-adjust: none;
+	text-size-adjust: none;
+}
+
+body {
+	margin: 0;
+	font: var(--qp-type-body-font);
+	color: var(--qp-color-text);
+	background: var(--qp-color-page);
+	-webkit-font-smoothing: antialiased;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+
+h1, h2, p, figure {
+	margin: 0;
+}
+
+button, input, textarea {
+	font: inherit;
+	color: inherit;
+	margin: 0;
+}
+
+button {
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+button:disabled {
+	cursor: default;
+}
+
+input, textarea, code {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	outline: var(--qp-wide-focus-ring-width) solid var(--qp-color-focus-ring);
+	outline-offset: var(--qp-wide-focus-ring-offset);
+}
+
+[hidden] {
+	display: none !important;
+}
+
+/* read by a screen reader, never shown */
+.qp-unseen {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* Art ------------------------------------------------------------------------------------------------------------- */
+
+/* a glyph's colour beside its words: gold for progress and earned stars only (docs/ui.md rule 2) */
+.qp-gold {
+	color: var(--qp-color-gold);
+}
+
+.qp-text {
+	color: var(--qp-color-text);
+}
+
+.qp-text2 {
+	color: var(--qp-color-text2);
+}
+
+.qp-toned {
+	color: var(--qp-tone, var(--qp-color-text));
+}
+
+qp-art {
+	display: inline-block;
+	flex: none;
+	width: var(--qp-layout-glyph);
+	height: var(--qp-layout-glyph);
+}
+
+qp-art svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Page, columns ---------------------------------------------------------------------------------------------------- */
+
+qp-page {
+	display: block;
+	min-height: 100%;
+	background: var(--qp-surface-page-glow) no-repeat, var(--qp-surface-page-fill);
+}
+
+qp-page[light="result"] {
+	background: var(--qp-surface-page-glow-result) no-repeat, var(--qp-surface-page-fill);
+}
+
+qp-page[light="welcome"] {
+	background: var(--qp-surface-page-glow-welcome) no-repeat, var(--qp-surface-page-fill);
+}
+
+qp-hero-column {
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
+}
+
+qp-hero-column > [data-hero] {
+	flex: 1 1 auto;
+	min-height: var(--qp-hero-least, 0px);
+	max-height: var(--qp-hero-most, none);
+}
+
+/* Bars -------------------------------------------------------------------------------------------------------------- */
+
+qp-top-bar, qp-detail-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	min-height: var(--qp-layout-top-bar);
+	padding: var(--qp-layout-space6) var(--qp-layout-margin) 0;
+}
+
+qp-top-bar h1, qp-detail-bar h1 {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/* Buttons ---------------------------------------------------------------------------------------------------------- */
+
+.qp-round {
+	display: grid;
+	place-items: center;
+	width: var(--qp-layout-round-button);
+	height: var(--qp-layout-round-button);
+	border-radius: 50%;
+	background: var(--qp-surface-round-button-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-round-button-edge);
+	color: var(--qp-surface-round-button-glyph);
+	transition: filter var(--qp-motion-press), background-color var(--qp-motion-press);
+}
+
+qp-round-button[small] .qp-round {
+	width: var(--qp-layout-round-button-pump);
+	height: var(--qp-layout-round-button-pump);
+}
+
+.qp-round qp-art {
+	width: var(--qp-surface-round-button-glyph-size);
+	height: var(--qp-surface-round-button-glyph-size);
+}
+
+.qp-round[data-icon="close"] qp-art {
+	width: var(--qp-layout-space14);
+	height: var(--qp-layout-space14);
+}
+
+.qp-round:hover {
+	background-color: var(--qp-color-raised);
+}
+
+.qp-round:active {
+	filter: brightness(0.8);
+}
+
+/* the back chevron (the phones' Chevron: a side of space10, strokes of space2) and the three dots */
+.qp-chevron {
+	width: var(--qp-layout-space10);
+	height: var(--qp-layout-space10);
+	border-left: var(--qp-layout-space2) solid currentColor;
+	border-bottom: var(--qp-layout-space2) solid currentColor;
+	transform: translateX(var(--qp-layout-space2)) rotate(45deg);
+}
+
+/* a Carousel's next and the streak page's later month: the chevron turned the other way */
+.qp-round[data-icon="next"] .qp-chevron,
+.qp-round[data-icon="later"] .qp-chevron {
+	transform: translateX(calc(var(--qp-layout-space2) * -1)) rotate(-135deg);
+}
+
+.qp-dots {
+	width: var(--qp-surface-round-button-more-dot);
+	height: var(--qp-surface-round-button-more-dot);
+	border-radius: 50%;
+	background: currentColor;
+	box-shadow: calc(var(--qp-surface-round-button-more-dot) * -2) 0 0 currentColor,
+		calc(var(--qp-surface-round-button-more-dot) * 2) 0 0 currentColor;
+}
+
+qp-primary-button, qp-secondary-button, qp-quiet-button {
+	display: block;
+}
+
+.qp-primary {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--qp-layout-button-gap);
+	width: 100%;
+	min-height: var(--qp-layout-primary-height);
+	margin-bottom: var(--qp-surface-primary-button-lip-width);
+	padding: var(--qp-layout-space8) var(--qp-layout-space16);
+	border-radius: var(--qp-layout-button-radius);
+	background: var(--qp-surface-primary-button-fill);
+	box-shadow: var(--qp-surface-primary-button-highlight), var(--qp-surface-primary-button-shade),
+		var(--qp-surface-primary-button-lip), var(--qp-surface-primary-button-glow);
+	font: var(--qp-type-button-font);
+	color: var(--qp-surface-primary-button-label);
+	text-align: center;
+	transition: transform var(--qp-motion-press), filter var(--qp-motion-press), box-shadow var(--qp-motion-press);
+}
+
+.qp-primary qp-art {
+	width: var(--qp-layout-glyph-small);
+	height: var(--qp-layout-glyph-small);
+}
+
+.qp-primary:hover:not(:disabled) {
+	filter: brightness(1.06);
+}
+
+.qp-primary:active:not(:disabled) {
+	transform: translateY(var(--qp-surface-press-sink));
+	box-shadow: var(--qp-surface-primary-button-highlight), var(--qp-surface-primary-button-shade);
+	filter: brightness(0.85);
+}
+
+.qp-primary:disabled {
+	background: var(--qp-surface-primary-button-disabled-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	color: var(--qp-surface-primary-button-disabled-label);
+	margin-bottom: 0;
+}
+
+.qp-busy {
+	display: inline-flex;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-busy i {
+	width: var(--qp-layout-space6);
+	height: var(--qp-layout-space6);
+	border-radius: 50%;
+	background: currentColor;
+	animation: qp-busy var(--qp-motion-busy) infinite;
+}
+
+.qp-busy i:nth-child(2) {
+	animation-delay: calc(var(--qp-motion-busy-duration) / 3);
+}
+
+.qp-busy i:nth-child(3) {
+	animation-delay: calc(var(--qp-motion-busy-duration) * 2 / 3);
+}
+
+@keyframes qp-busy {
+	0% {
+		opacity: 1;
+	}
+	33%, 100% {
+		opacity: var(--qp-surface-primary-button-busy-dim-opacity);
+	}
+}
+
+.qp-secondary {
+	display: block;
+	width: 100%;
+	min-height: var(--qp-layout-secondary-height);
+	padding: var(--qp-layout-space8) var(--qp-layout-space16);
+	border-radius: var(--qp-layout-button-radius);
+	background: var(--qp-surface-secondary-button-fill);
+	box-shadow: var(--qp-surface-secondary-button-highlight),
+		inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-secondary-button-edge);
+	font: var(--qp-type-button-secondary-font);
+	color: var(--qp-surface-secondary-button-label);
+	text-align: center;
+	transition: filter var(--qp-motion-press);
+}
+
+.qp-secondary:hover:not(:disabled) {
+	filter: brightness(1.12);
+}
+
+.qp-secondary:active:not(:disabled) {
+	filter: brightness(0.85);
+}
+
+/* a busy secondary's pips after its words, as the primary's (2026-10-19) */
+.qp-secondary .qp-busy {
+	margin-inline-start: var(--qp-layout-button-gap);
+	vertical-align: middle;
+}
+
+.qp-secondary.qp-tall {
+	min-height: var(--qp-layout-primary-height);
+}
+
+.qp-secondary.qp-destructive {
+	color: var(--qp-color-stop);
+}
+
+.qp-secondary:disabled {
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	color: var(--qp-color-text3);
+}
+
+.qp-quiet {
+	display: block;
+	width: 100%;
+	min-height: var(--qp-layout-quiet-height);
+	padding: var(--qp-layout-space8) var(--qp-layout-space16);
+	border-radius: var(--qp-layout-button-radius);
+	font: var(--qp-type-button-quiet-font);
+	color: var(--qp-color-text2);
+	text-align: center;
+	transition: color var(--qp-motion-press), background-color var(--qp-motion-press);
+}
+
+.qp-quiet:hover:not(:disabled) {
+	color: var(--qp-color-text);
+	background: var(--qp-wide-hover);
+}
+
+.qp-quiet:active:not(:disabled) {
+	color: var(--qp-color-text3);
+}
+
+.qp-quiet:disabled {
+	color: var(--qp-color-text3);
+}
+
+/* a quiet button that plays or pauses (the pump's read-aloud button): its glyph before its words */
+.qp-quiet.qp-quiet-glyph {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-quiet-glyph qp-art {
+	flex: none;
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+}
+
+/* Cards and rows --------------------------------------------------------------------------------------------------- */
+
+qp-card {
+	display: block;
+	padding: var(--qp-layout-space16);
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge);
+	overflow: hidden;
+}
+
+qp-card[rows] {
+	padding: 0;
+}
+
+qp-card[rows] > * + * {
+	border-top: var(--qp-layout-hairline) solid var(--qp-color-line);
+}
+
+qp-card-row {
+	display: block;
+	background: var(--qp-surface-card-fill);
+	box-shadow: inset var(--qp-layout-hairline) 0 0 var(--qp-surface-card-edge),
+		inset calc(var(--qp-layout-hairline) * -1) 0 0 var(--qp-surface-card-edge);
+}
+
+qp-card-row:not([place="first"]):not([place="alone"]) {
+	border-top: var(--qp-layout-hairline) solid var(--qp-color-line);
+}
+
+qp-card-row[place="first"], qp-card-row[place="alone"] {
+	border-top-left-radius: var(--qp-layout-card-radius);
+	border-top-right-radius: var(--qp-layout-card-radius);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge);
+}
+
+qp-card-row[place="last"], qp-card-row[place="alone"] {
+	border-bottom-left-radius: var(--qp-layout-card-radius);
+	border-bottom-right-radius: var(--qp-layout-card-radius);
+}
+
+qp-row {
+	display: block;
+}
+
+.qp-row-body {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	width: 100%;
+	min-height: var(--qp-layout-row-height);
+	padding: var(--qp-layout-row-padding-v) var(--qp-layout-row-padding-h);
+	text-align: start;
+	transition: background-color var(--qp-motion-press);
+}
+
+button.qp-row-body:hover:not(:disabled), .qp-row-segment:hover:not(:disabled) {
+	background: var(--qp-wide-hover);
+}
+
+button.qp-row-body:active:not(:disabled), .qp-row-segment:active:not(:disabled) {
+	background: rgb(0 0 0 / var(--qp-surface-press-shade-opacity));
+}
+
+button.qp-row-body:focus-visible, .qp-row-segment:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+/* a row's trailing segment (`segment`; the pump's swap row, 2026-10-26): its chevron in a control of its own at the
+   row's end, at the row's height behind a hairline, pressed and focused as the row's body is */
+qp-row.qp-has-segment {
+	display: flex;
+}
+
+qp-row.qp-has-segment > .qp-row-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.qp-row-segment {
+	display: grid;
+	place-items: center;
+	flex: none;
+	min-width: var(--qp-layout-row-height);
+	border-inline-start: var(--qp-layout-hairline) solid var(--qp-color-line);
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-row-glyph {
+	width: var(--qp-layout-glyph-small);
+	height: var(--qp-layout-glyph-small);
+	color: var(--qp-color-text2);
+}
+
+/* a place's glyph in a KindTile (`tile`): the raised square with its line edge, the glyph in text2 */
+.qp-row-glyph.qp-row-tile {
+	box-sizing: border-box;
+	flex: none;
+	width: var(--qp-surface-kind-tile-size);
+	height: var(--qp-surface-kind-tile-size);
+	padding: calc((var(--qp-surface-kind-tile-size) - var(--qp-layout-glyph-small)) / 2);
+	border-radius: var(--qp-layout-tile-radius-small);
+	background: var(--qp-surface-kind-tile-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-kind-tile-edge);
+	color: var(--qp-surface-kind-tile-glyph);
+}
+
+/* a quiet button's destructive step (Delete place) in stop */
+qp-quiet-button.qp-destructive .qp-quiet:not(:disabled) {
+	color: var(--qp-color-stop);
+}
+
+.qp-row-step {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: var(--qp-layout-space32);
+	height: var(--qp-layout-space32);
+	border-radius: 50%;
+	background: var(--qp-color-raised);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	color: var(--qp-color-text2);
+}
+
+.qp-row-words {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+	gap: var(--qp-layout-space2);
+}
+
+.qp-row-title {
+	font: var(--qp-type-body-strong-font);
+	color: var(--qp-color-text);
+	overflow-wrap: anywhere;
+}
+
+.qp-row-meta {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space2);
+	font: var(--qp-type-meta-font);
+	color: var(--qp-color-text2);
+	overflow-wrap: anywhere;
+}
+
+.qp-row-value {
+	flex: none;
+	max-width: 50%;
+	font: var(--qp-type-label-font);
+	color: var(--qp-color-text2);
+	text-align: end;
+}
+
+qp-row.qp-destructive .qp-row-title {
+	color: var(--qp-color-stop);
+}
+
+button.qp-row-body:disabled .qp-row-title, button.qp-row-body:disabled .qp-row-glyph {
+	color: var(--qp-color-text3);
+}
+
+.qp-row-end {
+	display: flex;
+	flex: none;
+	align-items: center;
+	color: var(--qp-color-text3);
+}
+
+/* a row's chevron, the phones' Chevron.row (a side of space8, strokes of space2) */
+.qp-end-nav::after, .qp-end-value::after, .qp-end-expander::after {
+	content: "";
+	width: var(--qp-layout-space8);
+	height: var(--qp-layout-space8);
+	margin-inline: var(--qp-layout-space4) var(--qp-layout-space2);
+	border-right: var(--qp-layout-space2) solid currentColor;
+	border-bottom: var(--qp-layout-space2) solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform var(--qp-motion-chip);
+}
+
+[aria-expanded="true"] .qp-end-expander::after {
+	transform: rotate(45deg);
+}
+
+.qp-end-checked qp-art, .qp-end-external qp-art {
+	width: var(--qp-layout-glyph-small);
+	height: var(--qp-layout-glyph-small);
+	color: var(--qp-color-text);
+}
+
+.qp-end-external qp-art {
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+	color: var(--qp-color-text3);
+}
+
+qp-section-label {
+	display: block;
+	margin: var(--qp-layout-section-above) var(--qp-layout-space4) var(--qp-layout-section-below);
+}
+
+/* Switches, chips, segments ---------------------------------------------------------------------------------------- */
+
+qp-toggle {
+	display: inline-block;
+}
+
+.qp-switch, .qp-switch-look {
+	position: relative;
+	display: inline-block;
+	flex: none;
+	width: var(--qp-surface-toggle-width);
+	height: var(--qp-surface-toggle-height);
+	border-radius: calc(var(--qp-surface-toggle-height) / 2);
+	background: var(--qp-surface-toggle-off);
+	transition: background var(--qp-motion-chip);
+}
+
+.qp-knob {
+	position: absolute;
+	top: var(--qp-surface-toggle-inset);
+	left: var(--qp-surface-toggle-inset);
+	width: var(--qp-surface-toggle-knob);
+	height: var(--qp-surface-toggle-knob);
+	border-radius: 50%;
+	background: var(--qp-surface-toggle-knob-off);
+	box-shadow: var(--qp-surface-toggle-knob-shadow);
+	transition: transform var(--qp-motion-chip), background var(--qp-motion-chip);
+}
+
+.qp-switch[aria-checked="true"], [aria-checked="true"] .qp-switch-look {
+	background: var(--qp-surface-toggle-on);
+}
+
+/* the hover wash over the track, under the knob (a row's switch has its row's) */
+.qp-switch:hover:not(:disabled) {
+	box-shadow: inset 0 0 0 var(--qp-surface-toggle-height) var(--qp-wide-hover);
+}
+
+.qp-switch[aria-checked="true"] .qp-knob, [aria-checked="true"] .qp-switch-look .qp-knob {
+	transform: translateX(calc(var(--qp-surface-toggle-width) - var(--qp-surface-toggle-knob)
+		- var(--qp-surface-toggle-inset) * 2));
+	background: var(--qp-surface-toggle-knob-on);
+}
+
+.qp-switch:disabled, :disabled .qp-switch-look {
+	background: var(--qp-color-raised);
+}
+
+.qp-switch:disabled .qp-knob, :disabled .qp-switch-look .qp-knob {
+	background: var(--qp-color-text3);
+}
+
+qp-chip {
+	display: inline-block;
+}
+
+.qp-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	min-height: var(--qp-layout-chip-height);
+	padding: 0 var(--qp-layout-space12);
+	border-radius: var(--qp-layout-chip-radius);
+	background: var(--qp-surface-chip-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-chip-edge);
+	font: var(--qp-type-label-font);
+	color: var(--qp-surface-chip-label);
+}
+
+button.qp-chip {
+	min-height: var(--qp-layout-quiet-height);
+	background-clip: content-box;
+	transition: opacity var(--qp-motion-press);
+}
+
+button.qp-chip:hover {
+	color: var(--qp-color-text);
+}
+
+button.qp-chip:active {
+	opacity: 0.6;
+}
+
+.qp-chip-glyph {
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+}
+
+.qp-chip-dot {
+	width: var(--qp-surface-chip-dot);
+	height: var(--qp-surface-chip-dot);
+	border-radius: 50%;
+	background: var(--qp-surface-chip-dot-off);
+}
+
+.qp-chip[data-state="ok"] .qp-chip-dot {
+	background: var(--qp-surface-chip-dot-ok);
+	box-shadow: 0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-surface-chip-dot-ok);
+}
+
+.qp-chip[data-state="reaching"] .qp-chip-dot {
+	background: var(--qp-surface-chip-dot-reaching);
+	animation: qp-pulse var(--qp-motion-pulse) infinite alternate;
+}
+
+/* the status chip while the tray icon is red (desk/tray.rs `Tone`), in the colour that marks a stop on every surface */
+.qp-chip[data-state="stopped"] .qp-chip-dot {
+	background: var(--qp-color-stop);
+}
+
+@keyframes qp-pulse {
+	to {
+		opacity: var(--qp-surface-primary-button-busy-dim-opacity);
+	}
+}
+
+.qp-chip[data-state="record"] {
+	min-height: var(--qp-surface-chip-record-height);
+	color: var(--qp-quality-uncommon);
+	background: color-mix(in srgb, var(--qp-quality-uncommon) calc(var(--qp-surface-chip-record-fill-opacity) * 100%),
+		transparent);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) color-mix(in srgb, var(--qp-quality-uncommon)
+		calc(var(--qp-surface-chip-record-edge-opacity) * 100%), transparent);
+}
+
+/* the Saga's new-moves pill (slice 44, views/log/held.js places it): gold words over card after the upright arrow in
+   gold, floating over the page with the toast's shadow; the pill 32 high, its pointer's target 44 */
+.qp-chip[data-state="new_moves"] {
+	position: relative;
+	min-height: var(--qp-layout-chip-height);
+	background-clip: border-box;
+	color: var(--qp-color-gold);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-chip-edge), var(--qp-surface-tooltip-shadow);
+}
+
+.qp-chip[data-state="new_moves"]:hover {
+	color: var(--qp-color-gold-hi);
+}
+
+.qp-chip[data-state="new_moves"]::before {
+	content: "";
+	position: absolute;
+	inset: calc((var(--qp-layout-chip-height) - var(--qp-layout-quiet-height)) / 2) 0;
+}
+
+qp-choice-chip {
+	display: inline-block;
+}
+
+.qp-choice {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	min-height: var(--qp-layout-quiet-height);
+	padding: calc((var(--qp-layout-quiet-height) - var(--qp-layout-chip-height)) / 2) var(--qp-layout-space12);
+	font: var(--qp-type-label-font);
+	color: var(--qp-color-text2);
+}
+
+.qp-choice > * {
+	position: relative;
+}
+
+.qp-choice::before {
+	content: "";
+	position: absolute;
+	inset: calc((var(--qp-layout-quiet-height) - var(--qp-layout-chip-height)) / 2) 0;
+	border-radius: var(--qp-layout-chip-radius);
+	background: var(--qp-color-card);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	transition: background var(--qp-motion-chip), box-shadow var(--qp-motion-chip);
+}
+
+.qp-choice:hover:not(:disabled)::before {
+	background: var(--qp-color-raised);
+}
+
+.qp-choice[aria-pressed="true"] {
+	color: var(--qp-color-text);
+}
+
+.qp-choice[aria-pressed="true"]::before {
+	background: var(--qp-color-raised);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
+}
+
+.qp-choice qp-art {
+	width: var(--qp-layout-space14);
+	height: var(--qp-layout-space14);
+}
+
+.qp-choice.qp-locked, .qp-choice:disabled {
+	color: var(--qp-color-text3);
+}
+
+qp-segmented {
+	display: block;
+}
+
+.qp-segments {
+	display: flex;
+	gap: var(--qp-surface-segmented-inset);
+	padding: var(--qp-surface-segmented-inset);
+	border-radius: var(--qp-surface-segmented-radius);
+	background: var(--qp-surface-segmented-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-segmented-edge);
+}
+
+.qp-segment {
+	flex: 1;
+	min-width: 0;
+	min-height: var(--qp-surface-segmented-height);
+	padding: var(--qp-layout-space4) var(--qp-layout-space8);
+	border-radius: var(--qp-surface-segmented-segment-radius);
+	font: var(--qp-type-label-font);
+	color: var(--qp-surface-segmented-label);
+	overflow-wrap: anywhere;
+	transition: background var(--qp-motion-chip), color var(--qp-motion-chip);
+}
+
+.qp-segment:hover:not(:disabled) {
+	color: var(--qp-color-text);
+}
+
+.qp-segment[aria-selected="true"] {
+	background: var(--qp-surface-segmented-selected);
+	box-shadow: var(--qp-surface-segmented-highlight), var(--qp-surface-segmented-shadow);
+	color: var(--qp-surface-segmented-selected-label);
+}
+
+.qp-segment:disabled {
+	color: var(--qp-color-text3);
+}
+
+/* the small one beside a label: the Chip's height, each segment as wide as its word */
+qp-segmented[small] .qp-segment {
+	flex: none;
+	min-height: calc(var(--qp-layout-chip-height) - var(--qp-surface-segmented-inset) * 2);
+	padding: 0 var(--qp-layout-space10);
+	font: var(--qp-type-meta-font);
+	white-space: nowrap;
+}
+
+/* Slider ----------------------------------------------------------------------------------------------------------- */
+
+/* a row of its own in a card of rows: the name, then the track and the level, which wrap under the name in a narrow
+ * window */
+qp-slider {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	min-height: var(--qp-layout-row-height);
+	padding: var(--qp-layout-row-padding-v) var(--qp-layout-row-padding-h);
+}
+
+qp-slider > .qp-row-words {
+	flex: 1 1 8em;
+}
+
+.qp-slider-control {
+	display: flex;
+	flex: 2 1 12em;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	min-width: 0;
+}
+
+/* the level in a row's value type, its digits of one width and its box as wide as 100%, so the tracks of a card line up
+ * and nothing shifts as one moves */
+.qp-slider-value {
+	flex: none;
+	min-width: 5ch;
+	font: var(--qp-type-label-font);
+	font-variant-numeric: tabular-nums;
+	color: var(--qp-color-text2);
+	text-align: end;
+}
+
+/* the input is the RoundButton's height, so the knob's whole reach takes the pointer */
+.qp-range {
+	flex: 1;
+	min-width: 0;
+	height: var(--qp-layout-round-button);
+	background: none;
+	cursor: pointer;
+	-webkit-appearance: none;
+	appearance: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+/* the XP bar's track, its gold fill to the level (the share qp-slider sets), with no transition: it follows the
+ * pointer */
+.qp-range::-webkit-slider-runnable-track {
+	height: var(--qp-layout-xp-bar-height);
+	border-radius: var(--qp-layout-xp-bar-radius);
+	background: var(--qp-surface-xp-bar-fill) 0 0 / calc(var(--qp-slider-share, 1) * 100%) 100% no-repeat,
+		var(--qp-surface-xp-bar-track);
+	box-shadow: inset var(--qp-surface-xp-bar-inset);
+}
+
+/* the Toggle's light knob, centred on the track */
+.qp-range::-webkit-slider-thumb {
+	width: var(--qp-surface-toggle-knob);
+	height: var(--qp-surface-toggle-knob);
+	margin-top: calc((var(--qp-layout-xp-bar-height) - var(--qp-surface-toggle-knob)) / 2);
+	border: 0;
+	border-radius: 50%;
+	background: var(--qp-surface-toggle-knob-on);
+	box-shadow: var(--qp-surface-toggle-knob-shadow);
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.qp-range:hover::-webkit-slider-thumb {
+	box-shadow: var(--qp-surface-toggle-knob-shadow), 0 0 0 var(--qp-layout-space8) var(--qp-wide-hover);
+}
+
+.qp-range:active::-webkit-slider-thumb {
+	filter: brightness(0.85);
+}
+
+/* Windows' high contrast and every forced palette: the system's colours, the level kept by the fill's length */
+@media (forced-colors: active) {
+	.qp-range {
+		forced-color-adjust: none;
+	}
+
+	.qp-range:focus-visible {
+		outline-color: Highlight;
+	}
+
+	.qp-range::-webkit-slider-runnable-track {
+		background: linear-gradient(Highlight, Highlight) 0 0 / calc(var(--qp-slider-share, 1) * 100%) 100% no-repeat,
+			Canvas;
+		box-shadow: inset 0 0 0 var(--qp-layout-hairline) CanvasText;
+	}
+
+	.qp-range::-webkit-slider-thumb, .qp-range:hover::-webkit-slider-thumb {
+		background: Canvas;
+		box-shadow: inset 0 0 0 var(--qp-layout-hairline) CanvasText;
+	}
+}
+
+/* Text input ------------------------------------------------------------------------------------------------------- */
+
+qp-text-input {
+	display: block;
+}
+
+/* the field with its clear control, which sits at its end */
+.qp-input-well {
+	position: relative;
+}
+
+qp-text-input input, qp-text-input textarea {
+	display: block;
+	width: 100%;
+	padding: var(--qp-layout-space12) var(--qp-layout-space14);
+	border: 0;
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-color-page);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	font: var(--qp-type-body-font);
+	color: var(--qp-color-text);
+	resize: vertical;
+	transition: box-shadow var(--qp-motion-glow);
+}
+
+qp-text-input input::placeholder, qp-text-input textarea::placeholder {
+	color: var(--qp-color-text3);
+}
+
+qp-text-input input:focus, qp-text-input textarea:focus {
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
+}
+
+qp-text-input input:disabled, qp-text-input textarea:disabled {
+	color: var(--qp-color-text3);
+}
+
+qp-text-input input[type="search"]::-webkit-search-cancel-button {
+	display: none;
+}
+
+qp-text-input input[aria-invalid="true"] {
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-stop);
+}
+
+/* a masked field shows its text only through Show code (views/page.js heldCode), never WebView2's own reveal eye */
+qp-text-input input[type="password"]::-ms-reveal {
+	display: none;
+}
+
+/* a code: a box for each digit (the phones' code boxes), the field over them taking the typing and the system's fill */
+.qp-code-boxes {
+	display: grid;
+	grid-template-columns: repeat(var(--qp-code-digits), 1fr);
+	gap: var(--qp-layout-space8);
+}
+
+.qp-code-box {
+	display: grid;
+	place-items: center;
+	min-height: calc(var(--qp-layout-space32) + var(--qp-layout-space16));
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-color-card);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	font: var(--qp-type-num-count-font);
+	color: var(--qp-color-text);
+	transition: box-shadow var(--qp-motion-glow);
+}
+
+.qp-code-box.qp-code-next {
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
+}
+
+.qp-code-well:has(input[aria-invalid="true"]) .qp-code-box {
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-stop);
+}
+
+.qp-code-well:has(input:disabled) .qp-code-box {
+	color: var(--qp-color-text3);
+}
+
+qp-text-input .qp-code-well input, qp-text-input .qp-code-well input:focus {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	background: transparent;
+	box-shadow: none;
+	color: transparent;
+	caret-color: transparent;
+}
+
+qp-text-input .qp-code-well input::selection {
+	background: transparent;
+}
+
+/* a forced palette draws no shadow: the boxes' edges as outlines, the field's words kept unseen */
+@media (forced-colors: active) {
+	qp-text-input .qp-code-well input {
+		forced-color-adjust: none;
+	}
+
+	.qp-code-box {
+		outline: var(--qp-layout-hairline) solid CanvasText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-code-box.qp-code-next {
+		outline-color: Highlight;
+	}
+}
+
+/* what is wrong with the field, under it */
+.qp-input-error {
+	display: block;
+	margin-top: var(--qp-layout-space8);
+	font: var(--qp-type-meta-font);
+	color: var(--qp-color-stop);
+}
+
+.qp-clear {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-end: var(--qp-layout-space8);
+	margin-block: auto;
+	display: grid;
+	place-items: center;
+	/* the hover's circle: the mark with space8 around it */
+	width: calc(var(--qp-layout-space12) + var(--qp-layout-space8) * 2);
+	height: calc(var(--qp-layout-space12) + var(--qp-layout-space8) * 2);
+	border-radius: 50%;
+	color: var(--qp-color-text3);
+}
+
+.qp-clear qp-art {
+	width: var(--qp-layout-space12);
+	height: var(--qp-layout-space12);
+}
+
+.qp-clear:hover {
+	color: var(--qp-color-text);
+	background: var(--qp-wide-hover);
+}
+
+/* Empty state ------------------------------------------------------------------------------------------------------ */
+
+qp-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	margin-top: var(--qp-layout-space32);
+	text-align: center;
+}
+
+.qp-empty-glyph {
+	width: var(--qp-surface-empty-state-glyph);
+	height: var(--qp-surface-empty-state-glyph);
+	color: var(--qp-color-text3);
+}
+
+qp-empty-state qp-primary-button {
+	align-self: stretch;
+	margin-top: var(--qp-layout-space12);
+}
+
+/* Window ----------------------------------------------------------------------------------------------------------- */
+
+.qp-window {
+	width: min(var(--qp-wide-column), calc(100vw - var(--qp-layout-margin) * 2));
+	max-height: calc(100vh - var(--qp-layout-space32) * 2);
+	padding: var(--qp-layout-space16) var(--qp-layout-margin) var(--qp-layout-margin);
+	border: 0;
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge);
+	color: var(--qp-color-text);
+	overflow: auto;
+	animation: qp-window-in var(--qp-motion-window) both;
+}
+
+/* the heading and the buttons pinned, the content scrolling between them */
+.qp-window[open] {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+/* from the foot: it grows up from the window's edge as it enters and leaves, never lifting off it */
+.qp-window[data-placement="bottom"] {
+	margin-bottom: 0;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	transform-origin: 50% 100%;
+}
+
+.qp-window::backdrop {
+	background: var(--qp-surface-window-dim);
+	animation: qp-fade-in var(--qp-motion-window) both;
+}
+
+.qp-window.qp-leaving {
+	animation: qp-window-out var(--qp-motion-window-out) both;
+}
+
+.qp-window.qp-leaving::backdrop {
+	animation: qp-fade-out var(--qp-motion-window-out) both;
+}
+
+/* grown out of a tapped tile (lib/grow.js, slice 46): the script moves it, so no entrance of its own while it stands,
+ * the dim fading in over the grow; shrinking back into the tile, no leave of its own, the dim fading out with it */
+.qp-window.qp-grown:not(.qp-leaving), .qp-window.qp-shrinking {
+	animation: none;
+}
+
+.qp-window.qp-grown:not(.qp-leaving, .qp-shrinking)::backdrop {
+	animation: qp-fade-in var(--qp-motion-grow) both;
+}
+
+.qp-window.qp-shrinking::backdrop {
+	animation: qp-fade-out var(--qp-motion-grow-back) both;
+}
+
+@keyframes qp-window-in {
+	from {
+		opacity: 0;
+		transform: scale(var(--qp-motion-window-scale-from));
+	}
+}
+
+@keyframes qp-window-out {
+	to {
+		opacity: 0;
+		transform: scale(var(--qp-motion-window-scale-from));
+	}
+}
+
+@keyframes qp-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes qp-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+.qp-window-head {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	margin-bottom: var(--qp-layout-space12);
+}
+
+.qp-window-head h2 {
+	flex: 1;
+	min-width: 0;
+}
+
+/* the close stays at the trailing edge where the content carries its own heading (a step's card) */
+.qp-window-head qp-round-button {
+	margin-inline-start: auto;
+}
+
+.qp-window-head, .qp-window > qp-primary-button, .qp-window > qp-quiet-button, .qp-window-foot {
+	flex: none;
+}
+
+/* the content's own scroll, with room for a control's focus ring at its edges */
+.qp-window-body {
+	display: flex;
+	flex: 0 1 auto;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+	min-height: 0;
+	margin: calc(var(--qp-wide-focus-ring-width) * -2);
+	padding: calc(var(--qp-wide-focus-ring-width) * 2);
+	overflow: auto;
+}
+
+/* a card keeps its whole height in the scrolling content: its own clip (for its corners) would let it shrink to the
+ * window's height, cutting its last rows off with nothing left to scroll (a long list: More games, the titles) */
+.qp-window-body > qp-card {
+	flex-shrink: 0;
+}
+
+.qp-window-foot:empty {
+	display: none;
+}
+
+.qp-window-foot {
+	margin-top: var(--qp-layout-space16);
+}
+
+.qp-window > qp-primary-button {
+	margin-top: var(--qp-layout-space16);
+}
+
+.qp-window > qp-quiet-button {
+	margin-top: var(--qp-layout-space8);
+}
+
+/* Toast ------------------------------------------------------------------------------------------------------------ */
+
+qp-toast {
+	position: fixed;
+	inset-inline: 0;
+	top: var(--qp-layout-space12);
+	z-index: 10;
+	display: flex;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.qp-toast {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	max-width: min(var(--qp-surface-toast-max-width), calc(100vw - var(--qp-layout-margin) * 2));
+	padding: var(--qp-layout-space12) var(--qp-layout-space16);
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong),
+		var(--qp-surface-tooltip-shadow);
+	animation: qp-toast-in var(--qp-motion-toast-in) both;
+}
+
+.qp-toast.qp-out {
+	animation: qp-toast-out var(--qp-motion-toast-out) both;
+}
+
+@keyframes qp-toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(-120%);
+	}
+}
+
+@keyframes qp-toast-out {
+	to {
+		opacity: 0;
+		transform: translateY(-120%);
+	}
+}
+
+/* Tooltip ---------------------------------------------------------------------------------------------------------- */
+
+qp-tooltip {
+	position: fixed;
+	left: var(--qp-tooltip-x, 0);
+	top: var(--qp-tooltip-y, 0);
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+	width: var(--qp-surface-tooltip-width);
+	padding: var(--qp-layout-space10) var(--qp-layout-space12);
+	border: var(--qp-surface-tooltip-edge);
+	border-radius: var(--qp-surface-tooltip-radius);
+	background: var(--qp-surface-tooltip-fill);
+	box-shadow: var(--qp-surface-tooltip-shadow);
+}
+
+/* one inside a Window stands in the top layer over it (popover), placed as the page's is */
+qp-tooltip[popover] {
+	right: auto;
+	bottom: auto;
+	margin: 0;
+	overflow: visible;
+	color: inherit;
+}
+
+.qp-tooltip-meta {
+	font: var(--qp-type-meta-font);
+	color: var(--qp-surface-tooltip-meta);
+}
+
+.qp-tooltip-effect {
+	color: var(--qp-quality-uncommon);
+}
+
+.qp-tooltip-name {
+	color: var(--qp-color-text);
+}
+
+/* QR well and the focus veil --------------------------------------------------------------------------------------- */
+
+qp-qr-well {
+	display: block;
+	width: min(var(--qp-layout-qr-well), 100%);
+	margin-inline: auto;
+	border-radius: var(--qp-layout-tile-radius);
+	overflow: hidden;
+}
+
+qp-qr-well svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.qp-qr-ground {
+	fill: var(--qp-color-text);
+}
+
+.qp-qr-ink {
+	fill: var(--qp-color-ink);
+}
+
+qp-focus-veil {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	display: grid;
+	place-items: center;
+	padding: var(--qp-layout-margin);
+	background: var(--qp-surface-window-dim);
+	text-align: center;
+	cursor: pointer;
+}
+
+/* The match-over card ---------------------------------------------------------------------------------------------- */
+
+/* the whole of its small window (about 360 × 168): the title with Later and the ×, the one line, then the size and
+ * Start side by side; its controls a step smaller than a page's, so all of it fits without a scroll */
+qp-match-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+	height: 100vh;
+	padding: var(--qp-layout-space12) var(--qp-layout-space14) var(--qp-layout-space14);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge);
+}
+
+.qp-match-head {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-match-title {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.qp-match-head .qp-quiet {
+	width: auto;
+	min-height: var(--qp-layout-round-button-pump);
+	padding: var(--qp-layout-space4) var(--qp-layout-space8);
+}
+
+.qp-match-line {
+	flex: 1;
+	min-height: 0;
+	color: var(--qp-color-text2);
+	overflow: hidden;
+}
+
+.qp-match-foot {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-match-foot qp-segmented {
+	flex: 1;
+	min-width: 0;
+}
+
+.qp-match-foot .qp-segment {
+	min-height: var(--qp-layout-round-button-pump);
+}
+
+.qp-match-foot qp-primary-button {
+	flex: none;
+}
+
+/* a reminder's card and an offer at Moves per match Light: no size, its Start the foot's width */
+.qp-match-foot qp-segmented[hidden] + qp-primary-button {
+	flex: 1;
+}
+
+.qp-match-foot .qp-primary {
+	min-height: var(--qp-layout-round-button);
+	padding-block: var(--qp-layout-space4);
+}
+
+/* Qualities, pips, stars, bars ------------------------------------------------------------------------------------- */
+
+qp-quality-word {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-surface-quality-word-gem-gap);
+	font: 600 var(--qp-type-meta-size) / var(--qp-type-meta-line-height) var(--qp-type-body-family);
+	color: var(--qp-tone, var(--qp-color-text2));
+}
+
+.qp-gem {
+	flex: none;
+	width: var(--qp-surface-quality-word-gem);
+	height: var(--qp-surface-quality-word-gem);
+	border-radius: var(--qp-surface-quality-word-gem-radius);
+	background: var(--qp-tone, var(--qp-color-text2));
+	box-shadow: 0 0 calc(var(--qp-surface-chip-dot-glow-radius) / 2) var(--qp-tone, var(--qp-color-text2));
+	transform: rotate(45deg);
+}
+
+qp-step-pips, qp-rung-stars, qp-day-pips, qp-steps-bar {
+	display: flex;
+	align-items: center;
+}
+
+qp-step-pips {
+	gap: var(--qp-layout-pip-gap);
+}
+
+qp-step-pips i {
+	width: var(--qp-layout-pip-width);
+	height: var(--qp-layout-pip-height);
+	border-radius: var(--qp-surface-step-pips-radius);
+	background: var(--qp-surface-step-pips-off);
+}
+
+qp-step-pips i.qp-lit {
+	background: var(--qp-tone, var(--qp-color-gold));
+}
+
+qp-rung-stars {
+	gap: var(--qp-surface-rung-stars-gap);
+}
+
+qp-rung-stars qp-art {
+	width: var(--qp-surface-rung-stars-star);
+	height: var(--qp-surface-rung-stars-star);
+	color: var(--qp-surface-rung-stars-unearned);
+}
+
+qp-rung-stars qp-art.qp-earned {
+	color: var(--qp-surface-rung-stars-earned);
+}
+
+qp-day-pips {
+	gap: var(--qp-surface-day-pips-gap);
+}
+
+qp-day-pips i {
+	width: var(--qp-surface-day-pips-pip);
+	height: var(--qp-surface-day-pips-pip);
+	border-radius: 50%;
+	background: var(--qp-surface-day-pips-unlit);
+}
+
+qp-day-pips i.qp-lit {
+	background: var(--qp-surface-day-pips-lit);
+}
+
+qp-steps-bar {
+	position: relative;
+	gap: var(--qp-surface-steps-bar-gap);
+}
+
+/* Banked over a match pump's riders: centred on the bars from the first rider to the last (qp-steps-bar.js sets the
+ * total, the first rider's place from 0 and the span), one bar being the width less its gaps over the total */
+qp-steps-bar .qp-steps-banked {
+	--qp-steps-bar: calc((100% - (var(--qp-steps-total) - 1) * var(--qp-surface-steps-bar-gap))
+		/ var(--qp-steps-total));
+	position: absolute;
+	bottom: calc(100% + var(--qp-surface-steps-bar-label-gap));
+	left: calc(var(--qp-steps-from) * (var(--qp-steps-bar) + var(--qp-surface-steps-bar-gap)));
+	width: calc(var(--qp-steps-span) * var(--qp-steps-bar)
+		+ (var(--qp-steps-span) - 1) * var(--qp-surface-steps-bar-gap));
+	text-align: center;
+	white-space: nowrap;
+	font: var(--qp-type-caps-font);
+	letter-spacing: var(--qp-type-caps-tracking);
+	text-transform: var(--qp-type-caps-case);
+	color: var(--qp-surface-steps-bar-rider-now);
+}
+
+qp-steps-bar i {
+	flex: 1;
+	height: var(--qp-layout-step-bar-height);
+	border-radius: var(--qp-surface-steps-bar-radius);
+	background: var(--qp-surface-steps-bar-track);
+}
+
+qp-steps-bar i.qp-done {
+	background: var(--qp-surface-steps-bar-done);
+}
+
+qp-steps-bar i.qp-now {
+	background: var(--qp-surface-steps-bar-now);
+	box-shadow: var(--qp-surface-steps-bar-glow);
+}
+
+qp-steps-bar i.qp-rider {
+	background: var(--qp-surface-steps-bar-rider);
+}
+
+qp-steps-bar i.qp-rider.qp-done {
+	background: var(--qp-surface-steps-bar-rider-done);
+}
+
+qp-steps-bar i.qp-rider.qp-now {
+	background: var(--qp-surface-steps-bar-rider-now);
+	box-shadow: var(--qp-surface-steps-bar-rider-glow);
+}
+
+/* ExpeditionBar: the stage's caps and the minutes left over one row of segments, a round's the width the others leave,
+   the warm-up's and the cool-down's shortFraction of it; done goldLo, the one in play gold with StepsBar's glow */
+qp-expedition-bar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-surface-expedition-bar-line-gap);
+}
+
+.qp-expedition-line {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	color: var(--qp-color-text2);
+}
+
+.qp-expedition-left {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-expedition-left qp-art {
+	width: var(--qp-surface-expedition-bar-clock-size);
+	height: var(--qp-surface-expedition-bar-clock-size);
+}
+
+.qp-expedition-left .qp-type-num-row {
+	color: var(--qp-color-text);
+}
+
+.qp-expedition-segments {
+	display: flex;
+	gap: var(--qp-surface-expedition-bar-segment-gap);
+}
+
+.qp-expedition-segments i {
+	flex: 1 1 0;
+	height: var(--qp-surface-expedition-bar-height);
+	border-radius: var(--qp-surface-expedition-bar-radius);
+	background: var(--qp-surface-expedition-bar-track);
+}
+
+.qp-expedition-segments i.qp-short {
+	flex-grow: var(--qp-surface-expedition-bar-short-fraction);
+}
+
+.qp-expedition-segments i.qp-done {
+	background: var(--qp-surface-expedition-bar-done);
+}
+
+.qp-expedition-segments i.qp-now {
+	background: var(--qp-surface-expedition-bar-now);
+	box-shadow: var(--qp-surface-expedition-bar-glow);
+}
+
+qp-xp-bar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-xp-track {
+	position: relative;
+	height: var(--qp-layout-xp-bar-height);
+	border-radius: var(--qp-layout-xp-bar-radius);
+	background: var(--qp-surface-xp-bar-track);
+	box-shadow: inset var(--qp-surface-xp-bar-inset);
+	overflow: hidden;
+}
+
+qp-xp-bar[hero] .qp-xp-track {
+	height: var(--qp-layout-xp-bar-height-hero);
+}
+
+.qp-xp-fill, .qp-xp-rested {
+	position: absolute;
+	inset-block: 0;
+	left: 0;
+	transition: width var(--qp-motion-xp-fill), left var(--qp-motion-xp-fill);
+}
+
+.qp-xp-fill {
+	width: calc(var(--qp-xp-share, 0) * 100%);
+	background: var(--qp-surface-xp-bar-fill);
+}
+
+.qp-xp-rested {
+	left: calc(var(--qp-xp-share, 0) * 100%);
+	width: calc(var(--qp-xp-rest, 0) * 100%);
+	background: var(--qp-surface-xp-bar-rested);
+}
+
+.qp-xp-caption {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--qp-layout-space8);
+}
+
+/* Stepper ---------------------------------------------------------------------------------------------------------- */
+
+qp-stepper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+/* a class of its own, apart from the Book's step rows' `.qp-step-row` (book.css), whose border, padding and top
+ * alignment would reach it */
+.qp-stepper-row {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-surface-stepper-gap);
+}
+
+.qp-step-key {
+	display: grid;
+	place-items: center;
+	width: var(--qp-surface-stepper-key);
+	height: var(--qp-surface-stepper-key);
+	border-radius: 50%;
+	background: var(--qp-surface-stepper-fill);
+	box-shadow: var(--qp-surface-stepper-highlight),
+		inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-stepper-edge);
+	font: 400 var(--qp-surface-stepper-sign) / 1 var(--qp-type-body-family);
+	color: var(--qp-color-text);
+	transition: filter var(--qp-motion-press);
+}
+
+.qp-step-key:hover:not(:disabled) {
+	filter: brightness(1.15);
+}
+
+.qp-step-key:active:not(:disabled) {
+	filter: brightness(0.85);
+}
+
+.qp-step-key:disabled {
+	color: var(--qp-color-text3);
+	cursor: default;
+}
+
+.qp-step-value {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 3ch;
+	border-radius: var(--qp-layout-tile-radius);
+}
+
+/* a row whose end is a compact Stepper (the Menu's Size on the computer, a counted set's Clean reps): its words take at
+ * least 10em before the Stepper wraps under them, so a narrow window at a large size never squeezes them to a few
+ * letters a line */
+.qp-stepper-line {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	min-height: var(--qp-layout-row-height);
+	padding: var(--qp-layout-row-padding-v) var(--qp-layout-row-padding-h);
+}
+
+.qp-stepper-line > .qp-row-words {
+	flex: 1 1 10em;
+	text-align: start;
+}
+
+/* the narrowest windows (a 480-px one at the largest sizes, under 240 CSS px): the row's padding and the Stepper's gaps
+ * give way, so its keys keep their 40 inside the card */
+@media (max-width: 239.98px) {
+	.qp-stepper-line {
+		padding-inline: var(--qp-layout-space8);
+	}
+
+	.qp-stepper-line qp-stepper[compact] .qp-stepper-row {
+		gap: var(--qp-layout-space4);
+	}
+}
+
+/* compact at a row's end: the keys at the RoundButton's size, the value's words between them on one line */
+qp-stepper[compact] {
+	flex: none;
+}
+
+qp-stepper[compact] .qp-stepper-row {
+	gap: var(--qp-layout-space8);
+}
+
+qp-stepper[compact] .qp-step-key {
+	width: var(--qp-layout-round-button);
+	height: var(--qp-layout-round-button);
+	font: 400 var(--qp-type-heading-size) / 1 var(--qp-type-body-family);
+}
+
+qp-stepper[compact] .qp-step-value {
+	min-width: 4.5ch;
+}
+
+/* RewardPill: what the move up next earns on its Ready view, the kit's Chip (the parchment's pill until 2026-10-24) */
+qp-reward-pill {
+	display: inline-block;
+}
+
+/* How and Tips (kit/move-how.js): the setup line under the character's glyph, How's steps with their numbers hanging
+   before them (one line box, so each step reads as one with its number), Tips' lines; How's heading with Ready's
+   read-aloud button at its end */
+.qp-how-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	margin: var(--qp-layout-section-above) 0 var(--qp-layout-section-below);
+}
+
+.qp-how-head qp-section-label {
+	flex: 1;
+	min-width: 0;
+	margin: 0 var(--qp-layout-space4);
+}
+
+.qp-how-head .qp-quiet {
+	width: auto;
+}
+
+.qp-how-setup {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--qp-layout-space8);
+	margin: 0;
+}
+
+.qp-how-setup qp-art {
+	flex: none;
+	width: var(--qp-layout-glyph);
+	height: var(--qp-layout-glyph);
+	color: var(--qp-color-text2);
+}
+
+.qp-how-steps {
+	--qp-how-indent: var(--qp-layout-space32);
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.qp-how-steps li {
+	padding-inline-start: var(--qp-how-indent);
+	text-indent: calc(-1 * var(--qp-how-indent));
+}
+
+.qp-how-number {
+	display: inline-block;
+	width: var(--qp-how-indent);
+	text-indent: 0;
+	color: var(--qp-color-text2);
+}
+
+.qp-how-tips {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space6);
+	margin: 0;
+	padding-inline-start: var(--qp-layout-space20);
+}
+
+.qp-how-tips li::marker {
+	color: var(--qp-color-text3);
+}
+
+qp-card.qp-how-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+/* The move's tile -------------------------------------------------------------------------------------------------- */
+
+qp-move-tile {
+	--qp-tile: var(--qp-layout-tile);
+	position: relative;
+	display: inline-block;
+	flex: none;
+	width: var(--qp-tile);
+	height: var(--qp-tile);
+}
+
+qp-move-tile[data-size="44"] {
+	--qp-tile: var(--qp-layout-tile-result);
+}
+
+qp-move-tile[data-size="60"] {
+	--qp-tile: var(--qp-layout-tile-book);
+}
+
+.qp-tile-well {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-surface-move-tile-well);
+	box-shadow: inset 0 0 0 var(--qp-layout-tile-edge) var(--qp-tone, var(--qp-surface-move-tile-untrained-edge)),
+		inset 0 0 0 calc(var(--qp-layout-tile-edge) + var(--qp-surface-move-tile-inner-width))
+		var(--qp-surface-move-tile-inner-color),
+		0 0 var(--qp-surface-move-tile-glow-radius) color-mix(in srgb, var(--qp-tone, transparent)
+		calc(var(--qp-surface-move-tile-glow-opacity) * 100%), transparent);
+	overflow: hidden;
+}
+
+qp-move-tile[data-size="44"] .qp-tile-well {
+	border-radius: var(--qp-layout-tile-radius-small);
+}
+
+button.qp-tile-well:hover {
+	filter: brightness(1.12);
+}
+
+.qp-tile-well img {
+	position: absolute;
+	left: calc(var(--qp-crop-x) / var(--qp-crop-side) * -100%);
+	top: calc(var(--qp-crop-y) / var(--qp-crop-side) * -100%);
+	width: calc(100% / var(--qp-crop-side));
+	height: calc(100% / var(--qp-crop-side));
+}
+
+qp-move-tile[data-untrained] .qp-tile-well img {
+	opacity: var(--qp-surface-move-tile-untrained-opacity);
+}
+
+qp-move-tile.qp-off .qp-tile-well img {
+	opacity: var(--qp-surface-move-tile-off-opacity);
+}
+
+/* a step ahead, a move above the player's reach: the pose greyed as the client greys a talent not open yet, its edge in
+ * text3 (3:1 against the page), since it still opens a card or a window */
+qp-move-tile[data-ahead] .qp-tile-well {
+	box-shadow: inset 0 0 0 var(--qp-layout-tile-edge) var(--qp-color-text3),
+		inset 0 0 0 calc(var(--qp-layout-tile-edge) + var(--qp-surface-move-tile-inner-width))
+		var(--qp-surface-move-tile-inner-color);
+}
+
+qp-move-tile[data-ahead] .qp-tile-well img {
+	filter: grayscale(1);
+	opacity: var(--qp-surface-move-tile-untrained-opacity);
+}
+
+.qp-mirrored {
+	transform: scaleX(-1);
+}
+
+.qp-tile-glyph {
+	width: var(--qp-surface-move-tile-glyph);
+	height: var(--qp-surface-move-tile-glyph);
+	color: var(--qp-color-text3);
+}
+
+/* the Off and favourite marks: the tile's own children, half outside its top corners, over the well (slice 42's fix
+ * round, 2026-10-17: inside the well until then, whose clip cut each to a quarter) */
+.qp-tile-off, .qp-tile-favourite {
+	position: absolute;
+	top: calc(var(--qp-surface-move-tile-favourite-mark) / -2);
+	z-index: 1;
+	pointer-events: none;
+	display: grid;
+	place-items: center;
+	min-width: var(--qp-surface-move-tile-favourite-mark);
+	height: var(--qp-surface-move-tile-favourite-mark);
+	border-radius: calc(var(--qp-surface-move-tile-favourite-mark) / 2);
+	background: var(--qp-color-raised);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
+}
+
+.qp-tile-off {
+	right: calc(var(--qp-surface-move-tile-favourite-mark) / -2);
+	padding: 0 var(--qp-layout-space4);
+	font: var(--qp-type-tab-font);
+	color: var(--qp-color-text);
+}
+
+.qp-tile-favourite {
+	left: calc(var(--qp-surface-move-tile-favourite-mark) / -2);
+	color: var(--qp-color-text);
+}
+
+.qp-tile-favourite qp-art {
+	width: var(--qp-surface-move-tile-favourite-star);
+	height: var(--qp-surface-move-tile-favourite-star);
+}
+
+/* a group tile at its top once (slice 42): the favourite mark's twin, centred on the bottom-trailing corner, half
+ * outside it (the tile's own child, so the well never clips it) */
+.qp-tile-topped {
+	position: absolute;
+	right: calc(var(--qp-surface-move-tile-favourite-mark) / -2);
+	bottom: calc(var(--qp-surface-move-tile-favourite-mark) / -2);
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: var(--qp-surface-move-tile-favourite-mark);
+	height: var(--qp-surface-move-tile-favourite-mark);
+	border-radius: 50%;
+	background: var(--qp-color-raised);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
+	color: var(--qp-color-text);
+	pointer-events: none;
+}
+
+.qp-tile-topped qp-art {
+	width: var(--qp-surface-move-tile-favourite-star);
+	height: var(--qp-surface-move-tile-favourite-star);
+}
+
+/* a step mastered (slice 42): a small gold seal with its check inside the tile at its bottom-trailing corner, at every
+ * size, the tree size's one mark */
+.qp-tile-mastered {
+	position: absolute;
+	right: var(--qp-layout-hairline);
+	bottom: var(--qp-layout-hairline);
+	display: grid;
+	place-items: center;
+	width: var(--qp-layout-tree-mastered);
+	height: var(--qp-layout-tree-mastered);
+	border-radius: 50%;
+	background: var(--qp-surface-move-tile-mastered-seal);
+	color: var(--qp-surface-move-tile-mastered-check);
+}
+
+.qp-tile-mastered qp-art {
+	width: calc(var(--qp-layout-tree-mastered) * 0.7);
+	height: calc(var(--qp-layout-tree-mastered) * 0.7);
+}
+
+/* The game's tile (the Games tab, slice 56) ------------------------------------------------------------------------ */
+
+qp-game-tile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	min-width: 0;
+	text-align: center;
+}
+
+.qp-game-tile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+	width: 100%;
+	padding: var(--qp-layout-space4);
+	border-radius: var(--qp-layout-tile-radius);
+	color: var(--qp-color-text);
+	transition: opacity var(--qp-motion-press);
+}
+
+.qp-game-tile:hover .qp-game-icon {
+	filter: brightness(1.12);
+}
+
+.qp-game-tile:active {
+	opacity: 0.6;
+}
+
+.qp-game-face {
+	position: relative;
+	display: block;
+}
+
+/* the icon's well, the move tile's size and corners: the program's own icon, else its first letter on raised */
+.qp-game-icon {
+	display: grid;
+	place-items: center;
+	width: var(--qp-layout-tile-book);
+	height: var(--qp-layout-tile-book);
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-color-raised);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
+	overflow: hidden;
+}
+
+.qp-game-icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.qp-game-letter {
+	font: var(--qp-type-title-font);
+	color: var(--qp-color-text2);
+}
+
+/* Add a game: a plus of two bars in the well */
+.qp-game-add {
+	position: relative;
+	color: var(--qp-color-text2);
+}
+
+.qp-game-add::before, .qp-game-add::after {
+	content: "";
+	position: absolute;
+	width: var(--qp-layout-glyph);
+	height: var(--qp-layout-ring-width);
+	border-radius: var(--qp-layout-ring-width);
+	background: currentColor;
+}
+
+.qp-game-add::after {
+	transform: rotate(90deg);
+}
+
+/* a step the game owes: the Chip's reaching dot on the icon's corner */
+.qp-game-dot {
+	position: absolute;
+	top: calc(var(--qp-surface-chip-dot) / -2);
+	right: calc(var(--qp-surface-chip-dot) / -2);
+	width: var(--qp-surface-chip-dot);
+	height: var(--qp-surface-chip-dot);
+	border-radius: 50%;
+	background: var(--qp-surface-chip-dot-reaching);
+	animation: qp-pulse var(--qp-motion-pulse) infinite alternate;
+}
+
+.qp-game-name {
+	display: -webkit-box;
+	max-width: 100%;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	font: var(--qp-type-meta-font);
+	overflow-wrap: break-word;
+}
+
+.qp-game-word {
+	font: var(--qp-type-caps-font);
+	letter-spacing: var(--qp-type-caps-tracking);
+	text-transform: var(--qp-type-caps-case);
+	color: var(--qp-color-text2);
+}
+
+qp-game-tile[data-state="playing"] .qp-game-word {
+	color: var(--qp-color-ok);
+}
+
+qp-game-tile[data-state="off"] .qp-game-icon {
+	opacity: var(--qp-surface-move-tile-off-opacity);
+}
+
+qp-game-tile[data-state="off"] .qp-game-name {
+	color: var(--qp-color-text2);
+}
+
+/* A game's small tile (Pump home's recent games, 2026-10-27; a tile in a Carousel since 2026-10-28): a card with a line
+ * edge, the move cell's least width (the icon and three digits) unless its count needs more (the name adds none),
+ * holding the GameTile's icon at the quest tile's size with the count beside it; the name under the card, centred and
+ * apart from it as the GameTile's (Rapha, 2026-10-28: "below the title separate like in the other one"); while it runs
+ * Playing sits over the count in the rail's small caps, so it takes no line of its own (Rapha, 2026-10-28) */
+qp-game-stat {
+	display: flex;
+	flex: none;
+}
+
+.qp-game-stat {
+	display: grid;
+	grid-template-columns: max-content;
+	align-content: start;
+	justify-items: center;
+	gap: var(--qp-layout-space6);
+	color: var(--qp-color-text);
+	text-align: center;
+	transition: opacity var(--qp-motion-press);
+}
+
+.qp-game-stat-card {
+	display: grid;
+	grid-template-columns: var(--qp-layout-tile-quest) 1fr;
+	grid-template-areas: "face count";
+	align-items: center;
+	gap: var(--qp-layout-space2) var(--qp-layout-space8);
+	box-sizing: content-box;
+	width: max-content;
+	min-width: var(--qp-wide-move-cell-least);
+	padding: var(--qp-layout-space10);
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-color-card);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	text-align: start;
+}
+
+.qp-game-stat:hover .qp-game-icon {
+	filter: brightness(1.12);
+}
+
+.qp-game-stat:active {
+	opacity: 0.6;
+}
+
+.qp-game-stat .qp-game-face {
+	grid-area: face;
+}
+
+.qp-game-stat .qp-game-icon {
+	width: var(--qp-layout-tile-quest);
+	height: var(--qp-layout-tile-quest);
+	border-radius: var(--qp-layout-tile-radius-small);
+}
+
+.qp-game-stat .qp-game-letter {
+	font: var(--qp-type-title-font);
+}
+
+/* as wide as the card, never wider: the name wraps under it instead of widening the tile */
+.qp-game-stat .qp-game-name {
+	width: 0;
+	min-width: 100%;
+}
+
+.qp-game-stat .qp-game-word {
+	grid-area: word;
+	align-self: end;
+	justify-self: center;
+	font: var(--qp-type-tab-font);
+	line-height: 1;
+	color: var(--qp-color-ok);
+}
+
+.qp-game-stat-count {
+	grid-area: count;
+	justify-self: center;
+	font: var(--qp-type-num-medium-font);
+	font-variant-numeric: tabular-nums;
+}
+
+qp-game-stat[data-state="playing"] .qp-game-stat-card {
+	grid-template-areas: "face word" "face count";
+}
+
+qp-game-stat[data-state="playing"] .qp-game-stat-count {
+	align-self: start;
+}
+
+/* a game running now: the Chip's green dot, ringed in the card, on the icon's lower corner, breathing slowly (still
+ * under Reduce Motion, where the pulse's token is 0); its centre a space4 inside the square corner, on the rounded
+ * corner's curve (Rapha, 2026-10-28: "a bit too much right and down") */
+.qp-game-live {
+	position: absolute;
+	right: calc(var(--qp-layout-space2) - var(--qp-surface-chip-dot) / 2);
+	bottom: calc(var(--qp-layout-space2) - var(--qp-surface-chip-dot) / 2);
+	width: var(--qp-surface-chip-dot);
+	height: var(--qp-surface-chip-dot);
+	border: var(--qp-layout-space2) solid var(--qp-color-card);
+	border-radius: 50%;
+	background: var(--qp-surface-chip-dot-ok);
+	box-sizing: content-box;
+	animation: qp-pulse var(--qp-motion-pulse) infinite alternate;
+}
+
+/* Carousel (Pump home's recent games, 2026-10-28): one row of tiles from the leading edge that scrolls sideways, each
+ * snapping to its start, the scrollbar hidden; a side with more fades over a space32 and shows its small round button
+ * over it. The row's own space4 round the tiles keeps their focus rings inside it, taken back outside so the tiles
+ * line up with the column. */
+qp-carousel {
+	position: relative;
+	display: block;
+}
+
+.qp-carousel-track {
+	display: flex;
+	align-items: stretch;
+	gap: var(--qp-layout-space8);
+	margin: calc(var(--qp-layout-space4) * -1);
+	padding: var(--qp-layout-space4);
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scroll-padding-inline: var(--qp-layout-space4);
+	scrollbar-width: none;
+}
+
+.qp-carousel-track::-webkit-scrollbar {
+	display: none;
+}
+
+.qp-carousel-track > * {
+	scroll-snap-align: start;
+}
+
+qp-carousel[data-more-start] .qp-carousel-track {
+	-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--qp-layout-space32));
+	mask-image: linear-gradient(to right, transparent, #000 var(--qp-layout-space32));
+}
+
+qp-carousel[data-more-end] .qp-carousel-track {
+	-webkit-mask-image: linear-gradient(to left, transparent, #000 var(--qp-layout-space32));
+	mask-image: linear-gradient(to left, transparent, #000 var(--qp-layout-space32));
+}
+
+qp-carousel[data-more-start][data-more-end] .qp-carousel-track {
+	-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--qp-layout-space32),
+		#000 calc(100% - var(--qp-layout-space32)), transparent);
+	mask-image: linear-gradient(to right, transparent, #000 var(--qp-layout-space32),
+		#000 calc(100% - var(--qp-layout-space32)), transparent);
+}
+
+.qp-carousel-previous, .qp-carousel-next {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.qp-carousel-previous {
+	left: 0;
+}
+
+.qp-carousel-next {
+	right: 0;
+}
+
+/* Result: reward rows and the fanfare ------------------------------------------------------------------------------ */
+
+qp-reward-row {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	padding: var(--qp-layout-space8) 0;
+}
+
+.qp-reward-words {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+
+.qp-reward-name {
+	color: var(--qp-tone, var(--qp-color-text2));
+}
+
+.qp-reward-lead {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: var(--qp-layout-tile-result);
+	height: var(--qp-layout-tile-result);
+}
+
+.qp-reward-lead qp-art, .qp-reward-glyph {
+	width: var(--qp-surface-action-bar-glyph);
+	height: var(--qp-surface-action-bar-glyph);
+}
+
+.qp-reward-glyph {
+	color: var(--qp-tone, var(--qp-color-text2));
+}
+
+.qp-reward-second {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space2) var(--qp-layout-space8);
+}
+
+.qp-reward-name {
+	font: var(--qp-type-body-strong-font);
+	font-size: var(--qp-type-meta-size);
+}
+
+qp-reward-row[shown] {
+	animation: qp-arrive var(--qp-motion-chip) both;
+}
+
+qp-reward-row[shown] qp-move-tile .qp-tile-well {
+	animation: qp-shine var(--qp-motion-chip-shine) both;
+}
+
+/* a move's row with no record says what it did quietly: no shine (2026-10-29) */
+qp-reward-row[shown][data-quiet] qp-move-tile .qp-tile-well {
+	animation: none;
+}
+
+/* a move's row (2026-10-29): what it did with its tag and the record it passed, its lines, its steps with their pips */
+.qp-reward-second.qp-reward-moved {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.qp-reward-did, .qp-reward-step {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space2) var(--qp-layout-space8);
+}
+
+.qp-reward-tag .qp-chip {
+	color: var(--qp-color-gold);
+}
+
+/* the day this pump brought lights as its row arrives */
+qp-reward-row[shown] qp-day-pips i.qp-brought {
+	animation: qp-pip-lit var(--qp-motion-chip-shine) both;
+}
+
+@keyframes qp-pip-lit {
+	from {
+		background: var(--qp-surface-day-pips-unlit);
+	}
+}
+
+@keyframes qp-arrive {
+	from {
+		opacity: 0;
+		transform: translateY(var(--qp-layout-space8));
+	}
+}
+
+@keyframes qp-shine {
+	from {
+		box-shadow: var(--qp-surface-reward-row-shine);
+	}
+}
+
+qp-fanfare {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	text-align: center;
+}
+
+qp-fanfare qp-art {
+	width: var(--qp-surface-fanfare-bar);
+	max-width: 100%;
+	height: auto;
+	aspect-ratio: 10;
+	color: var(--qp-color-gold-hi);
+	animation: qp-bars var(--qp-motion-fanfare-bars) both;
+}
+
+qp-fanfare .qp-bar-bottom {
+	transform: scaleY(-1);
+}
+
+qp-fanfare p {
+	text-shadow: var(--qp-surface-fanfare-glow);
+	animation: qp-words-up var(--qp-motion-fanfare-words) both;
+}
+
+@keyframes qp-bars {
+	from {
+		clip-path: inset(0 50%);
+	}
+}
+
+@keyframes qp-words-up {
+	from {
+		opacity: 0;
+		transform: translateY(var(--qp-layout-space12));
+	}
+}
+
+/* Week, stats, streak ---------------------------------------------------------------------------------------------- */
+
+qp-week-dots {
+	display: grid;
+	/* the seven days share the width: at the largest size in the narrowest window a dot gives way before the row
+	 * overflows */
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: var(--qp-layout-space4);
+}
+
+.qp-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-dot {
+	display: grid;
+	place-items: center;
+	width: min(var(--qp-surface-week-dots-size), 100%);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: var(--qp-surface-week-dots-off);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-week-dots-edge);
+	color: var(--qp-surface-week-dots-check);
+}
+
+.qp-dot.qp-done {
+	background: var(--qp-surface-week-dots-on);
+	box-shadow: var(--qp-surface-week-dots-glow);
+}
+
+.qp-dot.qp-today {
+	outline: var(--qp-surface-week-dots-today);
+	outline-offset: var(--qp-layout-space2);
+}
+
+.qp-dot.qp-future {
+	box-shadow: none;
+}
+
+.qp-dot[data-step="1"] {
+	background: var(--qp-surface-week-dots-step-low);
+}
+
+.qp-dot[data-step="2"], .qp-dot[data-step="3"] {
+	background: var(--qp-color-gold);
+}
+
+.qp-dot[data-step="3"] {
+	box-shadow: inset 0 0 0 var(--qp-surface-week-dots-step-cap-inset) var(--qp-color-gold),
+		inset 0 0 0 calc(var(--qp-surface-week-dots-step-cap-inset) + var(--qp-surface-week-dots-step-cap-width))
+		var(--qp-surface-week-dots-step-cap-color);
+}
+
+.qp-dot qp-art {
+	width: var(--qp-surface-week-dots-check-size);
+	height: var(--qp-surface-week-dots-check-size);
+}
+
+/* a rested day's rest mark and a resting day's pause mark (2026-10-09): never a red miss */
+.qp-dot.qp-rested qp-art, .qp-dot.qp-resting qp-art {
+	width: var(--qp-surface-week-dots-rest-size);
+	height: var(--qp-surface-week-dots-rest-size);
+}
+
+.qp-dot.qp-rested {
+	color: var(--qp-surface-week-dots-rest);
+}
+
+.qp-dot.qp-resting {
+	color: var(--qp-surface-week-dots-resting);
+}
+
+/* the month (slice 51, the streak page): the weekday initials over the days, monthGap between the rows; a day without
+ * a glyph shows its date */
+qp-week-dots[month] {
+	row-gap: var(--qp-surface-streak-page-month-gap);
+	text-align: center;
+}
+
+.qp-dot-date {
+	font: var(--qp-type-caps-font);
+	font-variant-numeric: tabular-nums;
+	color: var(--qp-color-text3);
+}
+
+.qp-dot.qp-today .qp-dot-date {
+	color: var(--qp-color-text);
+}
+
+qp-stat-strip {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(var(--qp-desktop-stat-cell-least), 1fr));
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge);
+	overflow: hidden;
+}
+
+.qp-stat-cell {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space2);
+	padding: var(--qp-layout-space12) var(--qp-layout-space4);
+	min-width: 0;
+	color: var(--qp-color-text2);
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+
+.qp-stat-cell .qp-type-num-stat {
+	color: var(--qp-color-text);
+}
+
+button.qp-stat-cell:hover {
+	background: var(--qp-wide-hover);
+}
+
+button.qp-stat-cell:active {
+	filter: brightness(0.8);
+}
+
+qp-streak-board {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+/* the whole board a button to the streak page (slice 51), the round Share over it */
+.qp-streak-open {
+	position: absolute;
+	inset: calc(var(--qp-layout-space8) * -1);
+	border: 0;
+	border-radius: var(--qp-layout-card-radius);
+	background: none;
+	cursor: pointer;
+}
+
+.qp-streak-open:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-streak-open:active {
+	filter: brightness(0.8);
+}
+
+/* the count centred, its round Share beside it (slice 45, from a 7-day streak) */
+.qp-streak-count {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	align-self: stretch;
+	column-gap: var(--qp-layout-space12);
+}
+
+.qp-streak-count > .qp-type-num-hero {
+	grid-column: 2;
+}
+
+.qp-streak-count > qp-round-button {
+	position: relative;
+	grid-column: 3;
+	justify-self: start;
+}
+
+qp-streak-board qp-week-dots {
+	align-self: stretch;
+	margin-top: var(--qp-layout-space12);
+}
+
+qp-streak-board > .qp-type-meta {
+	margin-top: var(--qp-layout-space8);
+}
+
+/* VaultCard: the weekly vault on Hero (2026-10-09) ---------------------------------------------------------------- */
+
+qp-vault-card {
+	display: block;
+}
+
+.qp-vault-head, .qp-vault-line {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-vault-goals {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+	margin-top: var(--qp-layout-space12);
+}
+
+.qp-vault-goal {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-vault-line qp-art {
+	inline-size: var(--qp-layout-glyph-small);
+	block-size: var(--qp-layout-glyph-small);
+}
+
+.qp-vault-track {
+	position: relative;
+	height: var(--qp-layout-step-bar-height);
+	border-radius: var(--qp-surface-steps-bar-radius);
+	background: var(--qp-surface-steps-bar-track);
+	overflow: hidden;
+}
+
+.qp-vault-fill {
+	position: absolute;
+	inset-block: 0;
+	left: 0;
+	width: calc(var(--qp-vault-share, 0) * 100%);
+	background: var(--qp-surface-steps-bar-now);
+}
+
+/* The body map ----------------------------------------------------------------------------------------------------- */
+
+qp-muscle-map {
+	display: block;
+}
+
+qp-muscle-map svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.qp-body-figure {
+	fill: var(--qp-surface-body-map-figure);
+}
+
+.qp-body-muscle {
+	fill: var(--qp-surface-body-map-untrained);
+	transition: fill var(--qp-motion-muscle-light), fill-opacity var(--qp-motion-muscle-light);
+}
+
+.qp-body-muscle.qp-lit {
+	fill: var(--qp-muscle);
+	fill-opacity: var(--qp-surface-body-map-fill-opacity);
+}
+
+.qp-body-muscle.qp-half {
+	fill-opacity: calc(var(--qp-surface-body-map-fill-opacity) * var(--qp-surface-body-map-secondary-fraction));
+}
+
+.qp-body-muscle.qp-selected {
+	fill-opacity: 1;
+	stroke: var(--qp-surface-body-map-selected-color);
+	stroke-width: var(--qp-surface-body-map-selected-width);
+}
+
+.qp-body-muscle[role="button"] {
+	cursor: pointer;
+}
+
+.qp-body-muscle[role="button"]:hover {
+	fill-opacity: 1;
+}
+
+.qp-body-muscle:focus-visible {
+	outline: none;
+	stroke: var(--qp-color-focus-ring);
+	stroke-width: var(--qp-wide-focus-ring-width);
+}
+
+/* Portrait, figure, pair, ring ------------------------------------------------------------------------------------- */
+
+qp-portrait {
+	position: relative;
+	display: inline-block;
+	flex: none;
+	width: var(--qp-surface-portrait-size);
+	height: var(--qp-surface-portrait-size);
+}
+
+qp-portrait .qp-ring {
+	width: 100%;
+	height: 100%;
+}
+
+qp-portrait .qp-helm {
+	position: absolute;
+	inset: var(--qp-surface-portrait-helm-inset);
+	width: auto;
+	height: auto;
+}
+
+qp-figure-stage {
+	position: relative;
+	display: grid;
+	place-items: center;
+}
+
+/* the plinth's middle on the figure's feet (the bottom of its box, --qp-figure-feet), else its own height from the foot
+   under the move's glyph */
+.qp-plinth {
+	position: absolute;
+	left: 50%;
+	bottom: calc(var(--qp-surface-figure-stage-plinth-bottom-fraction) * 100%);
+	width: calc(var(--qp-surface-figure-stage-plinth-width-fraction) * 100%);
+	height: var(--qp-surface-figure-stage-plinth-height);
+	background: var(--qp-surface-figure-stage-plinth);
+	transform: translate(-50%, 50%);
+}
+
+qp-figure-stage[data-feet] .qp-plinth {
+	top: calc(var(--qp-figure-feet) * 100%);
+	bottom: auto;
+	transform: translate(-50%, -50%);
+}
+
+.qp-figure-square {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1;
+}
+
+/* PumpStage (`fill`, 2026-10-23): the stage is the figure's room, clipped, its edges fading over the token's share; the
+   square scaled so the figure's own box (--qp-figure-l/t/w/h, its share of the square as drawn) is the token's share of
+   the room's width or height, whichever holds it first, and moved so that box stands in the room's middle */
+qp-figure-stage[fill] {
+	--qp-stage-fade: calc(var(--qp-surface-pump-stage-edge-fade-fraction) * 100%);
+	display: block;
+	container-type: size;
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--qp-stage-fade),
+		#000 calc(100% - var(--qp-stage-fade)), transparent),
+		linear-gradient(to bottom, transparent, #000 var(--qp-stage-fade), #000 calc(100% - var(--qp-stage-fade)),
+		transparent);
+	-webkit-mask-composite: source-in;
+	mask-image: linear-gradient(to right, transparent, #000 var(--qp-stage-fade),
+		#000 calc(100% - var(--qp-stage-fade)), transparent),
+		linear-gradient(to bottom, transparent, #000 var(--qp-stage-fade), #000 calc(100% - var(--qp-stage-fade)),
+		transparent);
+	mask-composite: intersect;
+}
+
+/* the round mark (Reduce Motion's "Play the move once") clear of the fading edges, its focus ring inside the clip */
+qp-figure-stage[fill] .qp-figure-mark {
+	right: calc(var(--qp-stage-fade) + var(--qp-wide-focus-ring-width) + var(--qp-wide-focus-ring-offset));
+	bottom: calc(var(--qp-stage-fade) + var(--qp-wide-focus-ring-width) + var(--qp-wide-focus-ring-offset));
+}
+
+qp-figure-stage[fill] .qp-figure-square {
+	--qp-figure-side: min(calc(var(--qp-surface-pump-stage-figure-fill-fraction) * 100cqw / var(--qp-figure-w)),
+		calc(var(--qp-surface-pump-stage-figure-fill-fraction) * 100cqh / var(--qp-figure-h)));
+	position: absolute;
+	left: calc(50cqw - (var(--qp-figure-l) + var(--qp-figure-w) / 2) * var(--qp-figure-side));
+	top: calc(50cqh - (var(--qp-figure-t) + var(--qp-figure-h) / 2) * var(--qp-figure-side));
+	width: var(--qp-figure-side);
+}
+
+.qp-figure-square.qp-pressable {
+	cursor: pointer;
+}
+
+/* the figure (lib/figure.js): its canvas drawn lighten over the plinth, so the films' card leaves no box; its film
+   decodes out of sight; the move's glyph stands in where the table has no figure */
+.qp-figure {
+	position: absolute;
+	inset: 0;
+}
+
+.qp-figure-canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+	mix-blend-mode: lighten;
+}
+
+.qp-figure-video {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.qp-figure-glyph {
+	display: none;
+	position: absolute;
+	left: 50%;
+	bottom: calc(var(--qp-surface-figure-stage-plinth-bottom-fraction) * 100% +
+		var(--qp-surface-figure-stage-plinth-height) / 2);
+	width: 30%;
+	height: 30%;
+	color: var(--qp-color-text2);
+	transform: translateX(-50%);
+}
+
+.qp-figure[data-none] .qp-figure-glyph {
+	display: block;
+}
+
+.qp-figure[data-none] .qp-figure-canvas {
+	display: none;
+}
+
+.qp-figure-mark {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	display: grid;
+	place-items: center;
+	width: var(--qp-layout-round-button-pump);
+	height: var(--qp-layout-round-button-pump);
+	border-radius: 50%;
+	background: var(--qp-surface-round-button-fill);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-round-button-edge);
+	color: var(--qp-surface-round-button-glyph);
+}
+
+.qp-figure-mark:hover {
+	background: var(--qp-color-raised);
+}
+
+.qp-figure-mark qp-art {
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+}
+
+qp-move-figure-pair {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--qp-layout-space12);
+}
+
+qp-move-figure-pair figure {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	text-align: center;
+}
+
+/* each still in its half's square at its own shape, drawn lighten (lib/figure.js PairStill) */
+.qp-pair-cell {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	aspect-ratio: 1;
+}
+
+.qp-pair-canvas {
+	width: 100%;
+	height: 100%;
+	mix-blend-mode: lighten;
+}
+
+.qp-pair-word {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	font: var(--qp-type-body-strong-font);
+}
+
+.qp-pair-word qp-art {
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+}
+
+/* TimerRing, the pump's dial: the ring at the side its owner gives it (`--qp-ring-side`; the token's size at most where
+   the owner gives none), its face inside the well holding the digit or "Go" alone, else the clock over its caption,
+   each a share of the ring's side (surface.TimerRing's dial fractions; a container's inline size, so they follow the
+   ring) */
+qp-timer-ring {
+	display: block;
+	width: var(--qp-ring-side, min(var(--qp-surface-timer-ring-size), 100%));
+}
+
+.qp-ring {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1;
+	container-type: inline-size;
+}
+
+/* the arc's glow reaches past the svg's box, which would cut it flat at each side (Rapha, 2026-11-03) */
+.qp-ring svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	transform: rotate(-90deg);
+}
+
+/* the ring's user units are the token's pixels (qp-timer-ring.js sizes its viewBox by surface.TimerRing.size) */
+.qp-ring-track, .qp-ring-arc {
+	fill: none;
+	stroke-width: var(--qp-surface-timer-ring-track-width);
+}
+
+.qp-ring-track {
+	stroke: var(--qp-surface-timer-ring-track);
+}
+
+.qp-ring-arc {
+	stroke: var(--qp-color-gold);
+	stroke-linecap: round;
+	filter: drop-shadow(var(--qp-surface-timer-ring-glow));
+}
+
+.qp-ring-well {
+	position: absolute;
+	inset: var(--qp-surface-timer-ring-well-inset);
+	border-radius: 50%;
+	background: var(--qp-surface-timer-ring-well);
+}
+
+.qp-ring-face {
+	position: absolute;
+	inset: var(--qp-surface-timer-ring-well-inset);
+	display: grid;
+	grid-template: 1fr auto auto 1fr / minmax(0, 1fr);
+	justify-items: center;
+	text-align: center;
+}
+
+.qp-ring .qp-ring-digit {
+	grid-area: 1 / 1 / -1 / -1;
+	align-self: center;
+	font-size: calc(var(--qp-surface-timer-ring-dial-digit-fraction) * 100cqw);
+	line-height: 1;
+	color: var(--qp-color-text);
+}
+
+.qp-ring .qp-ring-digit.qp-ring-go {
+	font-size: calc(var(--qp-surface-timer-ring-dial-go-fraction) * 100cqw);
+}
+
+.qp-ring .qp-ring-clock {
+	grid-area: 2 / 1;
+	margin: 0;
+	font-size: calc(var(--qp-surface-timer-ring-dial-clock-fraction) * 100cqw);
+	line-height: 1;
+}
+
+qp-timer-ring[data-state="count"] .qp-ring-clock, qp-timer-ring[data-state="reps"] .qp-ring-clock {
+	font-size: calc(var(--qp-surface-timer-ring-dial-count-fraction) * 100cqw);
+}
+
+qp-timer-ring[data-state="word"] .qp-ring-clock {
+	font-size: calc(var(--qp-surface-timer-ring-dial-word-fraction) * 100cqw);
+}
+
+.qp-ring .qp-ring-caption {
+	grid-area: 3 / 1;
+	margin: 0;
+	font-size: calc(var(--qp-surface-timer-ring-dial-caption-fraction) * 100cqw);
+}
+
+/* the clock alone's least room (numHero's line at half its size, as the phones' face shrinks a line to half,
+   FACE_LEAST; a space8; the caption's caps line), which its owner keeps (pump.css) */
+:root {
+	--qp-ring-clock-room: calc(var(--qp-type-num-hero-size) / 2 * var(--qp-type-num-hero-line-height)
+		+ var(--qp-layout-space8) + var(--qp-type-caps-size) * var(--qp-type-caps-line-height));
+}
+
+/* under surface.TimerRing.least (140; a container query reads no custom property) of the room its owner gives it, a
+   size container named qp-dial, the clock alone as on the phones (ClockAlone): no arc and no well, the room's width,
+   the digit, "Go" or the clock in numHero over the caption in caps a space8 under it, each on one line and smaller
+   only where the room is narrower than it (a share of its width each line's widest words fill: "25:00" 2.27 em, "Max
+   set" 2.77, "record 120 s" in caps 7.57, Chrome 155) or lower (the room's height under the caption's line), down to
+   the half `--qp-ring-clock-room` keeps. Until 2026-10-25 the ring shrank with no floor, and its well's fixed inset
+   pushed the clock, a few pixels high, off the circle (David: "it's super small and not in the circle") */
+@container qp-dial (width < 140px) or (height < 140px) {
+	qp-timer-ring {
+		width: 100%;
+	}
+
+	qp-timer-ring .qp-ring {
+		aspect-ratio: auto;
+	}
+
+	qp-timer-ring .qp-ring svg, qp-timer-ring .qp-ring-well {
+		display: none;
+	}
+
+	qp-timer-ring .qp-ring-face {
+		position: static;
+	}
+
+	/* named past the digit's, "Go"'s and each state's clock size; the size and the line alone, so numHero's tabular
+	   figures stay (the `font` shorthand resets them) */
+	qp-timer-ring .qp-ring .qp-ring-face > :is(.qp-ring-digit, .qp-ring-clock) {
+		/* the room's height (cqh: qp-dial's, the ring's own container is its width alone) under the caption's line */
+		--qp-ring-alone-high: calc((100cqh - var(--qp-layout-space8) - var(--qp-type-caps-size)
+			* var(--qp-type-caps-line-height)) / var(--qp-type-num-hero-line-height));
+		font-size: min(var(--qp-type-num-hero-size), 42cqw, var(--qp-ring-alone-high));
+		line-height: var(--qp-type-num-hero-line-height);
+		white-space: nowrap;
+	}
+
+	qp-timer-ring[data-state="word"] .qp-ring .qp-ring-face > .qp-ring-clock {
+		font-size: min(var(--qp-type-num-hero-size), 34cqw, var(--qp-ring-alone-high));
+	}
+
+	/* the countdown's digit and "Go" (0.9 em at most) */
+	qp-timer-ring .qp-ring .qp-ring-face > .qp-ring-digit {
+		font-size: min(var(--qp-type-num-hero-size), 100cqw, var(--qp-ring-alone-high));
+	}
+
+	qp-timer-ring .qp-ring .qp-ring-caption {
+		margin-top: var(--qp-layout-space8);
+		font-size: min(var(--qp-type-caps-size), 13cqw);
+		white-space: nowrap;
+	}
+}
+
+/* OutputPicker: its question, the outputs, the note and the test, spaced as the column spaces its parts */
+qp-output-picker {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+/* The move window -------------------------------------------------------------------------------------------------- */
+
+.qp-move-record {
+	display: flex;
+	align-items: baseline;
+	gap: var(--qp-layout-space6);
+}
+
+.qp-move-window-quality {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-move-window-ahead {
+	text-align: center;
+}
+
+/* StartBlock: the one Start, its reason beside it when greyed, the "To get here" row, the refusal's link rows */
+qp-start-block {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-start-row.qp-start-block {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-start-row qp-primary-button {
+	flex: 1;
+	min-width: 0;
+}
+
+/* a control beside the Start (the Long Haul, slice 55): both side by side where their words fit, else it wraps under */
+.qp-start-row:has(> .qp-start-aside) {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-start-row:has(> .qp-start-aside) qp-primary-button, .qp-start-aside {
+	flex: 1 1 max-content;
+}
+
+/* a label that wraps leaves no word alone on its last line (its goal bound to the move by no-break spaces, steps.js) */
+.qp-start-row qp-primary-button .qp-words {
+	text-wrap: pretty;
+}
+
+.qp-start-caps, .qp-start-note, .qp-start-lines {
+	color: var(--qp-color-text2);
+}
+
+.qp-start-lines {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-start-links {
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	overflow: hidden;
+}
+
+.qp-move-window-lines {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+}
+
+qp-move-window qp-figure-stage {
+	width: min(var(--qp-surface-move-window-figure), 100%);
+	margin-inline: auto;
+}
+
+/* TimerRing's pour (slice 65): the gold New record chip under the clock once the seconds pass the record */
+.qp-ring .qp-ring-chip {
+	grid-area: 4 / 1;
+	align-self: start;
+	margin-top: var(--qp-layout-space8);
+	padding: 0 var(--qp-layout-space8);
+	border-radius: var(--qp-layout-chip-radius);
+	background: var(--qp-color-gold);
+	color: var(--qp-color-gold-ink);
+	white-space: nowrap;
+}
+
+/* HoldBar (slice 65): the label over the track in the step's tone, the range over 86 % of the track and the spill past
+   it in the tone's light, the posts through the track with their words under it (the goal's, the top's) or over it
+   (the best's), each lit once the seconds pass it, and the track's glow at the top */
+qp-hold-bar {
+	--qp-tone: var(--qp-color-gold);
+	--qp-hold-track: var(--qp-layout-space8);
+	display: block;
+	min-width: 0;
+}
+
+.qp-hold-body {
+	position: relative;
+	padding-bottom: calc(var(--qp-type-meta-size) * var(--qp-type-meta-line-height) + var(--qp-layout-space8));
+}
+
+.qp-hold-head {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-surface-quality-word-gem-gap);
+	margin-bottom: calc(var(--qp-type-meta-size) * var(--qp-type-meta-line-height) + 2 * var(--qp-layout-space8));
+	color: var(--qp-tone);
+}
+
+.qp-hold-track {
+	position: relative;
+	height: var(--qp-hold-track);
+	border-radius: calc(var(--qp-hold-track) / 2);
+	background: linear-gradient(to right, var(--qp-color-track) 86%, transparent 86%);
+}
+
+.qp-hold-fill, .qp-hold-spill {
+	position: absolute;
+	inset-block: 0;
+	width: calc(var(--qp-at, 0) * 100%);
+	border-radius: inherit;
+}
+
+.qp-hold-fill {
+	left: 0;
+	background: var(--qp-tone);
+	box-shadow: 0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-tone);
+}
+
+.qp-hold-spill {
+	left: 86%;
+	background: var(--qp-color-gold-hi);
+}
+
+qp-hold-bar[data-full] .qp-hold-track {
+	box-shadow: 0 0 var(--qp-surface-move-tile-glow-radius) var(--qp-tone);
+}
+
+.qp-hold-posts {
+	position: relative;
+	height: 0;
+}
+
+.qp-hold-post {
+	position: absolute;
+	left: calc(var(--qp-at, 0) * 100%);
+	bottom: calc(-0.5 * var(--qp-layout-space8));
+	width: var(--qp-layout-hairline);
+	height: calc(var(--qp-hold-track) + var(--qp-layout-space8));
+	background: var(--qp-color-line-strong);
+	transform: translateX(-50%);
+}
+
+.qp-hold-post > span {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	color: var(--qp-color-text3);
+}
+
+.qp-hold-post[data-side="down"] > span {
+	top: 100%;
+}
+
+.qp-hold-post[data-side="up"] > span {
+	bottom: 100%;
+}
+
+.qp-hold-post[data-hit] {
+	background: var(--qp-tone);
+}
+
+.qp-hold-post[data-hit] > span {
+	color: var(--qp-color-text);
+}
+
+/* the sparks of the bar's top and of a step's reveal, in the tone */
+.qp-spark {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 5px;
+	height: 5px;
+	margin: -2.5px;
+	border-radius: 50%;
+	background: var(--qp-tone, var(--qp-color-gold));
+	box-shadow: 0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-tone, var(--qp-color-gold));
+	pointer-events: none;
+}
+
+/* StepReveal (slice 65): over its owner's room, the new move's figure on its glow (with turning rays for a new
+   colour), its words under it and the ladder's tiles at the foot: the held ones muted, the ones ahead dark behind their
+   padlocks, the one the save opened in its colour */
+qp-step-reveal {
+	--qp-tone: var(--qp-color-gold);
+	position: absolute;
+	inset: 0;
+	display: grid;
+	grid-template-rows: minmax(0, 1fr) auto auto;
+	justify-items: center;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	pointer-events: none;
+}
+
+.qp-reveal-glow, .qp-reveal-rays {
+	position: absolute;
+	left: 50%;
+	top: 38%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	opacity: 0;
+}
+
+.qp-reveal-glow {
+	width: 70%;
+	transform: translate(-50%, -50%);
+	background: radial-gradient(circle, color-mix(in srgb, var(--qp-tone) 35%, transparent), transparent 70%);
+}
+
+.qp-reveal-rays {
+	width: 95%;
+	translate: -50% -50%;
+	background: repeating-conic-gradient(color-mix(in srgb, var(--qp-tone) 24%, transparent) 0deg 8deg,
+		transparent 8deg 24deg);
+	mask: radial-gradient(circle, black 18%, transparent 70%);
+	animation: qp-reveal-turn 24s linear infinite;
+}
+
+@keyframes qp-reveal-turn {
+	to {
+		rotate: 360deg;
+	}
+}
+
+.qp-reveal-hero {
+	align-self: end;
+	width: min(36vh, 60%);
+	aspect-ratio: 1;
+}
+
+.qp-reveal-hero qp-figure-stage {
+	width: 100%;
+	height: 100%;
+}
+
+.qp-reveal-words {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	text-align: center;
+}
+
+.qp-reveal-cap {
+	margin: 0;
+	color: var(--qp-color-gold);
+}
+
+.qp-reveal-name {
+	margin: 0;
+	color: var(--qp-color-text);
+}
+
+.qp-reveal-ladder {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+	padding: var(--qp-layout-space8);
+}
+
+.qp-reveal-rail, .qp-reveal-fill {
+	position: absolute;
+	top: 50%;
+	height: 3px;
+	margin-top: -1.5px;
+}
+
+.qp-reveal-rail {
+	inset-inline: var(--qp-layout-space8);
+	background: var(--qp-color-track);
+}
+
+.qp-reveal-fill {
+	background: var(--qp-color-gold);
+	box-shadow: 0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-color-gold);
+	transform: scaleX(0);
+	transform-origin: left;
+}
+
+.qp-reveal-run {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 14px;
+	height: 14px;
+	margin: -7px;
+	border-radius: 50%;
+	background: var(--qp-color-gold-hi);
+	box-shadow: 0 0 var(--qp-surface-move-tile-glow-radius) var(--qp-color-gold);
+	opacity: 0;
+}
+
+.qp-reveal-tile {
+	position: relative;
+	display: grid;
+}
+
+.qp-reveal-tile[data-state="held"] > qp-move-tile {
+	filter: saturate(0.55) brightness(0.75);
+}
+
+.qp-reveal-tile[data-state="ahead"] > qp-move-tile {
+	filter: grayscale(1) brightness(0.35);
+	opacity: 0.4;
+}
+
+.qp-reveal-tile[data-state="open"] {
+	transform: scale(1.1);
+}
+
+.qp-reveal-lock {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 22px;
+	height: 22px;
+	margin: -11px;
+	color: var(--qp-color-text3);
+}
+
+.qp-reveal-flash, .qp-reveal-shock {
+	position: absolute;
+	border-radius: var(--qp-layout-tile-radius);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.qp-reveal-flash {
+	inset: 0;
+	background: var(--qp-tone);
+}
+
+.qp-reveal-shock {
+	inset: -4px;
+	border: 2px solid var(--qp-tone);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.qp-reveal-rays {
+		animation: none;
+	}
+}

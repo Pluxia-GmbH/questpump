@@ -1,0 +1,6 @@
+{
+  "move": "backpack_deadlift.kettlebell",
+  "gear_of": "backpack_deadlift",
+  "gear": "kettlebell",
+  "items": [{"kind": "kettlebell", "hand": "both", "hold": "down"}]
+}

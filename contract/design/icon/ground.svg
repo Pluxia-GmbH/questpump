@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- The icon's night ground: the app's page (page, #0F0D0A) under its warm light from above, the Page surface's glow
+       (gold at about a tenth, gone well before the middle). The page's own glow is an ellipse wider than the screen;
+       an icon's paints are circles (Android's vector drawables, Icon Composer), so here a wide circle centred far above
+       the top edge lights the top as a soft arc. Every layer covers the whole square: tools/icons.py gives the ground
+       the shape of each icon (the square of a masked icon, a rounded square, a disc) and samples its top and bottom
+       for the Icon Composer fill. -->
+  <defs>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="512" cy="-614" r="1200">
+      <stop offset="0.5" data-token="gold" stop-color="#E8B84A" stop-opacity="0.1"/>
+      <stop offset="0.85" data-token="gold" stop-color="#E8B84A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect data-token="page" fill="#0F0D0A" width="1024" height="1024"/>
+  <rect fill="url(#glow)" width="1024" height="1024"/>
+</svg>

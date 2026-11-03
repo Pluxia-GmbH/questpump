@@ -1,0 +1,44 @@
+{
+  "move": "bb_press",
+  "view": "side",
+  "camera": {"yaw": 38, "pitch": 6},
+  "working": ["pauldron", "upper_arm"],
+  "items": [{"kind": "barbell"}],
+  "poses": {
+    "rack": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "head": [-11, 0, 0],
+      "arms": {"ik": [15.5, -3, 23], "rel": "neck", "hand": [0.1, 1, 0], "pole": [0.3, -1, 0]},
+      "legs": {"foot": [0, 15], "turn": 10, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "overhead": {
+      "from": "rack",
+      "head": [6, 0, 0],
+      "arms": {"ik": [0, 51, 24], "rel": "neck", "hand": [0, 1, 0], "pole": [1, -1, 0.3]}
+    },
+    "brow": {
+      "from": "rack",
+      "head": [-14, 0, 0],
+      "arms": {"ik": [16.5, 25, 24], "rel": "neck", "hand": [0.05, 1, 0], "pole": [1, -1, 0.3]}
+    },
+    "crown": {
+      "from": "rack",
+      "head": [-6, 0, 0],
+      "arms": {"ik": [10, 44, 24], "rel": "neck", "hand": [0.02, 1, 0], "pole": [1, -1, 0.3]}
+    }
+  },
+  "timeline": [
+    {"pose": "rack"},
+    {"hold": 0.3, "phase": "rack"},
+    {"to": "brow", "s": 0.45, "ease": "in", "phase": "press", "effort": 1.0},
+    {"to": "crown", "s": 0.25, "ease": "linear", "phase": "press", "effort": 1.0},
+    {"to": "overhead", "s": 0.3, "ease": "out", "phase": "press", "effort": 1.0},
+    {"hold": 0.2, "phase": "lockout", "effort": 0.8},
+    {"to": "crown", "s": 0.25, "ease": "in", "phase": "lower", "effort": 0.5},
+    {"to": "brow", "s": 0.25, "ease": "linear", "phase": "lower", "effort": 0.5},
+    {"to": "rack", "s": 0.5, "ease": "out", "phase": "lower", "effort": 0.5}
+  ],
+  "key": "overhead"
+}

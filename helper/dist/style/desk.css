@@ -1,0 +1,255 @@
+/* The desktop app's frame (docs/ui.md, "The window model"): the root host fills the window; under 720 CSS px wide the
+ * ActionBar sits at the foot as on the phones, from 720 it is the left rail with the same glyphs, caps labels and gold
+ * chosen tab (a media query reads no custom property: 720 is --qp-wide-rail-from). The content is one centred column
+ * of at most --qp-wide-column, extra width page ground; each page scrolls on its own, so a stack keeps its place. The
+ * layout holds down to 192 CSS px wide (a 480-px window at the largest size: the page's 125 % times 200 %). A pump's
+ * cover takes the whole window. */
+
+html, body {
+	height: 100%;
+}
+
+body {
+	overflow: hidden;
+}
+
+qp-root-host {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr) auto;
+	grid-template-areas: "stage" "bar";
+	height: 100%;
+}
+
+.qp-stage {
+	grid-area: stage;
+	position: relative;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.qp-stack {
+	position: absolute;
+	inset: 0;
+}
+
+.qp-stack > *, .qp-cover > * {
+	position: absolute;
+	inset: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.qp-cover {
+	position: fixed;
+	inset: 0;
+	z-index: 3;
+	background: var(--qp-color-page);
+}
+
+.qp-column {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+	width: 100%;
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+	padding: var(--qp-layout-space8) var(--qp-layout-margin) var(--qp-layout-space32);
+}
+
+qp-page > qp-top-bar, qp-page > qp-detail-bar {
+	max-width: var(--qp-wide-column);
+	margin-inline: auto;
+}
+
+/* The ActionBar at the foot ---------------------------------------------------------------------------------------- */
+
+qp-action-bar {
+	grid-area: bar;
+	position: relative;
+	display: block;
+	background: var(--qp-surface-action-bar-fill);
+}
+
+/* its top edge: lineStrong with the gold shine fading out to both sides */
+qp-action-bar::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto;
+	height: var(--qp-layout-hairline);
+	background: var(--qp-surface-action-bar-shine), var(--qp-surface-action-bar-edge);
+}
+
+qp-action-bar nav {
+	display: flex;
+	min-height: var(--qp-layout-action-bar);
+	padding: 0 var(--qp-layout-space12);
+}
+
+.qp-tab {
+	position: relative;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-surface-action-bar-gap);
+	min-width: 0;
+	padding: var(--qp-layout-space14) var(--qp-layout-space2) var(--qp-layout-space8);
+	color: var(--qp-surface-action-bar-idle);
+	transition: color var(--qp-motion-glow);
+}
+
+.qp-tab qp-art {
+	width: var(--qp-surface-action-bar-glyph);
+	height: var(--qp-surface-action-bar-glyph);
+}
+
+.qp-tab-label {
+	max-width: 100%;
+	font: var(--qp-type-tab-font);
+	letter-spacing: var(--qp-type-tab-tracking);
+	text-transform: var(--qp-type-tab-case);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.qp-tab:hover {
+	color: var(--qp-color-text2);
+}
+
+.qp-tab:active {
+	opacity: 0.6;
+}
+
+.qp-tab.qp-chosen {
+	color: var(--qp-surface-action-bar-selected);
+}
+
+/* the chosen tab's marker on the bar's edge above its glyph */
+.qp-tab::before {
+	content: "";
+	position: absolute;
+	top: calc(var(--qp-layout-hairline) * -1);
+	left: 50%;
+	width: var(--qp-surface-action-bar-marker-width);
+	height: var(--qp-surface-action-bar-marker-height);
+	border-radius: var(--qp-surface-action-bar-marker-height);
+	background: var(--qp-surface-action-bar-selected);
+	box-shadow: var(--qp-surface-action-bar-marker-glow);
+	opacity: 0;
+	transform: translateX(-50%);
+	transition: opacity var(--qp-motion-glow);
+}
+
+.qp-tab.qp-chosen::before {
+	opacity: 1;
+}
+
+.qp-tab:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+.qp-tab-dot {
+	position: absolute;
+	top: calc(var(--qp-layout-space14) - var(--qp-layout-space2));
+	left: calc(50% + var(--qp-surface-action-bar-glyph) / 2 - var(--qp-layout-space4));
+	width: var(--qp-surface-chip-dot);
+	height: var(--qp-surface-chip-dot);
+	border-radius: 50%;
+	background: var(--qp-surface-action-bar-selected);
+	box-shadow: 0 0 calc(var(--qp-surface-chip-dot-glow-radius) / 2) var(--qp-surface-action-bar-selected);
+}
+
+/* The rail, from 720 CSS px wide ----------------------------------------------------------------------------------- */
+
+@media (min-width: 720px) {
+	qp-root-host {
+		grid-template-columns: var(--qp-wide-rail) minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
+		grid-template-areas: "bar stage";
+	}
+
+	qp-action-bar {
+		background: linear-gradient(to right, var(--qp-surface-action-bar-fill-stops));
+	}
+
+	/* the edge runs down the rail's trailing side */
+	qp-action-bar::before {
+		inset: 0 0 0 auto;
+		width: var(--qp-layout-hairline);
+		height: auto;
+		background: linear-gradient(to bottom, var(--qp-surface-action-bar-shine-stops)), var(--qp-surface-action-bar-edge);
+	}
+
+	/* the five tabs scroll in the rail where the window is lower than they are tall (a short window, a zoomed page) */
+	qp-action-bar nav {
+		flex-direction: column;
+		height: 100%;
+		padding: var(--qp-layout-space12) 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
+	.qp-tab {
+		flex: none;
+		padding: var(--qp-layout-space12) var(--qp-layout-space4);
+	}
+
+	/* the marker beside the chosen glyph, on the rail's leading edge */
+	.qp-tab::before {
+		top: 50%;
+		left: 0;
+		width: var(--qp-surface-action-bar-marker-height);
+		height: var(--qp-surface-action-bar-marker-width);
+		transform: translateY(-50%);
+	}
+
+	.qp-tab-dot {
+		top: calc(var(--qp-layout-space12) - var(--qp-layout-space2));
+	}
+}
+
+/* Pages' pieces ---------------------------------------------------------------------------------------------------- */
+
+.qp-words-block {
+	overflow-wrap: anywhere;
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+qp-card.qp-step, qp-card.qp-pair, .qp-stack-small {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+qp-card.qp-pair {
+	align-items: stretch;
+}
+
+.qp-next {
+	color: var(--qp-color-text);
+}
+
+.qp-count {
+	text-align: end;
+}
+
+qp-card.qp-details {
+	display: grid;
+	grid-template-columns: max-content minmax(0, 1fr);
+	gap: var(--qp-layout-space6) var(--qp-layout-space12);
+	align-items: baseline;
+}
+
+qp-card.qp-details code {
+	font: 400 var(--qp-type-meta-size) / var(--qp-type-meta-line-height) ui-monospace, "Cascadia Mono", Consolas,
+		monospace;
+	overflow-wrap: anywhere;
+}
+
+/* The match-over card's window: no frame, the page ground to its edges */
+.qp-card-window {
+	overflow: hidden;
+}

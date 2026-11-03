@@ -1,0 +1,44 @@
+{
+  "move": "pike_pushup",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 8},
+  "working": ["pauldron", "upper_arm"],
+  "props": [{"kind": "mat", "f0": -70, "f1": 110}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -40, "angle": 66, "width": 16, "hips": -122, "y": 1},
+      "arms": {"ik": [48, 4.3, 30], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "head": [-40, 0, 0]
+    },
+    "bottom": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": -40, "angle": 41, "width": 16, "hips": -112, "y": 1},
+      "head": [-50, 0, 0]
+    },
+    "flare": {
+      "from": "bottom",
+      "line": {"pivot": "toes", "at": -40, "angle": 50, "hips": -133, "width": 16, "y": 1},
+      "arms": {"ik": [48, 4.3, 30], "pole": [-0.1, 0.1, 1], "hand": [1, -0.14, 0]},
+      "head": [-50, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "hips_high"},
+    {"to": "bottom", "s": 1.2, "phase": "head_down", "effort": 0.6},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.8},
+    {"to": "top", "s": 1.0, "phase": "push_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "flare",
+    "caption": "elbows_flare",
+    "breaks": {"check": "offset", "joint": "head", "from": "wrist_near", "axis": "f", "min": 6}
+  },
+  "targets": [
+    {"at": "top", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "bottom", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 100},
+    {"at": "top", "check": "height", "joint": "pelvis", "min": 90}
+  ]
+}

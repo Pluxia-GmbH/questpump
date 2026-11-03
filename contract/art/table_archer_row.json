@@ -1,0 +1,78 @@
+{
+  "move": "table_archer_row",
+  "view": "side",
+  "camera": {"yaw": 55, "pitch": 12},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "table", "f0": -100, "f1": -36, "top": 72}],
+  "poses": {
+    "low": {
+      "head": [8, 0, 0],
+      "arms": {"ik": [-32.5, 70, 44], "pole": [0.3, -1, 0.6], "hand": [-0.6, 1, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "line": {"pivot": "toes", "at": 92, "angle": 6.0, "width": 14, "face": "up", "lift": -50, "hips": -4}
+    },
+    "high": {
+      "from": "low",
+      "trunk": [0, -11, 0],
+      "chest": [0, 0, 16],
+      "head": [5, 20, 0],
+      "arm_near": {"ik": [-32.5, 70, 44], "pole": [0.6, -1, 0.15], "hand": [-0.6, 1, 0]},
+      "arm_far": {"ik": [-32.5, 70, 44], "pole": [0.3, -1, 0.2], "hand": [-0.6, 1, 0]},
+      "line": {
+        "pivot": "toes",
+        "at": 92,
+        "angle": 12,
+        "width": 14,
+        "face": "up",
+        "lift": -50,
+        "shift": -7.5,
+        "gap": 2.6
+      }
+    },
+    "sag": {
+      "from": "high",
+      "trunk": [0, -5, 0],
+      "line": {
+        "pivot": "toes",
+        "at": 92,
+        "angle": 5,
+        "width": 14,
+        "face": "up",
+        "lift": -50,
+        "shift": -6,
+        "gap": 2.6,
+        "hips": 19
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "low"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "high", "s": 1.1, "phase": "lower_to_one_hand", "effort": 1.0},
+    {"hold": 0.2, "phase": "top", "effort": 0.9},
+    {"to": "low", "s": 1.5, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "high",
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "low", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "low", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "high", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "high", "check": "offset", "joint": "wrist_far", "from": "shoulder_far", "axis": "l", "min": 30},
+    {"at": "high", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "l", "max": -6}
+  ],
+  "note": "Both arms straight at the bottom, the back just off the floor (2026-10-14)."
+}

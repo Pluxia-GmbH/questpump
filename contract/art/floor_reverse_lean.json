@@ -1,0 +1,50 @@
+{
+  "move": "floor_reverse_lean",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 24},
+  "working": ["forearm"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -95, "f1": 85}],
+  "poses": {
+    "table": {
+      "line": {"pivot": "knees", "at": -20, "width": 12, "feet": "flat", "y": 1, "angle": 86.0, "hips": -78.6},
+      "chest": [4, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [28, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [-1, -0.14, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {
+      "from": "table",
+      "line": {"pivot": "knees", "at": -20, "width": 12, "feet": "flat", "y": 1, "angle": 102.0, "hips": -93.5},
+      "head": [-6, 0, 0]
+    },
+    "lean_in": {"from": "lean", "chest": [5.5, 0, 0], "head": [-3, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "table"},
+    {"hold": 0.4, "phase": "hands_down"},
+    {"to": "lean", "s": 1.6, "phase": "sit_back", "effort": 0.5},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "table", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "lean", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "max": -9}
+  ],
+  "note": "On all fours on a mat, palms flat under the shoulders with the fingers turned back toward the knees. The hips sit back toward the heels until the shoulders are a fist behind the wrists with the arms straight, the palms flat: the forearms and the inside of the elbows stretch."
+}

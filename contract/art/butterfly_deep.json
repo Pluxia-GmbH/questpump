@@ -1,0 +1,50 @@
+{
+  "move": "butterfly_deep",
+  "view": "side",
+  "camera": {"yaw": 50, "pitch": 22},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -40, "f1": 90, "u": 45}],
+  "poses": {
+    "sit": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [32, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"ik": [56, 62, 17], "pole": [-0.3, 0.3, 1], "hand": [0.3, -0.95, 0]},
+      "legs": {"ik": [29, 53, 6.5], "pole": [0.15, 0.55, 1], "toe": [1, 0.05, -0.2]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far", "hand_tip_near", "hand_tip_far"],
+      "chest": [-4, 0, 0]
+    },
+    "open": {
+      "from": "sit",
+      "trunk": [44, 0, 0],
+      "head": [-20, 0, 0],
+      "legs": {"ik": [29, 53, 6.5], "pole": [0.15, 0.2, 1], "toe": [1, 0.05, -0.2]},
+      "chest": [-4, 0, 0],
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far", "hand_tip_near", "hand_tip_far"],
+      "arms": {"ik": [64, 62, 15], "pole": [-0.2, -0.6, 1], "hand": [0.35, -0.94, 0]}
+    },
+    "open_in": {
+      "from": "open",
+      "legs": {"ik": [29, 53, 6.5], "pole": [0.15, 0.15, 1], "toe": [1, 0.05, -0.2]},
+      "trunk": [47, 0, 0],
+      "arms": {"ik": [66, 62, 15], "pole": [-0.2, -0.6, 1], "hand": [0.35, -0.94, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.2},
+    {"to": "open", "s": 2.2, "phase": "knees_out", "effort": 0.5},
+    {"to": "open_in", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "open", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "open_in", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "open", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "sit", "s": 2.0, "phase": "release", "effort": 0.3}
+  ],
+  "key": "open",
+  "targets": [
+    {"at": "open", "check": "height", "joint": "knee_near", "min": 60, "max": 66},
+    {"at": "open", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  ],
+  "note": "Sitting on a bed hinged forward from the hips, the back long and the fingertips on the bed in front of the feet, the soles together and the heels drawn in about a hand from the body: the knees sink from halfway up to about a fist above the bed."
+}

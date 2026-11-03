@@ -1,0 +1,35 @@
+{
+  "move": "feet_up_pushup",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 10},
+  "working": ["chest", "pauldron"],
+  "props": [{"kind": "bench", "f0": -132, "f1": -78, "u": 56}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -100, "angle": -7.6, "width": 12, "y": 56, "lift": 80},
+      "head": [4, 0, 0],
+      "arms": {"ik": [58, 3.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "bottom": {"from": "top", "line": {"pivot": "toes", "at": -100, "angle": -19.5, "width": 12, "y": 56, "lift": 80}},
+    "pike": {
+      "from": "bottom",
+      "line": {"pivot": "toes", "at": -100, "angle": 1, "hips": -40, "width": 12, "y": 56, "lift": 80},
+      "head": [-8, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "bottom", "s": 1.3, "phase": "lower", "effort": 0.65},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.85},
+    {"to": "top", "s": 1.1, "phase": "push_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "pike",
+    "caption": "hips_pike",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [{"at": "bottom", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}]
+}

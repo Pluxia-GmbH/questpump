@@ -1,0 +1,37 @@
+{
+  "move": "quarter_squat",
+  "view": "side",
+  "camera": {"yaw": 28, "pitch": 8},
+  "working": ["thigh"],
+  "props": [{"kind": "desk", "f": 20, "top": 74}],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.6, 0],
+      "trunk": [2, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"ik": [20, 90, 23], "pole": [-0.4, -0.3, 1], "hand": [0.35, -0.94, 0]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "quarter": {
+      "from": "tall",
+      "pelvis": [-6, 83, 0],
+      "trunk": [14, 0, 0],
+      "chest": [-3, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [14.3, 86.3, 23], "pole": [-0.4, -0.3, 1], "hand": [0.71, -0.71, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "quarter", "s": 1.1, "phase": "quarter_down", "effort": 0.5},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.7},
+    {"to": "tall", "s": 1.0, "phase": "stand_tall", "effort": 0.9}
+  ],
+  "key": "quarter",
+  "targets": [
+    {"at": "quarter", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 118, "max": 145},
+    {"at": "quarter", "check": "height", "joint": "hand_tip_near", "min": 74.5, "max": 76}
+  ]
+}

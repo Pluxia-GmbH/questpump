@@ -1,0 +1,68 @@
+/* The Games tab (views/games/, docs/plan.md slices 56 and 57): the Now card, the grid of games (the Book's grid of
+ * tiles, book.css's .qp-move-grid, with the kit's GameTile in each cell), the After a match cards and the game's
+ * window's heading. */
+
+/* Now: the game's icon beside its words, its ways under them (Start while a match's offer stands, Resume offers while
+ * paused) */
+.qp-games-now {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-games-now-ways {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-games-now-ways:empty {
+	display: none;
+}
+
+.qp-games-now-head, .qp-game-window-head {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+	min-width: 0;
+}
+
+.qp-games-now-head h2, .qp-game-window-head h2 {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: break-word;
+}
+
+.qp-games-now-icon, .qp-game-window-icon {
+	flex: none;
+}
+
+.qp-games-now qp-secondary-button {
+	align-self: flex-start;
+}
+
+.qp-game-grid {
+	padding-bottom: var(--qp-layout-space6);
+}
+
+/* Moves per match: its heading over its three paces */
+.qp-games-pace {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+/* the game's window: its content carries the game's icon and name as its heading, its × at the head row's corner with
+ * no empty band over it (the Book's card Window's way, book.css) */
+qp-window.qp-game-window .qp-window-head {
+	position: absolute;
+	top: var(--qp-layout-space16);
+	inset-inline-end: var(--qp-layout-margin);
+	z-index: 1;
+	margin: 0;
+}
+
+.qp-game-window-head {
+	margin-bottom: var(--qp-layout-space4);
+	padding-inline-end: calc(var(--qp-layout-round-button) + var(--qp-layout-space4));
+}

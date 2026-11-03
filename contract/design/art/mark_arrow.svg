@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- The rung arrow, pointing up from one rung to the next: a forged arrowhead with swept barbs on a square shaft; lit
+       from the top left, its right half in shadow behind the centre ridge. One colour, drawn upright: the caller tints
+       it (gold on a rung-up, else a dim tone). -->
+  <path data-token="tint" fill="currentColor" d="M8 1 L14.5 8.5 L10 7.25 V15 H6 V7.25 L1.5 8.5 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="M8 1 L14.5 8.5 L10 7.25 V15 H8 Z"/>
+</svg>

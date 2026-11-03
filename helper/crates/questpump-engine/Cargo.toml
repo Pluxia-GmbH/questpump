@@ -1,0 +1,28 @@
+[package]
+name = "questpump-engine"
+version = "0.1.0"
+description = "The addon's own engine in the desktop app: the addon's pure Lua files and the app pump's driver on PUC Lua 5.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+# PUC Lua 5.1.5 built from lua-src (vendored), the release the tools run; serde for the JSON at the boundary
+mlua = { version = "0.12.2", features = ["lua51", "vendored", "serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# the game's save (`gameSave`: a WoW profile and a baseline, whose tables are keyed by move and ladder ids) crosses the
+# JSON door as Base64 of its CBOR, so those integer keys reach the Lua as numbers
+base64 = "0.23"
+ciborium = "0.2"
+thiserror = "2"
+log = "0.4"
+
+[build-dependencies]
+# the embedded sources' digest (DIGEST)
+sha2 = "0.11"

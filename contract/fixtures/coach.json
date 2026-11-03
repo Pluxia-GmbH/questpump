@@ -1,0 +1,1621 @@
+{
+  "about": "The Pro coach's cases (docs/plan.md slice 9, rebuilt 2026-10-09; contract/coach-api.yaml, the rules): the moment a saved set's facts make (moments, at: unix seconds against which a record's age counts), the rotation of ordinary sets in the coach's memory (rotation: each set as ordinary or a record, the moments taken, none for a quiet one), the memory's plain facts (memory), the talk's input from a set (inputs: the books are contract/moves.json, sheet.json and library.json as committed; numbers: the numbers a talk may say, every number of the input but its recent answers; unknown: a move the books lack), the checks on a talk (talks) and on a Chronicle (chronicles) with the numbers the input held, the lists' matching rule (words: list which list the stem is in; tools/quests/deny.lua is the Lua matcher of the deny ones), the gate before a call (gate, its taste the free taste heard), the free taste (taste), the game day (days, zone the local time zone) and its cap (cap), the cost of a call (cost), the watch's ask and the phone's answer as JSON (asks, answers) and the reports the site takes (reports). Computed once from QuestPumpCore by a probe outside the repo (2026-10-09), the words, days and cap kept from the countdown line's cases; every app's coach follows them, and the site's report route takes the reports.",
+  "moments": [
+    {
+      "about": "a set that raised its ladder's best rung is a step, before everything else",
+      "at": 1790443800,
+      "moment": "step",
+      "set": {
+        "beat": true,
+        "count": 17,
+        "earned": true,
+        "goal": 16,
+        "goal_kind": "record",
+        "ladder": 1,
+        "last": false,
+        "milestone": 7,
+        "move": 49,
+        "next": [
+          0,
+          2,
+          0,
+          0
+        ],
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "rung": 5,
+        "slot": 0,
+        "streak": 7
+      }
+    },
+    {
+      "about": "the pump's first set after 14 days or more away is a comeback",
+      "at": 1790443800,
+      "moment": "comeback",
+      "set": {
+        "away": 16,
+        "beat": false,
+        "count": 10,
+        "goal": 12,
+        "goal_kind": "form",
+        "last": false,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1788715800,
+        "slot": 0
+      }
+    },
+    {
+      "about": "a record that stood 14 days or more is a comeback",
+      "at": 1790443800,
+      "moment": "comeback",
+      "set": {
+        "beat": true,
+        "count": 16,
+        "goal": 16,
+        "goal_kind": "record",
+        "last": false,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1789234200,
+        "slot": 0
+      }
+    },
+    {
+      "about": "a record is a record",
+      "at": 1790443800,
+      "moment": "record",
+      "set": {
+        "beat": true,
+        "count": 16,
+        "goal": 16,
+        "goal_kind": "record",
+        "last": false,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "slot": 0
+      }
+    },
+    {
+      "about": "a first max set with a count sets the first record",
+      "at": 1790443800,
+      "moment": "record",
+      "set": {
+        "beat": true,
+        "count": 9,
+        "last": false,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "slot": 0
+      }
+    },
+    {
+      "about": "a streak milestone without a record",
+      "at": 1790443800,
+      "moment": "streak",
+      "set": {
+        "beat": false,
+        "count": 12,
+        "goal": 16,
+        "goal_kind": "record",
+        "last": false,
+        "milestone": 30,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "slot": 0,
+        "streak": 30
+      }
+    },
+    {
+      "about": "the pump's last move that paid a weekly goal",
+      "at": 1790443800,
+      "moment": "weekly",
+      "set": {
+        "beat": false,
+        "count": 12,
+        "goal": 13,
+        "goal_kind": "repeat",
+        "last": true,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "slot": 0,
+        "weekly": true
+      }
+    },
+    {
+      "about": "an ordinary set makes no moment of its own: the rotation decides",
+      "at": 1790443800,
+      "moment": null,
+      "set": {
+        "beat": false,
+        "count": 12,
+        "goal": 13,
+        "goal_kind": "repeat",
+        "last": false,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "slot": 0
+      }
+    }
+  ],
+  "rotation": [
+    {
+      "about": "with Pro every 4th ordinary set since the coach last spoke speaks, and a moment that matters starts the count again",
+      "moments": [
+        null,
+        null,
+        null,
+        "set",
+        null,
+        "record",
+        null,
+        null,
+        null,
+        "set"
+      ],
+      "pro": true,
+      "sets": [
+        "ordinary",
+        "ordinary",
+        "ordinary",
+        "ordinary",
+        "ordinary",
+        "record",
+        "ordinary",
+        "ordinary",
+        "ordinary",
+        "ordinary"
+      ]
+    },
+    {
+      "about": "without Pro no ordinary set speaks (never the free taste's); a set that matters does",
+      "moments": [
+        null,
+        null,
+        null,
+        null,
+        "record",
+        null
+      ],
+      "pro": false,
+      "sets": [
+        "ordinary",
+        "ordinary",
+        "ordinary",
+        "ordinary",
+        "record",
+        "ordinary"
+      ]
+    }
+  ],
+  "memory": [
+    {
+      "about": "the first record it talked about, the best streak it saw and when the climb began, as plain facts; the recent answers newest first",
+      "at": 1790443800,
+      "facts": [
+        "The first record you talked about came 23 days ago.",
+        "The best streak you have seen is 14 days.",
+        "The player's climb began 41 days ago."
+      ],
+      "memory": {
+        "best_streak": 14,
+        "first_record": 1788456600,
+        "ordinary": 1,
+        "recent": [
+          "Fourteen days, steady.",
+          "A first record."
+        ]
+      },
+      "recent": [
+        "Fourteen days, steady.",
+        "A first record."
+      ],
+      "started": 1786901400
+    }
+  ],
+  "inputs": [
+    {
+      "about": "a step earned on Push: the record it beat and how long it stood, the step's colour and number, what the next step asks; the streak's milestone",
+      "at": 1790443800,
+      "input": {
+        "count": 17,
+        "goal": {
+          "kind": "record",
+          "target": 16
+        },
+        "last_move": false,
+        "memory": [
+          "The best streak you have seen is 7 days."
+        ],
+        "moment": "step",
+        "move": {
+          "dose": "rep",
+          "name": "Push-up"
+        },
+        "recent": [
+          "A clean start: 15 reps."
+        ],
+        "record": {
+          "by": 2,
+          "days_ago": 3,
+          "new": true,
+          "old": 15
+        },
+        "step": {
+          "colour": "Uncommon",
+          "earned": true,
+          "family": "Push",
+          "next": {
+            "colour": "Uncommon",
+            "have": 0,
+            "need": 2,
+            "unit": "days"
+          },
+          "number": 5
+        },
+        "streak": {
+          "days": 7,
+          "milestone": 7
+        },
+        "tone": "warm",
+        "unit": "reps"
+      },
+      "memory": [
+        "The best streak you have seen is 7 days."
+      ],
+      "moment": "step",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "recent": [
+        "A clean start: 15 reps."
+      ],
+      "set": {
+        "beat": true,
+        "count": 17,
+        "earned": true,
+        "goal": 16,
+        "goal_kind": "record",
+        "ladder": 1,
+        "last": false,
+        "milestone": 7,
+        "move": 49,
+        "next": [
+          0,
+          2,
+          0,
+          0
+        ],
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "rung": 5,
+        "slot": 0,
+        "streak": 7
+      },
+      "tone": "warm"
+    },
+    {
+      "about": "a lighter repeat set picked by the rotation: its goal kind says so, no record claimed",
+      "at": 1790443800,
+      "input": {
+        "count": 12,
+        "goal": {
+          "kind": "repeat",
+          "target": 13
+        },
+        "last_move": false,
+        "memory": [],
+        "moment": "set",
+        "move": {
+          "dose": "rep",
+          "name": "Push-up"
+        },
+        "recent": [],
+        "record": {
+          "days_ago": 3,
+          "new": false,
+          "old": 15
+        },
+        "step": {
+          "colour": "Uncommon",
+          "earned": false,
+          "family": "Push",
+          "next": {
+            "colour": "Uncommon",
+            "have": 1,
+            "need": 2,
+            "unit": "days"
+          },
+          "number": 5
+        },
+        "streak": {
+          "days": 4
+        },
+        "tone": "dry",
+        "unit": "reps"
+      },
+      "memory": [],
+      "moment": "set",
+      "numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        12,
+        13,
+        15
+      ],
+      "recent": [],
+      "set": {
+        "beat": false,
+        "count": 12,
+        "goal": 13,
+        "goal_kind": "repeat",
+        "ladder": 1,
+        "last": false,
+        "move": 49,
+        "next": [
+          1,
+          2,
+          0,
+          0
+        ],
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "rung": 5,
+        "slot": 0,
+        "streak": 4
+      },
+      "tone": "dry"
+    },
+    {
+      "about": "a counted all-out set: its count to reach and its window in seconds",
+      "at": 1790443800,
+      "input": {
+        "count": 21,
+        "goal": {
+          "kind": "count",
+          "seconds": 30,
+          "target": 20
+        },
+        "last_move": false,
+        "memory": [],
+        "moment": "record",
+        "move": {
+          "dose": "cardio",
+          "name": "Sprawl"
+        },
+        "recent": [],
+        "record": {
+          "by": 2,
+          "days_ago": 2,
+          "new": true,
+          "old": 19
+        },
+        "step": {
+          "colour": "Uncommon",
+          "earned": false,
+          "family": "Cardio",
+          "next": {
+            "colour": "Uncommon",
+            "have": 1,
+            "need": 2,
+            "unit": "sets"
+          },
+          "number": 5
+        },
+        "tone": "drill",
+        "unit": "reps"
+      },
+      "memory": [],
+      "moment": "record",
+      "numbers": [
+        1,
+        2,
+        5,
+        19,
+        20,
+        21,
+        30
+      ],
+      "recent": [],
+      "set": {
+        "beat": true,
+        "count": 21,
+        "counted": 30,
+        "goal": 20,
+        "goal_kind": "record",
+        "ladder": 6,
+        "last": false,
+        "move": 141,
+        "next": [
+          1,
+          2,
+          0,
+          0
+        ],
+        "pump_id": "f-5a0c",
+        "record": 19,
+        "record_at": 1790271000,
+        "rung": 5,
+        "slot": 0
+      },
+      "tone": "drill"
+    },
+    {
+      "about": "a first max set of a hold: no goal, no record before it",
+      "at": 1790443800,
+      "input": {
+        "count": 35,
+        "last_move": false,
+        "memory": [],
+        "moment": "record",
+        "move": {
+          "dose": "hold",
+          "name": "Push-up hold"
+        },
+        "recent": [],
+        "tone": "warm",
+        "unit": "seconds"
+      },
+      "memory": [],
+      "moment": "record",
+      "numbers": [
+        35
+      ],
+      "recent": [],
+      "set": {
+        "beat": true,
+        "count": 35,
+        "last": false,
+        "move": 50,
+        "pump_id": "f-5a0c",
+        "slot": 0
+      },
+      "tone": "warm"
+    },
+    {
+      "about": "a zero streak is left out",
+      "at": 1790443800,
+      "input": {
+        "count": 16,
+        "goal": {
+          "kind": "record",
+          "target": 16
+        },
+        "last_move": false,
+        "memory": [],
+        "moment": "record",
+        "move": {
+          "dose": "rep",
+          "name": "Push-up"
+        },
+        "recent": [],
+        "record": {
+          "by": 1,
+          "days_ago": 3,
+          "new": true,
+          "old": 15
+        },
+        "tone": "warm",
+        "unit": "reps"
+      },
+      "memory": [],
+      "moment": "record",
+      "numbers": [
+        1,
+        3,
+        15,
+        16
+      ],
+      "recent": [],
+      "set": {
+        "beat": true,
+        "count": 16,
+        "goal": 16,
+        "goal_kind": "record",
+        "last": false,
+        "move": 49,
+        "pump_id": "f-5a0c",
+        "record": 15,
+        "record_at": 1790184600,
+        "slot": 0,
+        "streak": 0
+      },
+      "tone": "warm"
+    }
+  ],
+  "unknown": [
+    {
+      "about": "a move the books lack has no input: the gate's unknown",
+      "input": null,
+      "set": {
+        "beat": false,
+        "count": 10,
+        "last": false,
+        "move": 9999,
+        "pump_id": "f-5a0c",
+        "slot": 0
+      }
+    }
+  ],
+  "talks": [
+    {
+      "about": "a talk within its rules",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "talk": {
+        "line": "17 clean push-ups, past the 15 that stood for 3 days. Step 5 is yours."
+      },
+      "text": "{\"line\": \"17 clean push-ups, past the 15 that stood for 3 days. Step 5 is yours.\"}"
+    },
+    {
+      "about": "the line is trimmed",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "talk": {
+        "line": "Seven days in a row now, and 17 reps to show for it."
+      },
+      "text": "{\"line\": \"  Seven days in a row now, and 17 reps to show for it.\\n\"}"
+    },
+    {
+      "about": "not JSON of a talk",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "unreadable",
+      "text": "Great set!"
+    },
+    {
+      "about": "an empty line",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "line",
+      "text": "{\"line\": \"   \"}"
+    },
+    {
+      "about": "a line of two lines",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "line",
+      "text": "{\"line\": \"17 reps.\\nStep 5.\"}"
+    },
+    {
+      "about": "more than 30 words",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "line",
+      "text": "{\"line\": \"You did it again today and the reps came one by one and the form held and the step came with it and the colours climbed and the armour shone and the forge glowed bright.\"}"
+    },
+    {
+      "about": "more than 200 characters",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "line",
+      "text": "{\"line\": \"Remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably remarkably done.\"}"
+    },
+    {
+      "about": "a number the input does not hold",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "numbers: 4",
+      "text": "{\"line\": \"17 reps, a record by 4.\"}"
+    },
+    {
+      "about": "a number inside a word counts too",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "numbers: 18",
+      "text": "{\"line\": \"That is 18x the effort.\"}"
+    },
+    {
+      "about": "a character outside printable ASCII",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "characters",
+      "text": "{\"line\": \"17 reps 💪\"}"
+    },
+    {
+      "about": "a stem of the urge list",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "words: hold your breath",
+      "text": "{\"line\": \"17 reps. Hold your breath and go again.\"}"
+    },
+    {
+      "about": "a stem of the deny-list",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "refused": "words: heal",
+      "text": "{\"line\": \"17 reps, and your shoulders will heal stronger.\"}"
+    },
+    {
+      "about": "the curly apostrophe reads as a straight one",
+      "numbers": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        15,
+        16,
+        17
+      ],
+      "talk": {
+        "line": "That’s 17, a record."
+      },
+      "text": "{\"line\": \"That’s 17, a record.\"}"
+    }
+  ],
+  "chronicles": [
+    {
+      "about": "a Chronicle within its rules",
+      "chronicle": {
+        "story": "The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time.",
+        "title": "Nine Sparks at the Forge"
+      },
+      "numbers": [
+        9
+      ],
+      "text": "{\"title\":\"Nine Sparks at the Forge\",\"story\":\"The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time.\"}"
+    },
+    {
+      "about": "a title of one word",
+      "numbers": [
+        9
+      ],
+      "refused": "title",
+      "text": "{\"title\":\"Sparks\",\"story\":\"The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time.\"}"
+    },
+    {
+      "about": "a story too short",
+      "numbers": [
+        9
+      ],
+      "refused": "story",
+      "text": "{\"title\": \"A Quiet Week\", \"story\": \"Rest is part of the climb.\"}"
+    },
+    {
+      "about": "a story's paragraphs on lines of their own",
+      "chronicle": {
+        "story": "The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time.\n\nThe forge glowed and the armour took its 9 pumps one at a time. The forge glowed",
+        "title": "Nine Sparks at the Forge"
+      },
+      "numbers": [
+        9
+      ],
+      "text": "{\"title\":\"Nine Sparks at the Forge\",\"story\":\"The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time.\\n\\nThe forge glowed and the armour took its 9 pumps one at a time. The forge glowed\"}"
+    },
+    {
+      "about": "a number the week does not hold",
+      "numbers": [
+        9
+      ],
+      "refused": "numbers: 12",
+      "text": "{\"title\":\"Nine Sparks at the Forge\",\"story\":\"The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. The forge glowed and the armour took its 9 pumps one at a time. 12 records.\"}"
+    }
+  ],
+  "words": [
+    {
+      "text": "Breathe out as you push.",
+      "stem": null
+    },
+    {
+      "text": "Healthy habits",
+      "list": "deny",
+      "stem": "heal"
+    },
+    {
+      "text": "a wheal",
+      "list": "deny",
+      "stem": null
+    },
+    {
+      "text": "3heal",
+      "list": "deny",
+      "stem": null
+    },
+    {
+      "text": "éheal",
+      "list": "deny",
+      "stem": "heal"
+    },
+    {
+      "text": "Burning fat",
+      "list": "deny",
+      "stem": "burn fat"
+    },
+    {
+      "text": "burns-fat",
+      "list": "deny",
+      "stem": "burn fat"
+    },
+    {
+      "text": "burns‑fat",
+      "list": "deny",
+      "stem": "burn fat"
+    },
+    {
+      "text": "fat–burning",
+      "list": "deny",
+      "stem": "fat burn"
+    },
+    {
+      "text": "blood pressure",
+      "list": "deny",
+      "stem": "blood pressure"
+    },
+    {
+      "text": "weight to lose",
+      "list": "deny",
+      "stem": null
+    },
+    {
+      "text": "blood, pressure",
+      "list": "deny",
+      "stem": null
+    },
+    {
+      "text": "blood and pressure",
+      "list": "deny",
+      "stem": null
+    },
+    {
+      "text": "RECOVERY day",
+      "list": "deny",
+      "stem": "recover"
+    },
+    {
+      "text": "Treat yourself",
+      "list": "deny",
+      "stem": "treat"
+    },
+    {
+      "text": "losing weight",
+      "list": "deny",
+      "stem": "los weight"
+    },
+    {
+      "text": "No pain relief here",
+      "list": "deny",
+      "stem": "pain relief"
+    },
+    {
+      "text": "Go ALL-OUT",
+      "list": "urge",
+      "stem": "all out"
+    },
+    {
+      "text": "all  out",
+      "list": "urge",
+      "stem": "all out"
+    },
+    {
+      "text": "all–out",
+      "list": "urge",
+      "stem": "all out"
+    },
+    {
+      "text": "Pushing through the pain",
+      "list": "urge",
+      "stem": "push through the pain"
+    },
+    {
+      "text": "Push through your heels, hips up.",
+      "list": "urge",
+      "stem": null
+    },
+    {
+      "text": "Don’t stop",
+      "list": "urge",
+      "stem": "don't stop"
+    },
+    {
+      "text": "No pain today",
+      "list": "urge",
+      "stem": "pain"
+    },
+    {
+      "text": "exhausting",
+      "list": "urge",
+      "stem": "exhaust"
+    },
+    {
+      "text": "blood pressure",
+      "list": "deny",
+      "stem": "blood pressure"
+    },
+    {
+      "text": "blood pressure",
+      "list": "deny",
+      "stem": "blood pressure"
+    },
+    {
+      "text": "blood pressure",
+      "list": "deny",
+      "stem": "blood pressure"
+    },
+    {
+      "text": "burns‐fat",
+      "list": "deny",
+      "stem": "burn fat"
+    },
+    {
+      "text": "burns‒fat",
+      "list": "deny",
+      "stem": "burn fat"
+    },
+    {
+      "text": "burns—fat",
+      "list": "deny",
+      "stem": "burn fat"
+    },
+    {
+      "text": "Fight through the pain",
+      "list": "urge",
+      "stem": "pain"
+    },
+    {
+      "text": "Don't quit until you fail",
+      "list": "urge",
+      "stem": "fail"
+    },
+    {
+      "text": "Burn calories with every rep",
+      "list": "urge",
+      "stem": "calor"
+    },
+    {
+      "text": "Good for your heart",
+      "list": "urge",
+      "stem": "heart"
+    },
+    {
+      "text": "Push your limits",
+      "list": "urge",
+      "stem": "your limit"
+    },
+    {
+      "text": "Make it hurt",
+      "list": "urge",
+      "stem": "make it hurt"
+    },
+    {
+      "text": "Torch fat",
+      "list": "urge",
+      "stem": "fat"
+    },
+    {
+      "text": "Hit 13",
+      "stem": null
+    },
+    {
+      "text": "Hold your breath at the top.",
+      "list": "urge",
+      "stem": "hold your breath"
+    },
+    {
+      "text": "Holding your breath turns the set into strain.",
+      "list": "urge",
+      "stem": "hold your breath"
+    },
+    {
+      "text": "No breath-holding on the way up.",
+      "list": "urge",
+      "stem": "breath hold"
+    },
+    {
+      "text": "Breathe out as you rise, in as you lower.",
+      "stem": null
+    }
+  ],
+  "gate": [
+    {
+      "about": "no consent is off, and the day's count stays",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": false,
+      "known": true,
+      "limit": 45,
+      "moment": "record",
+      "pro": true,
+      "skip": "off",
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 0,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "a set that does not matter is quiet: no call, nothing counted",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": null,
+      "pro": true,
+      "skip": "quiet",
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 0,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "an ordinary set without Pro is quiet: the taste is for sets that matter",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": "set",
+      "pro": false,
+      "skip": "quiet",
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 0,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "a move the app does not know is unknown",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": false,
+      "limit": 45,
+      "moment": "record",
+      "pro": true,
+      "skip": "unknown",
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 0,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "without Pro the taste's first talks go",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": "record",
+      "pro": false,
+      "skip": null,
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 2
+      },
+      "used_after": 1,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "without Pro the taste used is taste",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": "record",
+      "pro": false,
+      "skip": "taste",
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 3
+      },
+      "used_after": 0,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "without Pro the first Chronicle goes",
+      "at": 1790443800,
+      "call": "chronicle",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": null,
+      "pro": false,
+      "skip": null,
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 3
+      },
+      "used_after": 1,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "without Pro a second Chronicle is taste",
+      "at": 1790443800,
+      "call": "chronicle",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 0
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": null,
+      "pro": false,
+      "skip": "taste",
+      "taste": {
+        "chronicles": 1,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 0,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "the day's calls used is cap",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 45
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": "step",
+      "pro": true,
+      "skip": "cap",
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 45,
+      "zone": "Europe/Zurich"
+    },
+    {
+      "about": "otherwise the call goes and takes one of the day's calls",
+      "at": 1790443800,
+      "call": "talk",
+      "cap": {
+        "day": "2026-09-26",
+        "used": 44
+      },
+      "consented": true,
+      "known": true,
+      "limit": 45,
+      "moment": "step",
+      "pro": true,
+      "skip": null,
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      },
+      "used_after": 45,
+      "zone": "Europe/Zurich"
+    }
+  ],
+  "taste": [
+    {
+      "about": "a fresh taste allows both calls, the Keep moment not due",
+      "chronicle": true,
+      "keep_due": false,
+      "talk": true,
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 0
+      }
+    },
+    {
+      "about": "3 talks heard: the Keep moment is due once",
+      "chronicle": true,
+      "keep_due": true,
+      "talk": false,
+      "taste": {
+        "chronicles": 0,
+        "offered": false,
+        "talks": 3
+      }
+    },
+    {
+      "about": "the Keep moment showed: never again",
+      "chronicle": true,
+      "keep_due": false,
+      "talk": false,
+      "taste": {
+        "chronicles": 0,
+        "offered": true,
+        "talks": 3
+      }
+    }
+  ],
+  "days": [
+    {
+      "at": 1790443800,
+      "zone": "Europe/Zurich",
+      "day": "2026-09-26"
+    },
+    {
+      "at": 1790387940,
+      "zone": "Europe/Zurich",
+      "day": "2026-09-25"
+    },
+    {
+      "at": 1790467800,
+      "zone": "Europe/Zurich",
+      "day": "2026-09-26"
+    },
+    {
+      "at": 1790474400,
+      "zone": "Europe/Zurich",
+      "day": "2026-09-27"
+    },
+    {
+      "at": 1792888200,
+      "zone": "Europe/Zurich",
+      "day": "2026-10-24"
+    },
+    {
+      "at": 1792895400,
+      "zone": "Europe/Zurich",
+      "day": "2026-10-24"
+    },
+    {
+      "at": 1792897200,
+      "zone": "Europe/Zurich",
+      "day": "2026-10-25"
+    },
+    {
+      "at": 1790485200,
+      "zone": "America/Los_Angeles",
+      "day": "2026-09-26"
+    },
+    {
+      "at": 1830222000,
+      "zone": "Asia/Tokyo",
+      "calendar": "japanese",
+      "day": "2027-12-31"
+    },
+    {
+      "at": 1830308400,
+      "zone": "Asia/Tokyo",
+      "calendar": "japanese",
+      "day": "2028-01-01"
+    }
+  ],
+  "cap": [
+    {
+      "about": "the limit's calls in a game day, then none until 04:00",
+      "zone": "Europe/Zurich",
+      "takes": [
+        {
+          "at": 1790443800,
+          "limit": 2,
+          "taken": true
+        },
+        {
+          "at": 1790445600,
+          "limit": 2,
+          "taken": true
+        },
+        {
+          "at": 1790467800,
+          "limit": 2,
+          "taken": false
+        },
+        {
+          "at": 1790474400,
+          "limit": 2,
+          "taken": true
+        }
+      ]
+    },
+    {
+      "about": "a limit of 0 gives none",
+      "zone": "Europe/Zurich",
+      "takes": [
+        {
+          "at": 1790443800,
+          "limit": 0,
+          "taken": false
+        }
+      ]
+    },
+    {
+      "about": "a lower limit from Remote Config holds at once",
+      "zone": "Europe/Zurich",
+      "takes": [
+        {
+          "at": 1790443800,
+          "limit": 3,
+          "taken": true
+        },
+        {
+          "at": 1790443900,
+          "limit": 3,
+          "taken": true
+        },
+        {
+          "at": 1790444000,
+          "limit": 1,
+          "taken": false
+        }
+      ]
+    },
+    {
+      "about": "a clock set back a day (a flight west) keeps the later day's count, and the next day forward starts again",
+      "zone": "Europe/Zurich",
+      "takes": [
+        {
+          "at": 1790443800,
+          "limit": 2,
+          "taken": true
+        },
+        {
+          "at": 1790357400,
+          "limit": 2,
+          "taken": true
+        },
+        {
+          "at": 1790357460,
+          "limit": 2,
+          "taken": false
+        },
+        {
+          "at": 1790474400,
+          "limit": 2,
+          "taken": true
+        }
+      ]
+    },
+    {
+      "about": "a clock put right from days ahead starts the count again",
+      "zone": "Europe/Zurich",
+      "takes": [
+        {
+          "at": 1790875800,
+          "limit": 1,
+          "taken": true
+        },
+        {
+          "at": 1790443800,
+          "limit": 1,
+          "taken": true
+        }
+      ]
+    },
+    {
+      "about": "a phone on the Japanese calendar starts the count again at the Gregorian new year's game day",
+      "zone": "Asia/Tokyo",
+      "calendar": "japanese",
+      "takes": [
+        {
+          "at": 1830222000,
+          "limit": 1,
+          "taken": true
+        },
+        {
+          "at": 1830225600,
+          "limit": 1,
+          "taken": false
+        },
+        {
+          "at": 1830308400,
+          "limit": 1,
+          "taken": true
+        }
+      ]
+    }
+  ],
+  "cost": [
+    {
+      "about": "the measured line (2026-09-27: about 930 tokens in and 110 out) at the 2026 price of the eu endpoint",
+      "at": 1790443800,
+      "input": 930,
+      "output": 110,
+      "usd": 0.001221
+    },
+    {
+      "about": "the same line at the 2027 price",
+      "at": 1798761600,
+      "input": 930,
+      "output": 110,
+      "usd": 0.002442
+    }
+  ],
+  "asks": [
+    {
+      "about": "a count saved on the watch's own app pump, the set it measured",
+      "json": {
+        "set": {
+          "beat": true,
+          "count": 17,
+          "earned": true,
+          "goal": 16,
+          "goal_kind": "record",
+          "ladder": 1,
+          "last": false,
+          "milestone": 7,
+          "move": 49,
+          "next": [
+            0,
+            2,
+            0,
+            0
+          ],
+          "pump_id": "f-5a0c",
+          "record": 15,
+          "record_at": 1790184600,
+          "rung": 5,
+          "slot": 0,
+          "streak": 7
+        },
+        "v": 2
+      }
+    }
+  ],
+  "answers": [
+    {
+      "about": "a talk",
+      "json": {
+        "model": "gemini-3.8-flash",
+        "pump_id": "w-77d1",
+        "slot": 0,
+        "talk": {
+          "line": "17 clean push-ups, past the 15 that stood for 3 days."
+        }
+      }
+    },
+    {
+      "about": "no talk: the set did not matter",
+      "json": {
+        "pump_id": "w-77d1",
+        "skipped": "quiet",
+        "slot": 1
+      }
+    }
+  ],
+  "reports": [
+    {
+      "about": "a talk's report",
+      "body": {
+        "model": "gemini-3.8-flash",
+        "moment": "talk",
+        "reason": "wrong",
+        "text": "17 clean push-ups, past the 15 that stood for 3 days."
+      },
+      "valid": true
+    },
+    {
+      "about": "a Chronicle's report: its title, an empty line and its story",
+      "body": {
+        "model": "gemini-3.8-flash",
+        "moment": "chronicle",
+        "reason": "other",
+        "text": "Nine Sparks\n\nThe forge glowed."
+      },
+      "valid": true
+    },
+    {
+      "about": "a text past 1600 Unicode scalar values is cut there before it goes",
+      "kept": 1600,
+      "length": 2000
+    },
+    {
+      "about": "the old countdown line's body is refused",
+      "body": {
+        "line": {
+          "cue": "Hit 13",
+          "coaching_line": "13 wall push-ups."
+        },
+        "reason": "wrong",
+        "model": "gemini-3.7-flash"
+      },
+      "valid": false
+    },
+    {
+      "about": "an unknown moment is refused",
+      "body": {
+        "moment": "countdown",
+        "text": "13 wall push-ups.",
+        "reason": "wrong",
+        "model": "gemini-3.8-flash"
+      },
+      "valid": false
+    },
+    {
+      "about": "a blank text is refused",
+      "body": {
+        "moment": "talk",
+        "text": "  ",
+        "reason": "wrong",
+        "model": "gemini-3.8-flash"
+      },
+      "valid": false
+    },
+    {
+      "about": "an unknown reason is refused",
+      "body": {
+        "moment": "talk",
+        "text": "13 wall push-ups.",
+        "reason": "boring",
+        "model": "gemini-3.8-flash"
+      },
+      "valid": false
+    },
+    {
+      "about": "a field more is refused",
+      "body": {
+        "moment": "talk",
+        "text": "13 wall push-ups.",
+        "reason": "wrong",
+        "model": "gemini-3.8-flash",
+        "pump_id": "f-1"
+      },
+      "valid": false
+    },
+    {
+      "about": "a model id the pattern refuses is refused",
+      "body": {
+        "moment": "talk",
+        "text": "13 wall push-ups.",
+        "reason": "wrong",
+        "model": "gemini 3.8"
+      },
+      "valid": false
+    }
+  ]
+}

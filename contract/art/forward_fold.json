@@ -1,0 +1,66 @@
+{
+  "move": "forward_fold",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 6},
+  "working": ["thigh"],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.9, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 13], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "tall",
+      "pelvis": [-12, 93.8, 0],
+      "trunk": [60, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"fk": [62, 4, 8]}
+    },
+    "fold": {
+      "from": "tall",
+      "pelvis": [-20, 92.65, 0],
+      "trunk": [100, 0, 0],
+      "chest": [36, 0, 0],
+      "head": [26, 0, 0],
+      "arms": {"ik": [25, 16.2, 23], "pole": [-0.5, 0, 1], "hand": [0.2, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fold_in": {"from": "fold", "trunk": [101, 0, 0], "chest": [38, 0, 0]},
+    "roll": {
+      "from": "tall",
+      "pelvis": [-11, 93.9, 0],
+      "trunk": [55, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [55, 0, 0],
+      "arms": {"fk": [85, 4, 10]}
+    },
+    "head_up": {"from": "fold", "head": [-45, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hinge", "s": 1.6, "ease": "in", "phase": "fold_forward", "effort": 0.4},
+    {"to": "fold", "s": 1.6, "ease": "out", "phase": "fold_forward", "effort": 0.6},
+    {"to": "fold_in", "s": 1.5, "phase": "head_down", "effort": 0.7},
+    {"to": "fold", "s": 1.5, "phase": "head_down", "effort": 0.7},
+    {"to": "fold_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "roll", "s": 2.0, "ease": "in", "phase": "rise_slowly", "effort": 0.4},
+    {"to": "tall", "s": 2.0, "ease": "out", "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "head_up",
+    "caption": "head_lifts",
+    "breaks": {"check": "offset", "joint": "head", "from": "neck", "axis": "u", "max": -10}
+  },
+  "targets": [
+    {"at": "hinge", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  ],
+  "note": "A held fold with straight knees: a flat-back hinge first (the target), then the spine rounds and the head hangs until the fingertips touch the floor, both knees straight; the rise rolls up, head last."
+}

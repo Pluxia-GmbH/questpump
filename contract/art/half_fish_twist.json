@@ -1,0 +1,53 @@
+{
+  "move": "half_fish_twist",
+  "view": "side",
+  "camera": {"yaw": 75, "pitch": 16},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -60, "f1": 120}, {"kind": "step", "f0": -22, "f1": 14, "u": 5, "l0": -22, "l1": 22}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 20, 0],
+      "trunk": [-20.0, 0, 0],
+      "arm_far": {"ik": [22, 84, 16], "pole": [0.3, -1, 0.6], "hand": [0.2, 1, -0.2]},
+      "arm_near": {"ik": [-8, 16.5, 32], "pole": [-0.6, 0, 1], "hand": [0.2, -1, 0.3]},
+      "leg_far": {"fk": [61.9, -4.0, 0, 0]},
+      "leg_near": {"foot": [34.0, -30.0], "y": 1, "turn": -10, "knee_out": -4.0, "pole": [0.3, 1, -0.1]},
+      "contacts": ["pelvis", "toe_near", "ankle_near", "ankle_far", "toe_far", "hand_tip_near"]
+    },
+    "twist": {
+      "from": "tall",
+      "trunk": [4, 0, 0],
+      "chest": [8, 0, -80],
+      "head": [0, 0, -30],
+      "arm_far": {"ik": [56, 24, 6], "pole": [-1, -0.6, -0.4], "hand": [1, -0.2, 0.1]},
+      "arm_near": {"ik": [-30, 16.5, 14], "pole": [-0.6, 0, 1], "hand": [-0.2, -1, 0.3]},
+      "leg_far": {"fk": [85.9, -4.0, 0, 0]}
+    },
+    "twist_in": {"from": "twist", "chest": [7, 0, -83]},
+    "slump": {
+      "from": "twist",
+      "trunk": [0, 0, 0],
+      "chest": [44, 18, -80],
+      "head": [12, 0, -30],
+      "arm_far": {"ik": [54, 22, 6], "pole": [-1, -0.6, -0.4], "hand": [1, -0.2, 0.1]},
+      "leg_far": {"fk": [81.9, -4.0, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.8, "phase": "sit_tall"},
+    {"to": "twist", "s": 2.6, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "tall", "s": 2.4, "phase": "sit_tall", "effort": 0.3}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  },
+  "note": "Sitting on a folded towel, the far leg long, the near foot crossed over it beside the far knee: the trunk leans in over the near hand planted behind, the chest turns 80 degrees toward the near knee and the far armpit comes down against the knee's outside, the upper arm along it and the hand resting on the long leg."
+}

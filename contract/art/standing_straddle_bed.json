@@ -1,0 +1,75 @@
+{
+  "move": "standing_straddle_bed",
+  "view": "front",
+  "camera": {"yaw": 20, "pitch": 26},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": 30, "f1": 160, "u": 45}],
+  "poses": {
+    "start": {
+      "pelvis": [0, 76, 0],
+      "trunk": [57, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [56, 48.3, 30], "pole": [-0.6, 0, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 65.4], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "mid": {
+      "from": "start",
+      "pelvis": [0, 61, 0],
+      "trunk": [56, 0, 0],
+      "arms": {"ik": [63, 48.3, 30], "pole": [-0.6, 0.3, 0.8], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 80.4], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]}
+    },
+    "low": {
+      "from": "start",
+      "pelvis": [0, 44.5, 0],
+      "trunk": [50, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [-10, 0, 0],
+      "legs": {"foot": [0, 90.5], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "arms": {"ik": [70, 48.3, 30], "pole": [-0.6, 0.6, 0.6], "hand": [1, -0.05, 0]}
+    },
+    "low_in": {
+      "from": "low",
+      "pelvis": [0, 44.1, 0],
+      "trunk": [51, 0, 0],
+      "legs": {"foot": [0, 90.8], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]}
+    },
+    "bent": {"from": "low", "legs": {"foot": [0, 81], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]}}
+  },
+  "timeline": [
+    {"pose": "start"},
+    {"hold": 0.6, "phase": "hands_down", "effort": 0.3},
+    {"to": "mid", "s": 1.6, "phase": "step_wide", "effort": 0.5},
+    {"to": "low", "s": 1.6, "phase": "step_wide", "effort": 0.6},
+    {"to": "low_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "low", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "low_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "low", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "mid", "s": 1.4, "phase": "step_in", "effort": 0.5},
+    {"to": "start", "s": 1.4, "phase": "step_in", "effort": 0.4}
+  ],
+  "key": "low",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 166}
+  },
+  "targets": [
+    {"at": "low", "check": "height", "joint": "pelvis", "max": 45.5},
+    {"at": "low", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "low", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  ],
+  "note": "Seen from behind, facing a bed: from a wide stance with both hands on the bed, the feet step out to the sides, knees straight and kneecaps forward, until the seat is about a forearm from the floor (the pelvis centre at 44.5, its armour 14.5 below it); the hands on the bed take part of the weight, the elbows bent."
+}

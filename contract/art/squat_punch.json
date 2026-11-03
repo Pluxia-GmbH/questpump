@@ -1,0 +1,57 @@
+{
+  "move": "squat_punch",
+  "view": "side",
+  "camera": {"yaw": 34, "pitch": 8},
+  "working": ["thigh"],
+  "ballistic": true,
+  "poses": {
+    "tall": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"ik": [22, 6, 11], "rel": "neck", "pole": [0.1, -1, 0.4], "hand": [0.3, 1, -0.1]},
+      "legs": {"foot": [0, 16], "turn": 12, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "squat": {"from": "tall", "pelvis": [-20, 55, 0], "trunk": [36, 0, 0], "chest": [-8, 0, 0], "head": [-22, 0, 0]},
+    "punch_far": {
+      "from": "tall",
+      "trunk": [4, 0, -20],
+      "chest": [0, 0, -18],
+      "head": [0, 0, 32],
+      "arm_far": {"ik": [53.7, -3.1, 38.3], "rel": "neck", "pole": [0.1, -0.8, 0.5], "hand": [0.99, 0.09, 0.05]},
+      "leg_far": {"foot": [0, 16], "turn": -2, "lift": 16, "knee_out": -6}
+    },
+    "punch_near": {
+      "from": "tall",
+      "trunk": [4, 0, 20],
+      "chest": [0, 0, 18],
+      "head": [0, 0, -32],
+      "arm_near": {"ik": [53.7, -3.1, 38.3], "rel": "neck", "pole": [0.1, -0.8, 0.5], "hand": [0.99, 0.09, 0.05]},
+      "leg_near": {"foot": [0, 16], "turn": -2, "lift": 16, "knee_out": -6}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.2, "phase": "tall"},
+    {"to": "squat", "s": 1.0, "phase": "squat", "effort": 0.5},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.7},
+    {"to": "tall", "s": 0.8, "phase": "stand_up", "effort": 0.8},
+    {"to": "punch_far", "s": 0.22, "ease": "out", "phase": "punch_across", "effort": 1.0},
+    {"hold": 0.12, "phase": "punch_across", "effort": 1.0},
+    {"to": "tall", "s": 0.45, "phase": "punch_across", "effort": 0.5},
+    {"to": "squat", "s": 1.0, "phase": "squat", "effort": 0.5},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.7},
+    {"to": "tall", "s": 0.8, "phase": "stand_up", "effort": 0.8},
+    {"to": "punch_near", "s": 0.22, "ease": "out", "phase": "punch_across", "effort": 1.0},
+    {"hold": 0.12, "phase": "punch_across", "effort": 1.0},
+    {"to": "tall", "s": 0.45, "phase": "punch_across", "effort": 0.5}
+  ],
+  "key": "punch_far",
+  "rep_ends": ["punch_across"],
+  "targets": [
+    {"at": "squat", "check": "height", "joint": "pelvis", "max": 62},
+    {"at": "punch_far", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 150},
+    {"at": "punch_near", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 150}
+  ]
+}

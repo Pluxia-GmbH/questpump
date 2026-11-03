@@ -1,0 +1,76 @@
+{
+  "move": "squat_prayer_twist",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 10},
+  "working": ["back", "thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 7.5], "turn": 3, "knee_out": 0},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "squat": {
+      "from": "tall",
+      "pelvis": [-16, 35.5, 0],
+      "trunk": [25, 0, 0],
+      "chest": [15, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"ik": [44, 58, 20], "pole": [0, -0.3, 1], "hand": [1, 0, 0]},
+      "legs": {"foot": [0, 7.5], "turn": 3, "knee_out": -3}
+    },
+    "turn": {
+      "from": "squat",
+      "trunk": [20, 0, -7],
+      "chest": [24, 0, -75],
+      "head": [-15, 0, -18],
+      "arm_far": {"ik": [48, 45, -47], "pole": [1, -0.6, -0.8], "hand": [0.9, -0.2, -0.4]},
+      "arm_near": {"ik": [-7.5, 66.3, 36.4], "pole": [-0.6, 0.2, 1], "hand": [0.59, 0.81, 0]}
+    },
+    "heels_up": {
+      "from": "prayer",
+      "pelvis": [-15, 41, 0],
+      "legs": {"foot": [0, 7.5], "turn": 3, "knee_out": -3, "lift": 30},
+      "trunk": [12, 0, -10]
+    },
+    "prayer": {
+      "from": "squat",
+      "trunk": [18, 0, -10],
+      "chest": [24, 0, -88],
+      "head": [-12, 0, -20],
+      "arm_far": {"ik": [-1.0, 61.7, -35.6], "pole": [0.4, -1, -0.3], "hand": [0.59, 0.81, 0]},
+      "arm_near": {"ik": [-7.5, 66.3, 36.4], "pole": [-0.6, 0.2, 1], "hand": [0.59, 0.81, 0]}
+    },
+    "hook": {"from": "prayer", "arm_far": {"ik": [12, 62, -38], "pole": [0.4, -1, -0.3], "hand": [0.75, 0.65, -0.1]}},
+    "prayer_in": {"from": "prayer", "chest": [24, 0, -92], "head": [-12, 0, -24]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "squat", "s": 2.0, "phase": "squat_deep", "effort": 0.5},
+    {"to": "turn", "s": 0.8, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "hook", "s": 0.6, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "prayer", "s": 0.6, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "prayer_in", "s": 1.5, "phase": "breathe_out", "effort": 0.7},
+    {"to": "prayer", "s": 1.5, "phase": "heels_down", "effort": 0.7},
+    {"to": "hook", "s": 0.5, "phase": "release", "effort": 0.5},
+    {"to": "turn", "s": 0.5, "phase": "release", "effort": 0.5},
+    {"to": "squat", "s": 0.6, "phase": "release", "effort": 0.4},
+    {"to": "tall", "s": 2.0, "phase": "stand_up", "effort": 0.6}
+  ],
+  "key": "prayer",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "prayer", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "prayer", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "prayer", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  ],
+  "note": "Feet and knees together in a deep squat, the heels flat: the chest turns to one side with the palms pressed together at the chest and the far elbow hooked outside both knees (the pump mirrors it for the other side)."
+}

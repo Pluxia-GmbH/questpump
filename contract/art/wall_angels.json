@@ -1,0 +1,54 @@
+{
+  "move": "wall_angels",
+  "view": "side",
+  "camera": {"yaw": 25, "pitch": 8},
+  "working": ["pauldron", "back"],
+  "props": [{"kind": "wall", "f": -30, "behind": true, "u": 220}],
+  "poses": {
+    "low": {
+      "pelvis": [-15.5, 91, 0],
+      "trunk": [0, 0, 0],
+      "head": [-3, 0, 0],
+      "arms": {"ik": [-26.3, 146.3, 47.7], "pole": [-0.024, -0.899, 0.436], "hand": [-0.14, 1, 0]},
+      "legs": {"foot": [5, 13], "turn": 8, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "pelvis",
+        "neck",
+        "head",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "mid": {
+      "from": "low",
+      "arms": {"ik": [-26.3, 164.6, 54.4], "pole": [-0.031, -0.683, 0.73], "hand": [-0.14, 1, 0]}
+    },
+    "overhead": {
+      "from": "low",
+      "arms": {"ik": [-16.5, 192.5, 15], "pole": [0.05, 0, 1], "hand": [-0.1, 1, -0.05]},
+      "contacts": ["toe_near", "toe_far", "pelvis", "neck", "head"]
+    }
+  },
+  "timeline": [
+    {"pose": "low"},
+    {"hold": 0.5, "phase": "breathe", "effort": 0.3},
+    {"to": "mid", "s": 1.3, "ease": "in", "phase": "slide_up", "effort": 0.5},
+    {"to": "overhead", "s": 1.4, "ease": "out", "phase": "slide_up", "effort": 0.7},
+    {"hold": 0.5, "phase": "breathe", "effort": 0.4},
+    {"to": "mid", "s": 1.4, "ease": "in", "phase": "slide_down", "effort": 0.5},
+    {"to": "low", "s": 1.3, "ease": "out", "phase": "slide_down", "effort": 0.4}
+  ],
+  "key": "overhead",
+  "targets": [
+    {"at": "overhead", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "overhead", "check": "offset", "joint": "wrist_near", "from": "shoulder_near", "axis": "l", "max": -6},
+    {"at": "overhead", "check": "offset", "joint": "wrist_near", "from": "shoulder_near", "axis": "f", "min": -3}
+  ],
+  "note": "Back, head and hips on the wall, heels a foot's length out: the arms slide up the wall from a low W, and at the top of each slide they reach straight by the ears, the thumbs about a fist (10 cm) from the wall and the low back staying near it (the goal pose, the overhead wall test sized to a normal shoulder), then slide back down."
+}

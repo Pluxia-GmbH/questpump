@@ -1,0 +1,73 @@
+{
+  "move": "bow",
+  "view": "side",
+  "camera": {"yaw": -22, "pitch": 10},
+  "working": ["back", "thigh", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -115, "f1": 80}],
+  "poses": {
+    "down": {
+      "pelvis": [0, 16, 0],
+      "trunk": [90, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"ik": [-6, 4.3, 19], "pole": [0, 1, 0.3], "hand": [-1, -0.05, 0]},
+      "legs": {"fk": [7, 0, 0, -90]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "reach": {
+      "from": "down",
+      "chest": [-14, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [-6.6, 36.1, 25], "pole": [0, 1, 0.3], "hand": [0, 1, 0]},
+      "legs": {"fk": [8, 0, 138, -30]},
+      "contacts": ["pelvis", "waist", "knee_near", "knee_far"]
+    },
+    "bow": {
+      "from": "down",
+      "trunk": [88, 0, 0],
+      "chest": [-34, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [-9.5, 50.1, 25], "pole": [0, 1, 0.3], "hand": [0, 1, 0]},
+      "legs": {"fk": [-12, 0, 134, -30]},
+      "contacts": ["pelvis", "waist"]
+    },
+    "bow_in": {
+      "from": "bow",
+      "chest": [-36, 0, 0],
+      "arms": {"ik": [-9.2, 51.6, 25], "pole": [0, 1, 0.3], "hand": [0, 1, 0]},
+      "legs": {"fk": [-14, 0, 132, -30]}
+    }
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.5, "phase": "lie", "effort": 0.2},
+    {"to": "reach", "s": 1.6, "phase": "hold_ankles", "effort": 0.35},
+    {"to": "bow", "s": 1.8, "phase": "kick_and_lift", "effort": 0.65},
+    {"to": "bow_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "bow", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "reach", "s": 1.6, "phase": "lower", "effort": 0.4},
+    {"to": "down", "s": 1.6, "phase": "let_go", "effort": 0.2}
+  ],
+  "key": "bow",
+  "targets": [
+    {"at": "bow", "check": "height", "joint": "knee_near", "min": 16},
+    {"at": "bow", "check": "height", "joint": "neck", "min": 28},
+    {"at": "bow", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 75}
+  ],
+  "note": "Face down, the knees bent and the hands holding the outsides of the ankles: kick the feet back into the hands so the chest and the thighs lift off the floor together, the weight on the belly, the arms straight, the knees about hip-width and the neck long."
+}

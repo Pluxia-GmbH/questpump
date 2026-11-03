@@ -1,0 +1,144 @@
+/* The charts on the computer, Pro's (lib/charts.js; the Book's and the Log's in views/book/charts.js, Hero's in
+ * views/hero/charts.js), from the tokens' chart block: the card that holds them, a chart's frame, its plot and axes, a
+ * record's star, the pointer's value and the legend. */
+
+qp-card.qp-charts {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-chart {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	min-width: 0;
+}
+
+.qp-chart-box {
+	position: relative;
+	min-width: 0;
+}
+
+/* a dated plot: its value axis's column stays while the plot beside it scrolls */
+.qp-chart-box.qp-dated {
+	display: flex;
+	align-items: flex-start;
+}
+
+.qp-chart-axis-column {
+	flex: none;
+}
+
+.qp-chart-scroll {
+	flex: 1;
+	min-width: 0;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	/* room for a scroll bar under the dates rather than over them */
+	padding-bottom: var(--qp-layout-space8);
+}
+
+.qp-chart-frame {
+	position: relative;
+	width: max-content;
+	min-width: 100%;
+}
+
+.qp-chart-svg {
+	display: block;
+	overflow: visible;
+}
+
+.qp-chart-axis {
+	font: var(--qp-type-caps-font);
+	letter-spacing: var(--qp-type-caps-tracking);
+	fill: var(--qp-surface-chart-axis);
+}
+
+.qp-chart-axis.qp-end {
+	text-anchor: end;
+}
+
+.qp-chart-grid {
+	stroke: var(--qp-surface-chart-grid);
+	stroke-width: var(--qp-surface-chart-grid-width);
+}
+
+.qp-chart-tread {
+	stroke-width: var(--qp-surface-chart-tread);
+	stroke-linecap: butt;
+}
+
+.qp-chart-riser {
+	stroke: var(--qp-surface-chart-riser-colour);
+	stroke-width: var(--qp-surface-chart-riser);
+}
+
+.qp-chart-line {
+	fill: none;
+	stroke: var(--qp-surface-chart-mark);
+	stroke-width: var(--qp-surface-chart-line-width);
+	stroke-linejoin: round;
+}
+
+.qp-chart-dot.qp-gold {
+	fill: var(--qp-surface-chart-mark);
+}
+
+.qp-chart-count {
+	fill: var(--qp-color-text);
+}
+
+.qp-chart-rule {
+	stroke: var(--qp-color-text2);
+	stroke-width: var(--qp-layout-hairline);
+}
+
+.qp-chart-star, svg.qp-chart-star {
+	width: var(--qp-surface-chart-star);
+	height: var(--qp-surface-chart-star);
+	color: var(--qp-surface-chart-mark);
+}
+
+.qp-scrub {
+	position: absolute;
+	top: 0;
+	left: var(--qp-scrub-x, 0);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: var(--qp-layout-space4) var(--qp-layout-space8);
+	border-radius: var(--qp-layout-tile-radius-small);
+	background: var(--qp-color-raised);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line);
+	transform: translate(-50%, -100%);
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+.qp-chart-legend {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--qp-layout-space4) var(--qp-layout-space12);
+	color: var(--qp-color-text2);
+}
+
+.qp-legend-item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-swatch {
+	width: var(--qp-surface-chart-swatch);
+	height: var(--qp-surface-chart-swatch);
+	border-radius: var(--qp-layout-space2);
+	background: var(--qp-swatch);
+}
+
+.qp-legend-dot {
+	width: var(--qp-surface-chart-swatch);
+	height: var(--qp-surface-chart-swatch);
+}

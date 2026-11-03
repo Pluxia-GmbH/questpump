@@ -1,0 +1,30 @@
+{
+  "move": "rfe_split_squat",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh_near"],
+  "props": [{"kind": "step", "f0": -104, "f1": -61, "u": 30}],
+  "poses": {
+    "top": {
+      "pelvis": [-12, 85, 0],
+      "trunk": [6, 0, 0],
+      "arms": {"fk": [10, 6, 22]},
+      "leg_near": {"foot": [26, 14], "turn": 6, "knee_out": 6},
+      "leg_far": {"ik": [-62, 33.3, 12], "pole": [0, -1, 0.2], "toe": [-1, -0.05, 0]},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "bottom": {"from": "top", "pelvis": [-16, 57, 0], "trunk": [14, 0, 0], "arms": {"fk": [18, 6, 30]}}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 1.4, "phase": "knee_down", "effort": 0.6},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.85},
+    {"to": "top", "s": 1.1, "phase": "rise", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 78, "max": 112},
+    {"at": "bottom", "check": "height", "joint": "knee_far", "max": 22}
+  ]
+}

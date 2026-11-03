@@ -1,0 +1,62 @@
+{
+  "move": "lsit_heels",
+  "view": "side",
+  "camera": {"yaw": 15, "pitch": 6},
+  "working": ["upper_arm", "abdomen", "pauldron"],
+  "breathe": true,
+  "poses": {
+    "sit": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [8, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [26, 25, 17], "pole": [-0.3, -1, 0.8], "hand": [1, -0.3, 0]},
+      "legs": {"fk": [92.5, 0, 0, -10]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "in",
+      "pelvis": [0, 15.5, 0],
+      "contacts": ["pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far", "ankle_near", "ankle_far"],
+      "legs": {"fk": [110.5, 0, 0, -10]}
+    },
+    "in": {
+      "pelvis": [0, 16.25, 0],
+      "trunk": [26, 0, 0],
+      "chest": [-3, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [18, 3.3, 28], "pole": [-1, 0, 0.2], "hand": [1, -0.14, 0]},
+      "legs": {"fk": [110, 0, 0, -10]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far", "ankle_near", "ankle_far"]
+    },
+    "out": {"from": "in", "chest": [-4, 0, 0]},
+    "caved": {
+      "from": "in",
+      "chest": [16, 0, 0],
+      "head": [20, 0, 0],
+      "arms": {"ik": [18, 3.3, 28], "pole": [0, 0, 1], "hand": [1, -0.14, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.4, "phase": "sit"},
+    {"to": "hands", "s": 0.9, "phase": "hands_down", "effort": 0.4},
+    {"to": "in", "s": 0.6, "phase": "press", "effort": 0.65},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.65},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.65},
+    {"to": "hands", "s": 0.6, "phase": "hips_down", "effort": 0.4},
+    {"to": "sit", "s": 0.8, "phase": "sit_tall", "effort": 0.2}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "caved",
+    "caption": "chest_caves",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 168},
+    {"at": "in", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "in", "check": "height", "joint": "pelvis", "min": 15}
+  ]
+}

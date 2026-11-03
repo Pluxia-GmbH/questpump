@@ -1,0 +1,38 @@
+{
+  "move": "bb_squat",
+  "view": "side",
+  "camera": {"yaw": 36, "pitch": 8},
+  "working": ["thigh"],
+  "items": [{"kind": "barbell"}],
+  "poses": {
+    "top": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [2, 0, 0],
+      "arms": {"ik": [-13, -11.4, 46], "rel": "neck", "hand": [0, 1, 0], "pole": [-0.3, -1, 0.4]},
+      "legs": {"foot": [0, 19], "turn": 18, "knee_out": 20},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "bottom": {"from": "top", "pelvis": [-20, 47, 0], "trunk": [44, 0, 0], "chest": [-4, 0, 0], "head": [-26, 0, 0]},
+    "rounded": {
+      "from": "bottom",
+      "pelvis": [-21, 46, 0],
+      "trunk": [26, 0, 0],
+      "chest": [26, 0, 0],
+      "head": [-26, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 1.4, "phase": "sit_down", "effort": 0.6},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.8},
+    {"to": "top", "s": 1.1, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [{"at": "bottom", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}]
+}

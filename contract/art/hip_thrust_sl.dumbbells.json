@@ -1,0 +1,7 @@
+{
+  "move": "hip_thrust_sl.dumbbells",
+  "gear_of": "hip_thrust_sl",
+  "gear": "dumbbells",
+  "items": [{"kind": "dumbbell", "grip": "goblet", "on": "hips"}],
+  "poses": {"down": {"arms": {"ik": [28, 18, 11], "rel": "pelvis", "pole": [0.3, 0, 1], "hand": [0.3, -1, 0]}}}
+}

@@ -1,0 +1,41 @@
+{
+  "move": "backpack_sl_rdl",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh_far", "abdomen"],
+  "props": [{"kind": "desk", "l": 40, "f": 10, "top": 74}],
+  "items": [{"kind": "backpack", "hand": "near"}],
+  "poses": {
+    "top": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [2, 0, 0],
+      "arm_near": {"fk": [12, 13, 10]},
+      "arm_far": {"ik": [16.4, 90, 43], "pole": [-0.3, 0, 1], "hand": [0.35, -0.94, 0.05]},
+      "leg_far": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "leg_near": {"fk": [-3, 2, 34, 25]},
+      "contacts": ["toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-14, 91.5, 0],
+      "trunk": [65, 0, 0],
+      "head": [-14, 0, 0],
+      "arm_near": {"fk": [63, 8, 6]},
+      "arm_far": {"ik": [18, 78.2, 44], "pole": [-0.2, 0.3, 1], "hand": [1, -0.12, 0]},
+      "leg_near": {"fk": [-8, 2, 4, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 2.0, "phase": "hips_back", "effort": 0.6},
+    {"hold": 0.3, "phase": "hips_level", "effort": 0.8},
+    {"to": "top", "s": 1.2, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "bottom", "check": "angle", "joints": ["neck", "pelvis", "ankle_near"], "min": 160},
+    {"at": "bottom", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 145}
+  ]
+}

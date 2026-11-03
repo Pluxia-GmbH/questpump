@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The list (Book's Tree | List button, slice 40): three rows, each a tile plate beside a bar of words with
+       chamfered ends, as the list's rows stand, a ladder a row; lit from the top left, each tile's right half and
+       each bar's lower lip in shadow. One colour, never mirrored: the caller tints it (text2 in a round button on
+       card). -->
+  <path data-token="tint" fill="currentColor" d="
+    M2.75 2 H6.25 L7 2.75 V6.25 L6.25 7 H2.75 L2 6.25 V2.75 Z
+    M10.25 3.25 H21.25 L22 4 V5 L21.25 5.75 H10.25 L9.5 5 V4 Z
+    M2.75 9.5 H6.25 L7 10.25 V13.75 L6.25 14.5 H2.75 L2 13.75 V10.25 Z
+    M10.25 10.75 H21.25 L22 11.5 V12.5 L21.25 13.25 H10.25 L9.5 12.5 V11.5 Z
+    M2.75 17 H6.25 L7 17.75 V21.25 L6.25 22 H2.75 L2 21.25 V17.75 Z
+    M10.25 18.25 H21.25 L22 19 V20 L21.25 20.75 H10.25 L9.5 20 V19 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M4.5 2 H6.25 L7 2.75 V6.25 L6.25 7 H4.5 Z
+    M9.5 5 H22 L21.25 5.75 H10.25 Z
+    M4.5 9.5 H6.25 L7 10.25 V13.75 L6.25 14.5 H4.5 Z
+    M9.5 12.5 H22 L21.25 13.25 H10.25 Z
+    M4.5 17 H6.25 L7 17.75 V21.25 L6.25 22 H4.5 Z
+    M9.5 20 H22 L21.25 20.75 H10.25 Z"/>
+</svg>

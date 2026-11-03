@@ -1,0 +1,24 @@
+{
+  "move": "streak_banner",
+  "extra": true,
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 6},
+  "working": ["thigh", "shin", "chest"],
+  "items": [{"kind": "banner", "hand": "both", "low": 44, "len": 215}],
+  "poses": {
+    "march": {
+      "pelvis": [2, 92, 0],
+      "trunk": [3, 0, 0],
+      "chest": [-5, 0, 0],
+      "head": [-6, 0, 0],
+      "arm_near": {"ik": [36, 140, 12], "pole": [-0.3, -1, 0.7], "hand": [0.45, 0.1, -0.4]},
+      "arm_far": {"ik": [30, 106, -2], "pole": [0.2, -1, 2], "hand": [0.45, 0.0, -0.35]},
+      "leg_near": {"foot": [-28, 12], "turn": 8, "lift": 22, "knee_out": 4},
+      "leg_far": {"foot": [26, 12], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_far"]
+    }
+  },
+  "timeline": [{"pose": "march"}, {"hold": 1.0, "phase": "march", "effort": 0.5}],
+  "key": "march",
+  "note": "The streak card's standard-bearer (slice 45): marching on with the standard, the streak as a march of days."
+}

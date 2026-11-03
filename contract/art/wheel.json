@@ -1,0 +1,112 @@
+{
+  "move": "wheel",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 8},
+  "working": ["pauldron", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -100, "f1": 66, "l0": -40, "l1": 40}],
+  "poses": {
+    "lie": {
+      "pelvis": [7, 16, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "contacts": [
+        "pelvis",
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "head": [30, 0, 0]
+    },
+    "crown": {
+      "from": "lie",
+      "pelvis": [-4, 56, 0],
+      "trunk": [-105, 0, 0],
+      "chest": [-30, 0, 0],
+      "head": [0, 0, 0],
+      "contacts": [
+        "head",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel": {
+      "from": "lie",
+      "pelvis": [-8.5, 75.8, 0],
+      "trunk": [-95, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-20, 0, 0],
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel_in": {"from": "wheel", "pelvis": [-8.5, 76.4, 0], "trunk": [-96, 0, 0], "chest": [-42, 0, 0]},
+    "tuck": {
+      "from": "lie",
+      "pelvis": [-8, 46, 0],
+      "trunk": [-125, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [70, 0, 0],
+      "contacts": [
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "bent": {
+      "from": "wheel",
+      "pelvis": [-6.5, 69.8, 0],
+      "trunk": [-100, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [10, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.6, "phase": "hands_by_ears", "effort": 0.2},
+    {"to": "crown", "s": 1.6, "phase": "hips_up", "effort": 0.7},
+    {"to": "wheel", "s": 1.6, "phase": "arms_straight", "effort": 0.9},
+    {"to": "wheel_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "wheel", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "tuck", "s": 1.6, "phase": "tuck_chin", "effort": 0.6},
+    {"to": "lie", "s": 1.4, "phase": "lower_slowly", "effort": 0.3}
+  ],
+  "key": "wheel",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "wheel", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "wheel", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 115, "max": 140},
+    {"at": "wheel", "check": "height", "joint": "head", "min": 20}
+  ],
+  "note": "Lying on the back, the hands by the ears and the feet flat near the seat: the hips lift, the crown touches down lightly, then the arms press straight into the wheel with the head off the floor; the feet stay where they started, so the knees stay bent at about 130 degrees and the shoulders lean behind the wrists, the floor wheel of someone still opening; then the chin tucks and the body lowers."
+}

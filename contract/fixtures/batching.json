@@ -1,0 +1,176 @@
+{
+  "about": "The 5-s samples the watch sends (docs/companion.md, \"The companion\" item 3 and \"The protocol\", the sync's samples; QuestPumpCore Samples.swift and the Kotlin core's Samples.kt): windows end on a 5-s grid from the session's start; a sample carries the latest heart rate and cadence of its window (or none), and the pump's cumulative steps and metres, which never go down whatever order the pedometer's updates come in and start from zero with each pump; a window with nothing new still goes out; a close emits every window that ended by then. Times are milliseconds on the watch's clock.",
+  "cases": [
+    {
+      "about": "a window carries the latest heart rate in it",
+      "start": 0,
+      "ops": [
+        {
+          "op": "heart",
+          "bpm": 80
+        },
+        {
+          "op": "heart",
+          "bpm": 84
+        },
+        {
+          "op": "close",
+          "now": 5000,
+          "samples": [
+            {
+              "sample_end": 5000,
+              "bpm": 84,
+              "steps": 0,
+              "metres": null,
+              "cadence": null,
+              "pump_id": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "about": "a window with nothing new still goes out, and a close before a window's end emits nothing",
+      "start": 1000,
+      "ops": [
+        {
+          "op": "close",
+          "now": 5999,
+          "samples": []
+        },
+        {
+          "op": "close",
+          "now": 6000,
+          "samples": [
+            {
+              "sample_end": 6000,
+              "bpm": null,
+              "steps": 0,
+              "metres": null,
+              "cadence": null,
+              "pump_id": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "about": "steps count from the pump's start, never go down, and start again at zero after it",
+      "start": 0,
+      "ops": [
+        {
+          "op": "pump",
+          "id": "w-1"
+        },
+        {
+          "op": "pedometer",
+          "steps": 10,
+          "metres": 7.5,
+          "cadence": 1.8
+        },
+        {
+          "op": "pedometer",
+          "steps": 8,
+          "metres": 6.0,
+          "cadence": 1.7
+        },
+        {
+          "op": "heart",
+          "bpm": 101
+        },
+        {
+          "op": "close",
+          "now": 5000,
+          "samples": [
+            {
+              "sample_end": 5000,
+              "bpm": 101,
+              "steps": 10,
+              "metres": 7.5,
+              "cadence": 1.7,
+              "pump_id": "w-1"
+            }
+          ]
+        },
+        {
+          "op": "pedometer",
+          "steps": 22,
+          "metres": null,
+          "cadence": null
+        },
+        {
+          "op": "close",
+          "now": 10000,
+          "samples": [
+            {
+              "sample_end": 10000,
+              "bpm": null,
+              "steps": 22,
+              "metres": 7.5,
+              "cadence": null,
+              "pump_id": "w-1"
+            }
+          ]
+        },
+        {
+          "op": "pump",
+          "id": null
+        },
+        {
+          "op": "close",
+          "now": 15000,
+          "samples": [
+            {
+              "sample_end": 15000,
+              "bpm": null,
+              "steps": 0,
+              "metres": null,
+              "cadence": null,
+              "pump_id": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "about": "a late close emits every window it covers, the reading in the first",
+      "start": 0,
+      "ops": [
+        {
+          "op": "heart",
+          "bpm": 90
+        },
+        {
+          "op": "close",
+          "now": 16000,
+          "samples": [
+            {
+              "sample_end": 5000,
+              "bpm": 90,
+              "steps": 0,
+              "metres": null,
+              "cadence": null,
+              "pump_id": null
+            },
+            {
+              "sample_end": 10000,
+              "bpm": null,
+              "steps": 0,
+              "metres": null,
+              "cadence": null,
+              "pump_id": null
+            },
+            {
+              "sample_end": 15000,
+              "bpm": null,
+              "steps": 0,
+              "metres": null,
+              "cadence": null,
+              "pump_id": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

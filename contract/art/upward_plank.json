@@ -1,0 +1,76 @@
+{
+  "move": "upward_plank",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["pauldron", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -80, "f1": 100}],
+  "poses": {
+    "sit": {
+      "pelvis": [-17.7, 15, 0],
+      "trunk": [-45, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [20, 0, 0],
+      "arms": {"ik": [-57, 3.3, 22], "pole": [-1, 0, 0.3], "hand": [1, -0.14, 0.1]},
+      "legs": {"foot": [70, 12], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": [
+        "pelvis",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "up": {
+      "line": {"pivot": "toes", "at": 70, "angle": 24, "width": 12, "face": "up", "lift": 0},
+      "chest": [-8, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"ik": [-57, 3.3, 22], "pole": [-1, 0, 0.3], "hand": [1, -0.14, 0.1]},
+      "contacts": [
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "up_in": {
+      "from": "up",
+      "line": {"pivot": "toes", "at": 70, "angle": 24.5, "width": 12, "face": "up", "lift": 0},
+      "chest": [-10, 0, 0]
+    },
+    "sag": {
+      "from": "up",
+      "line": {"pivot": "toes", "at": 70, "angle": 15, "width": 12, "face": "up", "lift": 0, "hips": 22},
+      "head": [0, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.6, "phase": "hands_behind", "effort": 0.2},
+    {"to": "up", "s": 1.8, "phase": "hips_up", "effort": 0.6},
+    {"to": "up_in", "s": 1.8, "phase": "breathe", "effort": 0.65},
+    {"to": "up", "s": 1.8, "phase": "breathe", "effort": 0.65},
+    {"to": "up_in", "s": 1.8, "phase": "breathe", "effort": 0.65},
+    {"to": "sit", "s": 1.8, "phase": "lower", "effort": 0.3}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "up", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "up", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 165},
+    {"at": "up", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "min": -6, "max": 6}
+  ],
+  "note": "Seated, legs straight, the hands behind the hips with the fingers toward the feet: press down and lift the hips until the body is one straight line from the shoulders to the feet, the arms straight under the shoulders, the soles reaching for the floor and the chest open."
+}

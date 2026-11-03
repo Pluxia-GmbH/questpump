@@ -1,0 +1,80 @@
+{
+  "move": "frog_stand_books",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 14},
+  "working": ["forearm", "upper_arm", "abdomen"],
+  "breathe": true,
+  "props": [
+    {"kind": "mat", "f0": -50, "f1": 100, "l0": -40, "l1": 40},
+    {"kind": "step", "f0": -24, "f1": 9, "u": 12, "l0": -24, "l1": 24}
+  ],
+  "poses": {
+    "squat": {
+      "pelvis": [-30, 49, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [100, 8, 30, 0, 0]},
+      "legs": {"foot": [-20, 16], "y": 12, "turn": 20, "lift": 20, "knee_out": 0, "pole": [0.7, 0, 1.6]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "squat",
+      "pelvis": [-18, 50, 0],
+      "trunk": [84, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"ik": [30, 4.3, 22], "pole": [-0.6, 0.3, 1.2], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prep": {
+      "pelvis": [5, 64, 0],
+      "trunk": [106, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [30, 4.3, 22], "pole": [-0.6, 0.3, 1.2], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-20, 16], "y": 12, "turn": 20, "lift": 60, "knee_out": 0, "pole": [0.7, 0.4, 1.8]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "frog": {
+      "pelvis": [10, 60, 0],
+      "trunk": [108, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-50, 0, 0],
+      "arms": {"ik": [30, 4.3, 22], "pole": [-0.8, 0.3, 1.0], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [2, 42, 9], "pole": [0.7, -0.6, 1.0], "toe": [-0.8, -0.55, -0.1]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "frog_in": {"from": "frog", "pelvis": [10, 62, 0], "chest": [11, 0, 0], "head": [-46, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.4, "phase": "squat_deep"},
+    {"to": "hands", "s": 1.0, "phase": "hands_down", "effort": 0.3},
+    {"to": "prep", "s": 1.2, "phase": "shift_forward", "effort": 0.6},
+    {"to": "frog", "s": 1.2, "phase": "float", "effort": 0.8},
+    {"to": "frog_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "frog", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "frog_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "frog", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "prep", "s": 1.2, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "hands", "s": 1.2, "phase": "rock_back", "effort": 0.4},
+    {"to": "squat", "s": 0.9, "phase": "sit_back", "effort": 0.2}
+  ],
+  "key": "frog",
+  "targets": [
+    {"at": "frog", "check": "height", "joint": "toe_near", "min": 25},
+    {"at": "frog", "check": "height", "joint": "ankle_near", "min": 25},
+    {"at": "frog", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 110, "max": 150}
+  ],
+  "note": "The frog stand from a stack of books about 12 cm high: the toes start on the books behind the hands, the lean lifts both feet off them into the frog stand, and they come back down onto the books."
+}

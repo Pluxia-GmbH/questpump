@@ -1,0 +1,16 @@
+# The shared fixtures are compared byte for byte on every system; the Windows runner checks text out with CRLF by
+# default, so they keep LF everywhere.
+contract/fixtures/** text eol=lf
+# The sound sources and the licence texts the apps ship are held to their downloads' digests byte for byte
+# (tools/sound.py, tools/ledger.py), and two Kenney License.txt files hold CRLF: Git never converts their line ends.
+contract/design/sound/src/** -text
+apple/iOS/Fonts/** -text
+apple/Watch/Fonts/** -text
+android/shared/src/main/assets/licenses/** -text
+# Their copies the desktop app and the site serve (tools/tokens.py holds them to Android's files byte for byte), and
+# the site's cut faces, held to their table's digests
+helper/dist/fonts/** -text
+site/public/fonts/** -text
+site/src/assets/fonts/** -text
+# The Apple root the helper pins is held to Apple's published SHA-256 byte for byte (questpump-core's pro.rs).
+helper/crates/questpump-core/certs/** -text

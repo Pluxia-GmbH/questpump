@@ -1,0 +1,39 @@
+{
+  "move": "warrior2",
+  "view": "front",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["thigh"],
+  "poses": {
+    "wide": {
+      "pelvis": [2, 74.5, 13],
+      "trunk": [0, 0, 0],
+      "arms": {"fk": [4, 8, 10]},
+      "leg_near": {"foot": [8, 53], "turn": 90, "knee_out": 0, "pole": [0.2, 0.7, 0.7]},
+      "leg_far": {"foot": [0, 79], "turn": -10, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "arms": {"from": "wide", "arms": {"fk": [0, 90, 0, 0, 0]}},
+    "warrior": {"from": "arms", "pelvis": [2, 62, 0], "head": [0, 0, -80]},
+    "warrior_in": {"from": "warrior", "pelvis": [2, 62.6, 0], "chest": [-1, 0, 0]},
+    "caved": {"from": "warrior", "leg_near": {"foot": [8, 53], "turn": 90, "knee_out": 0, "pole": [1, 0.3, 0]}}
+  },
+  "timeline": [
+    {"pose": "wide"},
+    {"hold": 0.5, "phase": "feet_wide"},
+    {"to": "arms", "s": 1.6, "phase": "arms_long", "effort": 0.3},
+    {"to": "warrior", "s": 2.4, "phase": "bend_front_knee", "effort": 0.7},
+    {"to": "warrior_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "warrior", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "warrior_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "warrior", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "arms", "s": 2.2, "phase": "rise", "effort": 0.4},
+    {"to": "wide", "s": 1.6, "phase": "release", "effort": 0.2}
+  ],
+  "key": "warrior",
+  "fault": {
+    "pose": "caved",
+    "caption": "knee_caves",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "l", "min": -3}
+  },
+  "note": "Right leg forward (near: the camera sits behind), the front foot turned out 90 degrees along the stance, the back foot in 10; the helm turns 80 degrees to gaze over the front hand."
+}

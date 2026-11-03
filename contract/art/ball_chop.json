@@ -1,0 +1,58 @@
+{
+  "move": "ball_chop",
+  "view": "side",
+  "camera": {"yaw": 65, "pitch": 8},
+  "working": ["abdomen"],
+  "items": [{"kind": "ball", "r": 13}],
+  "poses": {
+    "high": {
+      "pelvis": [2, 93, 3],
+      "trunk": [-2, 0, 4],
+      "chest": [-4, 8, 38],
+      "head": [-14, -4, 18],
+      "arm_near": {"ik": [7, 177, -28], "pole": [0.4, -1, 0.3], "hand": [0.1, 1, 0]},
+      "arm_far": {"ik": [7, 177, 56], "pole": [0, -1, 0.6], "hand": [0.1, 1, 0]},
+      "legs": {"foot": [0, 20], "turn": 10, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "upper": {
+      "from": "high",
+      "pelvis": [0, 89, 0],
+      "trunk": [6, 0, 2],
+      "chest": [0, 4, 22],
+      "head": [-6, 0, 6],
+      "arm_near": {"ik": [44, 160, -1], "pole": [0.3, -1, 0.4], "hand": [0.6, 0.8, 0]},
+      "arm_far": {"ik": [44, 160, 29], "pole": [0, -1, 0.6], "hand": [0.6, 0.8, 0]}
+    },
+    "mid": {
+      "from": "high",
+      "pelvis": [-5, 80, 0],
+      "trunk": [20, -2, 0],
+      "chest": [4, -4, 0],
+      "head": [-10, 2, 0],
+      "arm_near": {"ik": [58, 117, 28], "pole": [-0.3, -1, 0.6], "hand": [1, 0.2, 0]},
+      "arm_far": {"ik": [58, 117, 0], "pole": [-0.3, -1, 0.6], "hand": [1, 0.2, 0]}
+    },
+    "low": {
+      "from": "high",
+      "pelvis": [-14, 62, 0],
+      "trunk": [44, -4, -4],
+      "chest": [12, -12, -38],
+      "head": [-24, 6, 16],
+      "arm_near": {"ik": [23, 65, 60], "pole": [-0.2, 0, 1], "hand": [0.4, -1, 0]},
+      "arm_far": {"ik": [23, 65, -32], "pole": [0.3, -0.6, 1], "hand": [0.4, -1, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "high"},
+    {"hold": 0.25, "phase": "ball_high", "effort": 0.4},
+    {"to": "upper", "s": 0.25, "ease": "in", "phase": "chop_low", "effort": 0.9},
+    {"to": "mid", "s": 0.22, "ease": "linear", "phase": "chop_low", "effort": 1.0},
+    {"to": "low", "s": 0.43, "ease": "out", "phase": "chop_low", "effort": 1.0},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.7},
+    {"to": "mid", "s": 0.5, "ease": "in", "phase": "rise", "effort": 0.5},
+    {"to": "upper", "s": 0.35, "ease": "linear", "phase": "rise", "effort": 0.5},
+    {"to": "high", "s": 0.45, "ease": "out", "phase": "rise", "effort": 0.5}
+  ],
+  "key": "low"
+}

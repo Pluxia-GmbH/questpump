@@ -1,0 +1,49 @@
+{
+  "move": "cross_knee_drives",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 8},
+  "working": ["abdomen", "thigh"],
+  "fast_phase": 0.3,
+  "poses": {
+    "mid": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [2, 0, 0],
+      "arm_near": {"ik": [36, 142.6, 32.8], "pole": [-0.03, -0.96, 0.27], "hand": [0.54, 0.83, -0.12]},
+      "arm_far": {"ik": [36, 142.6, 32.8], "pole": [-0.03, -0.96, 0.27], "hand": [0.54, 0.83, -0.12]},
+      "leg_near": {"foot": [0, 13], "turn": 6},
+      "leg_far": {"foot": [0, 13], "turn": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "near_up": {
+      "from": "mid",
+      "pelvis": [3, 94.8, 0],
+      "trunk": [10, 0, -16],
+      "arm_near": {"ik": [29, 125, 47.2], "pole": [-0.63, -0.75, 0.2], "hand": [0.93, 0.32, 0.18]},
+      "arm_far": {"ik": [41, 117, -2], "pole": [0.2, -0.5, 0.85], "hand": [0.95, -0.25, -0.15]},
+      "leg_near": {"fk": [105, -28, 100, 10]},
+      "leg_far": {"foot": [0, 13], "turn": 6, "knee_out": 2},
+      "contacts": ["toe_far"]
+    },
+    "far_up": {
+      "from": "mid",
+      "pelvis": [3, 94.8, 0],
+      "trunk": [10, 0, 16],
+      "arm_near": {"ik": [41, 117, -2], "pole": [0.2, -0.5, 0.85], "hand": [0.95, -0.25, -0.15]},
+      "arm_far": {"ik": [29, 125, 47.2], "pole": [-0.63, -0.75, 0.2], "hand": [0.93, 0.32, 0.18]},
+      "leg_near": {"foot": [0, 13], "turn": 6, "knee_out": 2},
+      "leg_far": {"fk": [105, -28, 100, 10]},
+      "contacts": ["toe_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "mid"},
+    {"to": "near_up", "s": 0.22, "ease": "inout", "phase": "drive", "effort": 0.9},
+    {"hold": 0.04, "phase": "drive", "effort": 0.9},
+    {"to": "mid", "s": 0.18, "ease": "inout", "phase": "drive", "effort": 0.6},
+    {"to": "far_up", "s": 0.22, "ease": "inout", "phase": "drive", "effort": 0.9},
+    {"hold": 0.04, "phase": "drive", "effort": 0.9},
+    {"to": "mid", "s": 0.18, "ease": "inout", "phase": "drive", "effort": 0.6}
+  ],
+  "key": "near_up",
+  "targets": [{"at": "near_up", "check": "angle", "joints": ["neck", "hip_near", "knee_near"], "max": 100}]
+}

@@ -1,0 +1,50 @@
+{
+  "move": "lunge_prayer_twist",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 14},
+  "working": ["abdomen", "thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -120, "f1": 80}],
+  "poses": {
+    "lunge": {
+      "pelvis": [0, 52, 0],
+      "trunk": [6, 0, 0],
+      "arms": {"ik": [26, -15, 8], "rel": "neck", "pole": [-0.2, -0.6, 1], "hand": [0.1, 1, -0.05]},
+      "leg_near": {"foot": [44, 12], "y": 1, "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [-92.6, 12], "y": 1, "turn": 0, "lift": 45, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "twist": {
+      "from": "lunge",
+      "trunk": [32, 0, 0],
+      "chest": [0, 0, -90],
+      "head": [0, -28, -30],
+      "arm_far": {"ik": [28, -8, 8], "rel": "neck", "pole": [0.5, -0.2, -2], "hand": [0.1, 1, -0.05]},
+      "arm_near": {"ik": [28, -8, 8], "rel": "neck", "pole": [-0.2, 0.6, 1], "hand": [0.1, 1, -0.05]}
+    },
+    "twist_in": {"from": "twist", "chest": [-1, 0, -93]},
+    "sag": {
+      "from": "twist",
+      "leg_far": {"foot": [-86, 12], "y": 1, "turn": 0, "lift": 45, "knee_out": 0, "pole": [1, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.8, "phase": "hands_together", "effort": 0.4},
+    {"to": "twist", "s": 2.2, "phase": "turn_to_knee", "effort": 0.7},
+    {"to": "twist_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "lunge", "s": 2.2, "phase": "return_slowly", "effort": 0.5}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "sag",
+    "caption": "back_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165}
+  },
+  "targets": [
+    {"at": "twist", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "twist", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 80, "max": 100}
+  ],
+  "note": "The front leg is the near one, its thigh level, the back leg straight on the ball of the foot (the bound lunge twist's lunge). The palms press together at the chest, the chest leans over the front thigh and turns toward it, the far elbow outside the front knee."
+}

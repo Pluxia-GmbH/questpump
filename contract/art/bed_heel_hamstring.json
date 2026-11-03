@@ -1,0 +1,83 @@
+{
+  "move": "bed_heel_hamstring",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 8},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": 70, "f1": 150, "u": 45}],
+  "poses": {
+    "stand": {
+      "pelvis": [0, 94.5, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"fk": [4, 6, 10]},
+      "legs": {"foot": [0, 11], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "heel_up": {
+      "from": "stand",
+      "pelvis": [-4, 94.5, 0],
+      "leg_near": {"foot": [84.2, 11], "y": 45, "turn": 0, "lift": -70, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": ["toe_far", "ankle_far", "ankle_near"],
+      "arm_far": {"ik": [-1, 104, 24], "pole": [-0.4, 0.1, 1], "hand": [0.5, -0.8, -0.3]},
+      "arm_near": {"ik": [16, 97.5, 13], "pole": [-0.2, 0, 1], "hand": [0.88, -0.47, 0]}
+    },
+    "mid": {
+      "from": "heel_up",
+      "trunk": [9, 0, 0],
+      "head": [-4, 0, 0],
+      "chest": [0, 0, -4],
+      "arm_near": {"ik": [11, 94, 18.7], "pole": [0.3, 0.2, 1], "hand": [0.88, -0.47, 0]},
+      "arm_far": {"ik": [11, 94, -3.3], "pole": [0.2, 0.4, 1], "hand": [0.88, -0.47, 0]}
+    },
+    "hinge": {
+      "from": "heel_up",
+      "trunk": [18, 0, 0],
+      "head": [-8, 0, 0],
+      "chest": [0, 0, -8],
+      "arm_near": {"ik": [5, 91, 18.7], "pole": [0.3, 0.2, 1], "hand": [0.88, -0.47, 0]},
+      "arm_far": {"ik": [5, 91, -3.3], "pole": [0.2, 0.4, 1], "hand": [0.88, -0.47, 0]}
+    },
+    "hinge_in": {
+      "from": "hinge",
+      "trunk": [20.5, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_near": {"ik": [7, 90, 18.7], "pole": [0.3, 0.2, 1], "hand": [0.88, -0.47, 0]},
+      "arm_far": {"ik": [7, 90, -3.3], "pole": [0.2, 0.4, 1], "hand": [0.88, -0.47, 0]}
+    },
+    "rounded": {"from": "hinge", "trunk": [6, 0, 0], "chest": [30, 0, -6], "head": [10, 0, 0]},
+    "lift": {
+      "from": "stand",
+      "pelvis": [-2, 94.5, 0],
+      "leg_near": {"ik": [46, 70, 11], "pole": [1, 0.3, 0], "toe": [1, 0.2, 0]},
+      "contacts": ["toe_far", "ankle_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand_tall", "effort": 0.2},
+    {"to": "lift", "s": 0.9, "phase": "heel_on_the_bed", "effort": 0.35},
+    {"to": "heel_up", "s": 0.9, "phase": "heel_on_the_bed", "effort": 0.4},
+    {"to": "mid", "s": 0.8, "phase": "back_flat", "effort": 0.55},
+    {"to": "hinge", "s": 0.8, "phase": "back_flat", "effort": 0.6},
+    {"to": "hinge_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hinge", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hinge_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "hinge", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "mid", "s": 0.7, "phase": "rise", "effort": 0.45},
+    {"to": "heel_up", "s": 0.7, "phase": "rise", "effort": 0.4},
+    {"to": "lift", "s": 0.9, "phase": "foot_down", "effort": 0.3},
+    {"to": "stand", "s": 0.9, "phase": "foot_down", "effort": 0.2}
+  ],
+  "key": "hinge",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 168}
+  },
+  "targets": [
+    {"at": "hinge", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "hinge", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "hinge", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 168}
+  ],
+  "note": "Standing beside the bed, the near heel on its edge, both knees straight and the toes up; a short hinge from the hips with a flat back slides the hands halfway down the raised thigh. The fault: the back rounds instead."
+}

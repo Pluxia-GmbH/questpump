@@ -1,0 +1,49 @@
+{
+  "move": "doorway_hamstring",
+  "view": "side",
+  "camera": {"yaw": -8, "pitch": 12},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "doorframe", "f": 31.5, "wall": "-l"}],
+  "poses": {
+    "lie": {
+      "pelvis": [0, 14.5, 0],
+      "trunk": [-90, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [0, 4.5, 32], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "leg_near": {"ik": [23, 70, 13.5], "pole": [-0.2, 1, 0], "toe": [-0.15, 1, 0]},
+      "leg_far": {"foot": [97, 30], "y": 0, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_far",
+        "toe_far",
+        "ankle_near"
+      ]
+    },
+    "up": {"from": "lie", "leg_near": {"ik": [22.6, 99.4, 14.1], "pole": [-0.6, 0.3, 0], "toe": [-0.94, 0.34, 0]}},
+    "up_in": {"from": "up", "leg_near": {"ik": [22.2, 99.5, 14.1], "pole": [-0.6, 0.3, 0], "toe": [-0.97, 0.25, 0]}},
+    "slide": {"from": "lie", "leg_near": {"ik": [22.5, 88, 13.8], "pole": [-0.5, 0.8, 0], "toe": [-0.6, 0.8, 0]}}
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.5, "phase": "foot_on_the_wall", "effort": 0.2},
+    {"to": "slide", "s": 1.2, "phase": "leg_up_the_wall", "effort": 0.35},
+    {"to": "up", "s": 1.2, "phase": "leg_up_the_wall", "effort": 0.45},
+    {"to": "up_in", "s": 1.8, "phase": "breathe", "effort": 0.5},
+    {"to": "up", "s": 1.8, "phase": "breathe", "effort": 0.5},
+    {"to": "up_in", "s": 1.8, "phase": "breathe", "effort": 0.5},
+    {"to": "up", "s": 1.8, "phase": "breathe", "effort": 0.5},
+    {"to": "slide", "s": 1.2, "phase": "lower", "effort": 0.3},
+    {"to": "lie", "s": 1.2, "phase": "lower", "effort": 0.2}
+  ],
+  "key": "up",
+  "targets": [{"at": "up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}],
+  "note": "Lying in a doorway, the far leg flat through the opening and the near foot halfway up the wall beside the frame, knee bent: the foot slides up the wall until the leg is straight, the seat about a foot's length from the wall (about 75 degrees). Seen a little from the head's side, so the wall stands beyond the raised leg and never hides it."
+}

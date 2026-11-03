@@ -1,0 +1,6 @@
+{
+  "move": "nordic_hold",
+  "variant_of": "nordic_eccentric",
+  "pause": {"phase": "lower_slowly", "at": 1.0, "s": 2.0},
+  "note": "Lower halfway, hold 2 seconds, then lower slowly: the lowering's halfway frame held."
+}

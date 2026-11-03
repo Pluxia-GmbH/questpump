@@ -1,0 +1,28 @@
+{
+  "move": "situp_weighted.dumbbells",
+  "gear_of": "situp_weighted",
+  "gear": "dumbbells",
+  "items": [{"kind": "dumbbell", "grip": "goblet"}],
+  "poses": {
+    "lie": {
+      "arm_near": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]},
+      "arm_far": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]}
+    },
+    "curl": {
+      "arm_near": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]},
+      "arm_far": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]}
+    },
+    "peel": {
+      "arm_near": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]},
+      "arm_far": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]}
+    },
+    "rise": {
+      "arm_near": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]},
+      "arm_far": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]}
+    },
+    "top": {
+      "arm_near": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]},
+      "arm_far": {"ik": [24.6, 3.7, 13.9], "rel": "neck", "pole": [-0.3, 1, 0.5], "hand": [0.3, 0, -1]}
+    }
+  }
+}

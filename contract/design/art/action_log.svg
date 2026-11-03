@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The Saga button (the Log's tab, named Saga for players since 2026-10-15; its scroll until then): a swallowtail
+       banner hanging from a rounded rod, the record's up chevron cut through the cloth by the even-odd rule, so the
+       ground shows through it. The rod and the cloth are plates in the tint; lit from the top left, the rod's
+       underside and the cloth's right half in shadow, the shadow tracing round the chevron's right arm so the cut-out
+       stays clear. -->
+  <path data-token="tint" fill="currentColor" d="
+    M4.5 2.25 H19.5 C20.33 2.25 21 2.92 21 3.75 C21 4.58 20.33 5.25 19.5 5.25 H4.5 C3.67 5.25 3 4.58 3 3.75
+    C3 2.92 3.67 2.25 4.5 2.25 Z"/>
+  <path data-token="tint" fill="currentColor" fill-rule="evenodd" d="
+    M5.75 5.25 H18.25 V21.5 L12 17.25 L5.75 21.5 Z
+    M12 7.1 L16.1 11.2 V14.1 L12 10 L7.9 14.1 V11.2 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M3 3.75 H21 C21 4.58 20.33 5.25 19.5 5.25 H4.5 C3.67 5.25 3 4.58 3 3.75 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12 5.25 H18.25 V21.5 L12 17.25 V10 L16.1 14.1 V11.2 L12 7.1 Z"/>
+</svg>

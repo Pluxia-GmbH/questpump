@@ -1,0 +1,29 @@
+{
+  "move": "hip_thrust_sl",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 26},
+  "working": ["thigh_near"],
+  "props": [{"kind": "bench", "f0": -40, "f1": 0, "u": 44}],
+  "items": [{"kind": "backpack", "on": "hips"}],
+  "poses": {
+    "down": {
+      "pelvis": [38.5, 26, 0],
+      "trunk": [-52, 0, 0],
+      "head": [25, 0, 0],
+      "arms": {"ik": [31, 18, 19], "rel": "pelvis", "pole": [0.3, 0, 1], "hand": [0.05, -1, 0]},
+      "leg_near": {"foot": [88, 14], "turn": 4, "pole": [0.2, 1, 0]},
+      "leg_far": {"fk": [53, 0, 4, 0]},
+      "contacts": ["neck", "toe_near", "ankle_near"]
+    },
+    "up": {"from": "down", "pelvis": [44, 57, 0], "trunk": [-90, 0, 0], "leg_far": {"fk": [15, 0, 4, 0]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.3, "phase": "bottom", "effort": 0.4},
+    {"to": "up", "s": 1.0, "phase": "hips_up", "effort": 1.0},
+    {"hold": 0.4, "phase": "hips_level", "effort": 1.0},
+    {"to": "down", "s": 1.3, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "up",
+  "targets": [{"at": "up", "check": "angle", "joints": ["shoulder_near", "pelvis", "knee_near"], "min": 165}]
+}

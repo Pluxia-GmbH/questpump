@@ -1,0 +1,37 @@
+{
+  "move": "ball_goblet_squat",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh"],
+  "items": [{"kind": "ball", "r": 13, "off": [2, 5, 0]}],
+  "poses": {
+    "tall": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"ik": [24, -19, 14], "rel": "neck", "pole": [0.1, -1, -0.15], "hand": [0.3, 1, -0.35]},
+      "legs": {"foot": [0, 16], "turn": 14, "knee_out": 12},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "deep": {
+      "from": "tall",
+      "pelvis": [-17, 46, 0],
+      "trunk": [27, 0, 0],
+      "chest": [-7, 0, 0],
+      "head": [-18, 0, 0],
+      "arms": {"ik": [24, -19, 14], "rel": "neck", "pole": [0.45, -1, -0.15], "hand": [0.3, 1, -0.35]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "deep", "s": 1.4, "phase": "sit_down", "effort": 0.55},
+    {"hold": 0.25, "phase": "bottom", "effort": 0.8},
+    {"to": "tall", "s": 1.1, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "deep",
+  "targets": [
+    {"at": "deep", "check": "height", "joint": "pelvis", "max": 52},
+    {"at": "deep", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 80}
+  ]
+}

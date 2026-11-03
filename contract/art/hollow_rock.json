@@ -1,0 +1,60 @@
+{
+  "move": "hollow_rock",
+  "view": "side",
+  "camera": {"yaw": -10, "pitch": 8},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "mat", "f0": -112, "f1": 104}],
+  "poses": {
+    "mid": {
+      "pelvis": [0, 15.0, 0],
+      "fit": {"joint": "waist", "u": 15.0},
+      "trunk": [-90, 0, 0],
+      "chest": [26, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"fk": [176, 6, 4, 0, 0]},
+      "legs": {"fk": [26, 3, 0, -45]},
+      "contacts": ["pelvis", "waist"]
+    },
+    "forward": {
+      "from": "mid",
+      "pelvis": [0, 15.0, 0],
+      "fit": {"joint": "waist", "u": 19.2},
+      "trunk": [-80, 0, 0],
+      "contacts": ["pelvis"]
+    },
+    "back": {
+      "from": "mid",
+      "pelvis": [0, 20.0, 0],
+      "fit": {"joint": "waist", "u": 15.0},
+      "trunk": [-100, 0, 0],
+      "contacts": ["waist"]
+    },
+    "arched": {
+      "from": "mid",
+      "pelvis": [0, 15.0, 0],
+      "fit": {"joint": "waist", "u": 23.25},
+      "trunk": [-70, 0, 0],
+      "chest": [-4, 0, 0],
+      "legs": {"fk": [37, 3, 0, -45]},
+      "contacts": ["pelvis"]
+    }
+  },
+  "timeline": [
+    {"pose": "back"},
+    {"to": "mid", "s": 0.5, "ease": "in", "phase": "rock_forward", "effort": 0.8, "dynamic": true},
+    {"to": "forward", "s": 0.5, "ease": "out", "phase": "rock_forward", "effort": 0.8, "dynamic": true},
+    {"to": "mid", "s": 0.5, "ease": "in", "phase": "rock_back", "effort": 0.8, "dynamic": true},
+    {"to": "back", "s": 0.5, "ease": "out", "phase": "rock_back", "effort": 0.8, "dynamic": true}
+  ],
+  "key": "mid",
+  "fault": {
+    "pose": "arched",
+    "caption": "low_back_arches",
+    "breaks": {"check": "height", "joint": "waist", "max": 17}
+  },
+  "targets": [
+    {"at": "mid", "check": "height", "joint": "waist", "max": 17},
+    {"at": "mid", "check": "height", "joint": "neck", "min": 22},
+    {"at": "mid", "check": "height", "joint": "ankle_near", "min": 35}
+  ]
+}

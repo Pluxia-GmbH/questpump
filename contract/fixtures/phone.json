@@ -1,0 +1,1488 @@
+{
+  "about": "The games and apps on the phone (docs/phone-games.md, 2026-10-16, §10 B1 and B2), the rules both cores' PhoneSessions and PumpFirst implement alike; each core's port is checked once against these cases by a probe outside the repo. Every time is unix seconds on the phone's clock. `step` is PhoneSessions.step(runs, marks, now, rejoinS, minS) -> (ended, runs), the helper's games.rs Watcher rule restated for the phone: a mark is one open (front true) or leave (front false) of a watched app, `app` its key (the Android package; on the iPhone the game's name from the automation's optional parameter, else \"\", one key for every unnamed game); a run is {app, since, left}, left null while the app is in front. The marks are taken in time order; before each mark, and once more at now, every run whose left is at least rejoin_s (phone_rejoin_s, 120) before that moment ends as the session {app, since, end: left}, kept only when end - since >= min_s (the player's Shortest session in seconds, phone_min_default_min, 10 minutes, at first); its minutes are (end - since) div 60, short gaps included, as the computer's games count them. Then a front with no run of its app starts one at its time; a front on a run clears its left; a leave on a run in front sets its left, a leave on a run already left keeps the first, and a leave with no run changes nothing. `ended` lists the sessions ended by this step by end, then app; `runs_after` the runs still open by since, then app. `offer` is PhoneSessions.offer(sessions, now, maxAge): the newest session by end, kept when now - end <= max_age_s (link_offer_max_min in seconds), else none, as GameOffers.pick does: one question at a time, never stacked. `guess` is PhoneSessions.guess(minutes, perMatch): per_match is the median of the game's kept answers (each a minutes per match; sorted, the middle of an odd count, the lower middle of an even count), guess_min (phone_match_guess_min, 20) with none, and always for the iPhone's unnamed key, which keeps no answers; the guess is minutes / per_match rounded half up, in integers (2 x minutes + per_match) div (2 x per_match), then held from 1 to matches_max (phone_matches_max, 9). `learn` is PhoneSessions.learn(perMatch, minutes, matches): it appends max(1, minutes / matches rounded half up, in integers as above) and keeps the last answers_max (phone_match_answers, 5), the oldest dropped first; the answers are kept per game key on the phone (never the book, the backup file or the sync), and a start with no session's minutes (I just played) or of the unnamed key learns nothing. `tier` is PhoneSessions.tier(minutes) of the minutes PhoneSessions.minutes(matches, perMatch, session) gives (slice 48, docs/computer-games.md: the computer's own size rule, one step per step_min, match_step_min, 12 since slice 59, 20 until then): minutes is matches x per_match, each held to 1 at least, or the session's own minutes where the phone knows them (session; left out after I just played) when they are more (slice 48's double-check: one long match sits as long as its session, many short ones as their count); then (2 x minutes + step_min) div (2 x step_min), held from 1 (Small) to 3 (Big), so 1 match of 20 minutes (the default guess) is Normal and 2 or more Big, an 18-minute match Normal (1.5 steps, half up), a 29-minute one Normal and a 30-minute one Big (2.5 steps) (until slice 48 the matches alone: 1 Small, 2 or 3 Normal, 4 or more Big). `sat` is PhoneSessions.sat(tier), the least minutes a computer offer's size stands for, which a pump from it composes at only where a desktop app from before slice 57 sent no minutes: max(sat_min, (2 x tier - 1) x step_min div 2) in integers, 20, 20 and 30 (a Normal's 18 held to sat_min). `match` is PhoneSessions.match(minutes, warm, arms, game), the facts a pump after a game's end composes with (slice 57, AppPump.Match {minutes, warm, arms, game}, tools/apppump.lua Engine:compose's match): minutes as given, its active minutes (null, left out, for none); warm as given where its source says (a computer match's sitting clock), else minutes >= sat_min (match_sat_min, 20; a game on the phone, which has no sitting clock, none reading as 0); arms as given, false when left out; game, the aim game's name, kept beside arms alone, else null. `offered` is PhoneSessions.offered(tier, minutes, warm, arms, game), a computer match offer's facts whatever kind the player picks: with minutes (match_end's, slice 57) match(minutes, warm, arms, game); without them (a desktop app from before slice 57) match(sat(tier), none, arms, game), or match(0, none, arms, game) where it gave no tier either, so the warm move comes from those minutes and an offer's warm counts only beside its minutes. `cut` is a game's name cut to name_max (MatchOffer.nameMax, NAME_MAX: 40) Unicode scalars (code points), never dropped. `settings` is PumpFirst.Settings read from the kept keys on, games and every_time, each false when left out, an unknown key ignored. `pass` is a pass: Open for 15 minutes gives {app, until: at + open_min x 60} (pump_first_open_min, 15) for that app, an answered session ask (Pump now or Play now) the same to that game, and the iPhone, which cannot tell the app, keeps one pass for every app, app \"*\". `verdict` is PumpFirst.verdict(now, settings, done, lockedUntil, quiet, passes, app, game, newSession), asked only for an app that waits (a picked app, or a game of Games on this phone while games is on; game true for such a game): `passes` are the kept passes and the case's pass is the one whose app is this `app` or \"*\". In this order: settings.on false gives open(off); locked_until after now (the felt-unwell lock) gives open(unwell); quiet (quiet hours) gives open(quiet); a pass whose until is after now gives open(pass); a game and not new_session (back within phone_rejoin_s) gives open(playing), so nothing ever appears mid-match; done, unless a game with every_time, gives open(done); a game with every_time and done gives waits(session); anything else waits(day). done is a performed move this game day from any source (docs/phone-games.md B5), the first move of a running pump included.",
+  "step": [
+    {
+      "about": "a plain session: Wild Rift in front for 52 minutes, then away; 120 s later its session ends at the leave",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790103120,
+          "front": false
+        }
+      ],
+      "now": 1790103240,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790103120,
+          "minutes": 52
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "a short gap within phone_rejoin_s (a 90-second call) keeps one session, the gap counted in its minutes",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101200,
+          "front": false
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101290,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790103000,
+          "front": false
+        }
+      ],
+      "now": 1790103120,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790103000,
+          "minutes": 50
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "back 119 s after the leave still rejoins the session",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101200,
+          "front": false
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101319,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790102400,
+          "front": false
+        }
+      ],
+      "now": 1790102520,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790102400,
+          "minutes": 40
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "back exactly phone_rejoin_s after the leave is a new session: the first one ended at its leave before the front was taken",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101200,
+          "front": false
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101320,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790102400,
+          "front": false
+        }
+      ],
+      "now": 1790102520,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790101320,
+          "end": 1790102400,
+          "minutes": 18
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "a run whose leave grew phone_rejoin_s old before a later mark ends there, so a front 300 s after the leave starts a new run, still open at now",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101200,
+          "front": false
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101500,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790102700,
+          "front": false
+        }
+      ],
+      "now": 1790102760,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        }
+      ],
+      "runs_after": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790101500,
+          "left": 1790102700
+        }
+      ]
+    },
+    {
+      "about": "a session shorter than the Shortest session (9 minutes under 10) ends and offers nothing",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100540,
+          "front": false
+        }
+      ],
+      "now": 1790100660,
+      "ended": [],
+      "runs_after": []
+    },
+    {
+      "about": "a session of exactly the Shortest session (10 minutes) is kept",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100600,
+          "front": false
+        }
+      ],
+      "now": 1790100720,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790100600,
+          "minutes": 10
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "the player's Shortest session of 30 minutes drops a 25-minute session",
+      "rejoin_s": 120,
+      "min_s": 1800,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101500,
+          "front": false
+        }
+      ],
+      "now": 1790101620,
+      "ended": [],
+      "runs_after": []
+    },
+    {
+      "about": "a still-open run (the game in front at now) is carried, with no left",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        }
+      ],
+      "now": 1790101800,
+      "ended": [],
+      "runs_after": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "left": null
+        }
+      ]
+    },
+    {
+      "about": "a run left less than phone_rejoin_s ago is carried with its left",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101800,
+          "front": false
+        }
+      ],
+      "now": 1790101860,
+      "ended": [],
+      "runs_after": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "left": 1790101800
+        }
+      ]
+    },
+    {
+      "about": "a carried left run ends at the next step once its left is phone_rejoin_s old, with no new mark",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "left": 1790101800
+        }
+      ],
+      "marks": [],
+      "now": 1790101920,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101800,
+          "minutes": 30
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "a carried left run that comes back in time continues: its front clears the left",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "left": 1790101800
+        }
+      ],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101850,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790102400,
+          "front": false
+        }
+      ],
+      "now": 1790102520,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790102400,
+          "minutes": 40
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "two apps at once: each runs on its own key; the ended sessions come by their end, then by app",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.supercell.clashroyale",
+          "at": 1790100600,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101200,
+          "front": false
+        },
+        {
+          "app": "com.supercell.clashroyale",
+          "at": 1790101800,
+          "front": false
+        }
+      ],
+      "now": 1790102000,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        },
+        {
+          "app": "com.supercell.clashroyale",
+          "since": 1790100600,
+          "end": 1790101800,
+          "minutes": 20
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "two leaves in a row (Android's ACTIVITY_PAUSED, then the screen going off) keep the first",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101200,
+          "front": false
+        },
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790101201,
+          "front": false
+        }
+      ],
+      "now": 1790101320,
+      "ended": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        }
+      ],
+      "runs_after": []
+    },
+    {
+      "about": "a leave with no run changes nothing",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "at": 1790100000,
+          "front": false
+        }
+      ],
+      "now": 1790100500,
+      "ended": [],
+      "runs_after": []
+    },
+    {
+      "about": "the iPhone's automation without a game's name: the app is \"\", one key for every unnamed game",
+      "rejoin_s": 120,
+      "min_s": 600,
+      "runs": [],
+      "marks": [
+        {
+          "app": "",
+          "at": 1790100000,
+          "front": true
+        },
+        {
+          "app": "",
+          "at": 1790101500,
+          "front": false
+        }
+      ],
+      "now": 1790101620,
+      "ended": [
+        {
+          "app": "",
+          "since": 1790100000,
+          "end": 1790101500,
+          "minutes": 25
+        }
+      ],
+      "runs_after": []
+    }
+  ],
+  "offer": [
+    {
+      "about": "the newest session within link_offer_max_min is offered; the older one is never stacked",
+      "max_age_s": 3600,
+      "sessions": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        },
+        {
+          "app": "com.supercell.clashroyale",
+          "since": 1790100600,
+          "end": 1790101800,
+          "minutes": 20
+        }
+      ],
+      "now": 1790101920,
+      "offer": {
+        "app": "com.supercell.clashroyale",
+        "since": 1790100600,
+        "end": 1790101800,
+        "minutes": 20
+      }
+    },
+    {
+      "about": "a session exactly link_offer_max_min old is still offered",
+      "max_age_s": 3600,
+      "sessions": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        }
+      ],
+      "now": 1790104800,
+      "offer": {
+        "app": "com.riotgames.league.wildrift",
+        "since": 1790100000,
+        "end": 1790101200,
+        "minutes": 20
+      }
+    },
+    {
+      "about": "a session older than link_offer_max_min is dropped",
+      "max_age_s": 3600,
+      "sessions": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "since": 1790100000,
+          "end": 1790101200,
+          "minutes": 20
+        }
+      ],
+      "now": 1790104801,
+      "offer": null
+    },
+    {
+      "about": "no session offers nothing",
+      "max_age_s": 3600,
+      "sessions": [],
+      "now": 1790100000,
+      "offer": null
+    }
+  ],
+  "guess": [
+    {
+      "about": "no answers yet: 20 minutes per match, so 52 minutes gives 3 (2.6 rounded)",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 52,
+      "answers": [],
+      "per_match": 20,
+      "guess": 3
+    },
+    {
+      "about": "rounding half up: 50 minutes over 20 is 2.5, which gives 3",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 50,
+      "answers": [],
+      "per_match": 20,
+      "guess": 3
+    },
+    {
+      "about": "under the half: 49 minutes over 20 is 2.45, which gives 2",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 49,
+      "answers": [],
+      "per_match": 20,
+      "guess": 2
+    },
+    {
+      "about": "an odd count's median: 15, 22 and 30 give 22 minutes per match; 66 minutes gives 3",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 66,
+      "answers": [
+        30,
+        15,
+        22
+      ],
+      "per_match": 22,
+      "guess": 3
+    },
+    {
+      "about": "an even count takes the lower middle: 12, 18, 25 and 30 give 18 (the upper middle, 25, or their mean would give 2); 45 minutes gives 3 (2.5 rounded up)",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 45,
+      "answers": [
+        25,
+        12,
+        30,
+        18
+      ],
+      "per_match": 18,
+      "guess": 3
+    },
+    {
+      "about": "five answers: 18, 19, 20, 22 and 35 give 20; 61 minutes gives 3",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 61,
+      "answers": [
+        18,
+        22,
+        20,
+        35,
+        19
+      ],
+      "per_match": 20,
+      "guess": 3
+    },
+    {
+      "about": "at least 1: 4 minutes over 20 is 0.2",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 4,
+      "answers": [],
+      "per_match": 20,
+      "guess": 1
+    },
+    {
+      "about": "at most phone_matches_max: 240 minutes over 20 is 12, which gives 9",
+      "guess_min": 20,
+      "matches_max": 9,
+      "minutes": 240,
+      "answers": [],
+      "per_match": 20,
+      "guess": 9
+    }
+  ],
+  "learn": [
+    {
+      "about": "the first answer: 52 minutes over 2 matches appends 26",
+      "answers_max": 5,
+      "answers": [],
+      "minutes": 52,
+      "matches": 2,
+      "answers_after": [
+        26
+      ]
+    },
+    {
+      "about": "rounding half up: 45 minutes over 2 matches is 22.5, which appends 23",
+      "answers_max": 5,
+      "answers": [
+        26
+      ],
+      "minutes": 45,
+      "matches": 2,
+      "answers_after": [
+        26,
+        23
+      ]
+    },
+    {
+      "about": "at least 1: 2 minutes over 9 matches is 0.22, which appends 1",
+      "answers_max": 5,
+      "answers": [
+        26,
+        23
+      ],
+      "minutes": 2,
+      "matches": 9,
+      "answers_after": [
+        26,
+        23,
+        1
+      ]
+    },
+    {
+      "about": "the last 5 kept: 52 minutes over 3 matches appends 17 and drops the oldest",
+      "answers_max": 5,
+      "answers": [
+        20,
+        22,
+        18,
+        25,
+        30
+      ],
+      "minutes": 52,
+      "matches": 3,
+      "answers_after": [
+        22,
+        18,
+        25,
+        30,
+        17
+      ]
+    }
+  ],
+  "tier": [
+    {
+      "about": "1 match of 20 minutes (the default guess) is Normal",
+      "matches": 1,
+      "per_match": 20,
+      "minutes": 20,
+      "tier": 2
+    },
+    {
+      "about": "2 matches of 20 minutes are Big",
+      "matches": 2,
+      "per_match": 20,
+      "minutes": 40,
+      "tier": 3
+    },
+    {
+      "about": "3 matches of 20 minutes are Big too",
+      "matches": 3,
+      "per_match": 20,
+      "minutes": 60,
+      "tier": 3
+    },
+    {
+      "about": "1 Wild Rift match of 18 minutes is Normal (1.5 steps, half up)",
+      "matches": 1,
+      "per_match": 18,
+      "minutes": 18,
+      "tier": 2
+    },
+    {
+      "about": "2 Wild Rift matches, 36 minutes, are Big",
+      "matches": 2,
+      "per_match": 18,
+      "minutes": 36,
+      "tier": 3
+    },
+    {
+      "about": "3 Wild Rift matches, 54 minutes, are Big too",
+      "matches": 3,
+      "per_match": 18,
+      "minutes": 54,
+      "tier": 3
+    },
+    {
+      "about": "1 short match of 5 minutes is still Small, never less",
+      "matches": 1,
+      "per_match": 5,
+      "minutes": 5,
+      "tier": 1
+    },
+    {
+      "about": "9 matches of 20 minutes are Big, never more",
+      "matches": 9,
+      "per_match": 20,
+      "minutes": 180,
+      "tier": 3
+    },
+    {
+      "about": "1 match of 29 minutes is still Normal (Big from 30)",
+      "matches": 1,
+      "per_match": 29,
+      "minutes": 29,
+      "tier": 2
+    },
+    {
+      "about": "1 match of 30 minutes is Big (2.5 steps, half up)",
+      "matches": 1,
+      "per_match": 30,
+      "minutes": 30,
+      "tier": 3
+    },
+    {
+      "about": "1 match of 49 minutes is Big",
+      "matches": 1,
+      "per_match": 49,
+      "minutes": 49,
+      "tier": 3
+    },
+    {
+      "about": "1 match of 50 minutes is Big",
+      "matches": 1,
+      "per_match": 50,
+      "minutes": 50,
+      "tier": 3
+    },
+    {
+      "about": "one long match: a 70-minute session answered as 1 match of 20 minutes sits its 70 minutes, Big",
+      "matches": 1,
+      "per_match": 20,
+      "session": 70,
+      "minutes": 70,
+      "tier": 3
+    },
+    {
+      "about": "a 45-minute session answered as 1 match of 20 minutes sits its 45 minutes, Big",
+      "matches": 1,
+      "per_match": 20,
+      "session": 45,
+      "minutes": 45,
+      "tier": 3
+    },
+    {
+      "about": "many short matches: a 30-minute session answered as 4 matches of 20 minutes counts the matches, 80, Big",
+      "matches": 4,
+      "per_match": 20,
+      "session": 30,
+      "minutes": 80,
+      "tier": 3
+    }
+  ],
+  "sat": [
+    {
+      "about": "a Small computer offer composes at 20 minutes sat",
+      "tier": 1,
+      "sat": 20
+    },
+    {
+      "about": "a Normal one at 20 too (its 18 held to sat_min)",
+      "tier": 2,
+      "sat": 20
+    },
+    {
+      "about": "a Big one at 30",
+      "tier": 3,
+      "sat": 30
+    }
+  ],
+  "match": [
+    {
+      "about": "a session of 34 minutes on this phone opens on its warm move, from sat_min",
+      "minutes": 34,
+      "match": {
+        "minutes": 34,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "one of 12 minutes opens on its own work",
+      "minutes": 12,
+      "match": {
+        "minutes": 12,
+        "warm": false,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "20 minutes, sat_min itself, opens warm",
+      "minutes": 20,
+      "match": {
+        "minutes": 20,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "a source's warm wins over the minutes: a 34-minute computer match whose sitting clock had not held 20 minutes",
+      "minutes": 34,
+      "warm": false,
+      "match": {
+        "minutes": 34,
+        "warm": false,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "and a 7-minute one after a long sit opens warm",
+      "minutes": 7,
+      "warm": true,
+      "match": {
+        "minutes": 7,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "no minutes (A match picked by hand) is none, and not warm",
+      "match": {
+        "minutes": null,
+        "warm": false,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "the aim game's name rides beside the arms rest",
+      "minutes": 36,
+      "warm": true,
+      "arms": true,
+      "game": "Counter-Strike 2",
+      "match": {
+        "minutes": 36,
+        "warm": true,
+        "arms": true,
+        "game": "Counter-Strike 2"
+      }
+    },
+    {
+      "about": "and is dropped without it",
+      "minutes": 36,
+      "warm": true,
+      "game": "Counter-Strike 2",
+      "match": {
+        "minutes": 36,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    }
+  ],
+  "offered": [
+    {
+      "about": "a slice 57 computer's 34-minute match whose sitting clock had not held 20 minutes: its own minutes, not warm",
+      "tier": 2,
+      "minutes": 34,
+      "warm": false,
+      "match": {
+        "minutes": 34,
+        "warm": false,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "a 7-minute Rocket League match after a long sit: its 7 minutes, warm",
+      "tier": 1,
+      "minutes": 7,
+      "warm": true,
+      "match": {
+        "minutes": 7,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "from a desktop app before slice 57 (no minutes) a Normal offer composes at 20 minutes, warm from them",
+      "tier": 2,
+      "warm": false,
+      "match": {
+        "minutes": 20,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "a Small one at 20 too, warm",
+      "tier": 1,
+      "warm": false,
+      "match": {
+        "minutes": 20,
+        "warm": true,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "one with no size either (a program's close) at 0 minutes, not warm",
+      "warm": false,
+      "match": {
+        "minutes": 0,
+        "warm": false,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "warm counts only beside minutes: with neither size nor minutes a warm offer opens cold",
+      "warm": true,
+      "match": {
+        "minutes": 0,
+        "warm": false,
+        "arms": false,
+        "game": null
+      }
+    },
+    {
+      "about": "the arms rest with the aim game's name",
+      "tier": 2,
+      "minutes": 36,
+      "warm": true,
+      "arms": true,
+      "game": "Counter-Strike 2",
+      "match": {
+        "minutes": 36,
+        "warm": true,
+        "arms": true,
+        "game": "Counter-Strike 2"
+      }
+    }
+  ],
+  "cut": [
+    {
+      "about": "a 45-scalar name is cut to its first 40 scalars, never dropped",
+      "name_max": 40,
+      "name": "Legends of the Ancient Kingdom: Rise of Heroe",
+      "cut": "Legends of the Ancient Kingdom: Rise of "
+    },
+    {
+      "about": "a name of exactly 40 scalars stays whole",
+      "name_max": 40,
+      "name": "Legends of the Ancient Kingdom Rise of 2",
+      "cut": "Legends of the Ancient Kingdom Rise of 2"
+    },
+    {
+      "about": "the cut counts Unicode scalars (code points), not UTF-16 units: the castle, one scalar and two UTF-16 units, is the 40th and stays whole",
+      "name_max": 40,
+      "name": "Legends of the Ancient Kingdom Rise of 🏰 Deluxe",
+      "cut": "Legends of the Ancient Kingdom Rise of 🏰"
+    }
+  ],
+  "settings": [
+    {
+      "about": "nothing kept: every switch off",
+      "kept": {},
+      "settings": {
+        "on": false,
+        "games": false,
+        "every_time": false
+      }
+    },
+    {
+      "about": "a key left out reads its default",
+      "kept": {
+        "on": true
+      },
+      "settings": {
+        "on": true,
+        "games": false,
+        "every_time": false
+      }
+    },
+    {
+      "about": "a key this build does not know is ignored",
+      "kept": {
+        "on": true,
+        "games": true,
+        "every_time": true,
+        "later": 1
+      },
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": true
+      }
+    }
+  ],
+  "pass": [
+    {
+      "about": "Android's Open for 15 minutes on Instagram at T",
+      "app": "com.instagram.android",
+      "at": 1790100000,
+      "open_min": 15,
+      "pass": {
+        "app": "com.instagram.android",
+        "until": 1790100900
+      }
+    },
+    {
+      "about": "an answered session ask (Pump now or Play now) gives its game the same pass",
+      "app": "com.riotgames.league.wildrift",
+      "at": 1790100000,
+      "open_min": 15,
+      "pass": {
+        "app": "com.riotgames.league.wildrift",
+        "until": 1790100900
+      }
+    },
+    {
+      "about": "the iPhone, which cannot tell the app, keeps one pass for every app",
+      "app": "*",
+      "at": 1790100000,
+      "open_min": 15,
+      "pass": {
+        "app": "*",
+        "until": 1790100900
+      }
+    }
+  ],
+  "verdict": [
+    {
+      "about": "off: nothing waits, whatever else holds",
+      "now": 1790150000,
+      "settings": {
+        "on": false,
+        "games": true,
+        "every_time": true
+      },
+      "done": false,
+      "locked_until": 1790153600,
+      "quiet": true,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "off"
+      }
+    },
+    {
+      "about": "the felt-unwell lock ahead opens every app and asks no pump",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": 1790153600,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "unwell"
+      }
+    },
+    {
+      "about": "the lock ahead comes before quiet hours",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": 1790153600,
+      "quiet": true,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "unwell"
+      }
+    },
+    {
+      "about": "a lock that ended (its end is now) opens nothing",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": 1790150000,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "waits": "day"
+      }
+    },
+    {
+      "about": "quiet hours: apps stay open",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": true,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "quiet"
+      }
+    },
+    {
+      "about": "quiet hours come before a pass",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": true,
+      "app": "com.instagram.android",
+      "passes": [
+        {
+          "app": "com.instagram.android",
+          "until": 1790150300
+        }
+      ],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "quiet"
+      }
+    },
+    {
+      "about": "a pass ahead for this app (Open for 15 minutes) opens it",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [
+        {
+          "app": "com.instagram.android",
+          "until": 1790150300
+        }
+      ],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "pass"
+      }
+    },
+    {
+      "about": "a pass for another app opens nothing here",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [
+        {
+          "app": "com.zhiliaoapp.musically",
+          "until": 1790150300
+        }
+      ],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "waits": "day"
+      }
+    },
+    {
+      "about": "a pass whose end is now opens nothing",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [
+        {
+          "app": "com.instagram.android",
+          "until": 1790150000
+        }
+      ],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "waits": "day"
+      }
+    },
+    {
+      "about": "the iPhone's one pass for every app opens any app",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "",
+      "passes": [
+        {
+          "app": "*",
+          "until": 1790150300
+        }
+      ],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "pass"
+      }
+    },
+    {
+      "about": "a pass comes before a game's session ask: its return after the answered ask asks nothing",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": true
+      },
+      "done": true,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.riotgames.league.wildrift",
+      "passes": [
+        {
+          "app": "com.riotgames.league.wildrift",
+          "until": 1790150300
+        }
+      ],
+      "game": true,
+      "new_session": true,
+      "verdict": {
+        "open": "pass"
+      }
+    },
+    {
+      "about": "a game back within phone_rejoin_s (no new session) opens, even before today's pump: nothing appears mid-match",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": true
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.riotgames.league.wildrift",
+      "passes": [],
+      "game": true,
+      "new_session": false,
+      "verdict": {
+        "open": "playing"
+      }
+    },
+    {
+      "about": "today done and no pump running: the apps are open",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": true,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "done"
+      }
+    },
+    {
+      "about": "today done counts from the day's first performed move, so an app opens even while that pump still runs",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": true,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "open": "done"
+      }
+    },
+    {
+      "about": "a game without Games ask each time they open, today done: open",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": true,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.riotgames.league.wildrift",
+      "passes": [],
+      "game": true,
+      "new_session": true,
+      "verdict": {
+        "open": "done"
+      }
+    },
+    {
+      "about": "a game with Games ask each time they open, today done, a new session: it asks for a pump this session",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": true
+      },
+      "done": true,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.riotgames.league.wildrift",
+      "passes": [],
+      "game": true,
+      "new_session": true,
+      "verdict": {
+        "waits": "session"
+      }
+    },
+    {
+      "about": "a game with every_time still asks at a new session once today is done, whatever runs",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": true
+      },
+      "done": true,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.riotgames.league.wildrift",
+      "passes": [],
+      "game": true,
+      "new_session": true,
+      "verdict": {
+        "waits": "session"
+      }
+    },
+    {
+      "about": "a game with Games ask each time they open, today not done: the day's ask",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": true
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.riotgames.league.wildrift",
+      "passes": [],
+      "game": true,
+      "new_session": true,
+      "verdict": {
+        "waits": "day"
+      }
+    },
+    {
+      "about": "not done: the app waits for today's pump",
+      "now": 1790150000,
+      "settings": {
+        "on": true,
+        "games": true,
+        "every_time": false
+      },
+      "done": false,
+      "locked_until": null,
+      "quiet": false,
+      "app": "com.instagram.android",
+      "passes": [],
+      "game": false,
+      "new_session": true,
+      "verdict": {
+        "waits": "day"
+      }
+    }
+  ]
+}

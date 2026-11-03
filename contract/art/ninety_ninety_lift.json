@@ -1,0 +1,62 @@
+{
+  "move": "ninety_ninety_lift",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 20},
+  "working": ["tasset_near"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -78, "f1": 80, "u": 45}],
+  "poses": {
+    "down": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [-2, 0, 0],
+      "arms": {"ik": [-28, 62, 26], "pole": [-0.6, 0, 1], "hand": [-0.2, -0.97, 0.1]},
+      "leg_near": {"ik": [-42.96, 48.51, 55.6], "pole": [0.72, 0.004, 0.694], "toe": [-1, 0, 0]},
+      "leg_far": {"ik": [44.6, 52, -32], "pole": [0.7, 0, 0.7], "toe": [0.4, 0.1, -1]},
+      "contacts": [
+        "pelvis",
+        "knee_near",
+        "knee_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "chest": [-2, 0, 0]
+    },
+    "lift": {
+      "from": "down",
+      "leg_near": {"ik": [-41.8, 67, 55.6], "pole": [0.7, -0.3, 0.66], "toe": [-1, 0.28, 0]},
+      "contacts": ["pelvis", "knee_near", "knee_far", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lift_in": {
+      "from": "lift",
+      "leg_near": {"ik": [-42.1, 65.5, 55.6], "pole": [0.7, -0.28, 0.67], "toe": [-1, 0.25, 0]}
+    },
+    "slump": {"from": "lift", "trunk": [-6, 0, 0], "chest": [28, 0, 0], "head": [6, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.3},
+    {"to": "lift", "s": 1.4, "phase": "lift_breathe_out", "effort": 0.8},
+    {"to": "lift_in", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "lift", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "lift_in", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "lift", "s": 1.25, "phase": "hold", "effort": 0.9},
+    {"to": "down", "s": 1.4, "phase": "lower", "effort": 0.4}
+  ],
+  "key": "lift",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "lift", "check": "offset", "joint": "ankle_near", "from": "knee_near", "axis": "u", "min": 8},
+    {"at": "lift", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "l", "min": 40},
+    {"at": "lift", "check": "offset", "joint": "knee_far", "from": "hip_far", "axis": "f", "min": 40},
+    {"at": "lift", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  ],
+  "note": "The 90-90 sit on a bed, the far (front) shin across in front and the near (back) shin pointing back, the fingertips light on the bed behind the hips: the back knee stays down while the back shin and foot lift off the bed, held five counts, then lower."
+}

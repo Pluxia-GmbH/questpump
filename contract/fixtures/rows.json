@@ -1,0 +1,3559 @@
+{
+  "about": "Rows as DB.lua writes them and the helper must carry them (tools/gen-fixtures.lua): ts|char|questID|tier|slot|ladder|rung|move|kind|reps|seconds|outcome|flags; a pose's flow row carries its answer to \"How close to the goal pose?\" in reps (codes.mark, 0 none; since 2026-10-09), a hold row of the wall sit, the core, the side plank or the L-sit its answer to \"Could you have held longer?\" in reps (codes.longer, 0 not asked; since slice 52, 2026-10-23), a load row (codes.kind load, since 2026-10-09) the weight of the set row after it in tenths of a kg, and since 2026-10-16 a cardio move row the player's answer after it in flags bits 14-15 (answer_shift): on a counted set codes.answer slipped for \"Form slipped\" and, since slice 53, notAllOut for \"Not all out\" (0 Yes, to the end, its count in reps, 0 none), on a steady move its answer to \"Did you keep that pace to the end?\" (codes.pace, 0 none), and since slice 48's double-check a rep or hold row of a match pump's warm move codes.set warm in the same bits (its easy set, which the fold counts as no fresh set: DB.lua applyRow); a mastered row (codes.kind mastered) a step mastered, its ladder and rung, reps 0, or reps 7 (the rung rows' undo cause, 2026-10-17) a /qp undo's that takes back the mastered row of its character on that ladder and step that it names, both then folding as never written (DB.lua undone, applyRow), as a rung undo row takes back the rung row of its character on its ladder it names: since 2026-10-19 an undo names the row it reverses by that row's ts in its questID and pairs with it alone (the grammar's named undo), and one with questID 0 (every undo before) pairs with the latest such row before it; a trim that folds that row into the save's baseline ahead of its undo keeps the pair (the baseline carries the pairing at its edge, and the other open step rows of its last correct_days game days, kept: DB.lua ns.Trim, slice 44, 2026-10-19); since slice 44 (2026-10-18) a correction row and a correction's load row carry their round in outcome (the grammar's last three rows: Correct a count, DB.lua ns.CorrectionBeats)",
+  "catchup": {
+    "about": "a catch-up pump from the phone: each move pays the oldest owed row of the move it names (the plain moves, then every all-out window, oldest first, each paid with reps 1: both finishers; at most one until 2026-10-14), and a move nothing owes writes no row; a closing move owed before 2026-10-15 (reps 2, under the id of the steady form that led it) is an all-out window of the move it names, the jumping jacks, whose finisher rung is above the cardio rung, so it is held: the sheet painted then holds it back (held), the helper leaves it out of what a catch-up can pay, and it stays owed; the loaded move's count (its set, since 2026-10-12) is written as the game's own catch-up writes it, at the moment it was saved: the load row, the set row past the record and the rung row it brought, which the fold reads as the record, its weight and the climb",
+    "owed": ["1790605842|1|26500|3|0|2|2|2|1|0|0|9|0", "1790605842|1|26500|3|1|1|1|12|1|0|0|9|0", "1790605842|1|26500|3|2|6|1|95|3|1|30|9|0", "1790605902|1|26501|2|1|6|5|94|3|2|40|8|0", "1790605932|1|26506|3|2|6|1|95|3|1|30|8|0", "1790605962|1|26503|1|0|9|2|57|1|0|0|8|0"],
+    "owed_after": 1,
+    "pump": {
+      "device": "phone",
+      "id": "p-0d9c1e2a-4b1f-4c3d-9e8f-7a6b5c4d3e2f",
+      "moves": [
+        {
+          "move": 2,
+          "seconds": 31
+        },
+        {
+          "move": 12,
+          "seconds": 32
+        },
+        {
+          "move": 57,
+          "seconds": 33,
+          "set": {
+            "at": 1790609483000,
+            "flags": 0,
+            "load": 110,
+            "outcome": 1,
+            "reps": 16,
+            "rungs": [
+              {
+                "cause": 1,
+                "ladder": 9,
+                "rung": 3
+              }
+            ],
+            "seconds": 38
+          }
+        },
+        {
+          "move": 95,
+          "seconds": 34
+        },
+        {
+          "move": 95,
+          "seconds": 35
+        },
+        {
+          "move": 108,
+          "seconds": 40
+        }
+      ],
+      "start": 1790609442
+    },
+    "rows": [
+      "1790609442|1|0|0|0|0|0|0|6|5|0|7|128",
+      "1790609442|1|26500|3|0|2|2|2|1|0|31|5|160",
+      "1790605842|1|26500|3|0|2|2|2|1|0|0|10|160",
+      "1790609442|1|26500|3|1|1|1|12|1|0|32|5|160",
+      "1790605842|1|26500|3|1|1|1|12|1|0|0|10|160",
+      "1790609483|1|26503|1|2|9|2|57|18|110|0|0|128",
+      "1790609483|1|26503|1|2|9|2|57|1|16|38|1|160",
+      "1790609483|1|0|0|0|9|3|0|8|1|0|0|128",
+      "1790605962|1|26503|1|0|9|2|57|1|0|0|10|160",
+      "1790609442|1|26500|3|3|6|1|95|3|1|34|5|160",
+      "1790605842|1|26500|3|2|6|1|95|3|0|0|10|160",
+      "1790609442|1|26506|3|4|6|1|95|3|1|35|5|160",
+      "1790605932|1|26506|3|2|6|1|95|3|0|0|10|160"
+    ],
+    "sheet": {
+      "frames": [
+        {
+          "bytes": [42, 0, 69, 2, 92, 144, 10, 10, 0, 0, 11, 3, 0, 42, 69, 2, 250, 1, 245, 2, 10, 253, 184, 42, 98, 97, 100, 2, 98, 97, 116, 26, 106, 186, 122, 19, 98, 98, 100, 0, 52, 0, 130, 130, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 56, 5, 130, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 54, 1, 100, 98, 111, 100, 121, 100, 109, 97, 108, 101, 101, 98, 117, 105, 108, 100, 103, 103, 111, 114, 105, 108, 108, 97, 10, 0, 0],
+          "fields": {
+            "checksum": 10,
+            "chunk": 0,
+            "chunks": 11,
+            "data": "01f5020afdb82a626164026261741a6aba7a1362626482826a323032362d30392d323805826a323032362d30392d32360164626f6479646d616c65656275696c6467676f72696c6c61",
+            "event": 10,
+            "event_no": 52,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 92,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 0"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 93, 144, 10, 10, 0, 1, 11, 3, 0, 42, 69, 2, 250, 100, 99, 104, 97, 114, 1, 100, 99, 114, 105, 116, 5, 99, 100, 101, 102, 3, 98, 100, 120, 130, 130, 0, 53, 0, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 54, 24, 86, 130, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 56, 25, 1, 212, 102, 100, 120, 70, 114, 111, 109, 106, 50, 48, 50, 54, 45, 48, 55, 45, 51, 49, 99, 101, 97, 114, 152, 167, 0, 0],
+          "fields": {
+            "checksum": 167,
+            "chunk": 1,
+            "chunks": 11,
+            "data": "646368617201646372697405636465660362647882826a323032362d30392d32361856826a323032362d30392d32381901d466647846726f6d6a323032362d30372d33316365617298",
+            "event": 10,
+            "event_no": 53,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 93,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 1"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 94, 144, 10, 10, 0, 2, 11, 3, 0, 42, 69, 2, 250, 24, 131, 2, 0, 0, 131, 2, 0, 0, 129, 0, 131, 2, 0, 0, 129, 0, 131, 2, 0, 0, 130, 0, 54, 0, 1, 0, 129, 0, 132, 3, 0, 0, 25, 80, 244, 131, 2, 0, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 130, 1, 0, 98, 101, 109, 2, 99, 101, 120, 214, 0, 0],
+          "fields": {
+            "checksum": 214,
+            "chunk": 2,
+            "chunks": 11,
+            "data": "1883020000830200008100830200008100830200008201008100840300001950f483020000810081008100810081008100810081008100810081008100810082010062656d02636578",
+            "event": 10,
+            "event_no": 54,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 94,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 2"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 95, 144, 10, 10, 0, 3, 11, 3, 0, 42, 69, 2, 250, 112, 0, 99, 102, 105, 103, 26, 0, 199, 156, 110, 100, 104, 101, 108, 100, 129, 24, 94, 100, 105, 110, 0, 55, 0, 116, 111, 24, 100, 99, 108, 97, 100, 152, 24, 132, 2, 24, 43, 0, 0, 132, 2, 2, 0, 0, 132, 0, 0, 0, 0, 132, 2, 24, 34, 0, 0, 132, 0, 0, 0, 0, 132, 2, 0, 0, 0, 132, 1, 17, 0, 0, 132, 1, 0, 0, 60, 0, 0],
+          "fields": {
+            "checksum": 60,
+            "chunk": 3,
+            "chunks": 11,
+            "data": "7000636669671a00c79c6e6468656c6481185e64696e746f1864636c616498188402182b00008402020000840000000084021822000084000000008402000000840111000084010000",
+            "event": 10,
+            "event_no": 55,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 95,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 3"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 96, 144, 10, 10, 0, 4, 11, 3, 0, 42, 69, 2, 250, 0, 132, 3, 24, 228, 0, 0, 132, 2, 24, 71, 0, 0, 132, 1, 24, 73, 0, 0, 132, 1, 24, 0, 56, 0, 245, 0, 0, 132, 1, 25, 1, 220, 0, 0, 132, 1, 25, 1, 0, 0, 0, 132, 1, 24, 62, 0, 0, 132, 1, 25, 1, 10, 0, 0, 132, 1, 24, 114, 0, 0, 132, 1, 24, 130, 0, 0, 132, 1, 25, 1, 25, 0, 0, 132, 0, 163, 0, 0],
+          "fields": {
+            "checksum": 163,
+            "chunk": 4,
+            "chunks": 11,
+            "data": "00840318e40000840218470000840118490000840118f5000084011901dc0000840119010000008401183e0000840119010a0000840118720000840118820000840119011900008400",
+            "event": 10,
+            "event_no": 56,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 96,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 4"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 97, 144, 10, 10, 0, 5, 11, 3, 0, 42, 69, 2, 250, 0, 0, 0, 132, 1, 25, 1, 102, 0, 0, 132, 0, 0, 0, 0, 132, 0, 0, 0, 0, 132, 1, 0, 57, 0, 25, 1, 187, 0, 0, 100, 108, 97, 115, 116, 132, 25, 1, 212, 9, 1, 3, 98, 108, 100, 133, 3, 0, 0, 1, 0, 98, 108, 115, 133, 4, 1, 0, 3, 1, 98, 108, 117, 129, 134, 9, 3, 24, 228, 2, 0, 0, 99, 108, 118, 108, 75, 0, 0],
+          "fields": {
+            "checksum": 75,
+            "chunk": 5,
+            "chunks": 11,
+            "data": "000000840119016600008400000000840000000084011901bb0000646c617374841901d4090103626c64850300000100626c73850401000301626c758186090318e4020000636c766c",
+            "event": 10,
+            "event_no": 57,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 97,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 5"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 98, 144, 10, 10, 0, 6, 11, 3, 0, 42, 69, 2, 250, 4, 98, 108, 120, 130, 130, 26, 106, 186, 122, 18, 24, 86, 130, 26, 106, 186, 136, 34, 25, 1, 212, 0, 58, 0, 98, 109, 113, 147, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 98, 109, 119, 147, 1, 1, 1, 1, 0, 1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 1, 2, 0, 0, 100, 110, 101, 101, 100, 97, 0, 0],
+          "fields": {
+            "checksum": 97,
+            "chunk": 6,
+            "chunks": 11,
+            "data": "04626c7882821a6aba7a121856821a6aba88221901d4626d719300010000000001000001010000010000010000626d779301010101000101010002020000020001020000646e656564",
+            "event": 10,
+            "event_no": 58,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 98,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 6"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 99, 144, 10, 10, 0, 7, 11, 3, 0, 42, 69, 2, 250, 25, 1, 66, 98, 110, 120, 152, 24, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 59, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 232, 0, 0],
+          "fields": {
+            "checksum": 232,
+            "chunk": 7,
+            "chunks": 11,
+            "data": "190142626e7898188400020000840002000084000000008400020000840000000084000200008400020000840000000084000200008400020000840002000086000300000101860003",
+            "event": 10,
+            "event_no": 59,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 99,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 7"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 100, 144, 10, 10, 0, 8, 11, 3, 0, 42, 69, 2, 250, 0, 0, 1, 1, 134, 0, 3, 0, 0, 2, 0, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 0, 0, 60, 0, 0, 1, 1, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 0, 0, 2, 0, 134, 0, 3, 0, 0, 2, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 1, 0, 100, 111, 119, 0, 0],
+          "fields": {
+            "checksum": 119,
+            "chunk": 8,
+            "chunks": 11,
+            "data": "0000010186000300000200860003000001018600030000010186000300000101860003000002008600030000020084000000008400020000840000000084000000008400020100646f",
+            "event": 10,
+            "event_no": 60,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 100,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 8"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 101, 144, 10, 10, 0, 9, 11, 3, 0, 42, 69, 2, 250, 119, 101, 100, 1, 99, 112, 97, 114, 0, 100, 114, 101, 115, 116, 0, 98, 114, 104, 0, 98, 114, 115, 0, 61, 0, 3, 98, 114, 116, 26, 106, 186, 136, 75, 101, 115, 97, 118, 101, 100, 26, 106, 186, 122, 18, 98, 115, 116, 133, 15, 11, 10, 15, 12, 102, 115, 116, 114, 101, 97, 107, 3, 102, 116, 111, 107, 101, 110, 115, 0, 97, 118, 6, 98, 118, 97, 4, 0, 0],
+          "fields": {
+            "checksum": 4,
+            "chunk": 9,
+            "chunks": 11,
+            "data": "77656401637061720064726573740062726800627273036272741a6aba884b6573617665641a6aba7a12627374850f0b0a0f0c6673747265616b0366746f6b656e7300617606627661",
+            "event": 10,
+            "event_no": 61,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 101,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 9"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 102, 144, 10, 10, 0, 10, 11, 3, 0, 42, 69, 2, 250, 132, 6, 2, 2, 26, 106, 187, 210, 112, 98, 119, 107, 133, 5, 1, 0, 5, 2, 98, 119, 115, 26, 0, 62, 0, 106, 178, 151, 240, 98, 120, 112, 25, 2, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 0, 0],
+          "fields": {
+            "checksum": 74,
+            "chunk": 10,
+            "chunks": 11,
+            "data": "840602021a6abbd27062776b8505010005026277731a6ab297f062787019022a0000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "event": 10,
+            "event_no": 62,
+            "flags": 144,
+            "kind": 0,
+            "length": 762,
+            "level": 10,
+            "load_id": 10821,
+            "seq": 102,
+            "serial": 3,
+            "setup": 144,
+            "version": 2
+          },
+          "name": "sheet chunk 10"
+        }
+      ],
+      "held": [94]
+    }
+  },
+  "catchup_named": {
+    "about": "a later catch-up from the phone whose moves name the owed rows they were dosed from (ts), each named row taken first while it is still owed, then the oldest free row of each move left: the first push-up move names a row the player skipped in the game meanwhile, so the helper drops its count and pays the oldest push-up set still free, the third, done; the second names the second row, which it pays with its count (the push-ups' record) though the first move fell back to a newer row; the old closing move's window rides now (the cardio rung climbed past its form's finisher rung), the window of the jumping jacks it names alone, a counted set written as their row with the count, the counted bit and count_s, its paid row clearing the owed one; the fold reads the counts as the records and owes nothing after",
+    "owed": ["1790606088|1|26504|1|0|1|1|12|1|0|0|8|0", "1790606148|1|26504|1|0|1|1|12|1|0|0|8|0", "1790605902|1|26501|2|1|6|5|94|3|2|40|8|0"],
+    "owed_after": 0,
+    "pump": {
+      "device": "phone",
+      "id": "p-5e7a2b1c-9d3f-4e8a-b6c4-1f2e3d4c5b6a",
+      "moves": [
+        {
+          "move": 12,
+          "seconds": 35,
+          "set": {
+            "at": 1790613082000,
+            "flags": 0,
+            "outcome": 3,
+            "reps": 14,
+            "seconds": 35
+          },
+          "ts": 1790606028
+        },
+        {
+          "move": 12,
+          "seconds": 33,
+          "set": {
+            "at": 1790613122000,
+            "flags": 0,
+            "outcome": 1,
+            "reps": 15,
+            "seconds": 33
+          },
+          "ts": 1790606088
+        },
+        {
+          "move": 94,
+          "seconds": 30,
+          "set": {
+            "at": 1790613162000,
+            "flags": 1024,
+            "outcome": 3,
+            "reps": 34,
+            "seconds": 30
+          },
+          "ts": 1790605902
+        }
+      ],
+      "start": 1790613042
+    },
+    "rows": [
+      "1790613042|1|0|0|0|0|0|0|6|3|0|7|128",
+      "1790613042|1|26504|1|0|1|1|12|1|0|35|5|160",
+      "1790606148|1|26504|1|0|1|1|12|1|0|0|10|160",
+      "1790613122|1|26504|1|1|1|1|12|1|15|33|1|160",
+      "1790606088|1|26504|1|0|1|1|12|1|0|0|10|160",
+      "1790613162|1|26501|2|2|6|5|94|3|34|30|3|1184",
+      "1790605902|1|26501|2|1|6|5|94|3|0|0|10|160"
+    ]
+  },
+  "codes": {
+    "answer": {
+      "notAllOut": 2,
+      "slipped": 1
+    },
+    "answer_shift": 14,
+    "bank": {
+      "desk": 1,
+      "pain": 3,
+      "time": 2,
+      "unwell": 4
+    },
+    "device": {
+      "computer": 3,
+      "phone": 1,
+      "watch": 2
+    },
+    "flagBit": {
+      "app": 11,
+      "computer": 12,
+      "confirmed": 3,
+      "counted": 10,
+      "easier": 6,
+      "firstTry": 8,
+      "mark": 13,
+      "owed": 5,
+      "phone": 7,
+      "skipped": 9,
+      "watch": 4
+    },
+    "kind": {
+      "cardio": 3,
+      "checkin": 12,
+      "clear": 17,
+      "correction": 7,
+      "ding": 5,
+      "flow": 4,
+      "focus": 16,
+      "hold": 2,
+      "load": 18,
+      "mastered": 19,
+      "pain": 9,
+      "pause": 15,
+      "pump": 6,
+      "rep": 1,
+      "reset": 14,
+      "rung": 8,
+      "season": 11,
+      "stretch": 13,
+      "token": 10
+    },
+    "longer": {
+      "little": 2,
+      "lot": 3,
+      "no": 1
+    },
+    "mark": {
+      "good": 3,
+      "notyet": 1,
+      "okay": 2,
+      "perfect": 4
+    },
+    "outcome": {
+      "banked": 9,
+      "beat": 1,
+      "censored": 4,
+      "done": 5,
+      "lastbeat": 11,
+      "miss": 2,
+      "offered": 7,
+      "owed": 8,
+      "paid": 10,
+      "placement": 3,
+      "stopped": 6
+    },
+    "pace": {
+      "eased": 2,
+      "easily": 3,
+      "just": 1
+    },
+    "set": {
+      "warm": 1
+    },
+    "source": {
+      "app": 3,
+      "catchup": 2,
+      "game": 1
+    },
+    "stopped": {
+      "form": 1,
+      "gaveup": 5,
+      "pain": 3,
+      "time": 2,
+      "unwell": 4
+    }
+  },
+  "feedback": {
+    "about": "the feedback window's Send (contract/feedback-api.yaml, GameFeedback): the message, with the numbers the window counted (a pump finished, one banked, a move stopped early, one taken as the easier version), in the profile event's chunk layout with its own serial, painted once in the blobs lane; message is what the frames carry, read back from them, which the helper posts with source game",
+    "frames": [
+      {
+        "bytes": [42, 0, 69, 2, 136, 144, 11, 10, 0, 0, 3, 1, 0, 42, 69, 0, 196, 1, 191, 0, 64, 255, 164, 98, 97, 116, 26, 106, 186, 122, 41, 103, 110, 117, 109, 98, 101, 114, 115, 0, 75, 0, 166, 102, 98, 97, 110, 107, 101, 100, 1, 100, 100, 97, 121, 115, 0, 104, 102, 105, 110, 105, 115, 104, 101, 100, 1, 104, 109, 97, 120, 95, 115, 101, 116, 115, 1, 101, 109, 111, 118, 101, 115, 130, 163, 102, 101, 97, 115, 105, 101, 114, 0, 105, 0, 0],
+        "fields": {
+          "checksum": 105,
+          "chunk": 0,
+          "chunks": 3,
+          "data": "01bf0040ffa46261741a6aba7a29676e756d62657273a66662616e6b6564016464617973006866696e697368656401686d61785f7365747301656d6f76657382a36665617369657200",
+          "event": 11,
+          "event_no": 75,
+          "flags": 144,
+          "kind": 0,
+          "length": 196,
+          "level": 10,
+          "load_id": 10821,
+          "seq": 136,
+          "serial": 1,
+          "setup": 144,
+          "version": 2
+        },
+        "name": "feedback chunk 0"
+      },
+      {
+        "bytes": [42, 0, 69, 2, 137, 144, 11, 10, 0, 1, 3, 1, 0, 42, 69, 0, 196, 100, 109, 111, 118, 101, 106, 115, 116, 101, 112, 95, 106, 97, 99, 107, 115, 103, 115, 116, 111, 112, 112, 0, 76, 0, 101, 100, 1, 163, 102, 101, 97, 115, 105, 101, 114, 1, 100, 109, 111, 118, 101, 107, 119, 97, 108, 108, 95, 112, 117, 115, 104, 117, 112, 103, 115, 116, 111, 112, 112, 101, 100, 0, 100, 111, 119, 101, 100, 2, 100, 116, 101, 120, 116, 120, 38, 198, 0, 0],
+        "fields": {
+          "checksum": 198,
+          "chunk": 1,
+          "chunks": 3,
+          "data": "646d6f76656a737465705f6a61636b736773746f7070656401a36665617369657201646d6f76656b77616c6c5f7075736875706773746f7070656400646f7765640264746578747826",
+          "event": 11,
+          "event_no": 76,
+          "flags": 144,
+          "kind": 0,
+          "length": 196,
+          "level": 10,
+          "load_id": 10821,
+          "seq": 137,
+          "serial": 1,
+          "setup": 144,
+          "version": 2
+        },
+        "name": "feedback chunk 1"
+      },
+      {
+        "bytes": [42, 0, 69, 2, 138, 144, 11, 10, 0, 2, 3, 1, 0, 42, 69, 0, 196, 84, 104, 101, 32, 112, 117, 109, 112, 115, 32, 97, 102, 116, 101, 114, 32, 97, 32, 113, 117, 101, 115, 0, 77, 0, 116, 32, 104, 117, 98, 32, 97, 114, 101, 32, 103, 114, 101, 97, 116, 46, 103, 118, 101, 114, 115, 105, 111, 110, 99, 100, 101, 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 89, 0, 0],
+        "fields": {
+          "checksum": 89,
+          "chunk": 2,
+          "chunks": 3,
+          "data": "5468652070756d7073206166746572206120717565737420687562206172652067726561742e6776657273696f6e636465760000000000000000000000000000000000000000000000",
+          "event": 11,
+          "event_no": 77,
+          "flags": 144,
+          "kind": 0,
+          "length": 196,
+          "level": 10,
+          "load_id": 10821,
+          "seq": 138,
+          "serial": 1,
+          "setup": 144,
+          "version": 2
+        },
+        "name": "feedback chunk 2"
+      }
+    ],
+    "message": {
+      "at": 1790605865,
+      "numbers": {
+        "banked": 1,
+        "days": 0,
+        "finished": 1,
+        "max_sets": 1,
+        "moves": [
+          {
+            "easier": 0,
+            "move": "step_jacks",
+            "stopped": 1
+          },
+          {
+            "easier": 1,
+            "move": "wall_pushup",
+            "stopped": 0
+          }
+        ],
+        "owed": 2
+      },
+      "text": "The pumps after a quest hub are great.",
+      "version": "dev"
+    }
+  },
+  "fields": ["ts", "char", "questID", "tier", "slot", "ladder", "rung", "move", "kind", "reps", "seconds", "outcome", "flags"],
+  "grammar": [
+    {
+      "about": "a record, typed and confirmed on a first try (flags above 255)",
+      "fields": {
+        "char": 1,
+        "flags": 264,
+        "kind": 1,
+        "ladder": 1,
+        "move": 12,
+        "outcome": 1,
+        "questID": 26391,
+        "reps": 14,
+        "rung": 3,
+        "seconds": 31,
+        "slot": 1,
+        "tier": 2,
+        "ts": 1790605861
+      },
+      "row": "1790605861|1|26391|2|1|1|3|12|1|14|31|1|264"
+    },
+    {
+      "about": "a pain flag (the joint id in move)",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 9,
+        "ladder": 0,
+        "move": 3,
+        "outcome": 0,
+        "questID": 0,
+        "reps": 1,
+        "rung": 0,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 0,
+        "ts": 1790605862
+      },
+      "row": "1790605862|1|0|0|0|0|0|3|9|1|0|0|0"
+    },
+    {
+      "about": "a cardio move stopped for feeling unwell",
+      "fields": {
+        "char": 1,
+        "flags": 4,
+        "kind": 3,
+        "ladder": 6,
+        "move": 95,
+        "outcome": 6,
+        "questID": 26392,
+        "reps": 0,
+        "rung": 2,
+        "seconds": 42,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605864
+      },
+      "row": "1790605864|1|26392|1|0|6|2|95|3|0|42|6|4"
+    },
+    {
+      "about": "a pump banked for feeling unwell",
+      "fields": {
+        "char": 1,
+        "flags": 4,
+        "kind": 6,
+        "ladder": 0,
+        "move": 0,
+        "outcome": 9,
+        "questID": 26393,
+        "reps": 2,
+        "rung": 0,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 2,
+        "ts": 1790605865
+      },
+      "row": "1790605865|1|26393|2|0|0|0|0|6|2|0|9|4"
+    },
+    {
+      "about": "a stretch",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 13,
+        "ladder": 0,
+        "move": 0,
+        "outcome": 0,
+        "questID": 26392,
+        "reps": 1830,
+        "rung": 0,
+        "seconds": 412,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605866
+      },
+      "row": "1790605866|1|26392|1|0|0|0|0|13|1830|412|0|0"
+    },
+    {
+      "about": "a reset (/qp reset all): the new save's first row",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 14,
+        "ladder": 0,
+        "move": 0,
+        "outcome": 0,
+        "questID": 0,
+        "reps": 0,
+        "rung": 0,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 0,
+        "ts": 1790605867
+      },
+      "row": "1790605867|1|0|0|0|0|0|0|14|0|0|0|0"
+    },
+    {
+      "about": "a start rung after the reset",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 8,
+        "ladder": 2,
+        "move": 0,
+        "outcome": 0,
+        "questID": 0,
+        "reps": 4,
+        "rung": 3,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 0,
+        "ts": 1790605868
+      },
+      "row": "1790605868|1|0|0|0|2|3|0|8|4|0|0|0"
+    },
+    {
+      "about": "a ladder pose held its whole time on its family's ladder and rung, as written before 2026-10-09's ask (no mark bit: practice, no day toward the family's unlock since 2026-10-31, the family's attempt alone; read as Good on its main pose from 2026-10-26 and as Perfect until then, slice 21)",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 4,
+        "ladder": 18,
+        "move": 130,
+        "outcome": 5,
+        "questID": 26394,
+        "reps": 0,
+        "rung": 1,
+        "seconds": 60,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605870
+      },
+      "row": "1790605870|1|26394|1|0|18|1|130|4|0|60|5|0"
+    },
+    {
+      "about": "an app row: a record typed in the app's own pump, sent by the phone with the app bit (11) and the phone's (7), char 0; it never pays or owes an unfinished move (DB.lua applyRow)",
+      "fields": {
+        "char": 0,
+        "flags": 2176,
+        "kind": 1,
+        "ladder": 1,
+        "move": 12,
+        "outcome": 1,
+        "questID": 0,
+        "reps": 15,
+        "rung": 3,
+        "seconds": 33,
+        "slot": 0,
+        "tier": 2,
+        "ts": 1790605870
+      },
+      "row": "1790605870|0|0|2|0|1|3|12|1|15|33|1|2176"
+    },
+    {
+      "about": "a load row (kind load, 2026-10-09): the weight one set of a loaded move was done with, 11 kg as 110 tenths of a kg in reps, written just before its set row with that row's ts, char, questID, tier, slot, ladder, rung and move, seconds and outcome 0 and the set row's source bits in flags; the fold reads the set with it (a correction's load row corrects the weight, below; 0 takes it off), and an older reader skips it",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 18,
+        "ladder": 9,
+        "move": 57,
+        "outcome": 0,
+        "questID": 26395,
+        "reps": 110,
+        "rung": 2,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605870
+      },
+      "row": "1790605870|1|26395|1|0|9|2|57|18|110|0|0|0"
+    },
+    {
+      "about": "its set row: 16 reps of the one-arm row with 11 kg",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 1,
+        "ladder": 9,
+        "move": 57,
+        "outcome": 1,
+        "questID": 26395,
+        "reps": 16,
+        "rung": 2,
+        "seconds": 38,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605870
+      },
+      "row": "1790605870|1|26395|1|0|9|2|57|1|16|38|1|0"
+    },
+    {
+      "about": "a correction row (kind correction; its round since slice 44, 2026-10-18): it names its set by that row's ts, questID, slot and move (the fold reads it as the move that took a merged one), repeats its tier, ladder and rung, and carries the count the set should have had, a rep or counted set's in reps, a hold's seconds in seconds, a pose's answer to \"How close to the goal pose?\" in reps (codes.mark), and its round in outcome: one more than the highest round of that set (a correction's or a load row's) its writer held, at most 255, 0 on a row from before the rounds (/qp undo's); its char and source bits are its writer's: here the phone's, 14 reps of the one-arm row, round 1",
+      "fields": {
+        "char": 0,
+        "flags": 2176,
+        "kind": 7,
+        "ladder": 9,
+        "move": 57,
+        "outcome": 1,
+        "questID": 26395,
+        "reps": 14,
+        "rung": 2,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605870
+      },
+      "row": "1790605870|0|26395|1|0|9|2|57|7|14|0|1|2176"
+    },
+    {
+      "about": "a correction's load row: the weight the set should have had (12 kg as 120 tenths, 0 none), written by Correct a count just before its correction row where the weight changes (or where the set's own side reads another weight than the one it reads with now, since 2026-10-19), with the correction's round in outcome and its writer's char and source bits (the game's here: char 1, none)",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 18,
+        "ladder": 9,
+        "move": 57,
+        "outcome": 2,
+        "questID": 26395,
+        "reps": 120,
+        "rung": 2,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605870
+      },
+      "row": "1790605870|1|26395|1|0|9|2|57|18|120|0|2|0"
+    },
+    {
+      "about": "the game's correction row after it: 15 reps, round 2. Of the rows naming one set every fold reads the one of the highest round, of two alike the smaller value (a load row's the lower weight), of rows of round 0 the last in its log (DB.lua ns.CorrectionBeats): the set reads 15 reps with 12 kg everywhere; rung and mastered rows a correction asks again (and their undo rows) carry the set's char and the time they were written",
+      "fields": {
+        "char": 1,
+        "flags": 0,
+        "kind": 7,
+        "ladder": 9,
+        "move": 57,
+        "outcome": 2,
+        "questID": 26395,
+        "reps": 15,
+        "rung": 2,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 1,
+        "ts": 1790605870
+      },
+      "row": "1790605870|1|26395|1|0|9|2|57|7|15|0|2|0"
+    },
+    {
+      "about": "a climb an app wrote (character 0, a phone's: no bits as the phone keeps it), push to rung 6",
+      "fields": {
+        "char": 0,
+        "flags": 0,
+        "kind": 8,
+        "ladder": 1,
+        "move": 0,
+        "outcome": 0,
+        "questID": 0,
+        "reps": 1,
+        "rung": 6,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 0,
+        "ts": 1790605930
+      },
+      "row": "1790605930|0|0|0|0|1|6|0|8|1|0|0|0"
+    },
+    {
+      "about": "a later climb of the same character from the watch (the app and watch bits), push to rung 7, which reaches the phone only after the undo below",
+      "fields": {
+        "char": 0,
+        "flags": 2064,
+        "kind": 8,
+        "ladder": 1,
+        "move": 0,
+        "outcome": 0,
+        "questID": 0,
+        "reps": 1,
+        "rung": 7,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 0,
+        "ts": 1790609470
+      },
+      "row": "1790609470|0|0|0|0|1|7|0|8|1|0|0|2064"
+    },
+    {
+      "about": "the undo of the first climb (codes.kind rung, reps 7, the undo cause; rung the rung its ladder goes back to), written by the phone's correction of the set that made it, naming the row it reverses by that row's ts in questID (2026-10-19): every fold pairs it with that row alone, the newest rung row of its character on its ladder at that ts and at another rung, wherever it stands, so the watch's climb stands (push at rung 7); an undo with questID 0 (every undo before 2026-10-19) pairs with the latest rung row of its character on that ladder before it, which here would take the watch's climb back. A mastered undo names its mastered row alike",
+      "fields": {
+        "char": 0,
+        "flags": 0,
+        "kind": 8,
+        "ladder": 1,
+        "move": 0,
+        "outcome": 0,
+        "questID": 1790605930,
+        "reps": 7,
+        "rung": 5,
+        "seconds": 0,
+        "slot": 0,
+        "tier": 0,
+        "ts": 1790613070
+      },
+      "row": "1790613070|0|1790605930|0|0|1|5|0|8|7|0|0|0"
+    }
+  ],
+  "import": {
+    "about": "An export (DB.lua ns.Export) imported into a save whose characters number otherwise (slice 44's last review, 2026-10-19): the export's save has characters A and B (1 and 2), and a trim folded into its baseline B's first max set at its window's top, the climb it made, an owed move of B's, B's pause until resumed and B's set at the top the next game day, while the correction of the first set under the top and B's undo row taking the climb back stay in its ring (the export here carries those two alone); it is imported on B into a fresh save whose one character is B, so B is 1 and A 2 there. ns.Import takes an export's baseline into a save with no history of its own under that save's numbers, as the merge numbers the export's rows (characters by GUID): the characters' pauses (keyed by character), the owed rows and the edge (row texts) and the undo pairing at its edge (pairing.rungs keyed ladder:char and pairing.steps ladder:rung:char, each holding a row text, and pairing.kept, the other open step rows of the last correct_days game days to the edge a named undo may still name, row texts in time order: here B's start rung row; 2026-10-19). The ring's undo is one from before the named undo (questID 0), so it pairs with the latest rung row of its character. So the undo pairs with B's climb, as a fold of every row pairs it (the ladder keeps the day B's set reached its top: hi_days; an undo read unpaired, here against A's start rung row, resets it), B is the paused character and the owed move B's, and the helper's mirror after it (every row of the export's save, under the export's characters) brings no row the baseline folded (taken: the game rows it merged). Each: the export (its string, characters and ring), the save's characters before and after, the baseline's pairing, pauses, owed rows and edge after the import, and before (the fold of every row) and after (the save's fold after the import): the push ladder's rung and hi_days, the characters paused at `at` and the owed moves' characters",
+    "after": {
+      "hi_days": 1,
+      "owed_chars": [1],
+      "paused": [1],
+      "rung": 2
+    },
+    "at": 1790802000,
+    "baseline": {
+      "edge": [
+        "1790791200|1|26393|1|0|0|0|0|6|1|1|7|0",
+        "1790791200|1|26393|1|0|1|2|43|1|40|30|2|0"
+      ],
+      "owed": ["1790704920|1|26392|1|1|1|2|43|1|0|0|8|0"],
+      "pairing": {
+        "kept": ["1790704800|1|0|0|0|1|2|0|8|4|0|0|0"],
+        "rungs": {
+          "1:1": "1790704860|1|0|0|0|1|3|0|8|1|0|0|0",
+          "1:2": "1790704800|2|0|0|0|1|2|0|8|4|0|0|0"
+        },
+        "steps": {}
+      },
+      "pause": [1]
+    },
+    "before": {
+      "hi_days": 1,
+      "owed_chars": [2],
+      "paused": [2],
+      "rung": 2
+    },
+    "chars": ["Player-1-0000000B", "Player-1-0000000A"],
+    "export": {
+      "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+      "ring": ["1790704860|0|26391|1|0|1|2|43|7|39|0|1|0", "1790791320|2|0|0|0|1|2|0|8|7|0|0|0"],
+      "string": "!QP1!Ac4LMfSlaGJhc2VsaW5luB5nYW55TW92ZfVmY2FyZGlvqGVjbGVhbgBpY2xlYW5FdmVyoGtjbGVhbkZvcm1Uc6BqY2xlYW5Gb3Jtc6BkZnVsbABkaGF1bAFoaGF1bERheXMAZXN0b3BzAGdjbGVhcmVkoGljcmVhdGVkVHMaarv83GRkYXlzomoyMDI2LTA5LTI5pmZiYW5rZWQAZmJsb2Nrc6Foc3RyZW5ndGgBZGRvbmWhGCsBZW1vdmVzAWVwdW1wcwFncmVjb3JkcwBqMjAyNi0wOS0zMKZmYmFua2VkAGZibG9ja3OhaHN0cmVuZ3RoAWRkb25loRgrAWVtb3ZlcwFlcHVtcHMBZ3JlY29yZHMAZGVkZ2WieCYxNzkwNzkxMjAwfDJ8MjYzOTN8MXwwfDB8MHwwfDZ8MXwxfDd8MPV4KTE3OTA3OTEyMDB8MnwyNjM5M3wxfDB8MXwyfDQzfDF8NDB8MzB8Mnww9WdmaXJzdFRzGmq7/KBmZm9ybVRzoGdsYWRkZXJzga5qYW5jaG9yRGF5cwBoYW5jaG9yVHMaar1OIGRkYXlzomoyMDI2LTA5LTI5AWoyMDI2LTA5LTMwAWRmcm9tAmZoaURheXMBZGhpVHMaar1OIGZsYXN0VHMaar1OIGtwZXJmZWN0RGF5cwBocGxhY2VkVHMaarv83GdwbGF0ZWF1AmlwbGF0ZWF1VHMaar1OIGRydW5nAmVzdGFydAJndW5kZXJMbwBqbGFzdERvbmVUcxpqvU4gaGxhc3RNb3ZlGCtmbGVkZ2VyoWVob2xkc6BlbWFya3OgaG1hc3RlcmVkoGhtb3ZlUm93cwNlbW92ZXOhGCurZGJlc3QYKGZiZXN0VHMaar1OIGVmaXJzdBgnZ2ZpcnN0VHMaarv83GVmcmVzaIIYJxgoaWZyZXNoTG9hZIIAAGRsYXN0GChmbGFzdFRzGmq9TiBkcHJldhgnaHRvcERheVRzGmq9TiBndG9wRGF5cwFkb3dlZKFyMTc5MDcwNDkyMDoyNjM5MjoxeCcxNzkwNzA0OTIwfDJ8MjYzOTJ8MXwxfDF8Mnw0M3wxfDB8MHw4fDBpcGFpZEVhcmx5oGRwYWluoGdwYWlyaW5no2RrZXB0gXgiMTc5MDcwNDgwMHwyfDB8MHwwfDF8MnwwfDh8NHwwfDB8MGVydW5nc6JjMToxeCIxNzkwNzA0ODAwfDF8MHwwfDB8MXwyfDB8OHw0fDB8MHwwYzE6MngiMTc5MDcwNDg2MHwyfDB8MHwwfDF8M3wwfDh8MXwwfDB8MGVzdGVwc6BocGF0dGVybnOhZHB1c2ijY2FjY6EYJKJidHMaar1OIGF2+z/6FSV/H6KcZGRheXOiajIwMjYtMDktMjkBajIwMjYtMDktMzABZmxhc3RUcxpqvU4gZXBhdXNloQKiZG1vZGUDYnRzGmq7/VRmcmVjZW50gqJlbW92ZXOhGCv1aHBhdHRlcm5zoWRwdXNo9aJlbW92ZXOhGCv1aHBhdHRlcm5zoWRwdXNo9WdyZWdpb25zoWRwdXNooWRkYXlzomoyMDI2LTA5LTI5AWoyMDI2LTA5LTMwAWRzZWVuoRgr9WVzaGVldLgnamFjdGl2ZURheXMCaWFjdGl2ZUlkeBlQ9mRiYXNlpWdhZ2lsaXR5CmlpbnRlbGxlY3QKZnNwaXJpdApnc3RhbWluYQpoc3RyZW5ndGgKZGJlc3QCZmNsaW1ic6BmY291bnRzrmViZWF0cwBlY2xlYW4AZWRpbmdzAGlmaW5pc2hlcnMAZGZvb3QAZ2tpbmRsZWQAZm1lcmdlZABmcGxhY2VkAWVwdW1wcwJmc3F1YXRzAGZzdGFyczMBYnQzAGx0cmF2ZWxDYXJkaW8AZ3dhbGxzaXQAZWNyaXRSAWRkYXlzohlQ9axmYWN0aXZl9WRiYXJzgaNhbgFmc291cmNlAWJ0cxpqu/zcZXB1bXBzAW1wdW1wc0ZpbmlzaGVkAWdyZWdpb25zoWRwdXNoAWRyZXBzoWRwdXNoGCdicmgBZHNldHOhGCuhYXYYJ2N3YXOhGCv0ZHdpbnMAYndrAWJ4cBhFGVD2rWZhY3RpdmX1ZGJhcnOBo2FuAWZzb3VyY2UBYnRzGmq9TiBlcHVtcHMBbXB1bXBzRmluaXNoZWQBZ3JlZ2lvbnOhZHB1c2gBZHJlcHOhZHB1c2gYKGJyaAFkc2V0c6EYK6FhdhgoZXN0YXJzAWN3YXOhGCuhYXYYJ2R3aW5zAWJ3awFieHAYXmZlYXJuZWSgY2ZhbaEYK6JkbGFzdBlQ9mFuAmhmYW1TdGVwc6BoaGVsZEZyb20ZUNpkbGFzdKNpaW50ZWxsZWN0pGZhbW91bnQBZG1vdmUYK2ZyZWFzb25obGVhcm5pbmdidHMaarv83GZzcGlyaXSjZmFtb3VudAFmcmVhc29uZmFjdGl2ZWJ0cxpqu/zcaHN0cmVuZ3RopGZhbW91bnQBZG1vdmUYK2ZyZWFzb25kc3RhcmJ0cxpqvU4gaGxhc3RNb3Zlo2NpZHgZUPZidHMaar1OIGN3aW71ZmxlZ2FjeaFqc3RhcnJ5RXllZPVmbG9ja2VkoGNsb2eCpWVtb3Zlc4KkaWNvcnJlY3RlZPVkbW92ZRgrY291dANhdhgno2NrZXlyMTc5MDcwNDkyMDoyNjM5MjoxZG1vdmUYK2NvdXQIZ3F1ZXN0SUQZZxdkdGllcgFidHMaarv83GJ4cBhFpmVsZXZlbAJlbW92ZXOBo2Rtb3ZlGCtjb3V0AmF2GChncXVlc3RJRBlnGWR0aWVyAWJ0cxpqvU4gYnhwGF5nbXVzY2xlc6QBpWRoYXJkAGRsYXN0gqJkbW92ZRgrYnRzGmq9TiCiZG1vdmUYK2J0cxpqu/zcZHJ1bmcAZHdlZWsBYndrAQKnZGJlc3QYK2RoYXJkAmRsYXN0gqJkbW92ZRgrYnRzGmq9TiCiZG1vdmUYK2J0cxpqu/zcZHJ1bmcCZHN0ZXACZHdlZWsCYndrAQWlZGhhcmQAZGxhc3SComRtb3ZlGCtidHMaar1OIKJkbW92ZRgrYnRzGmq7/NxkcnVuZwBkd2VlawFid2sBDKVkaGFyZABkbGFzdIKiZG1vdmUYK2J0cxpqvU4gomRtb3ZlGCtidHMaarv83GRydW5nAGR3ZWVrAWJ3awFkcGFpZKBpcGFpZEVhcmx5oGhwYXR0ZXJuc6FkcHVzaPVkcG9vbABkcHVtcKxkZGluZ/RjZmFtAGlwZXJmb3JtZWT1Y3B0cwFncXVlc3RJRBlnGWZxdWVzdHMBZXN0YXJzAWVzdGF0c6Foc3RyZW5ndGgBaXN0cmVha0RheQJkdGllcgFidHMaar1OIGJ4cBheZnJlc3RUcxpqvU4gZXJ1bmdzoGVzdGF0c6VnYWdpbGl0eQppaW50ZWxsZWN0DGZzcGlyaXQLZ3N0YW1pbmEKaHN0cmVuZ3RoDGZzdHJlYWsCZnRva2VucwFndG9wRGF5c4KiY2RheWoyMDI2LTA5LTI5ZW1vdmVzAaJjZGF5ajIwMjYtMDktMzBlbW92ZXMBZXVuaXRzoWRwdXNoGE9ldmF1bHSjZmVtYmVycwBlbW92ZXMCZ3JlY29yZHMBZHdlZWsBaXdlZWtCZWF0cwBqd2Vla0NhcmRpbwBpd2Vla0tpbmRzomZzcGlyaXT1aHN0cmVuZ3Ro9Wl3ZWVrTGVhcm71aXdlZWtQdW1wcwJod2Vla1NldHOBAmJ4cBijZ3NoaWZ0ZWShB/Vlc3BsaXT1aXNwbGl0U2V0c6BndGhyb3VnaBpqvU4gZWNoYXJzgqFkZ3VpZHFQbGF5ZXItMS0wMDAwMDAwQaFkZ3VpZHFQbGF5ZXItMS0wMDAwMDAwQmpleHBvcnRlZEF0Gmq9akBjbG9ngngoMTc5MDcwNDg2MHwwfDI2MzkxfDF8MHwxfDJ8NDN8N3wzOXwwfDF8MHgiMTc5MDc5MTMyMHwyfDB8MHwwfDF8MnwwfDh8N3wwfDB8MGZzY2hlbWEC"
+    },
+    "save": {
+      "chars": ["Player-1-0000000B"]
+    },
+    "taken": {
+      "game": 0
+    }
+  },
+  "logout": [
+    {
+      "about": "logout at the second move's Ready view: the second and third moves are owed, dated at the pump's offered time",
+      "addon_only": [],
+      "frames": [
+        {
+          "bytes": [42, 0, 69, 2, 66, 156, 3, 10, 0, 0, 0, 103, 23, 42, 69, 15, 222, 247, 0, 0, 0, 0, 4, 210, 0, 0, 20, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 28, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 169, 0, 0],
+          "event": "turn_in"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 67, 145, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 226, 104, 0, 0, 0, 0, 4, 210, 0, 0, 20, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 28, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 68, 145, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 230, 80, 0, 0, 0, 0, 4, 210, 0, 0, 20, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 28, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 69, 156, 6, 10, 6, 0, 0, 103, 23, 42, 69, 15, 230, 199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 7, 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 0],
+          "event": "row"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 70, 156, 6, 10, 13, 0, 0, 103, 23, 42, 69, 15, 231, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 211, 0, 0, 42, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 243, 0, 0],
+          "event": "row"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 71, 156, 1, 10, 1, 0, 0, 103, 23, 42, 69, 15, 231, 183, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 31, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 251, 0, 0],
+          "event": "countdown_start"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 72, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 232, 47, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 31, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 117, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 73, 156, 4, 10, 1, 0, 0, 103, 23, 42, 69, 15, 232, 167, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 32, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 246, 0, 0],
+          "event": "pump_offered"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 74, 156, 4, 10, 1, 0, 0, 103, 23, 42, 69, 15, 233, 31, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 33, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 0, 0],
+          "event": "pump_offered"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 75, 156, 4, 10, 3, 0, 0, 103, 23, 42, 69, 15, 233, 151, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 1, 0, 30, 3, 0, 0, 0, 0, 34, 2, 6, 1, 0, 0, 95, 1, 106, 186, 122, 18, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 140, 0, 0],
+          "event": "pump_offered"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 76, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 234, 56, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 135, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 77, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 238, 32, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 116, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 78, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 242, 8, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 79, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 245, 240, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 80, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 249, 216, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 81, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 253, 41, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 145, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 82, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 253, 192, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 83, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 1, 168, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 84, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 5, 144, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 85, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 9, 120, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 241, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 86, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 13, 96, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 222, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 87, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 17, 72, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 203, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 88, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 21, 48, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 89, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 25, 24, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 165, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 90, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 28, 205, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 198, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 91, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 29, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 92, 156, 6, 10, 1, 0, 0, 103, 23, 42, 69, 16, 29, 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 3, 0, 8, 3, 0, 0, 0, 0, 35, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 228, 0, 0],
+          "event": "row"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 93, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 32, 232, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 35, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 233, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 94, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 35, 113, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 124, 0, 0],
+          "event": "heartbeat"
+        }
+      ],
+      "owed": ["1790605842|1|26391|3|1|1|1|12|1|0|0|8|0", "1790605842|1|26391|3|2|6|1|95|3|1|30|8|0"],
+      "prior": [
+        "1790605800|1|0|0|0|1|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|2|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|4|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|6|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|7|1|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|9|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|10|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|24|1|0|8|4|0|0|0",
+        "1790605842|1|26391|3|0|0|0|0|6|3|1|7|0",
+        "1790605842|1|26391|3|0|0|0|0|13|1235|42|0|0",
+        "1790605856|1|26391|3|0|2|2|2|1|12|8|3|0"
+      ]
+    },
+    {
+      "about": "logout while the second move's count is typed: that move is the addon's own done row, the helper owes only the third",
+      "addon_only": ["1790605872|1|26391|3|1|1|1|12|1|0|8|5|0"],
+      "frames": [
+        {
+          "bytes": [42, 0, 69, 2, 66, 156, 3, 10, 0, 0, 0, 103, 23, 42, 69, 15, 222, 247, 0, 0, 0, 0, 4, 210, 0, 0, 20, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 28, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 169, 0, 0],
+          "event": "turn_in"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 67, 145, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 226, 104, 0, 0, 0, 0, 4, 210, 0, 0, 20, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 28, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 68, 145, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 230, 80, 0, 0, 0, 0, 4, 210, 0, 0, 20, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 28, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 69, 156, 6, 10, 6, 0, 0, 103, 23, 42, 69, 15, 230, 199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 7, 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 0],
+          "event": "row"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 70, 156, 6, 10, 13, 0, 0, 103, 23, 42, 69, 15, 231, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 211, 0, 0, 42, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 243, 0, 0],
+          "event": "row"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 71, 156, 1, 10, 1, 0, 0, 103, 23, 42, 69, 15, 231, 183, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 31, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 251, 0, 0],
+          "event": "countdown_start"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 72, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 232, 47, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 31, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 117, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 73, 156, 4, 10, 1, 0, 0, 103, 23, 42, 69, 15, 232, 167, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 32, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 246, 0, 0],
+          "event": "pump_offered"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 74, 156, 4, 10, 1, 0, 0, 103, 23, 42, 69, 15, 233, 31, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 33, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 0, 0],
+          "event": "pump_offered"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 75, 156, 4, 10, 3, 0, 0, 103, 23, 42, 69, 15, 233, 151, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 1, 0, 30, 3, 0, 0, 0, 0, 34, 2, 6, 1, 0, 0, 95, 1, 106, 186, 122, 18, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 140, 0, 0],
+          "event": "pump_offered"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 76, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 234, 56, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 135, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 77, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 238, 32, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 116, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 78, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 242, 8, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 79, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 245, 240, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 80, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 249, 216, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 81, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 253, 41, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 145, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 82, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 15, 253, 192, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 83, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 1, 168, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 84, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 5, 144, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 85, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 9, 120, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 241, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 86, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 13, 96, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 222, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 87, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 17, 72, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 203, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 88, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 21, 48, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 89, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 25, 24, 15, 233, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 165, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 90, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 28, 205, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 198, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 91, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 29, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 34, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 92, 156, 6, 10, 1, 0, 0, 103, 23, 42, 69, 16, 29, 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 3, 0, 8, 3, 0, 0, 0, 0, 35, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 228, 0, 0],
+          "event": "row"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 93, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 32, 232, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 35, 0, 2, 2, 0, 0, 2, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 233, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 94, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 35, 113, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 124, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 95, 156, 1, 10, 1, 0, 0, 103, 23, 42, 69, 16, 35, 233, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 245, 0, 0],
+          "event": "countdown_start"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 96, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 36, 97, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 111, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 97, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 36, 217, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 98, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 40, 184, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 204, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 99, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 44, 160, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 185, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 100, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 48, 136, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 166, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 101, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 52, 112, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 102, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 56, 88, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 103, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 57, 81, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 124, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 104, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 60, 64, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 111, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 105, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 64, 40, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 92, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 106, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 68, 16, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 107, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 71, 248, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 108, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 75, 224, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 109, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 79, 200, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 110, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 83, 176, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 252, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 111, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 87, 152, 16, 37, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 233, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 112, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 88, 245, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0],
+          "event": "heartbeat"
+        },
+        {
+          "bytes": [42, 0, 69, 2, 113, 157, 0, 10, 1, 0, 0, 103, 23, 42, 69, 16, 91, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 36, 1, 1, 1, 0, 0, 12, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 218, 0, 0],
+          "event": "heartbeat"
+        }
+      ],
+      "owed": ["1790605842|1|26391|3|2|6|1|95|3|1|30|8|0"],
+      "prior": [
+        "1790605800|1|0|0|0|1|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|2|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|4|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|6|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|7|1|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|9|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|10|2|0|8|4|0|0|0",
+        "1790605800|1|0|0|0|24|1|0|8|4|0|0|0",
+        "1790605842|1|26391|3|0|0|0|0|6|3|1|7|0",
+        "1790605842|1|26391|3|0|0|0|0|13|1235|42|0|0",
+        "1790605856|1|26391|3|0|2|2|2|1|12|8|3|0"
+      ]
+    }
+  ],
+  "merge": {
+    "about": "The mirror's rows merged into a save (slice 26: one progression, the game's, the other installs' and the apps'), as ns.BindDB merges them: a reset made elsewhere first (ns.MirrorReset: a reset row newer than the save's own resets the save, kept as the backup, its characters and profiles kept), then ns.MergeMirror from the save's reset on (characters by GUID, each list's own order, the two lists by time, a row the save holds kept once by copies), folded by ns.Fold. An app row (flags bit 11 with exactly one device's bit: the phone's 7, the watch's 4 on its own pump, the computer's 12 on the desktop app's; char 0) moves the records, every clock, the pain flags, the felt-unwell lock, the focus and the rungs (a climb to a rung not above the ladder's rung now changes nothing, whichever side made it), but never the owed queue or the day's game counts (pumps, moves, records, banked; the app's own pumps, moves and records are counted beside them, day.app); the sheet counts its pump as a catch-up's (slice 27: its XP, stats and wins, a rung paid once at its first reach from any source, never paying or owing unfinished moves) and its Log names the pump; a catch-up (a device's bit, the phone's, the watch's or the computer's, no app bit) is the game's. Each case: the save (rows, chars by GUID, reset_at), the mirror (rows, chars), at (the probe's time), reset (a reset made elsewhere that reset the save) and backup_rows, the merged log and chars, taken (the mirror's rows merged, by source), and before and after: the anchor's record and goal (move 43, push rung 2), the push ladder's last set, its rung, best rung and hi_days (the days its top was reached at that rung), the pain flags, locked, focus, owed, the day's counts, the characters paused, the sheet's XP and its Log (source and device: codes.source, codes.device)",
+    "cases": [
+      {
+        "about": "a record typed in the app raises the game's record and its next goal",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 15,
+          "hi_days": 0,
+          "last_set": 1790791260,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 1,
+                  "value": 14
+                }
+              ],
+              "source": 3,
+              "ts": 1790791200
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 14,
+          "rung": 2,
+          "xp": 147
+        },
+        "at": 1790877600,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791200|0|0|1|0|0|0|0|6|1|1|7|2176",
+          "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|1|0|0|0|0|6|1|1|7|2176",
+            "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176"
+          ]
+        },
+        "name": "app_record_raises_goal",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 2,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "an app set on a ladder is that ladder's last set: the major move's clock and the fresh-set clock run from it",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 1,
+              "pumps": 1,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 8,
+          "hi_days": 0,
+          "last_set": 1790722800,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 2,
+                  "value": 8
+                }
+              ],
+              "source": 3,
+              "ts": 1790722800
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 86
+        },
+        "at": 1790722860,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790722800|0|0|1|0|0|0|0|6|1|1|7|2176",
+          "1790722800|0|0|0|0|1|2|43|1|8|30|2|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790722800|0|0|1|0|0|0|0|6|1|1|7|2176",
+            "1790722800|0|0|0|0|1|2|43|1|8|30|2|2176"
+          ]
+        },
+        "name": "app_set_is_last_set",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 2,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "a pain flag set in the app flags the joint in the game",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [3],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "at": 1790715600,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790712000|0|0|0|0|0|0|3|9|1|0|0|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790712000|0|0|0|0|0|0|3|9|1|0|0|2176"
+          ]
+        },
+        "name": "app_pain_flags_joint",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 1,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "an app pump's felt-unwell stop (its pump row banked for feeling unwell) locks the game until the next game day",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 1,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": true,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [],
+              "source": 3,
+              "ts": 1790715600
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "at": 1790715720,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790715600|0|0|1|0|0|0|0|6|1|1|7|2176",
+          "1790715660|0|0|0|0|0|0|0|6|0|0|9|2180"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790715600|0|0|1|0|0|0|0|6|1|1|7|2176",
+            "1790715660|0|0|0|0|0|0|0|6|0|0|9|2180"
+          ]
+        },
+        "name": "app_stop_locks_day",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 2,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "the focus the app's row sets is the game's",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "strength",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "at": 1790715600,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790712000|0|0|0|0|0|0|0|16|2|0|0|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790712000|0|0|0|0|0|0|0|16|2|0|0|2176"
+          ]
+        },
+        "name": "app_focus",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 1,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "an app row never owes and never pays an unfinished move: its owed and banked move rows and a paid row that names the game's owed move leave the queue and the day's game counts as they were (its pump counts only in the app's beside them)",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 1,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                },
+                {
+                  "move": 43,
+                  "outcome": 8
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [],
+              "source": 3,
+              "ts": 1790719200
+            }
+          ],
+          "owed": 1,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "at": 1790719260,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                },
+                {
+                  "move": 43,
+                  "outcome": 8
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 1,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0",
+          "1790704920|0|26392|2|1|1|2|43|1|0|0|10|2208",
+          "1790719200|0|0|1|0|0|0|0|6|1|1|7|2176",
+          "1790719200|0|0|0|1|1|2|43|1|0|0|8|2176",
+          "1790719200|0|0|0|2|1|2|43|1|0|0|9|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0",
+            "1790719200|0|0|1|0|0|0|0|6|1|1|7|2176",
+            "1790719200|0|0|0|1|1|2|43|1|0|0|8|2176",
+            "1790719200|0|0|0|2|1|2|43|1|0|0|9|2176",
+            "1790704920|0|26392|2|1|1|2|43|1|0|0|10|2208"
+          ]
+        },
+        "name": "app_never_owes",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0"
+          ]
+        },
+        "taken": {
+          "app": 4,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "the game's sheet counts an app pump as it counts a catch-up (slice 27: its XP, its stats and its wins) and its Log names each app pump with its device, the phone's, the watch's and the computer's own pump (slice 35: the desktop app's, 11|12), its moves with their counts",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 3,
+              "pumps": 3,
+              "records": 3
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 12,
+          "hi_days": 0,
+          "last_set": 1790800260,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 1,
+                  "value": 14
+                }
+              ],
+              "source": 3,
+              "ts": 1790791200
+            },
+            {
+              "device": 2,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 1,
+                  "value": 15
+                }
+              ],
+              "source": 3,
+              "ts": 1790798400
+            },
+            {
+              "device": 3,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 1,
+                  "value": 16
+                }
+              ],
+              "source": 3,
+              "ts": 1790800200
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 16,
+          "rung": 2,
+          "xp": 393
+        },
+        "at": 1790802000,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791200|0|0|1|0|0|0|0|6|1|1|7|2176",
+          "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176",
+          "1790798400|0|0|1|0|0|0|0|6|1|1|7|2064",
+          "1790798460|0|0|0|0|1|2|43|1|15|30|1|2064",
+          "1790800200|0|0|1|0|0|0|0|6|1|1|7|6144",
+          "1790800260|0|0|0|0|1|2|43|1|16|30|1|6144"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|1|0|0|0|0|6|1|1|7|2176",
+            "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176",
+            "1790798400|0|0|1|0|0|0|0|6|1|1|7|2064",
+            "1790798460|0|0|0|0|1|2|43|1|15|30|1|2064",
+            "1790800200|0|0|1|0|0|0|0|6|1|1|7|6144",
+            "1790800260|0|0|0|0|1|2|43|1|16|30|1|6144"
+          ]
+        },
+        "name": "sheet_counts_app_pump_log_names",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 6,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "a catch-up the helper wrote for unfinished moves paid on the phone is the game's: it pays the owed move and its XP, and its Log entry names the phone",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 2,
+            "pumps": 2,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 8,
+          "hi_days": 0,
+          "last_set": 1790722800,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                },
+                {
+                  "move": 43,
+                  "outcome": 8
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 5
+                }
+              ],
+              "source": 2,
+              "ts": 1790722800
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 92
+        },
+        "at": 1790722860,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                },
+                {
+                  "move": 43,
+                  "outcome": 8
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 1,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0",
+          "1790722800|1|0|1|0|0|0|0|6|1|1|7|128",
+          "1790722800|1|26392|2|0|1|2|43|1|0|40|5|160",
+          "1790704920|1|26392|2|1|1|2|43|1|0|0|10|160"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0",
+            "1790722800|1|0|1|0|0|0|0|6|1|1|7|128",
+            "1790722800|1|26392|2|0|1|2|43|1|0|40|5|160",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|10|160"
+          ]
+        },
+        "name": "catchup_log_names_device",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0"
+          ]
+        },
+        "taken": {
+          "app": 0,
+          "catchup": 3,
+          "game": 0
+        }
+      },
+      {
+        "about": "a catch-up the helper wrote for unfinished moves paid in the desktop app (slice 35: the computer's bit 12, no app bit) is the game's as the phone's is: it pays the owed move and its XP, and its Log entry names the computer",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 2,
+            "pumps": 2,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 8,
+          "hi_days": 0,
+          "last_set": 1790722800,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                },
+                {
+                  "move": 43,
+                  "outcome": 8
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 3,
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 5
+                }
+              ],
+              "source": 2,
+              "ts": 1790722800
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 92
+        },
+        "at": 1790722860,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                },
+                {
+                  "move": 43,
+                  "outcome": 8
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 1,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0",
+          "1790722800|1|0|1|0|0|0|0|6|1|1|7|4096",
+          "1790722800|1|26392|2|0|1|2|43|1|0|40|5|4128",
+          "1790704920|1|26392|2|1|1|2|43|1|0|0|10|4128"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0",
+            "1790722800|1|0|1|0|0|0|0|6|1|1|7|4096",
+            "1790722800|1|26392|2|0|1|2|43|1|0|40|5|4128",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|10|4128"
+          ]
+        },
+        "name": "catchup_log_names_computer",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790704920|1|26392|2|1|1|2|43|1|0|0|8|0"
+          ]
+        },
+        "taken": {
+          "app": 0,
+          "catchup": 3,
+          "game": 0
+        }
+      },
+      {
+        "about": "a row the save holds already is kept once; two rows alike in the mirror's list (two sets in one second) stay two",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 15,
+          "hi_days": 0,
+          "last_set": 1790791320,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 14,
+          "rung": 2,
+          "xp": 183
+        },
+        "at": 1790877600,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 15,
+          "hi_days": 0,
+          "last_set": 1790791260,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 14,
+          "rung": 2,
+          "xp": 147
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176",
+          "1790791320|0|0|0|0|1|2|43|1|12|30|2|2176",
+          "1790791320|0|0|0|0|1|2|43|1|12|30|2|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176",
+            "1790791320|0|0|0|0|1|2|43|1|12|30|2|2176",
+            "1790791320|0|0|0|0|1|2|43|1|12|30|2|2176"
+          ]
+        },
+        "name": "alike_twice_kept_once",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791260|0|0|0|0|1|2|43|1|14|30|1|2176"
+          ]
+        },
+        "taken": {
+          "app": 2,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "after /qp reset all an app row dated before the reset stays out; one after it counts",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 1,
+              "pumps": 0,
+              "records": 1
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 10,
+          "hi_days": 0,
+          "last_set": 1790794800,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790791260
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 12,
+          "rung": 2,
+          "xp": 112
+        },
+        "at": 1790798400,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790791260,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790791260
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790791200|1|0|0|0|0|0|0|14|0|0|0|0",
+          "1790791200|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790791260|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790791260|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790794800|0|0|0|0|1|2|43|1|12|30|1|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790791200|1|0|0|0|0|0|0|14|0|0|0|0",
+            "1790791200|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790791260|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790791260|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791140|0|0|0|0|1|2|43|1|30|30|1|2176",
+            "1790794800|0|0|0|0|1|2|43|1|12|30|1|2176"
+          ]
+        },
+        "name": "app_before_reset_out",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "reset_at": 1790791200,
+          "rows": [
+            "1790791200|1|0|0|0|0|0|0|14|0|0|0|0",
+            "1790791200|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790791260|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790791260|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 1,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "a /qp reset all made in another install resets this save at the login: its rows from before the reset go (the save kept as the backup), its characters and profiles stay, and the mirror's rows from the reset on merge",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 1,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 8,
+          "hi_days": 0,
+          "last_set": 1790791260,
+          "locked": false,
+          "log": [],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 9,
+          "rung": 2,
+          "xp": 69
+        },
+        "at": 1790798400,
+        "backup_rows": 3,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+        "log": ["1790791200|2|0|0|0|0|0|0|14|0|0|0|0", "1790791260|0|0|0|0|1|2|43|1|9|30|3|2176"],
+        "mirror": {
+          "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+          "rows": ["1790791200|2|0|0|0|0|0|0|14|0|0|0|0", "1790791260|0|0|0|0|1|2|43|1|9|30|3|2176"]
+        },
+        "name": "reset_elsewhere",
+        "reset": 1790791200,
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 1,
+          "catchup": 0,
+          "game": 1
+        }
+      },
+      {
+        "about": "another install's characters by GUID: the mirror's character 2 (B) is not this save's 2 (C, met while the helper was off), so B joins as 3 and its rows and its pause move with it",
+        "after": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [2, 3],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "at": 1790712000,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 1,
+            "pumps": 1,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [2],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A", "Player-1-0000000C", "Player-1-0000000B"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790708400|2|0|0|0|0|0|0|15|3|0|0|0",
+          "1790710200|3|0|0|0|0|0|0|15|5|0|0|0"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790710200|2|0|0|0|0|0|0|15|5|0|0|0"
+          ]
+        },
+        "name": "chars_by_guid",
+        "save": {
+          "chars": ["Player-1-0000000A", "Player-1-0000000C", "Player-1-0000000B"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790708400|2|0|0|0|0|0|0|15|3|0|0|0"
+          ]
+        },
+        "taken": {
+          "app": 0,
+          "catchup": 0,
+          "game": 1
+        }
+      },
+      {
+        "about": "the app and the game each climbed the push ladder to the next rung before they synced: the later climb (the game's) changes nothing, so the day the app's set reached the new rung's top still counts toward the rung after it; the rung was reached first in the app, so the app's climb pays it and the game's pays nothing (slice 27: the pay moves to the first reach, never lost)",
+        "after": {
+          "best": 3,
+          "day": {
+            "app": {
+              "moves": 1,
+              "pumps": 1,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 9,
+          "hi_days": 1,
+          "last_set": 1790794800,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            },
+            {
+              "device": 1,
+              "moves": [
+                {
+                  "move": 44,
+                  "outcome": 3,
+                  "value": 35
+                }
+              ],
+              "source": 3,
+              "ts": 1790794800
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 3,
+          "xp": 245
+        },
+        "at": 1790802000,
+        "before": {
+          "best": 3,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 3,
+          "xp": 171
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+          "1790794800|0|0|1|0|0|0|0|6|1|1|7|2176",
+          "1790794800|0|0|0|0|1|3|44|1|35|30|3|2176",
+          "1790798400|1|0|0|0|1|3|0|8|1|0|0|0"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+            "1790794800|0|0|1|0|0|0|0|6|1|1|7|2176",
+            "1790794800|0|0|0|0|1|3|44|1|35|30|3|2176"
+          ]
+        },
+        "name": "climbed_both_counts_kept",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790798400|1|0|0|0|1|3|0|8|1|0|0|0"
+          ]
+        },
+        "taken": {
+          "app": 3,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "the app climbed the push ladder two rungs while the game, not yet synced, climbed the first of them later: a climb to a rung below the ladder's rung now changes nothing, so the ladder keeps the app's rung",
+        "after": {
+          "best": 4,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 4,
+          "xp": 273
+        },
+        "at": 1790802000,
+        "before": {
+          "best": 3,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 3,
+          "xp": 171
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+          "1790794800|0|0|0|0|1|4|0|8|1|0|0|2176",
+          "1790798400|1|0|0|0|1|3|0|8|1|0|0|0"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+            "1790794800|0|0|0|0|1|4|0|8|1|0|0|2176"
+          ]
+        },
+        "name": "climb_below_changes_nothing",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790798400|1|0|0|0|1|3|0|8|1|0|0|0"
+          ]
+        },
+        "taken": {
+          "app": 2,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "a rung climbed in the app is reached in the game and pays its climb there once (slice 27: the sheet counts an app pump as a catch-up's)",
+        "after": {
+          "best": 3,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 3,
+          "xp": 171
+        },
+        "at": 1790794800,
+        "before": {
+          "best": 2,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 69
+        },
+        "chars": ["Player-1-0000000A"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176"
+          ]
+        },
+        "name": "app_climb_reached",
+        "save": {
+          "chars": ["Player-1-0000000A"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0"
+          ]
+        },
+        "taken": {
+          "app": 1,
+          "catchup": 0,
+          "game": 0
+        }
+      },
+      {
+        "about": "after a rung down in the game, the rung the app climbed stays reached (its colour is kept), and another install's climb back to it is Rekindled and pays nothing",
+        "after": {
+          "best": 3,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 3,
+          "xp": 171
+        },
+        "at": 1790881200,
+        "before": {
+          "best": 3,
+          "day": {
+            "app": {
+              "moves": 0,
+              "pumps": 0,
+              "records": 0
+            },
+            "banked": 0,
+            "moves": 0,
+            "pumps": 0,
+            "records": 0
+          },
+          "focus": "balanced",
+          "goal": 11,
+          "hi_days": 0,
+          "last_set": 1790704860,
+          "locked": false,
+          "log": [
+            {
+              "moves": [
+                {
+                  "move": 43,
+                  "outcome": 3,
+                  "value": 10
+                }
+              ],
+              "source": 1,
+              "ts": 1790704860
+            }
+          ],
+          "owed": 0,
+          "pain": [],
+          "paused": [],
+          "record": 10,
+          "rung": 2,
+          "xp": 171
+        },
+        "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+        "log": [
+          "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+          "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+          "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+          "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+          "1790794800|1|0|0|0|1|2|0|8|3|0|0|0",
+          "1790877600|2|0|0|0|1|3|0|8|1|0|0|0"
+        ],
+        "mirror": {
+          "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+            "1790794800|1|0|0|0|1|2|0|8|3|0|0|0",
+            "1790877600|2|0|0|0|1|3|0|8|1|0|0|0"
+          ]
+        },
+        "name": "climb_back_rekindled",
+        "save": {
+          "chars": ["Player-1-0000000A", "Player-1-0000000B"],
+          "rows": [
+            "1790704800|1|0|0|0|1|2|0|8|4|0|0|0",
+            "1790704860|1|26391|1|0|0|0|0|6|1|1|7|0",
+            "1790704860|1|26391|1|0|1|2|43|1|10|30|3|0",
+            "1790791200|0|0|0|0|1|3|0|8|1|0|0|2176",
+            "1790794800|1|0|0|0|1|2|0|8|3|0|0|0"
+          ]
+        },
+        "taken": {
+          "app": 0,
+          "catchup": 0,
+          "game": 1
+        }
+      }
+    ]
+  },
+  "pump_done": {
+    "about": "a pump banked at its Ready view: its pump_done frame names the pump by its offered time (row_ts) and how it ended in the outcome byte, one of ended's codes, which the helper hands the phones as the command's ended (0, done, from an addon before slice 29)",
+    "ended": {
+      "banked": 1,
+      "done": 0,
+      "paused": 2,
+      "skipped": 4,
+      "unwell": 3
+    },
+    "frame": {
+      "bytes": [42, 0, 69, 2, 74, 144, 5, 10, 0, 0, 0, 103, 23, 42, 69, 15, 233, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 1, 106, 186, 122, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 195, 0, 0],
+      "fields": {
+        "char_index": 1,
+        "checksum": 195,
+        "event": 5,
+        "event_no": 34,
+        "flags": 144,
+        "kind": 0,
+        "ladder": 0,
+        "level": 10,
+        "load_id": 10821,
+        "move_id": 0,
+        "outcome": 1,
+        "owed_reps": 0,
+        "owes": 0,
+        "quest_id": 26391,
+        "reps": 0,
+        "row_flags": 0,
+        "row_ts": 1790605842,
+        "rung": 0,
+        "seconds": 0,
+        "seq": 74,
+        "setup": 144,
+        "slot": 0,
+        "start_at": 0,
+        "state": 0,
+        "ts_client": 1042719,
+        "version": 2,
+        "yards_foot": 0,
+        "yards_mount": 0,
+        "yards_swim": 0,
+        "yards_taxi": 0
+      },
+      "name": "pump_done"
+    }
+  },
+  "reset": {
+    "about": "on the reset row the helper drops every row before it, and afterwards any row dated before it (a late catch-up for the deleted save)",
+    "kept": [
+      "1790605867|1|0|0|0|0|0|0|14|0|0|0|0",
+      "1790605868|1|0|0|0|2|3|0|8|4|0|0|0",
+      "1790605870|1|26394|1|0|18|1|130|4|0|60|5|0"
+    ],
+    "late": "1790605807|1|26391|1|0|0|0|2|1|0|0|5|160",
+    "rows": [
+      "1790605800|1|0|0|0|1|2|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|2|2|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|4|2|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|6|2|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|7|1|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|9|2|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|10|2|0|8|4|0|0|0",
+      "1790605800|1|0|0|0|24|1|0|8|4|0|0|0",
+      "1790605844|1|26392|1|0|0|0|0|6|1|1|7|0",
+      "1790605844|1|26392|1|0|0|0|0|13|1235|45|0|0",
+      "1790605858|1|26392|1|0|2|2|2|1|10|8|3|0",
+      "1790605861|1|26391|2|1|1|3|12|1|14|31|1|264",
+      "1790605862|1|0|0|0|0|0|3|9|1|0|0|0",
+      "1790605864|1|26392|1|0|6|2|95|3|0|42|6|4",
+      "1790605865|1|26393|2|0|0|0|0|6|2|0|9|4",
+      "1790605866|1|26392|1|0|0|0|0|13|1830|412|0|0",
+      "1790605867|1|0|0|0|0|0|0|14|0|0|0|0",
+      "1790605868|1|0|0|0|2|3|0|8|4|0|0|0",
+      "1790605870|1|26394|1|0|18|1|130|4|0|60|5|0"
+    ]
+  },
+  "setup": {
+    "about": "the setup word: cell 2's flags, bits 4-7 (setup in each frame's fields), in every frame since 2026-10-13; word's codes: present in every frame of an addon that paints it (0 from an older one: the helper cannot tell), check_again while the game's setup window asks for its Check again (on screen, or held back by a fight, a pump or a cinematic), helper_seen when the running load found QuestPump on the computer running, save_unread on a client that does not read its own save back (the Forever beta). From it the helper names Helper.step (contract/companion-api.yaml)",
+    "frames": [
+      {
+        "bytes": [42, 0, 69, 2, 26, 177, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 105, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0],
+        "fields": {
+          "char_index": 1,
+          "checksum": 32,
+          "event": 0,
+          "event_no": 17,
+          "flags": 177,
+          "kind": 0,
+          "ladder": 0,
+          "level": 10,
+          "load_id": 10821,
+          "move_id": 0,
+          "outcome": 0,
+          "owed_reps": 0,
+          "owes": 0,
+          "quest_id": 0,
+          "reps": 0,
+          "row_flags": 0,
+          "row_ts": 0,
+          "rung": 0,
+          "seconds": 0,
+          "seq": 26,
+          "setup": 176,
+          "slot": 0,
+          "start_at": 0,
+          "state": 0,
+          "ts_client": 1010000,
+          "version": 2,
+          "yards_foot": 0,
+          "yards_mount": 0,
+          "yards_swim": 0,
+          "yards_taxi": 0
+        },
+        "name": "the beta's first login without the helper: Check again on screen"
+      },
+      {
+        "bytes": [42, 0, 69, 2, 36, 145, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 144, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 0, 0],
+        "fields": {
+          "char_index": 1,
+          "checksum": 65,
+          "event": 0,
+          "event_no": 17,
+          "flags": 145,
+          "kind": 0,
+          "ladder": 0,
+          "level": 10,
+          "load_id": 10821,
+          "move_id": 0,
+          "outcome": 0,
+          "owed_reps": 0,
+          "owes": 0,
+          "quest_id": 0,
+          "reps": 0,
+          "row_flags": 0,
+          "row_ts": 0,
+          "rung": 0,
+          "seconds": 0,
+          "seq": 36,
+          "setup": 144,
+          "slot": 0,
+          "start_at": 0,
+          "state": 0,
+          "ts_client": 1020000,
+          "version": 2,
+          "yards_foot": 0,
+          "yards_mount": 0,
+          "yards_swim": 0,
+          "yards_taxi": 0
+        },
+        "name": "Play without them: Your setup, no Check again"
+      },
+      {
+        "bytes": [42, 0, 69, 2, 26, 113, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 105, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 0, 0],
+        "fields": {
+          "char_index": 1,
+          "checksum": 224,
+          "event": 0,
+          "event_no": 17,
+          "flags": 113,
+          "kind": 0,
+          "ladder": 0,
+          "level": 10,
+          "load_id": 10821,
+          "move_id": 0,
+          "outcome": 0,
+          "owed_reps": 0,
+          "owes": 0,
+          "quest_id": 0,
+          "reps": 0,
+          "row_flags": 0,
+          "row_ts": 0,
+          "rung": 0,
+          "seconds": 0,
+          "seq": 26,
+          "setup": 112,
+          "slot": 0,
+          "start_at": 0,
+          "state": 0,
+          "ts_client": 1010000,
+          "version": 2,
+          "yards_foot": 0,
+          "yards_mount": 0,
+          "yards_swim": 0,
+          "yards_taxi": 0
+        },
+        "name": "a client that reads its save back, the helper running: Check again on screen"
+      },
+      {
+        "bytes": [42, 0, 69, 2, 58, 81, 0, 10, 0, 0, 0, 0, 0, 42, 69, 15, 144, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48, 0, 0],
+        "fields": {
+          "char_index": 1,
+          "checksum": 48,
+          "event": 0,
+          "event_no": 42,
+          "flags": 81,
+          "kind": 0,
+          "ladder": 0,
+          "level": 10,
+          "load_id": 10821,
+          "move_id": 0,
+          "outcome": 0,
+          "owed_reps": 0,
+          "owes": 0,
+          "quest_id": 0,
+          "reps": 0,
+          "row_flags": 0,
+          "row_ts": 0,
+          "rung": 0,
+          "seconds": 0,
+          "seq": 58,
+          "setup": 80,
+          "slot": 0,
+          "start_at": 0,
+          "state": 0,
+          "ts_client": 1020000,
+          "version": 2,
+          "yards_foot": 0,
+          "yards_mount": 0,
+          "yards_swim": 0,
+          "yards_taxi": 0
+        },
+        "name": "the window finished"
+      }
+    ],
+    "word": {
+      "check_again": 32,
+      "helper_seen": 64,
+      "present": 16,
+      "save_unread": 128
+    }
+  },
+  "unwell": {
+    "about": "a move stopped or a pump banked for feeling unwell locks every pump until the next game day at 04:00 (the day turns at 04:00 local time; this file is in UTC)",
+    "locked_until": 1790654400,
+    "rows": ["1790605864|1|26392|1|0|6|2|95|3|0|42|6|4", "1790605865|1|26393|2|0|0|0|0|6|2|0|9|4"],
+    "utc_offset_s": 0
+  }
+}

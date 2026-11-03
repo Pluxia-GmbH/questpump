@@ -1,0 +1,30 @@
+{
+  "move": "heel_raise",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 4},
+  "working": ["shin"],
+  "props": [{"kind": "desk", "f": 21, "top": 82}],
+  "poses": {
+    "flat": {
+      "pelvis": [2, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"ik": [20.9, 97.2, 22], "pole": [-0.3, -1, 0.5], "hand": [0.45, -0.89, 0]},
+      "legs": {"foot": [0, 12], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "toes": {
+      "from": "flat",
+      "pelvis": [9, 105.4, 0],
+      "arms": {"ik": [25.6, 99.2, 22], "pole": [-0.3, -1, 0.5], "hand": [0.15, -0.99, 0]},
+      "legs": {"foot": [0, 12], "turn": 8, "knee_out": 4, "lift": 40}
+    }
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "toes", "s": 1.0, "phase": "onto_toes", "effort": 0.9},
+    {"hold": 0.4, "phase": "onto_toes", "effort": 1.0},
+    {"to": "flat", "s": 2.0, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "toes"
+}

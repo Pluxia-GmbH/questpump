@@ -1,0 +1,67 @@
+{
+  "move": "heel_reach_fold",
+  "view": "side",
+  "camera": {"yaw": -25, "pitch": 14},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 12], "turn": 4, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "tall",
+      "pelvis": [-12, 94.0, 0],
+      "trunk": [70, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [2, 68, 21], "pole": [-0.3, 0, 1], "hand": [0.15, -1, 0]}
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-15, 93.2, 0],
+      "trunk": [100, 0, 0],
+      "chest": [20, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [6, 36, 26], "pole": [-0.3, 0, 1], "hand": [0.05, -1, 0.05]}
+    },
+    "hold": {
+      "from": "tall",
+      "pelvis": [-21, 92.8, 0],
+      "trunk": [108, 0, 0],
+      "chest": [32, 0, 0],
+      "head": [18, 0, 0],
+      "arms": {"ik": [-1, 16, 31], "pole": [-0.2, 0.2, 1], "hand": [-0.25, -0.97, 0.05]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "hold_in": {"from": "hold", "trunk": [109, 0, 0]},
+    "bent": {"from": "hold", "pelvis": [-14, 88.5, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "hinge", "s": 1.4, "ease": "in", "phase": "fold_forward", "effort": 0.4},
+    {"to": "reach", "s": 1.2, "phase": "hands_down", "effort": 0.6},
+    {"to": "hold", "s": 1.4, "ease": "out", "phase": "reach_the_heels", "effort": 0.7},
+    {"to": "hold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "hold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "hold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "hold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "hinge", "s": 1.6, "ease": "in", "phase": "rise_slowly", "effort": 0.4},
+    {"to": "tall", "s": 1.4, "ease": "out", "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "hold",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "hold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "hold", "check": "height", "joint": "wrist_near", "max": 18}
+  ],
+  "note": "Standing feet together: a hinge from the hips, then the back rounds and the head hangs until the fingertips touch the floor beside the heels, both knees straight. The fault: the knees bend to reach the floor."
+}

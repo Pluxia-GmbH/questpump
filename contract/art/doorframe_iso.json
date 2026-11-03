@@ -1,0 +1,134 @@
+{
+  "move": "doorframe_iso",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 8},
+  "working": ["upper_arm", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "doorframe", "f": 50, "wall": "-l"}],
+  "poses": {
+    "stand": {
+      "line": {"pivot": "toes", "at": 28, "angle": 92, "width": 11, "lift": 0, "shift": 26, "gap": 0.3},
+      "chest": [0, 0, -15],
+      "head": [4, 0, 12],
+      "leg_near": {"foot": [28, -15], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [28, 37], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.5, -0.8, 0.4], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 130, 8], "pole": [0.5, -0.4, 0.85], "hand": [1, 0, 0]}
+    },
+    "step_a": {
+      "line": {"pivot": "toes", "at": 34, "angle": 96, "width": 11, "lift": 0, "shift": 26, "gap": 2},
+      "chest": [0, 0, -18],
+      "head": [4, 0, 14],
+      "leg_near": {"ik": [42, 16, -15], "pole": [1, 0.2, 0], "toe": [1, 0.1, 0]},
+      "leg_far": {"foot": [28, 37], "turn": 0, "lift": 10, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.5, -0.8, 0.4], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 130, 8], "pole": [0.5, -0.4, 0.85], "hand": [1, 0, 0]}
+    },
+    "step_b": {
+      "line": {"pivot": "toes", "at": 42, "angle": 101, "width": 11, "lift": 0, "shift": 26, "gap": 5},
+      "chest": [0, 0, -20],
+      "head": [4, 0, 16],
+      "leg_near": {"foot": [56, -15], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [28, 37], "turn": 0, "lift": 20, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.5, -0.8, 0.4], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 130, 8], "pole": [0.5, -0.4, 0.85], "hand": [1, 0, 0]}
+    },
+    "step_c": {
+      "line": {"pivot": "toes", "at": 50, "angle": 105, "width": 11, "lift": 0, "shift": 26, "gap": 2},
+      "chest": [0, 0, -22],
+      "head": [4, 0, 18],
+      "leg_near": {"foot": [56, -15], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"ik": [46, 18, 37], "pole": [1, 0.2, 0], "toe": [1, 0.1, 0]},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.5, -0.8, 0.4], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 130, 8], "pole": [0.5, -0.4, 0.85], "hand": [1, 0, 0]}
+    },
+    "lean": {
+      "line": {"pivot": "toes", "at": 56, "angle": 113.7, "width": 11, "lift": 0, "shift": 26, "gap": 0.3},
+      "chest": [0, 0, -25],
+      "head": [4, 0, 20],
+      "leg_near": {"foot": [56, -15], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [56, 37], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.5, -0.8, 0.4], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 130, 8], "pole": [0.5, -0.4, 0.85], "hand": [1, 0, 0]}
+    },
+    "in": {
+      "line": {"pivot": "toes", "at": 56, "angle": 105, "width": 11, "lift": 0, "shift": 26},
+      "chest": [0, 0, -25],
+      "head": [4, 0, 20],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.5, -0.8, 0.4], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 130, 8], "pole": [0.5, -0.4, 0.85], "hand": [1, 0, 0]},
+      "leg_near": {"foot": [56, -15], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [56, 37], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "out": {
+      "from": "in",
+      "line": {"pivot": "toes", "at": 56, "angle": 104.4, "width": 11, "lift": 0, "shift": 26},
+      "chest": [-1.5, 0, -25]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand"},
+    {"to": "step_a", "s": 0.35, "phase": "step_in", "effort": 0.3, "dynamic": true},
+    {"to": "step_b", "s": 0.35, "phase": "step_in", "effort": 0.35, "dynamic": true},
+    {"to": "step_c", "s": 0.35, "phase": "step_in", "effort": 0.4, "dynamic": true},
+    {"to": "lean", "s": 0.5, "phase": "lean_back", "effort": 0.5, "dynamic": true},
+    {"to": "in", "s": 0.7, "phase": "pull", "effort": 0.85, "dynamic": true},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.85},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.85},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.85},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.85},
+    {"to": "lean", "s": 0.7, "phase": "release", "effort": 0.5, "dynamic": true},
+    {"to": "step_c", "s": 0.5, "phase": "step_back", "effort": 0.4, "dynamic": true},
+    {"to": "step_b", "s": 0.35, "phase": "step_back", "effort": 0.35, "dynamic": true},
+    {"to": "step_a", "s": 0.35, "phase": "step_back", "effort": 0.3, "dynamic": true},
+    {"to": "stand", "s": 0.35, "phase": "step_back", "effort": 0.2, "dynamic": true}
+  ],
+  "key": "in",
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 70, "max": 110}
+  ]
+}

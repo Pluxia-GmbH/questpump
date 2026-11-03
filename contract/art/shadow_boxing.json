@@ -1,0 +1,56 @@
+{
+  "move": "shadow_boxing",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 8},
+  "working": ["pauldron", "upper_arm", "abdomen"],
+  "fast_phase": 0.5,
+  "poses": {
+    "guard": {
+      "pelvis": [0, 91, -1],
+      "trunk": [6, 0, -30],
+      "chest": [0, 0, -5],
+      "head": [2, 0, 35],
+      "arm_near": {"ik": [16.9, 146.5, 25.6], "pole": [0.1, -1, 0.4], "hand": [0.3, 1, -0.2]},
+      "arm_far": {"ik": [31.7, 144.0, -9.2], "pole": [0.1, -1, 0.4], "hand": [0.3, 1, -0.2]},
+      "leg_near": {"foot": [-24, 15], "turn": 40, "lift": 25, "knee_out": 30},
+      "leg_far": {"foot": [22, 10], "turn": -12, "lift": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "jab": {
+      "from": "guard",
+      "pelvis": [2, 90.6, -1],
+      "trunk": [8, 0, -32],
+      "chest": [0, 0, -12],
+      "head": [0, 0, 44],
+      "arm_near": {"ik": [16.9, 145.4, 28.4], "pole": [0.1, -1, 0.4], "hand": [0.3, 1, -0.2]},
+      "arm_far": {"ik": [79, 141, 3], "pole": [0, -0.7, 1], "hand": [1, 0.05, -0.1]}
+    },
+    "cross": {
+      "from": "guard",
+      "pelvis": [5, 90.4, 0],
+      "trunk": [10, 0, -6],
+      "chest": [0, 0, 8],
+      "head": [0, 0, -2],
+      "arm_near": {"ik": [62, 140, 0], "pole": [0, -0.7, 1], "hand": [1, 0.05, -0.1]},
+      "arm_far": {"ik": [37, 142.5, 18], "pole": [0.1, -1, 0.4], "hand": [0.3, 1, -0.2]},
+      "leg_near": {"foot": [-28.9, 23.6], "turn": 10, "lift": 40, "knee_out": 8}
+    }
+  },
+  "timeline": [
+    {"pose": "guard"},
+    {"to": "jab", "s": 0.16, "ease": "out", "phase": "punch", "effort": 0.9},
+    {"hold": 0.05, "phase": "punch", "effort": 0.9},
+    {"to": "guard", "s": 0.2, "phase": "back_to_chin", "effort": 0.5},
+    {"to": "cross", "s": 0.18, "ease": "inout", "phase": "punch", "effort": 1},
+    {"hold": 0.05, "phase": "punch", "effort": 1},
+    {"to": "guard", "s": 0.22, "phase": "back_to_chin", "effort": 0.5},
+    {"hold": 0.14, "phase": "back_to_chin", "effort": 0.4}
+  ],
+  "key": "cross",
+  "targets": [
+    {"at": "guard", "check": "height", "joint": "wrist_near", "min": 136},
+    {"at": "guard", "check": "height", "joint": "wrist_far", "min": 136},
+    {"at": "jab", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 150, "max": 172},
+    {"at": "cross", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 150, "max": 172}
+  ]
+}

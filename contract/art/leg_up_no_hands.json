@@ -1,0 +1,79 @@
+{
+  "move": "leg_up_no_hands",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 6},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hip": {
+      "from": "tall",
+      "pelvis": [1, 94.3, -3],
+      "arm_near": {"ik": [1, 101, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "knee": {
+      "from": "hip",
+      "pelvis": [-10, 93.6, -3],
+      "trunk": [33, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-10, 0, 0],
+      "arm_near": {"ik": [-9, 100, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "arm_far": {"ik": [44, 88, 12], "pole": [0, -0.5, 1], "hand": [0.6, -0.8, 0]},
+      "leg_far": {"ik": [43, 76, 12], "pole": [1, 1, 0.4], "toe": [1, -0.1, 0]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "hold": {
+      "from": "knee",
+      "pelvis": [-14, 93.5, -3],
+      "trunk": [32, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-14, 0, 0],
+      "arm_near": {"ik": [-13, 100, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "arm_far": {"ik": [61, 116.5, 12], "pole": [0, -1, 0.6], "hand": [0.77, 0.64, 0]},
+      "leg_far": {"ik": [73.5, 104, 10], "pole": [0, 1, 0.5], "toe": [-0.1, 0.99, 0]}
+    },
+    "free": {
+      "from": "hold",
+      "pelvis": [-12, 93.6, -3],
+      "trunk": [14, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-8, 0, 0],
+      "arm_near": {"ik": [-12, 101, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "arm_far": {"ik": [-12, 101, 24], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "leg_far": {"ik": [75.9, 90, 10], "pole": [0, 1, 0.5], "toe": [-0.1, 0.99, 0]}
+    },
+    "free_in": {"from": "free", "pelvis": [-12, 93.9, -3], "chest": [-6, 0, 0]},
+    "leg_low": {"from": "free", "leg_far": {"ik": [68, 58, 10], "pole": [0, 1, 0.5], "toe": [0.3, 0.95, 0]}}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "hip", "s": 0.8, "phase": "one_leg", "effort": 0.3},
+    {"to": "knee", "s": 1.1, "phase": "knee_up", "effort": 0.5},
+    {"to": "hold", "s": 1.3, "phase": "leg_out", "effort": 0.7},
+    {"to": "free", "s": 1.0, "phase": "hands_off", "effort": 0.9},
+    {"to": "free_in", "s": 1.2, "phase": "breathe", "effort": 0.9},
+    {"to": "free", "s": 1.2, "phase": "breathe", "effort": 0.9},
+    {"to": "hold", "s": 1.0, "phase": "catch", "effort": 0.7},
+    {"to": "knee", "s": 1.1, "phase": "lower", "effort": 0.4},
+    {"to": "hip", "s": 0.8, "phase": "lower", "effort": 0.3},
+    {"to": "tall", "s": 0.7, "phase": "stand_tall", "effort": 0.2}
+  ],
+  "key": "free",
+  "fault": {"pose": "leg_low", "caption": "leg_drops", "breaks": {"check": "height", "joint": "ankle_far", "min": 85}},
+  "targets": [
+    {"at": "free", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "free", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165},
+    {"at": "free", "check": "height", "joint": "ankle_far", "min": 85}
+  ],
+  "note": "The standing big toe hold: the near leg stands straight, the far hand holds the far big toe with the leg straight ahead; then the far hand lets go to the hip and the leg stays up by itself at hip height, the body tall, and the hand takes the toe again before the leg comes down."
+}

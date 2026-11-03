@@ -1,0 +1,94 @@
+{
+  "move": "duck_walk",
+  "view": "side",
+  "camera": {"yaw": 40, "pitch": 4},
+  "working": ["thigh"],
+  "poses": {
+    "stand": {
+      "from": "set",
+      "pelvis": [0, 93.5, 0],
+      "trunk": [2, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [8, 6, 12]},
+      "leg_near": {"foot": [10, 18], "turn": 12, "knee_out": 8},
+      "leg_far": {"foot": [-10, 18], "turn": 12, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "set": {
+      "pelvis": [-20, 49, 0],
+      "trunk": [32, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-22, 0, 0],
+      "arms": {"fk": [75, 16, 20]},
+      "leg_near": {"foot": [10, 18], "turn": 12, "knee_out": 20},
+      "leg_far": {"foot": [-10, 18], "turn": 12, "knee_out": 20},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "far_step": {
+      "from": "set",
+      "pelvis": [-8, 51.5, -4],
+      "trunk": [32, -4, 0],
+      "leg_far": {"foot": [10, 18], "turn": 12, "y": 6, "lift": 10, "knee_out": 20},
+      "contacts": ["toe_near"]
+    },
+    "far_ahead": {"from": "set", "pelvis": [0, 49, 0], "leg_far": {"foot": [30, 18], "turn": 12, "knee_out": 20}},
+    "near_step": {
+      "from": "far_ahead",
+      "pelvis": [12, 51.5, 4],
+      "trunk": [32, 4, 0],
+      "leg_near": {"foot": [30, 18], "turn": 12, "y": 6, "lift": 10, "knee_out": 20},
+      "contacts": ["toe_far"]
+    },
+    "near_ahead": {
+      "from": "far_ahead",
+      "pelvis": [20, 49, 0],
+      "leg_near": {"foot": [50, 18], "turn": 12, "knee_out": 20}
+    },
+    "near_back": {
+      "from": "near_ahead",
+      "pelvis": [8, 51.5, 4],
+      "trunk": [34, 4, 0],
+      "head": [-26, 0, 0],
+      "leg_near": {"foot": [30, 18], "turn": 12, "y": 5, "lift": 18, "knee_out": 20},
+      "contacts": ["toe_far"]
+    },
+    "far_back": {
+      "from": "far_ahead",
+      "pelvis": [-12, 51.5, -4],
+      "trunk": [34, -4, 0],
+      "head": [-26, 0, 0],
+      "leg_far": {"foot": [10, 18], "turn": 12, "y": 5, "lift": 18, "knee_out": 20},
+      "contacts": ["toe_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand"},
+    {"to": "set", "s": 1.3, "phase": "squat", "effort": 0.6},
+    {"hold": 0.2, "phase": "squat", "effort": 0.6},
+    {"to": "far_step", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "in"},
+    {"to": "far_ahead", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "out"},
+    {"to": "near_step", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "in"},
+    {"to": "near_ahead", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "out"},
+    {"hold": 0.2, "phase": "squat", "effort": 0.6},
+    {"to": "near_back", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "in"},
+    {"to": "far_ahead", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "out"},
+    {"to": "far_back", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "in"},
+    {"to": "set", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "out"},
+    {"hold": 0.2, "phase": "squat", "effort": 0.6},
+    {"to": "far_step", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "in"},
+    {"to": "far_ahead", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "out"},
+    {"to": "near_step", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "in"},
+    {"to": "near_ahead", "s": 0.3, "phase": "step_forward", "effort": 0.7, "ease": "out"},
+    {"hold": 0.2, "phase": "squat", "effort": 0.6},
+    {"to": "near_back", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "in"},
+    {"to": "far_ahead", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "out"},
+    {"to": "far_back", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "in"},
+    {"to": "set", "s": 0.3, "phase": "step_back", "effort": 0.7, "ease": "out"},
+    {"to": "stand", "s": 1.3, "phase": "stand_up", "effort": 0.5}
+  ],
+  "key": "near_step",
+  "targets": [{"at": "set", "check": "height", "joint": "pelvis", "max": 60}],
+  "props": [{"kind": "runner", "f0": -90, "f1": 110, "frame": [-40, 70]}]
+}

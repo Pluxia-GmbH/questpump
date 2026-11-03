@@ -1,0 +1,128 @@
+openapi: 3.1.1
+info:
+  title: QuestPump standing
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    Where a player stands among QuestPump's players, for the share cards' rarity line ("Only 4% of players have kept a
+    streak this long."), without any id (Rapha, 2026-10-21: "it has to be meaningful, and if true something like only
+    0.8% of all users achieved this"; "this is my decision. do it build it"). A share is given only when it is true of
+    enough players, and never names or counts one.
+
+    The files of the contract:
+
+    - this file: the route, its answer and how the shares are made;
+    - `contract/telemetry.json` `counts.points.standing` and `contract/telemetry-api.yaml`: the count point the apps
+      send once a game day, `streak_best` (the best streak ever, in game days, as a band) and `colour_top` (the highest
+      colour any ladder's step reached, 0 to 7), a fitness point sent only under the usage switch (a phone's on the
+      player's own yes); a phone always sends it, the desktop app only on a game day no phone was paired with it, so a
+      player counts once a day;
+    - `site/report/src/index.js` and `site/report/wrangler.toml`: the route on the report Worker (the apex alone) and
+      the tally, kept in the counts' Durable Object (`CountsBuffer`) and filled at the day's flush;
+    - the apps' share cards (the desktop app's `helper/dist/lib/share.js`, the phones' share windows): they ask this
+      route when a card that can carry the line is drawn and show the line only from a share given here;
+    - `.github/workflows/site.yml`: after each deploy, `GET /api/standing` must meet the Worker's 200 (the host's own
+      answer to an address it lacks is a 404 page).
+
+    **The tally.** At the day's flush (04:00 UTC) the Worker counts the `standing` points it writes to Analytics
+    Engine: one row a game day and band pair (`streak_best`, `colour_top`) with the number of points, nothing else; no
+    point, batch, source, version or country is kept with it, and the rows of game days older than the last 14
+    tallied are deleted at each flush. A batch an app sends late (its outbox keeps one up to 7 days) adds to its own
+    game day. A point whose game day is more than a day past the flush's UTC date, or older than the 14 days kept,
+    is left out of the tally: a batch's day is checked only to be a date, and one far ahead would become the last day
+    and delete the real ones.
+
+    **The shares.** Over the last `days` (7) tallied game days, ending at `day`, the last one: for each threshold, the
+    points whose band starts at or above it, over all the points of those days, rounded to three decimals. A streak's
+    thresholds are the starts of its bands from 3 (`3`, `7`, `14`, `30`, `60`, `100`, `180`, `365`), a colour's the
+    qualities from Common (`2` to `7`). Each player counts once for each of those days the app was used, so a player
+    who plays every day weighs more than one who plays once a week; players who play often also hold the longer
+    streaks and the higher colours, so the share runs high: it understates how rare a standing is, never overstates
+    it. The points come only from players whose usage switch is on (a phone's on their own yes), which the line's
+    words do not claim otherwise ("of players" means QuestPump's players who share their usage statistics). While the
+    days hold fewer than `min_points` (200) points, both maps are empty and no app shows a line.
+
+    **The apps.** An app asks this route only while a card that can carry the line is drawn (the share window), never
+    in the background, and reads `GET https://questpump.com/api/standing` with a 2-s timeout; it keeps the answer on
+    the device for the hour `Cache-Control` allows and draws the card without the line while none is held. The request
+    carries no id, body or token: the Worker reads nothing from it. A line is shown only for a share of at most 0.25
+    (rarer than one in four) and at least 0.001; under that it reads "fewer than 1 in 1,000".
+  x-limits:
+    days: 7
+    keep_days: 14
+    min_points: 200
+    max_age_s: 3600
+    streak_thresholds: [3, 7, 14, 30, 60, 100, 180, 365]
+    colour_thresholds: [2, 3, 4, 5, 6, 7]
+servers:
+  - url: https://questpump.com
+paths:
+  /api/standing:
+    get:
+      operationId: getStanding
+      summary: The share of players at or above each streak and colour threshold.
+      security: []
+      responses:
+        "200":
+          description: The shares, cached an hour at the edge and on the device.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=3600
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Standing"
+        "405":
+          description: A method other than GET or HEAD.
+        "500":
+          description: The Worker failed. The app draws the card without the line.
+    head:
+      operationId: headStanding
+      summary: The same answer without its body.
+      security: []
+      responses:
+        "200":
+          description: As GET, no body.
+components:
+  schemas:
+    Standing:
+      type: object
+      additionalProperties: false
+      required: [day, days, streak, colour]
+      properties:
+        day:
+          description: The last tallied game day, or null before the first tally.
+          type: [string, "null"]
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        days:
+          description: The game days the shares count over, ending at `day`.
+          const: 7
+        streak:
+          description: Each threshold in game days (3, 7, 14, 30, 60, 100, 180, 365) to the share of players whose best
+            streak reached it; empty while too few points.
+          type: object
+          propertyNames:
+            enum: ["3", "7", "14", "30", "60", "100", "180", "365"]
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+        colour:
+          description: Each colour's quality (2 Common to 7 Artifact) to the share of players whose highest step
+            reached it; empty while too few points.
+          type: object
+          propertyNames:
+            enum: ["2", "3", "4", "5", "6", "7"]
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+      example:
+        day: "2026-11-20"
+        days: 7
+        streak: {"3": 0.412, "7": 0.231, "14": 0.118, "30": 0.042, "60": 0.013, "100": 0.004, "180": 0.001, "365": 0}
+        colour: {"2": 0.61, "3": 0.274, "4": 0.093, "5": 0.021, "6": 0.004, "7": 0}

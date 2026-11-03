@@ -1,0 +1,182 @@
+{
+ "about": "Finding the helper when the saved address fails (contract/companion-api.yaml, GET /v1/hello; docs/companion.md, \"The companion\", item 1): the decision the phone's Finder makes from what each stage saw, which QuestPumpCore and the Android core replay (the helper has no Finder). The stages run in order and stop at the first that decides: the saved address (pairing.host), the computer's .local name (pairing.mdns; null when the pairing has none or the stage did not run), a Bonjour browse for _questpump._tcp (only Windows helpers advertise), then a sweep of the phone's own Wi-Fi /24 (foreground only); browse and sweep list only the addresses whose hello answered, in the order the Finder saw them. The saved address and the name get an authenticated ping at once; a candidate from the browse or the sweep gets one only after its hello matched. ping is what that ping gave: ok (the sealed pong opened; pong_host is its helper.host), refused (401), silent (no answer in time), unopened (an answer that does not open under the pairing's seal key) or denied (the device may not use its local network: iOS's Local Network, or Android 17's Nearby devices, under which the Android core reads a silent address as this); hello is what GET /v1/hello?c=<c> gave at that address, absent when it gave nothing that reads (no answer, or a helper from before this hello): c the challenge the phone drew for that request (16 bytes), n the 16 bytes the helper drew for its answer, h the first 8 bytes of HMAC-SHA256 keyed with the install's id (16 bytes) over \"questpump lan hello hid\", c and n, k the first 8 bytes of HMAC-SHA256 keyed with the hello key (seal.json's hello_key_hex) over \"questpump lan hello key\", c and n, each base64url without padding (since the release security review of 2026-10-31, L3: until then the hello showed the install's id and the key's id in plain, so any device on the network could follow the computer). The pairing's key is key_hex (seal.json's); pairing.hid is absent for a pairing made before the install id. wifi is the phone's Wi-Fi IPv4 address with its prefix length, null without one. The rule, in order: (1) saved denied: local_network_off. (2) saved ok: linked. (3) saved or name refused: new_code, unless its hello shows another helper (the pairing has an hid and the hello's h is not its), which goes on; (4) name ok: moved:<pong_host>. (5) each browse candidate, then each sweep candidate: it is the pairing's helper when its hello's h is pairing.hid's for that c and n, or, for a pairing without an hid, when its k is the pairing key's; another helper is skipped; the pairing's helper whose k is not the pairing key's is new_code; else ping ok is moved:<pong_host>, and any other ping skips it (an address that showed the right ids cannot seal). (6) Nothing decided: other_network when wifi is null or pairing.host lies outside the wifi network (its address and prefix), else no_answer. The hids are base64url of 16 bytes (AAEC… is bytes 0-15, AgIC… 16 times 2); the hellos are made with key_hex or, for a new pairing code and for another computer, 32 bytes of 7. Written with Node's crypto (2026-11-01).",
+ "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+ "cases": [
+  {
+   "about": "the saved address answers",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "ok", "pong_host": "192.168.1.106"},
+   "name": null,
+   "browse": [],
+   "sweep": [],
+   "expect": "linked"
+  },
+  {
+   "about": "the saved address refuses the bearer and its hello shows the same helper with another key: a new pairing code",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "refused", "hello": {"c": "Hpohz2WZgrNELlR4pHazkg", "n": "uLb717jiNxxo8HNc9Sj0uQ", "h": "Qcf8XqvMG4M", "k": "hXuSHDTwYvo"}},
+   "name": null,
+   "browse": [],
+   "sweep": [],
+   "expect": "new_code"
+  },
+  {
+   "about": "the saved address refuses the bearer and gives no hello (a helper from before hello): a new pairing code",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "refused"},
+   "name": null,
+   "browse": [],
+   "sweep": [],
+   "expect": "new_code"
+  },
+  {
+   "about": "found by the .local name: the pong's address moves the pairing",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": {"ping": "ok", "pong_host": "192.168.1.87"},
+   "browse": [],
+   "sweep": [],
+   "expect": "moved:192.168.1.87"
+  },
+  {
+   "about": "found by the Bonjour browse (a Windows helper whose name did not resolve)",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "GAMING-PC.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": {"ping": "silent"},
+   "browse": [{"host": "192.168.1.140", "hello": {"c": "3hdjvVRuZHLnykzN--kUfA", "n": "J813UuE3WCh4kUp8UxeDRg", "h": "c40V7CuooAk", "k": "JkkLFnIaYPE"}, "ping": "ok", "pong_host": "192.168.1.140"}],
+   "sweep": [],
+   "expect": "moved:192.168.1.140"
+  },
+  {
+   "about": "found by the sweep, past another helper on the same Wi-Fi, which is skipped",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": null,
+   "browse": [],
+   "sweep": [
+    {"host": "192.168.1.31", "hello": {"c": "mNoSUWnPDFpunxcdL9cqvg", "n": "B0SEarMTvNBdBaqsrnw_aQ", "h": "TsybV1mFiho", "k": "3x0wk2U9FCg"}},
+    {"host": "192.168.1.87", "hello": {"c": "3U_cMymv1EhhATBWgJ55EQ", "n": "FVPQH015m4oeVHn3BGvJDw", "h": "Jaaz0e-ubJ4", "k": "fPpDmabQnGA"}, "ping": "ok", "pong_host": "192.168.1.87"}
+   ],
+   "expect": "moved:192.168.1.87"
+  },
+  {
+   "about": "only another helper answers: skipped, so nothing answers",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": {"ping": "silent"},
+   "browse": [],
+   "sweep": [{"host": "192.168.1.31", "hello": {"c": "rGu-K4SM5eb9zCGllmeplw", "n": "jqbxYfZ7DlI9RBSkkycEbA", "h": "n_cPQxTgc0U", "k": "663FXwLD_9o"}}],
+   "expect": "no_answer"
+  },
+  {
+   "about": "the saved address went to another computer's helper: its refusal is not a new code, and the sweep finds the pairing's helper",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "refused", "hello": {"c": "NC8_eShoP90MgEP2dH7HTA", "n": "6VelzbpediExpPz8iL_gAQ", "h": "5Y1Lmo_gusM", "k": "mJhiBPcQzws"}},
+   "name": null,
+   "browse": [],
+   "sweep": [{"host": "192.168.1.87", "hello": {"c": "ogv3GII5gcMKsllkhtCqyA", "n": "uvjHTgOMMBrOjs2H8LSLog", "h": "y3VlMcq3-lk", "k": "n56lGcaEoZ0"}, "ping": "ok", "pong_host": "192.168.1.87"}],
+   "expect": "moved:192.168.1.87"
+  },
+  {
+   "about": "the helper moved and has a new pairing code: found by its install id, stopped by its key",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": null,
+   "browse": [],
+   "sweep": [{"host": "192.168.1.87", "hello": {"c": "Q2-kNHrqWye1rLW-50wF5Q", "n": "kWWMN485cFFRkY_jpGJjww", "h": "VMPZB_nJ4UE", "k": "iZaaRN8dDls"}}],
+   "expect": "new_code"
+  },
+  {
+   "about": "an address whose hello shows the pairing's install and key but whose pong does not open is skipped",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": null,
+   "browse": [],
+   "sweep": [{"host": "192.168.1.66", "hello": {"c": "u2AwJnJGAKl92C0QxSZoew", "n": "69AbK_YHNR1Vq54tWYj8OQ", "h": "sQHNdrhzOR8", "k": "P_aLwAM9_6U"}, "ping": "unopened"}],
+   "expect": "no_answer"
+  },
+  {
+   "about": "an answer recorded for another challenge (a replay of the pairing's helper's hello) shows no ids: skipped",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": null,
+   "browse": [],
+   "sweep": [{"host": "192.168.1.66", "hello": {"c": "2wz-L0SOokr0136kZ-dQDQ", "n": "sJTv_aNOEzbvFYJjmm1UXw", "h": "tPPxN6Bpzfc", "k": "k2YfPVvLZaM"}}],
+   "expect": "no_answer"
+  },
+  {
+   "about": "a pairing from before the install id: a candidate is taken on its key alone, and another key is skipped",
+   "pairing": {"host": "192.168.1.106"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": null,
+   "browse": [],
+   "sweep": [
+    {"host": "192.168.1.31", "hello": {"c": "2mpQLUX0rQNKfc61dfvaRA", "n": "kCEFXe99HHDhbay9wFmpPw", "h": "kQjcOVys4_w", "k": "7CJSnRekR6U"}},
+    {"host": "192.168.1.87", "hello": {"c": "j5NI49yaM7bwU_XfRoTgKQ", "n": "uUQa-Fp6k5nSMd7jY0lGvw", "h": "dTvZ_sGCLzc", "k": "nOj3Rxf-qI8"}, "ping": "ok", "pong_host": "192.168.1.87"}
+   ],
+   "expect": "moved:192.168.1.87"
+  },
+  {
+   "about": "the phone is on another network than the helper's last address",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "10.0.0.23/24",
+   "saved": {"ping": "silent"},
+   "name": {"ping": "silent"},
+   "browse": [],
+   "sweep": [],
+   "expect": "other_network"
+  },
+  {
+   "about": "the phone has no Wi-Fi address (mobile data only): another network",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": null,
+   "saved": {"ping": "silent"},
+   "name": {"ping": "silent"},
+   "browse": [],
+   "sweep": [],
+   "expect": "other_network"
+  },
+  {
+   "about": "nothing answers on the helper's own network",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "silent"},
+   "name": {"ping": "silent"},
+   "browse": [],
+   "sweep": [],
+   "expect": "no_answer"
+  },
+  {
+   "about": "a network wider than a /24: the saved address lies in another /24 of the phone's own network, so it is the same network",
+   "pairing": {"host": "10.0.1.5", "hid": "AAECAwQFBgcICQoLDA0ODw"},
+   "wifi": "10.0.3.9/16",
+   "saved": {"ping": "silent"},
+   "name": null,
+   "browse": [],
+   "sweep": [],
+   "expect": "no_answer"
+  },
+  {
+   "about": "iOS refused the Local Network: nothing else can answer",
+   "pairing": {"host": "192.168.1.106", "hid": "AAECAwQFBgcICQoLDA0ODw", "mdns": "Davids-MacBook-Air.local"},
+   "wifi": "192.168.1.23/24",
+   "saved": {"ping": "denied"},
+   "name": null,
+   "browse": [],
+   "sweep": [],
+   "expect": "local_network_off"
+  }
+ ]
+}

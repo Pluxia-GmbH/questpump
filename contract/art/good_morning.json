@@ -1,0 +1,25 @@
+{
+  "move": "good_morning",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 8},
+  "working": ["thigh", "abdomen"],
+  "poses": {
+    "top": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "legs": {"foot": [0, 14], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "bottom": {"from": "top", "pelvis": [-26, 88, 0], "trunk": [74, 0, 0], "head": [-12, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 1.6, "phase": "hips_back", "effort": 0.6},
+    {"hold": 0.3, "phase": "bottom", "effort": 0.8},
+    {"to": "top", "s": 1.2, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [{"at": "bottom", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}]
+}

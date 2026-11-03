@@ -1,0 +1,91 @@
+{
+  "move": "ball_slam",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 8},
+  "working": ["abdomen", "back"],
+  "ballistic": true,
+  "props": [{"kind": "mat", "f0": -40, "f1": 78}],
+  "items": [
+    {
+      "kind": "ball",
+      "r": 13,
+      "off": [0, -3.5, 0],
+      "free": [{"leave": 1.16, "land": 1.28, "lift": 1.95, "back": 2.05, "at": [34.9, 14, 0], "ease": "in"}]
+    }
+  ],
+  "poses": {
+    "pick": {
+      "pelvis": [-25, 52, 0],
+      "trunk": [62, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-32, 0, 0],
+      "arms": {"ik": [34.5, 23.3, 17.5], "pole": [0.3, 0.3, 1], "hand": [0.1, -1, -0.25]},
+      "legs": {"foot": [0, 18], "y": 1, "turn": 20, "knee_out": 34},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "chest": {
+      "from": "pick",
+      "pelvis": [2, 93, 0],
+      "trunk": [8, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [31.5, 121, 17.8], "pole": [0.2, -1, -0.1], "hand": [0.6, 0.8, -0.2]}
+    },
+    "face": {
+      "from": "pick",
+      "pelvis": [3, 95, 0],
+      "trunk": [4, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [39, 167, 18.0], "pole": [-0.2, -0.6, 1], "hand": [0.5, 0.85, -0.2]}
+    },
+    "overhead": {
+      "from": "pick",
+      "pelvis": [4, 98, 0],
+      "trunk": [-4, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [19, 197, 18.0], "pole": [-0.2, 0, 1], "hand": [0.25, 1, -0.2]},
+      "legs": {"foot": [0, 18], "y": 1, "turn": 20, "knee_out": 8, "lift": 14}
+    },
+    "whip": {
+      "from": "pick",
+      "pelvis": [-2, 95, 0],
+      "trunk": [8, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [42, 173, 18.0], "pole": [-0.2, 0, 1], "hand": [0.6, 0.8, -0.2]}
+    },
+    "release": {
+      "from": "pick",
+      "pelvis": [-12, 85, 0],
+      "trunk": [32, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [55, 109, 18.0], "pole": [-0.3, 0, 1], "hand": [0.7, -0.6, -0.2]}
+    },
+    "follow": {
+      "from": "pick",
+      "pelvis": [-20, 62, 0],
+      "trunk": [57, 0, 0],
+      "chest": [-2, 0, 0],
+      "head": [-28, 0, 0],
+      "arms": {"ik": [38, 40, 16], "pole": [0.1, 0, 1], "hand": [0.2, -1, -0.2]}
+    }
+  },
+  "timeline": [
+    {"pose": "pick"},
+    {"to": "chest", "s": 0.4, "phase": "lift_overhead", "effort": 0.7},
+    {"to": "face", "s": 0.2, "ease": "linear", "phase": "lift_overhead", "effort": 0.7},
+    {"to": "overhead", "s": 0.2, "ease": "out", "phase": "lift_overhead", "effort": 0.7},
+    {"hold": 0.12, "phase": "lift_overhead", "effort": 0.6},
+    {"to": "whip", "s": 0.12, "ease": "in", "phase": "slam_down", "effort": 1.0},
+    {"to": "release", "s": 0.12, "ease": "linear", "phase": "slam_down", "effort": 1.0},
+    {"to": "follow", "s": 0.24, "ease": "out", "phase": "slam_down", "effort": 0.9},
+    {"hold": 0.15, "phase": "slam_down", "effort": 0.5},
+    {"to": "pick", "s": 0.4, "phase": "pick_up", "effort": 0.5},
+    {"hold": 0.15, "phase": "pick_up", "effort": 0.4}
+  ],
+  "key": "overhead",
+  "targets": [{"at": "pick", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}]
+}

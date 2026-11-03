@@ -1,0 +1,43 @@
+{
+  "move": "rollout_full",
+  "view": "side",
+  "camera": {"yaw": 34, "pitch": 10},
+  "working": ["abdomen", "pauldron"],
+  "props": [{"kind": "mat", "f0": -56, "f1": 150}],
+  "items": [{"kind": "wheel"}],
+  "poses": {
+    "tuck": {
+      "line": {"pivot": "knees", "at": -10, "angle": 70, "width": 12, "y": 1, "hips": -56},
+      "head": [-20, 0, 0],
+      "arms": {"ik": [69, 13.5, 12], "pole": [-1, 0, 0.4], "hand": [0.7, -0.6, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far"]
+    },
+    "out": {
+      "from": "tuck",
+      "line": {"pivot": "knees", "at": -10, "angle": 16, "width": 12, "y": 1, "hips": -2},
+      "head": [0, 0, 0],
+      "arms": {"ik": [128, 13.5, 12], "pole": [-1, 0, 0.4], "hand": [0.7, -0.6, 0]}
+    },
+    "sag": {
+      "from": "out",
+      "line": {"pivot": "knees", "at": -10, "angle": 8, "hips": 24, "width": 12, "y": 1},
+      "chest": [6, 0, 0],
+      "head": [3, 0, 0],
+      "arms": {"ik": [119, 13.5, 12], "pole": [-1, 0, 0.4], "hand": [0.7, -0.6, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tuck"},
+    {"hold": 0.3, "phase": "kneel"},
+    {"to": "out", "s": 1.6, "phase": "roll_out", "effort": 0.8},
+    {"hold": 0.2, "phase": "stretched", "effort": 1.0},
+    {"to": "tuck", "s": 1.4, "phase": "roll_back", "effort": 0.9}
+  ],
+  "key": "out",
+  "fault": {
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 165},
+    "pose": "sag"
+  },
+  "targets": [{"at": "out", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 165}]
+}

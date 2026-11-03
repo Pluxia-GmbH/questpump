@@ -1,0 +1,44 @@
+{
+  "move": "pistol",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh_near"],
+  "poses": {
+    "top": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [6, 0, 0],
+      "arms": {"fk": [82, 4, 6]},
+      "leg_near": {"foot": [0, 12], "turn": 22, "knee_out": 16},
+      "leg_far": {"fk": [32, 4, 6, -10]},
+      "contacts": ["toe_near"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-18, 34, 0],
+      "trunk": [34, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [128, 4, 4]},
+      "leg_far": {"fk": [130, 8, 4, 0]}
+    },
+    "heel_up": {
+      "from": "bottom",
+      "pelvis": [-18, 43, 0],
+      "leg_near": {"foot": [0, 12], "turn": 22, "knee_out": 16, "lift": 40},
+      "trunk": [30, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 1.6, "phase": "sit_down", "effort": 0.65},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.9},
+    {"to": "top", "s": 1.2, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "heel_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  }
+}

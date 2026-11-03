@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- The star: a five-point star cut into ten facets, a ridge from the centre to each point and each notch; lit from
+       the top left, so the facets darken in steps as they turn from the light, with a step between the two facets of
+       every point so each ridge shows. One plate in the tint: gold for an earned star (a TalentColumn pip, a star
+       reward's pip, a title toast's frame glyph), lineStrong for a pip not yet earned, text3 on a missed one; a star
+       reward's glyph takes its move's quality tone. Drawn as is, never
+       mirrored. -->
+  <path data-token="tint" fill="currentColor" d="
+    M12 2.28 L15.03 8.85 L22.22 9.7 L16.91 14.62 L18.32 21.72 L12 18.19 L5.68 21.72 L7.09 14.62 L1.78 9.7
+    L8.97 8.85 Z"/>
+  <path data-token="void" fill-opacity="0.08" d="
+    M12 13.03 L7.09 14.62 L1.78 9.7 Z"/>
+  <path data-token="void" fill-opacity="0.14" d="
+    M12 13.03 L12 2.28 L15.03 8.85 Z
+    M12 13.03 L5.68 21.72 L7.09 14.62 Z"/>
+  <path data-token="void" fill-opacity="0.24" d="
+    M12 13.03 L15.03 8.85 L22.22 9.7 Z
+    M12 13.03 L12 18.19 L5.68 21.72 Z"/>
+  <path data-token="void" fill-opacity="0.3" d="
+    M12 13.03 L18.32 21.72 L12 18.19 Z"/>
+  <path data-token="void" fill-opacity="0.4" d="
+    M12 13.03 L22.22 9.7 L16.91 14.62 Z
+    M12 13.03 L16.91 14.62 L18.32 21.72 Z"/>
+</svg>

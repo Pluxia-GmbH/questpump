@@ -1,0 +1,6 @@
+{
+  "move": "pushup_slow",
+  "variant_of": "pushup",
+  "phases": {"lower": 3.0, "push_up": 1.0},
+  "note": "Lower for 3, push up in 1: the push-up's frames on a slower table."
+}

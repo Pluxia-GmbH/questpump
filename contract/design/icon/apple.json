@@ -1,0 +1,76 @@
+{
+  "about" : "The Icon Composer settings of the app icon's two documents, hand-tuned (never generated): tools/icons.py writes each document's icon.json from its entry here, adding the fill (a linear gradient from the top of the document's ground SVG to its bottom) and the layers' files in Assets/ (each layer's image-name). `phone` is apple/iOS/AppIcon.icon and its copy for the desktop app on macOS (helper/src-tauri/icons/AppIcon.icon; squares shared by iOS, iPadOS and macOS), `watch` apple/Watch/AppIcon.icon (watchOS's circle). Groups run front to back. The mark is one glass group (the system's specular light on its edge, a neutral shadow, no translucency, so the steel, the gold and the parchment read as themselves); the watch's rim is its own group without glass. Blur stays off on every group: App Store Connect refused Icon Composer icons whose blurred group holds a layer reaching the canvas edge (ITMS-90717, Apple Developer Forums thread 795411). A change made in Icon Composer is copied back here, then `make icons`.",
+  "phone" : {
+    "groups" : [
+      {
+        "blur-material" : null,
+        "layers" : [
+          {
+            "glass" : true,
+            "image-name" : "mark.svg",
+            "name" : "mark"
+          }
+        ],
+        "shadow" : {
+          "kind" : "neutral",
+          "opacity" : 0.5
+        },
+        "specular" : true,
+        "translucency" : {
+          "enabled" : false,
+          "value" : 0.5
+        }
+      }
+    ],
+    "supported-platforms" : {
+      "squares" : "shared"
+    }
+  },
+  "watch" : {
+    "groups" : [
+      {
+        "blur-material" : null,
+        "layers" : [
+          {
+            "glass" : true,
+            "image-name" : "mark.svg",
+            "name" : "mark"
+          }
+        ],
+        "shadow" : {
+          "kind" : "neutral",
+          "opacity" : 0.5
+        },
+        "specular" : true,
+        "translucency" : {
+          "enabled" : false,
+          "value" : 0.5
+        }
+      },
+      {
+        "blur-material" : null,
+        "layers" : [
+          {
+            "glass" : false,
+            "image-name" : "rim.svg",
+            "name" : "rim"
+          }
+        ],
+        "shadow" : {
+          "kind" : "none",
+          "opacity" : 0.5
+        },
+        "specular" : true,
+        "translucency" : {
+          "enabled" : false,
+          "value" : 0.5
+        }
+      }
+    ],
+    "supported-platforms" : {
+      "circles" : [
+        "watchOS"
+      ]
+    }
+  }
+}

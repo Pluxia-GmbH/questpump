@@ -1,0 +1,42 @@
+{
+  "move": "backpack_deadlift",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh"],
+  "items": [{"kind": "backpack", "hand": "both"}],
+  "poses": {
+    "bottom": {
+      "pelvis": [-16.7, 87.5, 0],
+      "trunk": [72, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [29.5, 52.5, 10], "pole": [-0.2, 0, 1], "hand": [0.15, -1, -0.1]},
+      "legs": {"foot": [0, 17], "turn": 10, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "top": {
+      "from": "bottom",
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [27, 94, 12], "pole": [-0.2, 0, 1], "hand": [0.15, -1, -0.1]}
+    },
+    "lift": {
+      "from": "bottom",
+      "pelvis": [-9, 92, 0],
+      "trunk": [45, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [28.5, 73, 13], "pole": [-0.2, 0, 1], "hand": [0.15, -1, -0.1]}
+    }
+  },
+  "timeline": [
+    {"pose": "bottom"},
+    {"hold": 0.3, "phase": "back_flat", "effort": 0.5},
+    {"to": "lift", "s": 0.6, "phase": "stand_up", "effort": 1.0, "ease": "in"},
+    {"to": "top", "s": 0.6, "phase": "stand_up", "effort": 1.0, "ease": "out"},
+    {"hold": 0.3, "phase": "tall", "effort": 0.6},
+    {"to": "lift", "s": 0.75, "phase": "hips_back", "effort": 0.6, "ease": "in"},
+    {"to": "bottom", "s": 0.75, "phase": "hips_back", "effort": 0.6, "ease": "out"}
+  ],
+  "key": "bottom",
+  "targets": [{"at": "bottom", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}]
+}

@@ -1,0 +1,109 @@
+{
+  "move": "straight_bar_dip_lowering",
+  "view": "side",
+  "camera": {"yaw": 32, "pitch": 8},
+  "working": ["upper_arm", "pauldron", "chest"],
+  "props": [{"kind": "bar", "f": 8, "u": 130, "ground": true}, {"kind": "step", "f0": -56, "f1": -8, "u": 40}],
+  "poses": {
+    "top": {
+      "pelvis": [-4.2, 146.6, 0],
+      "trunk": [15, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {
+        "ik": [8, 130, 26],
+        "orbit": {"r": 6.4, "deg": -255, "plane": "fu"},
+        "pole": [-1, 0, 0.1],
+        "hand": [0.259, -0.966, 0]
+      },
+      "legs": {"fk": [15, 2, 15, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-18, 135, 0],
+      "trunk": [52, 0, 0],
+      "head": [-25, 0, 0],
+      "arms": {
+        "ik": [8, 130, 26],
+        "orbit": {"r": 6.4, "deg": -255, "plane": "fu"},
+        "pole": [-1, 0.2, 0.1],
+        "hand": [0.259, -0.966, 0]
+      },
+      "legs": {"fk": [76, 2, 40, -30]}
+    },
+    "half": {
+      "from": "bottom",
+      "pelvis": [-11, 142, 0],
+      "trunk": [34, 0, 0],
+      "head": [-18, 0, 0],
+      "legs": {"fk": [52, 2, 34, -30]}
+    },
+    "feet_down": {
+      "from": "bottom",
+      "pelvis": [-22, 132, 0],
+      "trunk": [40, 0, 0],
+      "head": [-20, 0, 0],
+      "legs": {"foot": [-26, 10], "y": 40, "turn": 6},
+      "contacts": [
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    },
+    "reach": {
+      "from": "bottom",
+      "pelvis": [-21, 134, 0],
+      "trunk": [44, 0, 0],
+      "head": [-22, 0, 0],
+      "legs": {"foot": [-27, 10], "y": 48, "turn": 6, "lift": 20}
+    },
+    "mid": {
+      "from": "top",
+      "pelvis": [-11.1, 140.8, 0],
+      "trunk": [33.5, 0, 0],
+      "head": [-17.5, 0, 0],
+      "arms": {
+        "ik": [8, 130, 26],
+        "orbit": {"r": 6.4, "deg": -255, "plane": "fu"},
+        "pole": [-1, 0.1, 0.1],
+        "hand": [0.259, -0.966, 0]
+      },
+      "legs": {"fk": [50, 2, 30, -30]}
+    },
+    "rise": {
+      "from": "feet_down",
+      "pelvis": [-12, 140, 0],
+      "trunk": [26, 0, 0],
+      "head": [-14, 0, 0],
+      "legs": {"foot": [-26, 10], "y": 40, "turn": 6, "lift": 30},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far", "toe_near", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.4, "phase": "lockout"},
+    {"to": "mid", "s": 2.5, "ease": "in", "phase": "lower_slowly", "effort": 0.8},
+    {"to": "bottom", "s": 2.5, "ease": "out", "phase": "lower_with_control", "effort": 0.85},
+    {"hold": 0.3, "phase": "chest_to_bar", "effort": 0.9},
+    {"to": "reach", "s": 0.5, "phase": "step_down", "effort": 0.5},
+    {"to": "feet_down", "s": 0.4, "ease": "out", "phase": "step_down", "effort": 0.4},
+    {"to": "rise", "s": 0.5, "phase": "step_up", "effort": 0.6, "ease": "in"},
+    {"to": "top", "s": 0.7, "phase": "step_up", "effort": 0.6, "ease": "out"}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "top", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "bottom", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 100}
+  ],
+  "fault": {
+    "pose": "half",
+    "caption": "chest_short",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 100}
+  },
+  "note": "The dip's top, then the lowering over five slow beats, about 5 s: two eased halves that meet at full speed, as the slow pull-up negative's do; the feet back on the box and up to the top again."
+}

@@ -1,0 +1,113 @@
+{
+  "move": "side_crow_straight",
+  "view": "front",
+  "camera": {"yaw": -10, "pitch": 18},
+  "working": ["forearm", "upper_arm", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -80, "f1": 50, "l0": -40, "l1": 85}],
+  "poses": {
+    "squat": {
+      "pelvis": [-2, 42, 12],
+      "trunk": [40, 0, 90],
+      "chest": [-8, 0, 0],
+      "head": [-20, 0, 0],
+      "arm_near": {"fk": [70, 10, 60, 0, 0]},
+      "arm_far": {"fk": [70, 25, 60, 0, 0]},
+      "leg_near": {"foot": [4, -34], "turn": -90, "lift": 0, "knee_out": 0, "pole": [0.1, 0, -1], "y": 1},
+      "leg_far": {"foot": [-8, 34], "turn": 90, "lift": 0, "knee_out": 0, "pole": [-0.1, 0, 1], "y": 1},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "turn": {
+      "from": "squat",
+      "pelvis": [5, 48, 11],
+      "trunk": [15, 25, 90],
+      "chest": [25, 25, 60],
+      "head": [-20, 0, 0],
+      "arm_near": {"ik": [-32, 36, -22], "pole": [1, 0.6, -0.3], "hand": [-1, -0.6, 0]},
+      "arm_far": {"ik": [-26, 34, -16], "pole": [1, 0.6, -0.3], "hand": [-1, -0.6, 0]}
+    },
+    "plant": {
+      "from": "squat",
+      "pelvis": [-4, 44, 10],
+      "trunk": [10, 60, 90],
+      "chest": [35, 0, 85],
+      "head": [-30, 0, 0],
+      "arm_near": {"ik": [-30, 4.3, -22], "pole": [1, 0.6, -0.3], "hand": [-1, -0.14, 0]},
+      "arm_far": {"ik": [-30, 4.3, -22], "pole": [1, 0.6, -0.3], "hand": [-1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "leg_near": {"foot": [4, -34], "turn": -90, "lift": 0, "knee_out": 0, "pole": [-0.3, 0.6, -1], "y": 1},
+      "leg_far": {"foot": [-8, 34], "turn": 90, "lift": 0, "knee_out": 0, "pole": [-0.3, -0.3, 1], "y": 1}
+    },
+    "prep": {
+      "from": "crow",
+      "pelvis": [-14, 70, 8],
+      "chest": [10, 0, 90],
+      "trunk": [0, 110, 90],
+      "leg_near": {"foot": [4, -34], "turn": -90, "lift": 55, "knee_out": 0, "pole": [0, 0.3, -1], "y": 1},
+      "leg_far": {"foot": [-8, 34], "turn": 90, "lift": 55, "knee_out": 0, "pole": [-0.5, 0, 0.5], "y": 1},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "crow": {
+      "pelvis": [-14, 67, 6],
+      "trunk": [0, 110, 90],
+      "chest": [15, 0, 90],
+      "head": [-45, 0, 0],
+      "arms": {"ik": [-30, 4.3, -22], "pole": [1, 0.6, -0.3], "hand": [-1, -0.14, 0]},
+      "leg_near": {"ik": [16, 77, -56], "pole": [-1, -0.3, -0.75], "toe": [1, 0.2, -0.2]},
+      "leg_far": {"ik": [18, 51, 50], "pole": [-1, -0.25, 0.6], "toe": [1, 0.2, 0.2]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "straight": {
+      "pelvis": [-16, 53, 6],
+      "trunk": [0, 100, 90],
+      "chest": [10, 0, 90],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [-30, 4.3, -22], "pole": [1, -0.3, -0.6], "hand": [-1, -0.14, 0]},
+      "leg_near": {"ik": [-40, 65, -90.9], "pole": [-1, -0.3, -0.75], "toe": [-0.1, 0.2, -1]},
+      "leg_far": {"ik": [-40, 41, 89.8], "pole": [-1, -0.25, 0.6], "toe": [-0.1, 0.2, 1]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "straight_in": {"from": "straight", "pelvis": [-16, 54.6, 6], "chest": [12, 0, 90]}
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.3, "phase": "squat_deep"},
+    {"to": "turn", "s": 0.5, "phase": "turn_to_knee", "effort": 0.3, "ease": "in"},
+    {"to": "plant", "s": 0.5, "phase": "turn_to_knee", "effort": 0.4, "ease": "out"},
+    {"to": "prep", "s": 0.6, "phase": "turn_to_knee", "effort": 0.5},
+    {"to": "crow", "s": 1.0, "phase": "float", "effort": 0.8},
+    {"to": "straight", "s": 1.3, "phase": "open_out", "effort": 0.9},
+    {"to": "straight_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "straight", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "straight_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "straight", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "crow", "s": 1.2, "phase": "tuck_and_squeeze", "effort": 0.8},
+    {"to": "prep", "s": 1.0, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "plant", "s": 0.5, "phase": "return_slowly", "effort": 0.4},
+    {"to": "turn", "s": 0.4, "phase": "return_slowly", "effort": 0.3, "ease": "in"},
+    {"to": "squat", "s": 0.4, "phase": "return_slowly", "effort": 0.2, "ease": "out"}
+  ],
+  "key": "straight",
+  "targets": [
+    {"at": "straight", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "straight", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "straight", "check": "height", "joint": "ankle_far", "min": 25},
+    {
+      "at": "straight",
+      "check": "angle",
+      "joints": ["shoulder_near", "elbow_near", "wrist_near"],
+      "min": 85,
+      "max": 125
+    }
+  ],
+  "note": "Parsva Bakasana with straight legs: from the side crow, the bottom thigh resting on the back of the near upper arm by the elbow, both legs stretch out straight to the side, stacked and a little forward, and stay off the floor, the arms bent like a low push-up and the gaze forward."
+}

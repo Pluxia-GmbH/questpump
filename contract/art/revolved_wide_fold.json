@@ -1,0 +1,108 @@
+{
+  "move": "revolved_wide_fold",
+  "view": "side",
+  "camera": {"yaw": 60, "pitch": 14},
+  "working": ["thigh", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "wide": {
+      "pelvis": [0, 79.5, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "legs": {"foot": [0, 58], "turn": 0, "knee_out": 0, "pole": [0.2, 0, 1]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "wide",
+      "pelvis": [-6, 79.3, 0],
+      "trunk": [80, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [8, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.9, -0.4, 0]}
+    },
+    "reach": {
+      "from": "wide",
+      "pelvis": [-8, 79.0, 0],
+      "trunk": [116, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [30, 4.2, 16], "pole": [-1, 0.3, 0.2], "hand": [1, -0.1, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {
+        "ik": [33.5, 57.0, 26],
+        "orbit": {"r": 53.6, "deg": 190.7, "plane": "ul"},
+        "pole": [-1, 0.3, 0.2],
+        "hand": [1, -0.1, 0]
+      }
+    },
+    "open": {
+      "from": "twist",
+      "trunk": [104, 0, 0],
+      "chest": [0, -3, -32],
+      "head": [0, 0, -18],
+      "arm_near": {
+        "ik": [39.4, 98, 13.8],
+        "orbit": {"r": 55.5, "deg": 100, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0.1, -0.1, 1]
+      }
+    },
+    "twist": {
+      "from": "reach",
+      "trunk": [96, 0, 0],
+      "chest": [0, -4, -60],
+      "head": [0, 0, -36],
+      "arm_far": {"ik": [50, 4.2, 6], "pole": [0.2, 0, 1], "hand": [1, -0.1, 0]},
+      "arm_near": {
+        "ik": [39.4, 98, 13.8],
+        "orbit": {"r": 55.5, "deg": 24, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0, 0.92, 0.4]
+      },
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "twist_in": {"from": "twist", "chest": [0, -4, -63]},
+    "bent": {
+      "from": "twist",
+      "pelvis": [-6, 76.5, 0],
+      "legs": {"foot": [0, 58], "turn": 0, "knee_out": 4, "pole": [1, 0, 0.6]}
+    }
+  },
+  "timeline": [
+    {"pose": "wide"},
+    {"hold": 0.4, "phase": "feet_wide"},
+    {"to": "hinge", "s": 1.4, "phase": "back_flat", "effort": 0.5},
+    {"to": "reach", "s": 1.2, "phase": "hands_down", "effort": 0.6},
+    {"to": "open", "s": 0.8, "phase": "arm_to_ceiling", "effort": 0.7, "ease": "in"},
+    {"to": "twist", "s": 0.8, "phase": "arm_to_ceiling", "effort": 0.75, "ease": "out"},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "open", "s": 0.7, "phase": "return_slowly", "effort": 0.65, "ease": "in"},
+    {"to": "reach", "s": 0.7, "phase": "return_slowly", "effort": 0.6, "ease": "out"},
+    {"to": "hinge", "s": 1.0, "phase": "rise_slowly", "effort": 0.5},
+    {"to": "wide", "s": 1.4, "phase": "rise_slowly", "effort": 0.4}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "twist", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "twist", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "twist", "check": "height", "joint": "wrist_far", "max": 6},
+    {"at": "twist", "check": "height", "joint": "hand_tip_near", "min": 140}
+  ],
+  "note": "Feet a leg-length apart, the trunk hinged to level with a flat back: the far palm on the floor under the face, the chest turning 60 degrees so the near arm reaches up in line with the shoulders, knees straight."
+}

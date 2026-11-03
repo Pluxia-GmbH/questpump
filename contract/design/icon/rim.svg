@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 1088">
+  <!-- The gold rim, drawn only where the icon's outline is known (the watches' circle, and the shapes QuestPump gives
+       its own icons: the favicon and its .ico, the Windows program icon, the macOS fallback icon, the addon's TGA;
+       never the site's mark or the tray): a stroke in
+       the primary button's gradient (goldHi, gold at 48 %, goldLo) from top to bottom. Here it rings the Apple Watch's
+       1088 canvas, its outer edge just inside the circular mask; tools/icons.py runs the same stroke, scaled, along
+       the other shapes' edges. -->
+  <defs>
+    <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="1068">
+      <stop offset="0" data-token="goldHi" stop-color="#F5CF6E"/>
+      <stop offset="0.48" data-token="gold" stop-color="#E8B84A"/>
+      <stop offset="1" data-token="goldLo" stop-color="#C8952F"/>
+    </linearGradient>
+  </defs>
+  <circle fill="none" stroke="url(#gold)" stroke-width="36" cx="544" cy="544" r="520"/>
+</svg>

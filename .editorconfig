@@ -1,0 +1,21 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.lua]
+indent_style = tab
+max_line_length = 120
+
+[*.{md,yml,yaml,json}]
+indent_style = space
+indent_size = 2
+
+# licence texts kept byte for byte as their packs ship them (some with CRLF): tools/sound.py and tools/ledger.py hold
+# their digests
+[{contract/design/sound/src/**,apple/iOS/Fonts/**,apple/Watch/Fonts/**,android/shared/src/main/assets/licenses/**}]
+end_of_line = unset
+insert_final_newline = unset
+charset = unset

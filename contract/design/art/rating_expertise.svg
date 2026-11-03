@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Expertise: a compass rose of four long points with four short ones in the notches between them, each long point
+       cut into a lit and a shaded facet along its spine; lit from the top left, the short points set back in shadow.
+       Drawn as is in the caller's tint. -->
+  <path data-token="tint" fill="currentColor" d="
+    M12 2 L14.33 9.67 L22 12 L14.33 14.33 L12 22 L9.67 14.33 L2 12 L9.67 9.67 Z
+    M14.33 9.67 L13.73 7.67 L16.95 7.05 L16.33 10.27 Z
+    M14.33 14.33 L16.33 13.73 L16.95 16.95 L13.73 16.33 Z
+    M9.67 14.33 L10.27 16.33 L7.05 16.95 L7.67 13.73 Z
+    M9.67 9.67 L7.67 10.27 L7.05 7.05 L10.27 7.67 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12 12 V2 L14.33 9.67 Z
+    M12 12 H22 L14.33 14.33 Z
+    M12 12 L14.33 14.33 L12 22 Z
+    M12 12 H2 L9.67 14.33 Z
+    M14.33 9.67 L13.73 7.67 L16.95 7.05 L16.33 10.27 Z
+    M14.33 14.33 L16.33 13.73 L16.95 16.95 L13.73 16.33 Z
+    M9.67 14.33 L10.27 16.33 L7.05 16.95 L7.67 13.73 Z
+    M9.67 9.67 L7.67 10.27 L7.05 7.05 L10.27 7.67 Z"/>
+</svg>

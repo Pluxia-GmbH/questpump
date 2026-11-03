@@ -1,0 +1,45 @@
+{
+  "move": "dragon_flag_adv_tuck",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 6},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "bench", "f0": -88, "f1": -33, "u": 44}],
+  "poses": {
+    "top": {
+      "pelvis": [18, 62, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-160, 0, 0],
+      "head": [72, 0, 0],
+      "arms": {"ik": [-30, 36, 26], "pole": [-1, -0.1, 0.2], "hand": [-0.3, 1, 0]},
+      "legs": {"fk": [10, 4, 90, -15]},
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "m1": {"from": "top", "pelvis": [33.5, 53, 0], "trunk": [-140, 0, 0], "head": [52, 0, 0]},
+    "m2": {"from": "top", "pelvis": [44, 41.5, 0], "trunk": [-123, 0, 0], "head": [35, 0, 0]},
+    "low": {"from": "top", "pelvis": [49.5, 30, 0], "trunk": [-110, 0, 0], "head": [22, 0, 0]},
+    "folded": {"from": "m1", "legs": {"fk": [85, 4, 120, -15]}}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "top"},
+    {"to": "m1", "s": 1.2, "ease": "in", "phase": "lower_slowly", "effort": 0.85},
+    {"to": "m2", "s": 0.6, "ease": "linear", "phase": "lower_slowly", "effort": 0.9},
+    {"to": "low", "s": 1.2, "ease": "out", "phase": "lower_slowly", "effort": 0.95},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.95},
+    {"to": "m2", "s": 0.6, "ease": "in", "phase": "lift_breathe_out", "effort": 1.0},
+    {"to": "m1", "s": 0.35, "ease": "linear", "phase": "lift_breathe_out", "effort": 1.0},
+    {"to": "top", "s": 0.6, "ease": "out", "phase": "lift_breathe_out", "effort": 1.0}
+  ],
+  "key": "m1",
+  "fault": {
+    "pose": "folded",
+    "caption": "hips_bend",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 150}
+  },
+  "targets": [
+    {"at": "top", "check": "offset", "joint": "pelvis", "from": "neck", "axis": "f", "min": 10},
+    {"at": "m1", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 150},
+    {"at": "m1", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 80, "max": 100},
+    {"at": "low", "check": "height", "joint": "ankle_near", "min": 12}
+  ]
+}

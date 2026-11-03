@@ -1,0 +1,71 @@
+{
+  "move": "spinal_twist_press",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 22},
+  "working": ["abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -60, "f1": 120}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [-14, 0, 0],
+      "arm_far": {"ik": [24, 74, -10], "pole": [0.5, 0, 1], "hand": [1, -0.5, -0.2]},
+      "arm_near": {"ik": [-8, 16.5, 32], "pole": [-0.6, 0, 1], "hand": [0.2, -1, 0.3]},
+      "leg_far": {"fk": [71.6, 0, 0, 0]},
+      "leg_near": {"foot": [22, 6], "y": 1, "turn": 0, "knee_out": 0, "pole": [0.3, 1, 0.1]},
+      "contacts": ["pelvis", "toe_near", "ankle_near", "ankle_far", "toe_far", "hand_tip_near"]
+    },
+    "press1": {
+      "from": "tall",
+      "trunk": [-14, 0, 0],
+      "chest": [0, 0, -70],
+      "head": [0, 0, -24],
+      "arm_far": {"ik": [37, 73, -35], "pole": [0.1, -1, -0.9], "hand": [0.3, 0.95, -0.1]},
+      "arm_near": {"ik": [-30, 16.5, 14], "pole": [-0.6, 0, 1], "hand": [-0.2, -1, 0.3]},
+      "leg_far": {"fk": [71.6, 0, 0, 0]}
+    },
+    "press2": {
+      "from": "press1",
+      "chest": [0, 0, -74],
+      "head": [0, 0, -27],
+      "arm_far": {"ik": [37, 73, -35], "pole": [0.1, -1, -0.9], "hand": [0.3, 0.95, -0.1]}
+    },
+    "press3": {
+      "from": "tall",
+      "trunk": [-14, 0, 0],
+      "chest": [0, 0, -78],
+      "head": [0, 0, -30],
+      "arm_far": {"ik": [37, 73, -35], "pole": [0.1, -1, -0.9], "hand": [0.3, 0.95, -0.1]},
+      "arm_near": {"ik": [-30, 16.5, 14], "pole": [-0.6, 0, 1], "hand": [-0.2, -1, 0.3]},
+      "leg_far": {"fk": [71.6, 0, 0, 0]}
+    },
+    "slump": {
+      "from": "press3",
+      "trunk": [-19, 0, 0],
+      "chest": [26, 10, -78],
+      "head": [10, 0, -30],
+      "arm_far": {"ik": [40, 62, -36], "pole": [0.1, -1, -0.9], "hand": [0.3, 0.95, -0.1]},
+      "leg_far": {"fk": [66.6, 0, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.8, "phase": "sit_tall"},
+    {"to": "press1", "s": 2.4, "phase": "turn_to_knee", "effort": 0.6},
+    {"hold": 1.4, "phase": "press", "effort": 0.6},
+    {"to": "press2", "s": 1.0, "phase": "sink", "effort": 0.3},
+    {"hold": 1.4, "phase": "press", "effort": 0.6},
+    {"to": "press3", "s": 1.0, "phase": "sink", "effort": 0.3},
+    {"hold": 1.4, "phase": "press", "effort": 0.6},
+    {"hold": 0.8, "phase": "sink", "effort": 0.3},
+    {"to": "tall", "s": 2.4, "phase": "sit_tall", "effort": 0.3}
+  ],
+  "key": "press3",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  },
+  "targets": [{"at": "press3", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}],
+  "note": "The seated spinal twist pressed and sunk: the far elbow hooked outside the bent knee, three rounds of a gentle press of the elbow and the knee into each other (the belly's runes glow), each followed by a little more turn, from 70 to 78 degrees."
+}

@@ -1,0 +1,7 @@
+{
+  "move": "chest_to_knees_press",
+  "variant_of": "chest_to_knees_bed",
+  "phases": {"breathe": 5.0},
+  "pause": {"phase": "breathe", "at": 0.0, "s": 5.0},
+  "note": "Press and sink: the chest-to-knees fold's frames with the press held 5 s before the slow ease deeper."
+}

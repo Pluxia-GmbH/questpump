@@ -1,0 +1,36 @@
+{
+  "move": "backpack_row",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["upper_arm", "pauldron"],
+  "props": [{"kind": "desk", "f": 60, "top": 74}],
+  "items": [{"kind": "backpack", "hand": "near"}],
+  "poses": {
+    "hang": {
+      "pelvis": [-10, 92, 0],
+      "trunk": [60, 0, 0],
+      "head": [-24, 0, 0],
+      "arm_far": {"ik": [64, 77.3, 20], "pole": [-0.3, -1, 0.6], "hand": [1, -0.15, 0]},
+      "arm_near": {"fk": [60, 12, 4]},
+      "leg_near": {"foot": [-32, 14], "turn": 8, "knee_out": 4},
+      "leg_far": {"foot": [14, 14], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "row": {"from": "hang", "arm_near": {"fk": [-5, 22, 70]}},
+    "rounded": {"from": "row", "trunk": [45, 0, 0], "chest": [32, 0, 0], "head": [-6, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.3, "phase": "arm_long"},
+    {"to": "row", "s": 1.0, "phase": "pull_to_hip", "effort": 1.0},
+    {"hold": 0.2, "phase": "squeeze", "effort": 0.9},
+    {"to": "hang", "s": 1.2, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "row",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [{"at": "row", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}]
+}

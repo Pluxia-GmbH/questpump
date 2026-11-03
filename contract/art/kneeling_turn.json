@@ -1,0 +1,109 @@
+{
+  "move": "kneeling_turn",
+  "view": "side",
+  "camera": {"yaw": 38, "pitch": 20},
+  "working": ["back"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -95, "f1": 85}],
+  "poses": {
+    "table": {
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -84, "y": 1},
+      "chest": [0, 0, 0],
+      "head": [5, 0, 0],
+      "arms": {"ik": [28, 4.3, 24], "pole": [-1, 0.2, 0.3], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lift": {
+      "from": "table",
+      "arm_far": {"ik": [56, 54, 30], "pole": [1, -0.5, 0.5], "hand": [1, 0.2, -0.2]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near"
+      ]
+    },
+    "closed": {
+      "from": "table",
+      "chest": [4, 0, -4],
+      "head": [5, 0, -2],
+      "arm_far": {"ik": [50.0, 68.0, 20.0], "pole": [1.0, -0.3, 0.9], "hand": [1, 0, -0.3]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near"
+      ]
+    },
+    "mid1": {
+      "from": "closed",
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -79, "y": 1},
+      "chest": [1, 0, 18],
+      "head": [0, -3, 6],
+      "arm_far": {"ik": [49, 80, 20], "pole": [0.8, 0, 1.0], "hand": [1, -0.2, -0.3]}
+    },
+    "mid2": {
+      "from": "closed",
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -73, "y": 1},
+      "chest": [-2, 0, 40],
+      "head": [-6, -5, 10],
+      "arm_far": {"ik": [46, 93, 15], "pole": [0.3, 0.7, 1.0], "hand": [1, -0.3, -0.2]}
+    },
+    "open": {
+      "from": "closed",
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -68, "y": 1},
+      "chest": [-5, 0, 60],
+      "head": [-12, -8, 15],
+      "arm_far": {"ik": [39, 102, 7], "pole": [-0.2, 1, 0.3], "hand": [1, -0.4, -0.1]}
+    },
+    "back": {
+      "from": "open",
+      "line": {"pivot": "knees", "at": -20, "angle": 102, "width": 12, "feet": "flat", "hips": -100, "y": 1}
+    }
+  },
+  "timeline": [
+    {"pose": "table"},
+    {"hold": 0.5, "phase": "hands_and_knees"},
+    {"to": "lift", "s": 0.6, "ease": "in", "phase": "hand_to_head", "effort": 0.3},
+    {"to": "closed", "s": 0.7, "ease": "out", "phase": "hand_to_head", "effort": 0.3},
+    {"to": "mid1", "s": 0.7, "ease": "in", "phase": "rotate_open", "effort": 0.5},
+    {"to": "mid2", "s": 0.6, "ease": "linear", "phase": "rotate_open", "effort": 0.6},
+    {"to": "open", "s": 0.7, "ease": "out", "phase": "rotate_open", "effort": 0.6},
+    {"hold": 6.0, "phase": "breathe", "effort": 0.7},
+    {"to": "mid2", "s": 0.6, "ease": "in", "phase": "return_slowly", "effort": 0.4},
+    {"to": "mid1", "s": 0.6, "ease": "linear", "phase": "return_slowly", "effort": 0.4},
+    {"to": "closed", "s": 0.6, "ease": "out", "phase": "return_slowly", "effort": 0.4},
+    {"to": "lift", "s": 0.6, "ease": "in", "phase": "return_slowly", "effort": 0.3},
+    {"to": "table", "s": 0.6, "ease": "out", "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "open",
+  "fault": {
+    "pose": "back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "knee_near", "axis": "f", "min": -6}
+  },
+  "targets": [
+    {"at": "open", "check": "offset", "joint": "pelvis", "from": "knee_near", "axis": "f", "min": -6},
+    {"at": "open", "check": "offset", "joint": "elbow_far", "from": "shoulder_far", "axis": "u", "min": 18}
+  ],
+  "note": "On hands and knees, hips over the knees: the far hand rests behind the far ear, then the chest turns 60 degrees so that elbow points at the ceiling, the near arm straight under its shoulder; the helm turns to follow the elbow."
+}

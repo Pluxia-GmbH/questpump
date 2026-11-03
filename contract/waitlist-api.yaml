@@ -1,0 +1,119 @@
+openapi: 3.1.1
+info:
+  title: QuestPump waitlist
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    The Story quests waitlist (docs/plan.md slice 35, where it is "QuestPump on its own", its public name until
+    2026-10-09): the cheapest test of demand for quests on days without a game, under that public name and with no game named on its pages, since a game's mark may not title a page that
+    tests demand for a paid mode. Its count is one of the two triggers for Pro story packs (1,000 sign-ups, read from
+    the mailbox with the repeats taken out; docs/plan.md, "Not in this plan"). Nothing in the game or on the addon's
+    pages names it.
+
+    The files of the contract:
+
+    - this file: the route, the form's body, the answers and the mail;
+    - `site/src/pages/on-its-own.astro`: the page and its form; `site/src/pages/on-its-own/joined.astro`, `later.astro`
+      and `sorry.astro`: the result pages the route sends the browser to (each with `Base.astro`'s `noindex`, so only a
+      sign-up reaches one); each sets `Base.astro`'s `trademark` false, and the `waitlist` rule of
+      `contract/copy/words.json` holds the four and the layout to naming no game;
+    - `site/report/src/index.js` and `site/report/wrangler.toml`: the route's Worker, the coach report's
+      (contract/coach-api.yaml) and the feedback button's (contract/feedback-api.yaml), with a third route, on both
+      hosts the Pages project serves;
+    - `site/public/_headers`: the site's CSP, whose `form-action 'self'` lets the form post to its own host;
+    - `.github/workflows/site.yml`: after each deploy, a post without an `Origin` must meet the route's 403 on both
+      hosts.
+
+    **Who sends.** A person, through the page's form in a browser: one email field (`type=email`, `autocomplete=email`,
+    at most 254 characters, required) and a hidden field, `website`, that a person never sees or reaches (out of
+    sight, `aria-hidden`, `tabindex=-1`) and a bot fills; one gold primary sends it as
+    `application/x-www-form-urlencoded`. The page runs no script, so the browser posts the form and follows the
+    answer's 303 to a result page. The form posts to the host its page came from, so the route takes both.
+
+    **The Worker.** A Cloudflare Worker on the routes `questpump.com/api/waitlist` and `www.questpump.com/api/waitlist`
+    (`site/report/`; deployed by the site's workflow; a Pages Function cannot hold the email binding). It answers 403
+    without reading the body unless the `Origin` header is exactly `https://questpump.com` or
+    `https://www.questpump.com` (a browser names the posting page's origin; a post with no `Origin`, or another one, is
+    no form of the site's), and 415 unless the media type is `application/x-www-form-urlencoded` (compared without
+    case, its parameters such as `charset` ignored). It reads at most 1,024 bytes of body (413 past them), and reads
+    exactly the two fields below, once each. A body that does not read, or an address that does not, sends the browser
+    to `sorry`; a filled `website` sends it to `joined` with nothing mailed, so a bot learns nothing. The limits, per
+    Cloudflare location: one sign-up a minute for a client address (an IPv4 address whole, an IPv6 address by its /64,
+    the feedback route's `addressNetwork`; a limiter key `waitlist:<the SHA-256 of that network>`, apart from the
+    feedback's, never stored or mailed), then 20 a minute for all sign-ups together; past either the browser goes to
+    `later`. Past the report Worker's 400 mails a UTC day for its routes but the crash reports' (since 2026-10-31) it
+    goes to `sorry`. Then it mails the sign-up to the support mailbox (below) and sends the browser to `joined`, or to
+    `sorry` when the mail did not go. It keeps nothing (Workers Logs off; an error line, seen only in a live `wrangler tail`,
+    names an error, never an address). Every 303 carries `Cache-Control: no-store` and a `Location` relative to the
+    host it was posted to.
+
+    **The mail.** From `waitlist@questpump.com` ("QuestPump waitlist", in the binding's `allowed_sender_addresses`) to
+    the support mailbox, the subject "Waitlist: Story quests", the text two lines, "Address: <the address>" and
+    "Signed up: 8 Oct 2026, 17:05 UTC" (the Worker's clock, written as the feedback mail writes `at`). No mail goes to
+    the person (a confirmation needs Cloudflare's paid Email Sending; a double opt-in is David's call), and an Email
+    Routing rule forwarding `waitlist@questpump.com` to the support mailbox catches a bounce or a reply (David's
+    external step, as for the other senders).
+
+    **What is kept, and how long.** The address and the time, in the support mailbox alone, to write one email when
+    Story quests open, on the person's consent (given by sending the form); deleted after that email, or on a
+    request to contact@questpump.com, within a month (questpump.com/privacy#waitlist and #delete).
+# a public form: a sign-up needs no credential (the Origin check and the limits guard it)
+security: []
+servers:
+  - url: https://questpump.com
+  - url: https://www.questpump.com
+paths:
+  /api/waitlist:
+    post:
+      operationId: waitlist
+      summary: A person joins the waitlist; the site mails the address to the support mailbox
+      description: |
+        A browser's form post from the site itself. Every outcome a person can meet is a 303 to a result page, which
+        the browser shows; the other answers meet only a request that is no form of the site's.
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema: { type: string, enum: ["https://questpump.com", "https://www.questpump.com"] }
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema: { $ref: "#/components/schemas/SignUp" }
+      responses:
+        "303":
+          description: |
+            The result page: `/on-its-own/joined` once the mail went, or for a filled `website` (nothing mailed);
+            `/on-its-own/later` past a limit (nothing mailed); `/on-its-own/sorry` for a body or an address that does
+            not read, or a mail that did not go.
+          headers:
+            Location:
+              required: true
+              schema: { type: string, enum: [/on-its-own/joined, /on-its-own/later, /on-its-own/sorry] }
+            Cache-Control:
+              required: true
+              schema: { type: string, const: no-store }
+        "403": { description: "No `Origin` header, or one that is neither of the site's two hosts (the body unread)" }
+        "405": { description: Not a POST }
+        "413": { description: A body larger than 1 KiB }
+        "415": { description: "A media type other than application/x-www-form-urlencoded (the body unread)" }
+components:
+  schemas:
+    SignUp:
+      type: object
+      required: [email, website]
+      additionalProperties: false
+      description: The form's two fields, each once, and no other (else a 303 to `sorry`).
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          description: |
+            The address the person typed, trimmed, then at most 254 Unicode scalar values (no lone surrogate): one `@`
+            between a part and a domain with no white space, control character, format character (Unicode's Cf, the
+            bidi controls among them) or any of `<>()",;:\`, and the domain at least two labels between dots.
+        website:
+          type: string
+          description: The bots' field, empty from a person; anything in it sends the browser to `joined`, nothing mailed.

@@ -1,0 +1,96 @@
+{
+  "move": "chair_twist_press",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 12},
+  "working": ["abdomen"],
+  "breathe": true,
+  "props": [{"kind": "chair", "f": -27, "back": "-f"}, {"kind": "desk", "f": 18, "top": 74}],
+  "poses": {
+    "sit": {
+      "pelvis": [-24, 60.5, 0],
+      "trunk": [-1, 0, 0],
+      "arms": {"ik": [-6, 68, 16], "pole": [-0.3, -0.6, 1], "hand": [1, -0.4, -0.1]},
+      "legs": {"foot": [18, 9], "turn": 4, "knee_out": 2},
+      "contacts": ["pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "turn": {
+      "from": "sit",
+      "trunk": [-2, 0, -4],
+      "chest": [0, 0, -18],
+      "head": [0, 0, -12],
+      "arm_far": {"ik": [12, 92, 8], "pole": [-0.2, -0.6, 1], "hand": [1, -0.3, -0.3]},
+      "arm_near": {"ik": [-52, 86, 30], "pole": [-0.3, 0.2, 1], "hand": [-1, -0.15, 0]}
+    },
+    "press1": {
+      "from": "sit",
+      "trunk": [-2, 0, -6],
+      "chest": [0, 0, -24],
+      "head": [0, 0, -18],
+      "arm_far": {"ik": [21, 77.4, 1], "pole": [-0.2, -0.6, 1], "hand": [1, -0.1, -0.35]},
+      "arm_near": {"ik": [-51.3, 80, 24.5], "pole": [-0.3, 0.4, 1], "hand": [0.1, -0.2, -1]},
+      "contacts": [
+        "pelvis",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_far",
+        "hand_tip_far",
+        "wrist_near",
+        "hand_tip_near"
+      ]
+    },
+    "press1_p": {"from": "press1", "chest": [-2, 0, -20], "head": [-2, 0, -15]},
+    "press2": {"from": "press1", "trunk": [-2, 0, -7], "chest": [0, 0, -30], "head": [0, 0, -21]},
+    "press2_p": {"from": "press2", "chest": [-2, 0, -26], "head": [-2, 0, -18]},
+    "press3": {
+      "from": "sit",
+      "trunk": [-3, 0, -8],
+      "chest": [0, 0, -36],
+      "head": [0, 0, -24],
+      "arm_far": {"ik": [21, 77.4, 1], "pole": [-0.2, -0.6, 1], "hand": [1, -0.1, -0.35]},
+      "arm_near": {"ik": [-51.3, 80, 24.5], "pole": [-0.3, 0.4, 1], "hand": [0.1, -0.2, -1]},
+      "contacts": [
+        "pelvis",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_far",
+        "hand_tip_far",
+        "wrist_near",
+        "hand_tip_near"
+      ]
+    },
+    "press3_p": {"from": "press3", "chest": [-2, 0, -32], "head": [-2, 0, -21]},
+    "slump": {"from": "press3", "trunk": [-12, 0, -8], "chest": [36, 18, -36], "head": [20, 0, -24]}
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.6, "phase": "sit_tall"},
+    {"to": "turn", "s": 1.2, "ease": "in", "phase": "rotate_open", "effort": 0.5},
+    {"to": "press1", "s": 1.2, "ease": "out", "phase": "rotate_open", "effort": 0.6},
+    {"to": "press1_p", "s": 0.6, "phase": "press", "effort": 0.6},
+    {"hold": 0.8, "phase": "press", "effort": 0.6},
+    {"to": "press2", "s": 1.0, "phase": "sink", "effort": 0.3},
+    {"to": "press2_p", "s": 0.6, "phase": "press", "effort": 0.6},
+    {"hold": 0.8, "phase": "press", "effort": 0.6},
+    {"to": "press3", "s": 1.0, "phase": "sink", "effort": 0.3},
+    {"to": "press3_p", "s": 0.6, "phase": "press", "effort": 0.6},
+    {"hold": 0.8, "phase": "press", "effort": 0.6},
+    {"to": "press3", "s": 0.8, "phase": "sink", "effort": 0.3},
+    {"to": "turn", "s": 1.0, "ease": "in", "phase": "return_slowly", "effort": 0.4},
+    {"to": "sit", "s": 1.2, "ease": "out", "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "press3",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  },
+  "targets": [
+    {"at": "press3", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "press3", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 80, "max": 110}
+  ],
+  "note": "The chair twist pressed and sunk: three rounds of a gentle press against the desk and the chair back (the belly's runes glow), the chest easing back a few degrees and lifting tall as it presses, each followed by a little more turn, ending at a 44-degree turn of the chest."
+}

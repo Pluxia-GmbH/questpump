@@ -1,0 +1,60 @@
+{
+  "move": "standing_hang_back",
+  "view": "side",
+  "camera": {"yaw": 4, "pitch": 4},
+  "working": ["abdomen", "back", "thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 13], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "arms_up": {"from": "tall", "arms": {"fk": [178, 8, 4]}},
+    "lean": {
+      "from": "tall",
+      "pelvis": [16, 91, 0],
+      "trunk": [-25, 0, 0],
+      "chest": [-35, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"fk": [180, 8, 4]}
+    },
+    "hang": {
+      "from": "tall",
+      "pelvis": [36, 84, 0],
+      "trunk": [-58, 0, 0],
+      "chest": [-66, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"fk": [185, 8, 4]}
+    },
+    "hang_in": {"from": "hang", "pelvis": [36.4, 83.6, 0], "trunk": [-60, 0, 0], "chest": [-67, 0, 0]},
+    "knees_back": {"from": "hang", "pelvis": [14, 90, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "arms_up", "s": 1.0, "phase": "arms_up", "effort": 0.3},
+    {"to": "lean", "s": 1.6, "phase": "hips_forward_chest_up", "effort": 0.55},
+    {"to": "hang", "s": 1.8, "phase": "hang_back", "effort": 0.85},
+    {"to": "hang_in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "hang", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "lean", "s": 1.8, "phase": "rise_slowly", "effort": 0.8},
+    {"to": "arms_up", "s": 1.4, "phase": "rise_slowly", "effort": 0.5},
+    {"to": "tall", "s": 0.9, "phase": "arms_down", "effort": 0.2}
+  ],
+  "key": "hang",
+  "fault": {
+    "pose": "knees_back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 20}
+  },
+  "targets": [
+    {"at": "hang", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 20},
+    {"at": "hang", "check": "height", "joint": "wrist_near", "max": 50},
+    {"at": "hang", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  ],
+  "note": "Standing, the feet hip-width: arms up by the ears, press the hips well forward over the toes, bend the knees and arch back, reaching the hands overhead toward the floor behind without landing; hold and breathe with the hips forward, then rise slowly the same way, arms by the ears."
+}

@@ -1,0 +1,29 @@
+{
+  "move": "db_lateral_raise",
+  "view": "front",
+  "camera": {"yaw": 26, "pitch": 8},
+  "working": ["pauldron"],
+  "items": [{"kind": "dumbbell", "hand": "both", "grip": "palms_down"}],
+  "poses": {
+    "down": {
+      "pelvis": [2, 94.4, 0],
+      "trunk": [2, 0, 0],
+      "arms": {"ik": [2, 86, 33], "pole": [-0.5, 0.2, 1], "hand": [0, -1, 0.15]},
+      "legs": {"foot": [0, 12], "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "up": {"from": "down", "arms": {"ik": [18, 136, 79], "pole": [-0.3, 1, 0], "hand": [0.05, -0.3, 1]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "up", "s": 1.2, "phase": "shoulder_height", "effort": 1.0},
+    {"hold": 0.3, "phase": "shoulder_height", "effort": 0.9},
+    {"to": "down", "s": 1.8, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "up",
+  "targets": [
+    {"at": "up", "check": "height", "joint": "elbow_near", "min": 136, "max": 150},
+    {"at": "up", "check": "height", "joint": "elbow_far", "min": 136, "max": 150}
+  ]
+}

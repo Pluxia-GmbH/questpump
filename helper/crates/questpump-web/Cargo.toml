@@ -1,0 +1,19 @@
+[package]
+name = "questpump-web"
+version = "0.1.0"
+description = "QuestPump in the browser (questpump.com/play): the addon's own engine on WebAssembly, for the page's Web Worker"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+# The one Emscripten crate (docs/plan.md slice 63, "One desk core"): it builds only for wasm32-unknown-emscripten, so
+# every dependency sits under that target and on the computer's targets the crate is an empty program, which keeps it
+# in the workspace (one Cargo.lock, cargo deny) without a C toolchain for the web in the desktop app's gates.
+[target.'cfg(target_os = "emscripten")'.dependencies]
+questpump-engine = { path = "../questpump-engine" }
+serde_json = "1"

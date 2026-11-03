@@ -1,0 +1,7 @@
+{
+  "move": "pike_fold_bed_press",
+  "variant_of": "pike_fold_bed",
+  "phases": {"breathe": 5.0},
+  "pause": {"phase": "breathe", "at": 0.0, "s": 5.0},
+  "note": "Press and sink: the pike fold on the bed's frames with the press held 5 s before the slow ease deeper."
+}

@@ -1,0 +1,32 @@
+{
+  "move": "pull_apart",
+  "view": "side",
+  "camera": {"yaw": 46, "pitch": 24},
+  "working": ["back", "pauldron"],
+  "items": [{"kind": "band", "strands": [["grip_near", "grip_far"]]}],
+  "poses": {
+    "front": {
+      "pelvis": [2, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [2.8, 141.2, 26], "orbit": {"r": 55.8, "deg": -14, "plane": "fl"}, "pole": [0, -1, 0.2]},
+      "legs": {"foot": [0, 14], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "apart": {
+      "from": "front",
+      "chest": [-3, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [1.6, 141.2, 26], "orbit": {"r": 55.8, "deg": 63, "plane": "fl"}, "pole": [-1, -0.4, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "front"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "apart", "s": 1.0, "phase": "pull_apart", "effort": 1.0},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "front", "s": 1.2, "phase": "return_slowly", "effort": 0.5}
+  ],
+  "key": "apart",
+  "targets": [{"at": "front", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}]
+}

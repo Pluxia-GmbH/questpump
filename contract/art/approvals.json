@@ -1,0 +1,333 @@
+{
+ "about": "David's approval of each move's motion (docs/plan.md slice 2, 'Review and approvals'): the sha256 of contract/art/<move>.json and the date; a changed file needs a new approval.",
+ "moves": {
+  "bed_heel_hamstring": {
+   "hash": "8dfc27b7e01a36674ad2571fd698963933bc02b52d728cbd9a5ac422ef2bf96a",
+   "date": "2026-10-28"
+  },
+  "bed_hip_stretch": {
+   "hash": "fa733a745ceb15e71a9885967327aa8d11ba2238b6fa0553c51f39da1a680d4c",
+   "date": "2026-10-28"
+  },
+  "big_toe_hold": {
+   "hash": "77856759f94eab3ba2fcd60a389ece9c161a913a20b3477e028bd6f1eb79280c",
+   "date": "2026-10-28"
+  },
+  "butterfly": {
+   "hash": "e0e47e9c9315195fe36cd7cc68101e04e76d0cd597e75ab16b69a37a4941ea60",
+   "date": "2026-10-28"
+  },
+  "butterfly_deep": {
+   "hash": "6339b4b5e2447b62bc2f9616758a80d6929733c92a33c6d8050fdd13bfc8d56c",
+   "date": "2026-10-28"
+  },
+  "chair_hamstring": {
+   "hash": "f2ac64929284158986e97d972ee534f9df4182e0d07f1501c70c53a3237fbd67",
+   "date": "2026-10-28"
+  },
+  "chair_hamstring_press": {
+   "hash": "28ca9daeccf00837ee35a87afec2d195c7323bdcb578c8f7d5cf54d2102abd45",
+   "date": "2026-10-28"
+  },
+  "chair_toe_reach": {
+   "hash": "e56e380901bdc20e6b4ecdacda97687d410865d13ae725c7dd2fab6f82face94",
+   "date": "2026-10-28"
+  },
+  "chair_twist": {
+   "hash": "2fb3b3ffa7db02f917b2543ce32052cf21c25ae7e57365a8efd3de1b2f8d2ff2",
+   "date": "2026-10-28"
+  },
+  "chair_twist_press": {
+   "hash": "cbc35a97ba792e158f3ebe54e7336a977392b525900a5b7dc3c2dab388cf91ad",
+   "date": "2026-10-28"
+  },
+  "chest_opener": {
+   "hash": "a70547adc6e669ac7e5d577aacfead8d2957447046a84e3d01096ac6e0fdec82",
+   "date": "2026-10-28"
+  },
+  "chest_to_knees_bed": {
+   "hash": "5e64bd4afa4135e5d98bed6a6347bc73f59c5618f0f22b1a5b27dfb1a8c62cb5",
+   "date": "2026-10-28"
+  },
+  "chest_to_knees_press": {
+   "hash": "debdb04bd3e5f4846d57fe0ed17d2339766f3d92967bc0cc4781c4a49f14164f",
+   "date": "2026-10-28"
+  },
+  "cobra": {
+   "hash": "14a4008066994ee528339d098045b365326c5cf486b2eb9a7e32e220364807ce",
+   "date": "2026-10-28"
+  },
+  "crow_prep": {
+   "hash": "3a71ee9d8fb00a96dcab0e56128a48585b339cc3d1151a687d805690ad894d70",
+   "date": "2026-10-28"
+  },
+  "desk_updog": {
+   "hash": "065b11d59132f858b09538fa7280384028a7d8db590acf5aa5e0a482e8c85cae",
+   "date": "2026-10-28"
+  },
+  "doorway_hamstring": {
+   "hash": "7c0144993308281238bf6026e77d52c4d68571003508ea377b32d03cf7aca10d",
+   "date": "2026-10-28"
+  },
+  "doorway_hamstring_wall": {
+   "hash": "6d8bdc66950435671513836b7f005938c5e7b40416018a0b8632572fc80e7111",
+   "date": "2026-10-28"
+  },
+  "downward_dog": {
+   "hash": "cd1bed323c2235b1ab3d4b19e0145d0d7b10c81175b753846a83ceee402b2c29",
+   "date": "2026-10-28"
+  },
+  "eagle": {
+   "hash": "feea8334e85f35a8f8213044789c052a2fdf18cb2167212877f2a2a2305e5e65",
+   "date": "2026-10-28"
+  },
+  "eagle_towel": {
+   "hash": "091e42f1cd7dd7f4b6ba8556a9a985d72d588e96a9cc07156eb58c573549cc1b",
+   "date": "2026-10-28"
+  },
+  "easy_twist": {
+   "hash": "2c0fafadba4e1608119a32815635b7ea028ff7a34b0de893b78fc4c9188d860b",
+   "date": "2026-10-28"
+  },
+  "feet_together_press": {
+   "hash": "f5e1dfae15d1f17c69a2edc18c1f27b6da9fafa585bc94f63881cbe48875eabc",
+   "date": "2026-10-28"
+  },
+  "figure_four": {
+   "hash": "3750d7010da8bd5e929d63ca1576af8143a19e1df28cb96f5175a070df544955",
+   "date": "2026-10-28"
+  },
+  "figure_four_fold": {
+   "hash": "85b6ecd60f4b12824e65031f4f5973988c558b98171208411ce79598a1f387ce",
+   "date": "2026-10-28"
+  },
+  "floor_reverse_lean": {
+   "hash": "368628f1ade1bb0e7f58f2882d8f1f771124eeeb8586fbe140480bf27c1d9acc",
+   "date": "2026-10-28"
+  },
+  "foot_up_twist": {
+   "hash": "45ef3070370f06a2f51b701fc9383df3c6a1ee6fcfa3b92605714ede29ad1b02",
+   "date": "2026-10-28"
+  },
+  "forward_fold": {
+   "hash": "b1e69aba735b5048f19e0a0dd0dae362bfd6d38f5430e510b33fc9c31b6d42ff",
+   "date": "2026-10-28"
+  },
+  "frog_pose": {
+   "hash": "a1d5421899c2abfa6270426c22e796dd206b71561c9698c2fcfe3f0d2c2ce85c",
+   "date": "2026-10-28"
+  },
+  "half_fish_bound": {
+   "hash": "a19cfe97618abe923a52521f337da6ab777e764d185cb987acadcdab88a4fb3e",
+   "date": "2026-10-28"
+  },
+  "half_fish_twist": {
+   "hash": "640e5c356f4e197c096c80c4c41a740738236e98aa785f711b4012c25f60610c",
+   "date": "2026-10-28"
+  },
+  "half_kneel_ankle": {
+   "hash": "9a72bd8d2794b88f88f5dfe8a3ef186a634aaacd5b6583a53bf86ac661015995",
+   "date": "2026-10-28"
+  },
+  "half_moon_bow": {
+   "hash": "4f0602b906622edcd7bd315ff3180e4f3c63c05e6c7839dd2d19caac1ced32b3",
+   "date": "2026-10-28"
+  },
+  "half_moon_float": {
+   "hash": "63072484a468a63820e686ef07e575dffee71d7088428241dbe2556cfe2c89c0",
+   "date": "2026-10-28"
+  },
+  "half_split_books": {
+   "hash": "362e2b8c6eec9f920eb10d3b4f46f8862a197d44db21811c367bb6b9430a79f9",
+   "date": "2026-10-28"
+  },
+  "head_knee_chest": {
+   "hash": "1704d7e1fb36aa4300943cd7f2e0f49857498b3ce0137a6286b1e9d40fa685db",
+   "date": "2026-10-28"
+  },
+  "head_knee_reach": {
+   "hash": "fd6d56ffeb896125c6eb8273f764096fd0980f511224e0b8acffedec9b548e01",
+   "date": "2026-10-28"
+  },
+  "heel_reach_fold": {
+   "hash": "a04756eb07dcd2da4a3e3c11a7e97d373a00b7f0cb52eac18c1c6b35ad1928d9",
+   "date": "2026-10-28"
+  },
+  "knee_out_hold": {
+   "hash": "e1be3c795e5d232a6f972bc173815a813b36b89bc649ec33d4067939b9fb0795",
+   "date": "2026-10-28"
+  },
+  "knee_to_wall": {
+   "hash": "0066113ad0c4dba1209caf9f67ea97afa6817974731f22f4e2ffcc88985c56d1",
+   "date": "2026-10-28"
+  },
+  "leg_lift_desk": {
+   "hash": "96fe857735c363e5667b6e14ac161008aa30125b112fd00774968fadaa0e5173",
+   "date": "2026-10-28"
+  },
+  "locust": {
+   "hash": "c99ec93db7a44dfac773aa420855ef8a5f71cb186116eb1a448454b19ca81945",
+   "date": "2026-10-28"
+  },
+  "low_lunge": {
+   "hash": "1e76fef7ef7efb37cadb9c324b44ab725b15b835558f78dac92df22d5e429a0d",
+   "date": "2026-10-28"
+  },
+  "lunge_foot_hold": {
+   "hash": "d2fcfd32b821985aabd88e3026192809d6ceeeade08c46b5e5ffb567a3cc48cc",
+   "date": "2026-10-28"
+  },
+  "lying_butterfly": {
+   "hash": "9bcb7dd4b4286e48c42494cb481ddcffd945a5957a23f3d936ec89f6219b53ea",
+   "date": "2026-10-28"
+  },
+  "lying_hamstring": {
+   "hash": "db15b82fbc34cc5d27705062416c2abb6110b9b3c1fae9b45ab0a9aa057b0242",
+   "date": "2026-10-28"
+  },
+  "middle_split_prep": {
+   "hash": "c097fdfc415eeae3386da51503b2c9017f9ac4ffe520828d68a0505d98a6d394",
+   "date": "2026-10-28"
+  },
+  "noose_press": {
+   "hash": "a443464eb20b52fa64513d7a0768f3915f2e7c3f1854ad6ea1d10ee683eaffde",
+   "date": "2026-10-28"
+  },
+  "overhead_squat": {
+   "hash": "0f5af9bf0f44abad12cf6f2416d491c3b176b92b4d909f250a5c84a81639b8ca",
+   "date": "2026-10-28"
+  },
+  "pyramid": {
+   "hash": "da4751bb90dcd441bad878978f3c4c177823e2552083b89f7f9f30e2a3563679",
+   "date": "2026-10-28"
+  },
+  "pyramid_desk": {
+   "hash": "f46e056fae38f687e04f67c7a5ac63896c30a59cc7302ffa7c738bf5fb85603a",
+   "date": "2026-10-28"
+  },
+  "pyramid_desk_press": {
+   "hash": "69c4da01284f9d84c22a4b035fd0b6a1ac92932c4884959d2e461c0e08e05753",
+   "date": "2026-10-28"
+  },
+  "quad_stretch": {
+   "hash": "7e2df17785037d4503707fe91ffbcf553ae3e73f19aef763ad096ed94ca264b5",
+   "date": "2026-10-28"
+  },
+  "quad_stretch_press": {
+   "hash": "005cfb319981d4e4598d76f387e4ecde8b8256db6b9c96b354fbaa4de30ca0ff",
+   "date": "2026-10-28"
+  },
+  "reverse_wrist_lean": {
+   "hash": "6429517efb20b48d4553bf58f368b8af711fe1ee6f8c813403f8187d1a06caf6",
+   "date": "2026-10-28"
+  },
+  "side_lunge": {
+   "hash": "2865ed6b8faf0897e1382a336926b50850cec277dd434edb37506aa744290887",
+   "date": "2026-10-28"
+  },
+  "side_lying_twist": {
+   "hash": "e081ad691c214227f8d18069101a286e2dc4cb4667534c87198fd8a1a59fe530",
+   "date": "2026-10-28"
+  },
+  "side_split_press_bed": {
+   "hash": "ea2eb906aa0df1574457404c64d241b71c05721fae65a8bcb1380f9757e0b386",
+   "date": "2026-10-28"
+  },
+  "side_toe_hold": {
+   "hash": "0fe698156c14ee387ed03c34871c4d47e09b2940e015d3f0b98299bfcfbe0282",
+   "date": "2026-10-28"
+  },
+  "side_wrist_lean": {
+   "hash": "405943e583282954f0020f30cd66415a68417e1a0ba977ea4b36903e114a4211",
+   "date": "2026-10-28"
+  },
+  "spinal_twist": {
+   "hash": "fadbd9138642fd6ab3097f8b9f6129809dc90156ccc081f2adcc57dd069c6d9d",
+   "date": "2026-10-28"
+  },
+  "spinal_twist_press": {
+   "hash": "df27f1bad9a0e9f5570e1328d4895d5121cae4eed15535db1a0c082b0605d0f3",
+   "date": "2026-10-28"
+  },
+  "split_low_tall": {
+   "hash": "d6c01815343dfa5e65548cc5b2f5111002b496deb519ca0177748b9481056dee",
+   "date": "2026-10-28"
+  },
+  "stand_to_stand": {
+   "hash": "eb2ba434faace2e46ee644495629829fe14f6d49b4c792f10a4e8b0dff26d0c6",
+   "date": "2026-10-28"
+  },
+  "standing_straddle_bed": {
+   "hash": "4d003f36a715f341288e0d3dcaf37cfd0cc44ba06671259a1c921086b4b7de0a",
+   "date": "2026-10-28"
+  },
+  "straddle_heel_lift": {
+   "hash": "4101e4324acf97c4b732cc8985d6493c9149a0f70e2c31c84de4eab3e1b37fd3",
+   "date": "2026-10-28"
+  },
+  "streak_banner": {
+   "hash": "5c7270e7c6bf50c204b91af9cb0b6ca7d6314749989209ed00ff436b2c719081",
+   "date": "2026-10-17"
+  },
+  "tiptoe_eagle": {
+   "hash": "d99421048a72a45d16436e962cb2b0c1fb01fb4f399422bd412740305e5c4cce",
+   "date": "2026-10-28"
+  },
+  "tiptoe_tree": {
+   "hash": "2e2d038c7707618d93cbc8626bd0d6a1b042ee9495ad2ff689417f4ffb0c9f01",
+   "date": "2026-10-28"
+  },
+  "toe_hold_fold": {
+   "hash": "b40454fe3a62f46466e1a2193e7cb3bfd5a2d5f4b46d7507cd39c0d3840f510a",
+   "date": "2026-10-28"
+  },
+  "towel_eyes_closed": {
+   "hash": "413095018a1a271ce42846b054c1e7692cfd6c1154bb71a7d5b84e2f3d5167fa",
+   "date": "2026-10-28"
+  },
+  "tree_eyes_closed": {
+   "hash": "e8c773721bf0677cf813885a22a214f2240d2275fcad629633e39ff4944f2a05",
+   "date": "2026-10-28"
+  },
+  "tree_eyes_up": {
+   "hash": "aca859fd73be3f39f847e16d86fdb810030038b02658f92bb8ca601bc42e2556",
+   "date": "2026-10-28"
+  },
+  "tree_pose": {
+   "hash": "d05d2badc450b609a0c4704a8378068d8e8e1995c5b1839f765f3177d3051916",
+   "date": "2026-10-28"
+  },
+  "wall_angels": {
+   "hash": "0d2b5d25962e115dfeaad3f2e33754468a448e8019b2a2713be2b343b90c032d",
+   "date": "2026-10-28"
+  },
+  "wall_straddle": {
+   "hash": "95d2d7dd2e79b9cab2839414f9f0c934cbc5c54478cfddf35ecdd191a67c4906",
+   "date": "2026-10-28"
+  },
+  "wall_twist": {
+   "hash": "08d102d617a50ce7fa48959b3216fc0d8112d1973bcc2252ca6626cb8eaf743d",
+   "date": "2026-10-28"
+  },
+  "wall_walk": {
+   "hash": "e633e1a1a2286fa4e0bb5c8fbb66f48c6512346909824dcaecb11e7694b70340",
+   "date": "2026-10-28"
+  },
+  "wheel": {
+   "hash": "534d269e4a3e385d4ab2f6184ec6baf9b48438b8886f9cfc75484e3411e0204c",
+   "date": "2026-10-28"
+  },
+  "wide_chair_stretch": {
+   "hash": "c9923a488fa74348da84b1bf3cbf7730224bd130e2b462be1554dcc8cb48b931",
+   "date": "2026-10-28"
+  },
+  "wrist_lean": {
+   "hash": "320d4dc658d6198eb07ea0cc7836a3218e095f74ffbfb299c5b484623bc2b90a",
+   "date": "2026-10-28"
+  },
+  "wrist_lean_press": {
+   "hash": "94774b42ee7ffa3e725323802b07500ecc180f4d1a5a8f78a463342b28ba516e",
+   "date": "2026-10-28"
+  }
+ }
+}

@@ -1,0 +1,38 @@
+{
+  "move": "pogo_hops",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 4},
+  "working": ["shin"],
+  "ballistic": true,
+  "fast_phase": 0.9,
+  "poses": {
+    "ground": {
+      "pelvis": [5, 100.5, 0],
+      "trunk": [3, 0, 0],
+      "arms": {"fk": [4, 8, 30]},
+      "legs": {"foot": [0, 10], "turn": 6, "lift": 22, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "push": {
+      "from": "ground",
+      "pelvis": [5, 107, 0],
+      "arms": {"fk": [8, 8, 32]},
+      "legs": {"foot": [0, 10], "turn": 6, "lift": 48, "knee_out": 4}
+    },
+    "air": {
+      "from": "push",
+      "pelvis": [5, 117, 0],
+      "arms": {"fk": [12, 8, 34]},
+      "legs": {"foot": [0, 10], "turn": 6, "y": 11, "lift": 45, "knee_out": 4},
+      "contacts": []
+    }
+  },
+  "timeline": [
+    {"pose": "ground"},
+    {"to": "push", "s": 0.13, "ease": "linear", "phase": "small_bounce", "effort": 0.9, "dynamic": true},
+    {"to": "air", "s": 0.12, "ease": "out", "phase": "small_bounce", "effort": 0.9},
+    {"to": "push", "s": 0.12, "ease": "in", "phase": "knees_straight", "effort": 0.8},
+    {"to": "ground", "s": 0.13, "ease": "linear", "phase": "knees_straight", "effort": 0.8}
+  ],
+  "key": "air"
+}

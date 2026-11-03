@@ -1,0 +1,117 @@
+{
+  "move": "wheel_foot_lift",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["pauldron", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -100, "f1": 66, "l0": -40, "l1": 40}],
+  "poses": {
+    "lie": {
+      "pelvis": [7, 16, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [-66, 4.3, 20], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "contacts": [
+        "pelvis",
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "leg_near": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "leg_far": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1}
+    },
+    "crown": {
+      "from": "lie",
+      "pelvis": [-4, 56, 0],
+      "trunk": [-105, 0, 0],
+      "chest": [-30, 0, 0],
+      "head": [0, 0, 0],
+      "contacts": [
+        "head",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel": {
+      "from": "lie",
+      "pelvis": [-18, 78, 0],
+      "trunk": [-95, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [-20, 0, 0],
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "tuck": {
+      "from": "lie",
+      "pelvis": [2, 46, 0],
+      "trunk": [-125, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [40, 0, 0],
+      "contacts": [
+        "neck",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lift_near": {
+      "from": "wheel",
+      "pelvis": [-18, 78, 1],
+      "leg_near": {"foot": [25, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 28},
+      "leg_far": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lift_far": {
+      "from": "wheel",
+      "pelvis": [-18, 78, -1],
+      "leg_near": {"foot": [34, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "leg_far": {"foot": [25, 14], "turn": 4, "pole": [0.2, 1, 0], "y": 28},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "hands_by_ears", "effort": 0.2},
+    {"to": "crown", "s": 1.2, "phase": "hips_up", "effort": 0.7},
+    {"to": "wheel", "s": 1.2, "phase": "arms_straight", "effort": 0.9},
+    {"to": "lift_near", "s": 0.9, "phase": "foot_up", "effort": 0.95},
+    {"hold": 1.0, "phase": "hold_two_seconds", "effort": 0.95},
+    {"to": "wheel", "s": 0.9, "phase": "foot_down", "effort": 0.9},
+    {"to": "lift_far", "s": 0.9, "phase": "foot_up", "effort": 0.95},
+    {"hold": 1.0, "phase": "hold_two_seconds", "effort": 0.95},
+    {"to": "wheel", "s": 0.9, "phase": "foot_down", "effort": 0.9},
+    {"to": "tuck", "s": 1.2, "phase": "tuck_chin", "effort": 0.6},
+    {"to": "lie", "s": 1.2, "phase": "lower_slowly", "effort": 0.3}
+  ],
+  "key": "lift_near",
+  "targets": [
+    {"at": "lift_near", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "lift_near", "check": "height", "joint": "ankle_near", "min": 20},
+    {"at": "lift_near", "check": "height", "joint": "head", "min": 20}
+  ],
+  "note": "In the wheel, arms straight and the head free: shift the weight onto one foot and the hands, lift the other foot a hand's height off the floor, the knee drawing in a little, and hold 2 s with the hips high; set it down softly and lift the other."
+}

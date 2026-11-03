@@ -1,0 +1,46 @@
+{
+  "move": "horse_stance",
+  "view": "front",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [0, 86, 0],
+      "trunk": [2, 0, 0],
+      "arms": {"ik": [-6, 97, 20], "pole": [-0.6, 0, 1], "hand": [0.2, -0.9, -0.4]},
+      "legs": {"foot": [0, 50], "turn": 8, "knee_out": 65},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "half": {
+      "from": "tall",
+      "pelvis": [-3, 79, 0],
+      "trunk": [6, 0, 0],
+      "arms": {"ik": [-9, 91, 20], "pole": [-0.6, 0, 1], "hand": [0.2, -0.9, -0.4]},
+      "legs": {"foot": [0, 50], "turn": 8, "knee_out": 85}
+    },
+    "half_in": {"from": "half", "pelvis": [-3, 78.4, 0], "chest": [-1, 0, 0]},
+    "caved": {"from": "half", "legs": {"foot": [0, 50], "turn": 8, "knee_out": 0}}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "feet_wide", "effort": 0.2},
+    {"to": "half", "s": 2.0, "phase": "sit_down", "effort": 0.6},
+    {"to": "half_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "half", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "half_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "half", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "tall", "s": 2.0, "phase": "stand_tall", "effort": 0.4}
+  ],
+  "key": "half",
+  "fault": {
+    "pose": "caved",
+    "caption": "knee_caves",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "l", "min": -6}
+  },
+  "targets": [
+    {"at": "half", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "u", "min": 26, "max": 36},
+    {"at": "half", "check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "l", "min": -6}
+  ],
+  "note": "Seen from in front: the feet twice shoulder-width apart and the toes ahead, the hands on the hips; the body sits straight down until the thighs are halfway to level, the knees pushed out over the toes and the chest up."
+}

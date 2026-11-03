@@ -1,0 +1,98 @@
+{
+  "move": "adv_tuck_planche",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 6},
+  "working": ["pauldron", "upper_arm", "chest", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -50, "f1": 100, "l0": -40, "l1": 40}],
+  "poses": {
+    "squat": {
+      "pelvis": [-13, 38, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [100, 8, 30, 0, 0]},
+      "legs": {"foot": [-14, 16], "y": 1, "turn": 10, "lift": 10, "knee_out": 0, "pole": [1, 0, 0.8]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "squat",
+      "pelvis": [-6, 44, 0],
+      "trunk": [72, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"ik": [30, 4.3, 26.5], "pole": [-1, 0.3, 0.3], "hand": [0.75, -0.12, 0.65]},
+      "legs": {"foot": [-14, 16], "y": 1, "turn": 10, "lift": 0, "knee_out": 0, "pole": [0.6, 0, 1]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prep": {
+      "pelvis": [10, 68, 0],
+      "trunk": [104, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [30, 4.3, 26.5], "pole": [-1, 0.3, 0.3], "hand": [0.75, -0.12, 0.65]},
+      "legs": {"foot": [-40, 14], "y": 1, "turn": 8, "lift": 55, "knee_out": 0, "pole": [0.4, 0, 1]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lift": {"from": "tuck", "legs": {"fk": [128, -4, 120, -10]}},
+    "tuck": {
+      "pelvis": [10, 68, 0],
+      "trunk": [104, 0, 0],
+      "chest": [6, 0, 0],
+      "head": [-45, 0, 0],
+      "arms": {"ik": [30, 4.3, 26.5], "pole": [-1, 0.3, 0.3], "hand": [0.75, -0.12, 0.65]},
+      "legs": {"fk": [130, -4, 128, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "adv": {
+      "from": "tuck",
+      "pelvis": [9, 61.5, 0],
+      "trunk": [99, 0, 0],
+      "chest": [1, 0, 0],
+      "head": [-40, 0, 0],
+      "legs": {"fk": [123, -4, 125, -55]}
+    },
+    "adv_in": {"from": "adv", "pelvis": [9, 62.3, 0], "trunk": [100, 0, 0], "legs": {"fk": [124, -4, 128, -55]}},
+    "round": {"from": "adv", "pelvis": [10, 59.6, 0], "chest": [20, 0, 0], "head": [-50, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.4, "phase": "squat_deep"},
+    {"to": "hands", "s": 0.9, "phase": "hands_down", "effort": 0.3},
+    {"to": "prep", "s": 1.0, "phase": "lean_forward", "effort": 0.6},
+    {"to": "lift", "s": 0.5, "phase": "knees_up", "effort": 0.8, "ease": "in"},
+    {"to": "tuck", "s": 0.5, "phase": "knees_up", "effort": 0.8, "ease": "out"},
+    {"to": "adv", "s": 1.0, "phase": "back_flat", "effort": 0.9},
+    {"to": "adv_in", "s": 1.0, "phase": "breathe", "effort": 0.95},
+    {"to": "adv", "s": 1.0, "phase": "breathe", "effort": 0.95},
+    {"to": "adv_in", "s": 1.0, "phase": "breathe", "effort": 0.95},
+    {"to": "adv", "s": 1.0, "phase": "breathe", "effort": 0.95},
+    {"to": "tuck", "s": 0.9, "phase": "lower_slowly", "effort": 0.7},
+    {"to": "lift", "s": 0.45, "phase": "lower_slowly", "effort": 0.6, "ease": "in"},
+    {"to": "prep", "s": 0.45, "phase": "lower_slowly", "effort": 0.6, "ease": "out"},
+    {"to": "hands", "s": 0.9, "phase": "rock_back", "effort": 0.4},
+    {"to": "squat", "s": 0.8, "phase": "sit_back", "effort": 0.2}
+  ],
+  "key": "adv",
+  "fault": {
+    "pose": "round",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  },
+  "targets": [
+    {"at": "adv", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "adv", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "adv", "check": "offset", "joint": "pelvis", "from": "shoulder_near", "axis": "u", "min": -6, "max": 8},
+    {"at": "adv", "check": "offset", "joint": "shoulder_near", "from": "wrist_near", "axis": "f", "min": 15},
+    {"at": "adv", "check": "height", "joint": "toe_near", "min": 15}
+  ]
+}

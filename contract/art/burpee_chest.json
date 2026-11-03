@@ -1,0 +1,6 @@
+{
+  "move": "burpee_chest",
+  "variant_of": "burpee_strict",
+  "phases": {"lower": 0.35, "push_up": 0.4},
+  "note": "The strict burpee's frames at an all-out pace: chest to the floor, push up, jump in, jump, counted for 30 s."
+}

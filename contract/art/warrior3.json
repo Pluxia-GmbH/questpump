@@ -1,0 +1,77 @@
+{
+  "move": "warrior3",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 6},
+  "working": ["thigh_near", "back", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [1, 94.3, -1],
+      "chest": [-3, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [176, 6, 2]}
+    },
+    "lift": {
+      "from": "reach",
+      "pelvis": [0, 94.3, -3],
+      "trunk": [4, 0, 0],
+      "leg_far": {"fk": [-10, 2, 30, 30]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "warrior": {
+      "from": "tall",
+      "pelvis": [-13, 93.3, -3],
+      "trunk": [90, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"fk": [180, 6, 0]},
+      "leg_far": {"fk": [0, 2, 0, 0]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "warrior_in": {"from": "warrior", "pelvis": [-13, 93.6, -3], "chest": [-1, 0, 0]},
+    "arched": {
+      "from": "warrior",
+      "pelvis": [-12, 93.3, -3],
+      "trunk": [86, 0, 0],
+      "chest": [-18, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"fk": [166, 6, 0]},
+      "leg_far": {"fk": [-22, 2, 0, 15]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 1.2, "phase": "arms_up", "effort": 0.3},
+    {"to": "lift", "s": 0.5, "phase": "one_leg", "effort": 0.4},
+    {"to": "warrior", "s": 1.8, "phase": "lean_forward", "effort": 0.7},
+    {"to": "warrior_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "warrior", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "warrior_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "warrior", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "lift", "s": 1.6, "phase": "rise_slowly", "effort": 0.5},
+    {"to": "tall", "s": 1.0, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "warrior",
+  "fault": {
+    "pose": "arched",
+    "caption": "low_back_arches",
+    "breaks": {"check": "angle", "joints": ["neck", "pelvis", "ankle_far"], "min": 170}
+  },
+  "targets": [
+    {"at": "warrior", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "warrior", "check": "angle", "joints": ["neck", "pelvis", "ankle_far"], "min": 170},
+    {"at": "warrior", "check": "angle", "joints": ["pelvis", "shoulder_near", "wrist_near"], "min": 165},
+    {"at": "warrior", "check": "height", "joint": "ankle_far", "min": 82, "max": 100},
+    {"at": "warrior", "check": "height", "joint": "wrist_near", "min": 82, "max": 100}
+  ]
+}

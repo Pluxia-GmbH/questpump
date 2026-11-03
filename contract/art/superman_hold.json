@@ -1,0 +1,66 @@
+{
+  "move": "superman_hold",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 18},
+  "working": ["abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -112, "f1": 120}],
+  "poses": {
+    "flat": {
+      "from": "in",
+      "chest": [4.34, 0, 0],
+      "head": [-3.25, 0, 0],
+      "arms": {"fk": [174.5, 12, 0, 0, 2]},
+      "legs": {"fk": [7.56, 4, 4.72, -91.75]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "shoulder_near",
+        "shoulder_far",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "knee_near",
+        "knee_far"
+      ]
+    },
+    "in": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [90, 0, 0],
+      "chest": [-16, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"fk": [168, 12, 6, 0, 0]},
+      "legs": {"fk": [-14, 4, 0, -80]},
+      "contacts": ["pelvis", "waist"]
+    },
+    "out": {"from": "in", "chest": [-17, 0, 0]},
+    "crank": {"from": "in", "head": [-34, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.4, "phase": "lie_flat"},
+    {"to": "in", "s": 1.0, "phase": "lift", "effort": 0.7},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.75},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.75},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "flat", "s": 1.0, "phase": "lower_slowly", "effort": 0.3}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "crank",
+    "caption": "head_lifts",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
+  },
+  "targets": [
+    {"at": "in", "check": "height", "joint": "ankle_near", "min": 16},
+    {"at": "in", "check": "height", "joint": "wrist_near", "min": 20},
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "in", "check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
+  ]
+}

@@ -1,0 +1,320 @@
+{
+  "move": "sun_salutation",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 8},
+  "working": ["pauldron", "abdomen"],
+  "props": [{"kind": "mat", "f0": -142.0, "f1": 42.0}],
+  "poses": {
+    "stand": {
+      "pelvis": [2, 95.8, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [4, 8, 10, 0, 0]},
+      "legs": {"foot": [0, 11], "y": 1.0, "turn": 6, "lift": 0, "knee_out": 4, "pole": [0, 0, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "stand",
+      "pelvis": [1, 95.8, 0],
+      "trunk": [-2, 0, 0],
+      "chest": [-7, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"fk": [172, 8, 4, 0, 0]}
+    },
+    "fold": {
+      "pelvis": [-22, 70.0, 0],
+      "trunk": [85, 0, 0],
+      "chest": [40, 0, 0],
+      "head": [10, 0, 0],
+      "legs": {"foot": [0, 11], "y": 1.0, "turn": 12, "lift": 0, "knee_out": 50, "pole": [0, 0, 0]},
+      "arms": {"ik": [30, 4.3, 16], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "a1": {
+      "from": "fold",
+      "pelvis": [-22, 70.0, 0],
+      "leg_near": {"foot": [-5.7, 11], "y": 1.0, "turn": 12, "lift": 40, "knee_out": 50, "pole": [0, 0, 0]}
+    },
+    "a1a": {
+      "from": "fold",
+      "pelvis": [-22, 70.0, 0],
+      "leg_near": {"ik": [3, 26.0, 13], "pole": [0.3, -0.3, 1], "toe": [0.6, -0.8, 0]},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "a1b": {
+      "from": "fold",
+      "pelvis": [-22, 70.0, 0],
+      "leg_near": {"ik": [-46, 40.0, 12], "pole": [0.3, -0.5, 1], "toe": [-0.6, -0.8, 0]},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "a2": {
+      "from": "fold",
+      "pelvis": [-22, 70.0, 0],
+      "head": [8, 0, 0],
+      "leg_near": {"ik": [-62, 27.0, 12], "pole": [0.6, -1, 0.1], "toe": [-0.2, -1, 0]},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "a3": {
+      "from": "lunge",
+      "leg_near": {"ik": [-104, 27.5, 12], "pole": [0, -1, 0], "toe": [0.28, -0.96, 0]},
+      "contacts": ["toe_far", "ankle_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lunge": {
+      "from": "fold",
+      "pelvis": [-30, 61.0, 0],
+      "trunk": [86, 0, 0],
+      "chest": [14, 0, 0],
+      "head": [-6, 0, 0],
+      "leg_near": {"foot": [-128, 12], "y": 1.0, "turn": 0, "lift": 74, "knee_out": 0, "pole": [0, -1, 0]},
+      "arms": {"ik": [25, 4.3, 18], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "b1": {
+      "from": "lunge",
+      "pelvis": [-31, 61.0, 0],
+      "leg_far": {"foot": [-5.7, 11], "y": 1.0, "turn": 12, "lift": 40, "knee_out": 50, "pole": [0, 0, 0]}
+    },
+    "b1a": {
+      "from": "lunge",
+      "pelvis": [-31, 61.0, 0],
+      "leg_far": {"ik": [3, 26.0, 13], "pole": [0.3, -0.3, 1], "toe": [0.6, -0.8, 0]},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "b1b": {
+      "from": "lunge",
+      "pelvis": [-33, 62.0, 0],
+      "trunk": [89, 0, 0],
+      "leg_far": {"ik": [-46, 42.0, 12], "pole": [0.3, -0.5, 1], "toe": [-0.6, -0.8, 0]},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "b2": {
+      "from": "lunge",
+      "pelvis": [-38, 61.0, 0],
+      "trunk": [94, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [0, 0, 0],
+      "leg_far": {"ik": [-70, 27.0, 12], "pole": [0.6, -1, 0.1], "toe": [-0.2, -1, 0]},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "b3": {
+      "pelvis": [-23, 46.8, 0],
+      "trunk": [73.5, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "leg_near": {"foot": [-128, 12], "y": 1.0, "turn": 0, "lift": 74, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"ik": [-104, 27.5, 12], "pole": [0, -1, 0], "toe": [0.28, -0.96, 0]},
+      "contacts": ["toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "plank": {
+      "line": {"pivot": "toes", "at": -128, "angle": 16.3, "width": 12, "gap": 0.3, "y": 1.0},
+      "head": [4, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "roll": {
+      "pelvis": [-10.3, 28.3, 0],
+      "trunk": [83.5, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-0.7, 0.7, 0.5], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [-97.5, 21.5, 12], "pole": [0, -1, 0], "toe": [-0.6, -0.8, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prone": {
+      "pelvis": [-5, 16.0, 0],
+      "trunk": [90, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-0.5, 1, 0.3], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [-92.3, 5.0, 12], "pole": [0, -1, 0], "toe": [-1, -0.02, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "cobra": {
+      "from": "prone",
+      "trunk": [75, 0, 0],
+      "chest": [-40, 0, 0],
+      "head": [8, 0, 0],
+      "contacts": [
+        "pelvis",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "roll_up": {
+      "from": "prone",
+      "pelvis": [-10, 20.0, 0],
+      "trunk": [80, 0, 0],
+      "chest": [-24, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-0.7, 0.7, 0.5], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [-97.5, 21.5, 12], "pole": [0, -1, 0], "toe": [-0.6, -0.8, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "tuck": {
+      "from": "prone",
+      "pelvis": [-19, 25.0, 0],
+      "trunk": [86, 0, 0],
+      "chest": [-10, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-0.7, 0.7, 0.5], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [-106, 22.0, 12], "pole": [0, -1, 0], "toe": [0.07, -1, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "push": {
+      "pelvis": [-42, 59.0, 0],
+      "trunk": [118, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "legs": {"ik": [-115, 23.5, 12], "pole": [0, -1, 0], "toe": [0.55, -0.83, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "dog": {
+      "line": {"pivot": "toes", "at": -128, "angle": 40, "width": 12, "hips": -84, "lift": 35, "gap": 0.3, "y": 1.0},
+      "head": [-5, 0, 0],
+      "arms": {"ik": [22, 4.3, 22], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand_tall", "effort": 0.2},
+    {"to": "reach", "s": 1.5, "phase": "arms_up", "effort": 0.3},
+    {"to": "fold", "s": 2.0, "phase": "fold_forward", "effort": 0.3},
+    {"to": "a1", "s": 0.15, "phase": "step_back", "effort": 0.4},
+    {"to": "a1a", "s": 0.1, "phase": "step_back", "effort": 0.4},
+    {"to": "a1b", "s": 0.2, "phase": "step_back", "effort": 0.4},
+    {"to": "a2", "s": 0.3, "phase": "step_back", "effort": 0.4},
+    {"to": "a3", "s": 0.3, "phase": "step_back", "effort": 0.4},
+    {"to": "lunge", "s": 0.2, "phase": "step_back", "effort": 0.4},
+    {"to": "b1", "s": 0.15, "phase": "step_back", "effort": 0.4},
+    {"to": "b1a", "s": 0.1, "phase": "step_back", "effort": 0.4},
+    {"to": "b1b", "s": 0.2, "phase": "step_back", "effort": 0.4},
+    {"to": "b2", "s": 0.3, "phase": "step_back", "effort": 0.4},
+    {"to": "b3", "s": 0.3, "phase": "step_back", "effort": 0.4},
+    {"to": "plank", "s": 0.2, "phase": "step_back", "effort": 0.4},
+    {"hold": 0.4, "phase": "plank", "effort": 0.6},
+    {"to": "roll", "s": 1.0, "phase": "lower", "effort": 0.6},
+    {"to": "prone", "s": 0.6, "phase": "lower", "effort": 0.5},
+    {"to": "cobra", "s": 1.6, "phase": "chest_up", "effort": 0.4},
+    {"to": "roll_up", "s": 0.45, "phase": "hips_high", "effort": 0.4},
+    {"to": "tuck", "s": 0.35, "phase": "hips_high", "effort": 0.4},
+    {"to": "push", "s": 0.7, "phase": "hips_high", "effort": 0.5},
+    {"to": "dog", "s": 0.8, "phase": "hips_high", "effort": 0.5},
+    {"hold": 0.8, "phase": "hips_high", "effort": 0.4},
+    {"to": "b3", "s": 0.3, "phase": "step_up", "effort": 0.4},
+    {"to": "b2", "s": 0.3, "phase": "step_up", "effort": 0.4},
+    {"to": "b1b", "s": 0.25, "phase": "step_up", "effort": 0.4},
+    {"to": "b1a", "s": 0.15, "phase": "step_up", "effort": 0.4},
+    {"to": "b1", "s": 0.1, "phase": "step_up", "effort": 0.4},
+    {"to": "lunge", "s": 0.2, "phase": "step_up", "effort": 0.4},
+    {"to": "a3", "s": 0.3, "phase": "step_up", "effort": 0.4},
+    {"to": "a2", "s": 0.3, "phase": "step_up", "effort": 0.4},
+    {"to": "a1b", "s": 0.25, "phase": "step_up", "effort": 0.4},
+    {"to": "a1a", "s": 0.15, "phase": "step_up", "effort": 0.4},
+    {"to": "a1", "s": 0.1, "phase": "step_up", "effort": 0.4},
+    {"to": "fold", "s": 0.2, "phase": "step_up", "effort": 0.4},
+    {"to": "reach", "s": 2.2, "phase": "rise", "effort": 0.3},
+    {"to": "stand", "s": 1.2, "phase": "stand_tall", "effort": 0.2}
+  ],
+  "key": "reach",
+  "targets": [
+    {"at": "plank", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "dog", "check": "angle", "joints": ["pelvis", "shoulder_near", "wrist_near"], "min": 165},
+    {"at": "cobra", "check": "height", "joint": "pelvis", "max": 17.0}
+  ]
+}

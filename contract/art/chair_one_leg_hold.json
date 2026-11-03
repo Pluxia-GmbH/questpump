@@ -1,0 +1,78 @@
+{
+  "move": "chair_one_leg_hold",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 6},
+  "working": ["abdomen", "thigh_near", "upper_arm"],
+  "breathe": true,
+  "props": [{"kind": "chair", "f": -27, "back": "-f"}],
+  "poses": {
+    "sit": {
+      "pelvis": [0, 60, 0],
+      "trunk": [-22, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [-8, 49.3, 20], "pole": [-1, 0, 0.2], "hand": [1, -0.15, 0]},
+      "legs": {"foot": [36, 12], "turn": 6, "knee_out": 4},
+      "contacts": [
+        "pelvis",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "slid": {
+      "from": "in",
+      "legs": {"foot": [36, 12], "turn": 6, "knee_out": 4},
+      "contacts": [
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "tuck": {"from": "in", "leg_near": {"fk": [118, 14, 84, -30]}},
+    "in": {
+      "pelvis": [4, 58.6, 0],
+      "trunk": [-10, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [-8, 49.3, 20], "pole": [-1, 0, 0.2], "hand": [1, -0.15, 0]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "leg_near": {"fk": [80, 0, 0, -62]},
+      "leg_far": {"fk": [118, 14, 84, -30]}
+    },
+    "out": {"from": "in", "chest": [1, 0, 0], "head": [5, 0, 0]},
+    "bad": {"from": "in", "leg_near": {"fk": [64, 0, 0, -50]}}
+  },
+  "timeline": [
+    {"pose": "sit"},
+    {"hold": 0.4, "phase": "sit"},
+    {"to": "slid", "s": 0.6, "phase": "slide_forward", "effort": 0.5},
+    {"to": "tuck", "s": 0.7, "phase": "knees_up", "effort": 0.7},
+    {"to": "in", "s": 0.7, "phase": "leg_out", "effort": 0.8},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "slid", "s": 0.9, "phase": "lower_slowly", "effort": 0.5},
+    {"to": "sit", "s": 0.6, "phase": "slide_back", "effort": 0.2}
+  ],
+  "key": "in",
+  "fault": {
+    "caption": "leg_drops",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "u", "min": -6},
+    "pose": "bad"
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 168},
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "in", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "u", "min": -6}
+  ]
+}

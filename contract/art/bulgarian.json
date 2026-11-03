@@ -1,0 +1,42 @@
+{
+  "move": "bulgarian",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["thigh_near"],
+  "props": [{"kind": "wall", "f": -87, "behind": true}, {"kind": "chair", "f": -65, "back": "-f"}],
+  "poses": {
+    "top": {
+      "pelvis": [-8, 87, 0],
+      "trunk": [8, 0, 0],
+      "arms": {"fk": [12, 6, 24]},
+      "leg_near": {"foot": [28, 16], "turn": 6, "knee_out": 6},
+      "leg_far": {"ik": [-53, 49.3, 14], "pole": [0, -1, 0.2], "toe": [-1, -0.03, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_far"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-9, 53.5, 0],
+      "trunk": [22, 0, 0],
+      "arms": {"fk": [20, 6, 30]},
+      "chest": [-4, 0, 0],
+      "head": [-12, 0, 0]
+    },
+    "knee_fwd": {"from": "bottom", "leg_near": {"foot": [14, 16], "turn": 6, "knee_out": 6}}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 1.3, "phase": "knee_down", "effort": 0.6},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.85},
+    {"to": "top", "s": 1.0, "phase": "rise", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "fault": {
+    "pose": "knee_fwd",
+    "caption": "knee_past_toes",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "f", "max": 10}
+  },
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 75, "max": 115}
+  ]
+}

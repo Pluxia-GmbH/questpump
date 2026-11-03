@@ -1,0 +1,54 @@
+{
+  "move": "ring_y_raise",
+  "view": "side",
+  "camera": {"yaw": -40, "pitch": 8},
+  "working": ["back", "pauldron"],
+  "items": [{"kind": "straps", "at": [37, 240]}],
+  "poses": {
+    "lean": {
+      "line": {"pivot": "toes", "at": 0, "angle": 55, "width": 12, "face": "up", "lift": 0},
+      "head": [4, 0, 0],
+      "arms": {"fk": [100, 0, 2, 0, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "rise": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 56.76, "width": 12, "face": "up", "lift": 0},
+      "arms": {"fk": [115, 10, 2, 0, 0]}
+    },
+    "mid": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 60.9, "width": 12, "face": "up", "lift": 0},
+      "arms": {"fk": [130, 20, 2, 0, 0]}
+    },
+    "open": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 66.31, "width": 12, "face": "up", "lift": 0},
+      "arms": {"fk": [145, 30, 2, 0, 0]}
+    },
+    "y": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 72.38, "width": 12, "face": "up", "lift": 0},
+      "arms": {"fk": [160, 40, 2, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lean"},
+    {"to": "rise", "s": 0.4, "ease": "in", "phase": "y_raise", "effort": 0.8, "dynamic": true},
+    {"to": "mid", "s": 0.2, "ease": "linear", "phase": "y_raise", "effort": 0.9, "dynamic": true},
+    {"to": "open", "s": 0.2, "ease": "linear", "phase": "y_raise", "effort": 0.95, "dynamic": true},
+    {"to": "y", "s": 0.4, "ease": "out", "phase": "y_raise", "effort": 1.0, "dynamic": true},
+    {"to": "y", "s": 0.25, "phase": "y_raise", "effort": 0.9, "dynamic": true},
+    {"to": "open", "s": 0.5, "ease": "in", "phase": "lower", "effort": 0.6, "dynamic": true},
+    {"to": "mid", "s": 0.25, "ease": "linear", "phase": "lower", "effort": 0.5, "dynamic": true},
+    {"to": "rise", "s": 0.25, "ease": "linear", "phase": "lower", "effort": 0.5, "dynamic": true},
+    {"to": "lean", "s": 0.5, "ease": "out", "phase": "lower", "effort": 0.4, "dynamic": true},
+    {"to": "lean", "s": 0.3, "phase": "lower", "effort": 0.4, "dynamic": true}
+  ],
+  "key": "y",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "y", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "y", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 170}
+  ]
+}

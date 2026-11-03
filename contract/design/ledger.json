@@ -1,0 +1,633 @@
+{
+ "about": "The licence ledger's own rows (docs/ui.md, \"The licence ledger and Acknowledgements\"; docs/plan.md slices 18, 19 and 35): the fonts, the licence texts shipped beside them, the voice's takes (`voice`: the row's facts; its files are every take tools/voice/clips.json names), Pluxia's own bundled art (`ownArt`) and the own art drawn as SVG (`art`: each contract/design/art/*.svg with the day it entered this repository and its maker; tools/ledger.py gives a new SVG its row, dated the day git first saw it or else today, and drops the row of one that is gone, and LEDGER.md shows each file's current sha256). The sounds' rows come from contract/design/sound/sounds.json and receipts.json, the move figures' from contract/figures/figures.json and QuestPump_FigArmor/pack.json, the app icons' from contract/design/icons.json (tools/icons.py and tools/helper-icons.py, which replaced the placeholder icons' rows in slice 35); tools/ledger.py joins them into LEDGER.md and writes the Acknowledgements page's contract/design/acknowledgements.json, and its --check finds every font, sound, voice take, image, film and icon in the shipped roots (the apps' sources with Android's drawable and mipmap XML, helper/dist, helper/src-tauri/icons, site/public and what tauri.conf.json bundles), counts a byte-for-byte copy of a listed file (a font beside the desktop app's or the site's pages) under its original's row, and fails on one without a row or with another digest, on an SVG without a row, on any CC BY licence, on own art shipped where its notice is missing and on a stale LEDGER.md or acknowledgements.json. Each font file is byte-identical to google/fonts at the commit in its download URL (read 2026-10-03; the Barlow faces of design v3 on 2026-10-04); the dates are the days each copy entered this repository.",
+ "fonts": [
+  {
+   "title": "Cinzel",
+   "version": "2.000",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/Cinzel[wght].ttf",
+     "sha256": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
+     "added": "2026-09-28"
+    },
+    {
+     "path": "apple/Watch/Fonts/Cinzel.ttf",
+     "sha256": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
+     "added": "2026-09-26"
+    },
+    {
+     "path": "android/shared/src/main/res/font/cinzel.ttf",
+     "sha256": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
+     "added": "2026-09-29"
+    }
+   ],
+   "author": "Natanael Gama",
+   "page": "https://github.com/google/fonts/tree/45071f07c63e863a539442ef3562b71ab1f147a6/ofl/cinzel",
+   "download": "https://raw.githubusercontent.com/google/fonts/45071f07c63e863a539442ef3562b71ab1f147a6/ofl/cinzel/Cinzel%5Bwght%5D.ttf",
+   "downloadSha256": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)",
+   "modification": "unmodified; the watch and Android copies carry other file names, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Natanael Gama; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  },
+  {
+   "title": "Barlow Regular",
+   "version": "1.408",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/Barlow-Regular.ttf",
+     "sha256": "95aa02c7c43096e0dd44d787ba6216864a67157e402adab59b35572e0c1577ea",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "apple/Watch/Fonts/Barlow-Regular.ttf",
+     "sha256": "95aa02c7c43096e0dd44d787ba6216864a67157e402adab59b35572e0c1577ea",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "android/shared/src/main/res/font/barlow_regular.ttf",
+     "sha256": "95aa02c7c43096e0dd44d787ba6216864a67157e402adab59b35572e0c1577ea",
+     "added": "2026-10-04"
+    }
+   ],
+   "author": "Jeremy Tribby",
+   "page": "https://github.com/google/fonts/tree/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow",
+   "download": "https://raw.githubusercontent.com/google/fonts/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow/Barlow-Regular.ttf",
+   "downloadSha256": "95aa02c7c43096e0dd44d787ba6216864a67157e402adab59b35572e0c1577ea",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+   "modification": "unmodified; the Android copy carries another file name, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Jeremy Tribby; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  },
+  {
+   "title": "Barlow Medium",
+   "version": "1.408",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/Barlow-Medium.ttf",
+     "sha256": "f8906f762cb73dca441da034bc363b2d8e2e68bc10d5c05e58717646c20cc4b4",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "apple/Watch/Fonts/Barlow-Medium.ttf",
+     "sha256": "f8906f762cb73dca441da034bc363b2d8e2e68bc10d5c05e58717646c20cc4b4",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "android/shared/src/main/res/font/barlow_medium.ttf",
+     "sha256": "f8906f762cb73dca441da034bc363b2d8e2e68bc10d5c05e58717646c20cc4b4",
+     "added": "2026-10-04"
+    }
+   ],
+   "author": "Jeremy Tribby",
+   "page": "https://github.com/google/fonts/tree/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow",
+   "download": "https://raw.githubusercontent.com/google/fonts/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow/Barlow-Medium.ttf",
+   "downloadSha256": "f8906f762cb73dca441da034bc363b2d8e2e68bc10d5c05e58717646c20cc4b4",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+   "modification": "unmodified; the Android copy carries another file name, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Jeremy Tribby; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  },
+  {
+   "title": "Barlow SemiBold",
+   "version": "1.408",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/Barlow-SemiBold.ttf",
+     "sha256": "86577cb32f8abe3673db53ca0f4221e6856751a4f6730c867e00f720f8bb1fc5",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "apple/Watch/Fonts/Barlow-SemiBold.ttf",
+     "sha256": "86577cb32f8abe3673db53ca0f4221e6856751a4f6730c867e00f720f8bb1fc5",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "android/shared/src/main/res/font/barlow_semibold.ttf",
+     "sha256": "86577cb32f8abe3673db53ca0f4221e6856751a4f6730c867e00f720f8bb1fc5",
+     "added": "2026-10-04"
+    }
+   ],
+   "author": "Jeremy Tribby",
+   "page": "https://github.com/google/fonts/tree/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow",
+   "download": "https://raw.githubusercontent.com/google/fonts/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow/Barlow-SemiBold.ttf",
+   "downloadSha256": "86577cb32f8abe3673db53ca0f4221e6856751a4f6730c867e00f720f8bb1fc5",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+   "modification": "unmodified; the Android copy carries another file name, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Jeremy Tribby; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  },
+  {
+   "title": "Barlow Bold",
+   "version": "1.408",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/Barlow-Bold.ttf",
+     "sha256": "84e6a4d61e7c3e21f3c50ea6a4f7e5303a3467864c038be6ea3759bab8d547f9",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "apple/Watch/Fonts/Barlow-Bold.ttf",
+     "sha256": "84e6a4d61e7c3e21f3c50ea6a4f7e5303a3467864c038be6ea3759bab8d547f9",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "android/shared/src/main/res/font/barlow_bold.ttf",
+     "sha256": "84e6a4d61e7c3e21f3c50ea6a4f7e5303a3467864c038be6ea3759bab8d547f9",
+     "added": "2026-10-04"
+    }
+   ],
+   "author": "Jeremy Tribby",
+   "page": "https://github.com/google/fonts/tree/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow",
+   "download": "https://raw.githubusercontent.com/google/fonts/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlow/Barlow-Bold.ttf",
+   "downloadSha256": "84e6a4d61e7c3e21f3c50ea6a4f7e5303a3467864c038be6ea3759bab8d547f9",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+   "modification": "unmodified; the Android copy carries another file name, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Jeremy Tribby; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  },
+  {
+   "title": "Barlow Condensed SemiBold",
+   "version": "1.408",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/BarlowCondensed-SemiBold.ttf",
+     "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9",
+     "added": "2026-09-28"
+    },
+    {
+     "path": "apple/Watch/Fonts/BarlowCondensed-SemiBold.ttf",
+     "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "android/shared/src/main/res/font/barlow_condensed_semibold.ttf",
+     "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9",
+     "added": "2026-09-29"
+    }
+   ],
+   "author": "Jeremy Tribby",
+   "page": "https://github.com/google/fonts/tree/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlowcondensed",
+   "download": "https://raw.githubusercontent.com/google/fonts/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlowcondensed/BarlowCondensed-SemiBold.ttf",
+   "downloadSha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+   "modification": "unmodified; the Android copy carries another file name, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Jeremy Tribby; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  },
+  {
+   "title": "Barlow Condensed Bold",
+   "version": "1.408",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/BarlowCondensed-Bold.ttf",
+     "sha256": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "apple/Watch/Fonts/BarlowCondensed-Bold.ttf",
+     "sha256": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65",
+     "added": "2026-10-04"
+    },
+    {
+     "path": "android/shared/src/main/res/font/barlow_condensed_bold.ttf",
+     "sha256": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65",
+     "added": "2026-10-04"
+    }
+   ],
+   "author": "Jeremy Tribby",
+   "page": "https://github.com/google/fonts/tree/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlowcondensed",
+   "download": "https://raw.githubusercontent.com/google/fonts/89f5431ff0db41bd2fe3f7ba21a723a01622428b/ofl/barlowcondensed/BarlowCondensed-Bold.ttf",
+   "downloadSha256": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65",
+   "licence": "OFL-1.1",
+   "copyright": "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+   "modification": "unmodified; the Android copy carries another file name, which OFL condition 3 does not count as renaming the font",
+   "madeBy": "Jeremy Tribby; copied from google/fonts",
+   "credit": "required by OFL condition 2, which ships the copyright line and the licence with the font (OFL.txt beside it); the Acknowledgements page names it"
+  }
+ ],
+ "licenceTexts": [
+  {
+   "title": "OFL.txt for Cinzel, Barlow and Barlow Condensed",
+   "files": [
+    {
+     "path": "apple/iOS/Fonts/OFL.txt",
+     "sha256": "bd3eb706b9ac2e12a2039ac1128f4e7eff545e1dada0b68416fbf020213f5418",
+     "added": "2026-09-28"
+    },
+    {
+     "path": "android/shared/src/main/assets/licenses/OFL.txt",
+     "sha256": "bd3eb706b9ac2e12a2039ac1128f4e7eff545e1dada0b68416fbf020213f5418",
+     "added": "2026-09-29"
+    }
+   ],
+   "covers": [
+    "Cinzel",
+    "Barlow Regular",
+    "Barlow Medium",
+    "Barlow SemiBold",
+    "Barlow Bold",
+    "Barlow Condensed SemiBold",
+    "Barlow Condensed Bold"
+   ],
+   "source": "each font's OFL.txt in google/fonts at the commit in its row, joined under the font's name; each text is in the file byte for byte (Barlow's and Barlow Condensed's are one text, in the file once)",
+   "madeBy": "Pluxia GmbH (joined)"
+  },
+  {
+   "title": "OFL.txt for Cinzel, Barlow and Barlow Condensed on the Apple Watch",
+   "files": [
+    {
+     "path": "apple/Watch/Fonts/OFL.txt",
+     "sha256": "0fdf2beb60e16e5f69da534e05a77636a63ffaba911b5335af379e0c94bf7d50",
+     "added": "2026-09-26"
+    }
+   ],
+   "covers": [
+    "Cinzel",
+    "Barlow Regular",
+    "Barlow Medium",
+    "Barlow SemiBold",
+    "Barlow Bold",
+    "Barlow Condensed SemiBold",
+    "Barlow Condensed Bold"
+   ],
+   "source": "Cinzel's and Barlow's OFL.txt in google/fonts at the commit in each font's row, joined; each text is in the file byte for byte (Barlow's and Barlow Condensed's are one text, in the file once)",
+   "madeBy": "Pluxia GmbH (joined)"
+  }
+ ],
+ "voice": {
+  "title": "The voice's takes",
+  "licence": "MIT",
+  "madeBy": "ElevenLabs text to speech, a premade voice on a paid ElevenLabs Creator plan, through QuestPump's own key; trimmed, loudness-matched, encoded as Ogg Vorbis and checked by transcription by tools/voice/voice.mjs on David's Mac",
+  "terms": "ElevenLabs Terms of Use, last updated 31 March 2026 (https://elevenlabs.io/terms-of-use, read 2026-10-08): §4(c)(ii) \"as between you and ElevenLabs, you retain all rights in and to your Output\"; §1(c) a paid subscriber \"may use the Services for commercial purposes\" (free users only non-commercially); §4(a) downloaded Output may be used outside the Services, subject to the Terms and the Prohibited Use Policy; no credit is asked. The OEM Terms cover bundling, making available or sublicensing the Services themselves, not files of Output, so the addon, the desktop app and the phone apps may ship the takes, and the repository's MIT licence carries them."
+ },
+ "ownArt": [
+  {
+   "title": "The Wear OS Start tile's preview",
+   "what": "the picture the tile picker shows for the Start tile: the pump glyph (contract/design/art/action_pump.svg's plate) over its edge button, both in the token gold (#E8B84A), on a black disc, a 192-dp vector drawn for slice 12 and redrawn for slice 32",
+   "madeBy": "Pluxia GmbH",
+   "files": [
+    {
+     "path": "android/wear/src/main/res/drawable/tile_preview.xml",
+     "sha256": "adc2915a458aa26fd18816f93452998e00fab3cdda181c44ecad09d564743e15",
+     "added": "2026-09-29"
+    }
+   ]
+  },
+  {
+   "title": "The Wear OS Wear Widget's previews",
+   "what": "the pictures the widget picker shows for the Wear Widget's small and large containers: the pump glyph (contract/design/art/action_pump.svg's plate) in the token gold (#E8B84A) on the card ground (#1A1612), the large one over its Pump button, 192-dp vectors drawn for slice 32",
+   "madeBy": "Pluxia GmbH",
+   "files": [
+    {
+     "path": "android/wear/src/main/res/drawable/streak_widget_preview_small.xml",
+     "sha256": "2f54e742b3b66b6af5f4223d5564f2ac04a4d2bf7b611b0ea25c471427c0b3f7",
+     "added": "2026-10-07"
+    },
+    {
+     "path": "android/wear/src/main/res/drawable/streak_widget_preview_large.xml",
+     "sha256": "f5772ae7d4a4a19e6bdf2d9b707f3fbbe1415d2aa85f7ad0423592a573a967f4",
+     "added": "2026-10-07"
+    }
+   ]
+  },
+  {
+   "title": "The Android streak widget's preview",
+   "what": "the picture the widget picker shows for the phone's streak widget: its Start form, the pump's glyph (contract/design/art/action_pump.svg's plate) in the text colour over the gold capsule on the page ground, a 110-dp vector drawn for slice 32",
+   "madeBy": "Pluxia GmbH",
+   "files": [
+    {
+     "path": "android/phone/src/main/res/drawable/widget_streak_preview.xml",
+     "sha256": "f498ff3eb870de936dbdbe8a992a19178467f983c76ebeb34fc5f551981cc58f",
+     "added": "2026-10-07"
+    }
+   ]
+  },
+  {
+   "title": "The Android notification glyph",
+   "what": "a white kettlebell on transparent, a 24-dp vector drawn for slice 12: the small icon of the phone's pump notification (ic_pump), and on the watch the icon of the session and idle notifications, the Ongoing Activity, and the Start tile's and the Streak complication's pickers (ic_session)",
+   "madeBy": "Pluxia GmbH",
+   "files": [
+    {
+     "path": "android/phone/src/main/res/drawable/ic_pump.xml",
+     "sha256": "37b55b27475b2db50c9cbb3af572a958efdd95904f0554fd92f3a5956d67339d",
+     "added": "2026-09-29"
+    },
+    {
+     "path": "android/wear/src/main/res/drawable/ic_session.xml",
+     "sha256": "b4e43e8ffa7f1d4c5ec52410d1381d2ef1f91c869fa5fd6a5d6b1246b826c521",
+     "added": "2026-09-29"
+    }
+   ]
+  },
+  {
+   "title": "The share cards' scenes",
+   "what": "hand-painted pages in ink and watercolour on parchment, one a place template and one for the streak, behind the share cards' words and the standard-bearer (slice 51; Rapha, 2026-10-22), 1024 x 1536 WebP; drafted with OpenAI's gpt-image model for Pluxia (OpenAI's terms assign the output to the user) and hand-finished before the release (docs/tasks.md)",
+   "madeBy": "Pluxia GmbH",
+   "files": [
+    {
+     "path": "contract/design/scenes/gym.webp",
+     "sha256": "fc5cf75b12f18d4d635c1a28850af772e5153a529015b51b517deaa62f5ae678",
+     "added": "2026-10-22"
+    },
+    {
+     "path": "contract/design/scenes/home.webp",
+     "sha256": "095735f739ffd8a5b1492b5d9711e4d08a5c4afd8e335eed9ec971abf9d1eac4",
+     "added": "2026-10-22"
+    },
+    {
+     "path": "contract/design/scenes/hotel.webp",
+     "sha256": "17b36342b42df9076ec823f465e26d4355c51a5639b01b761b799e8149b7a07c",
+     "added": "2026-10-22"
+    },
+    {
+     "path": "contract/design/scenes/office.webp",
+     "sha256": "798cabe16bed76dbcef04621ccd4b14978915f6a96315d9ba8bcdd3d3d5899ff",
+     "added": "2026-10-22"
+    },
+    {
+     "path": "contract/design/scenes/outdoors.webp",
+     "sha256": "34b206b71eddba607e357b835a496b521ff917a7e9b1abee1a88e7a2f1cb744b",
+     "added": "2026-10-22"
+    },
+    {
+     "path": "contract/design/scenes/park.webp",
+     "sha256": "895ca68dfefdf7afdf919e33ca5d1df5156899b530bee0c3d7e0132d5b5276a3",
+     "added": "2026-10-22"
+    },
+    {
+     "path": "contract/design/scenes/road.webp",
+     "sha256": "61703090babebed03ed79fb671af86c3d0a0341b4bf7b7485b0ff1223b18ba12",
+     "added": "2026-10-22"
+    }
+   ],
+   "places": [
+    "apple/iOS/",
+    "android/phone/"
+   ]
+  }
+ ],
+ "art": [
+  {
+   "path": "contract/design/art/action_book.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/action_character.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/action_games.svg",
+   "added": "2026-10-25",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/action_log.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/action_menu.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/action_pump.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/banner_bar.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/device_computer.svg",
+   "added": "2026-10-06",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/device_phone.svg",
+   "added": "2026-10-06",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/helm.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/link_chess.svg",
+   "added": "2026-10-07",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/link_game.svg",
+   "added": "2026-10-07",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/link_stream.svg",
+   "added": "2026-10-07",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_arrow.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_check.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_clock.svg",
+   "added": "2026-10-07",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_close.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_cloud.svg",
+   "added": "2026-10-06",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_dash.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_heart.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_link.svg",
+   "added": "2026-10-07",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_list.svg",
+   "added": "2026-10-16",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_lock.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_pause.svg",
+   "added": "2026-10-06",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_play.svg",
+   "added": "2026-10-06",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_report.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_rest.svg",
+   "added": "2026-10-09",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_share.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/mark_tree.svg",
+   "added": "2026-10-16",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/picker_computer.svg",
+   "added": "2026-10-16",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/place_bars.svg",
+   "added": "2026-10-21",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/place_bed.svg",
+   "added": "2026-10-21",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/place_desk.svg",
+   "added": "2026-10-21",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/place_dumbbell.svg",
+   "added": "2026-10-21",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/place_home.svg",
+   "added": "2026-10-21",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/place_peak.svg",
+   "added": "2026-10-21",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/portrait_ring.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/rating_crit.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/rating_defense.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/rating_expertise.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/reward_familiarity.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/reward_record.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/reward_title.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/reward_xp.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/seal.svg",
+   "added": "2026-10-15",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/star.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/stat_agility.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/stat_intellect.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/stat_spirit.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/stat_stamina.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  },
+  {
+   "path": "contract/design/art/stat_strength.svg",
+   "added": "2026-10-03",
+   "madeBy": "Claude for Pluxia GmbH"
+  }
+ ]
+}

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56">
+  <!-- The helm portrait's ring: a band of iron plate 6 units wide, lit from the top left, a gold edge along its inner
+       rim and four domed rivets on the diagonals. The centre (radius 21.5) is empty: the caller draws the helm
+       (helm.svg, 48 units, offset 4 and 4) under the ring, and the speaking glow around it. -->
+  <defs>
+    <linearGradient id="band" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="48" y2="48">
+      <stop offset="0" data-token="outline" stop-color="#8F7F63"/>
+      <stop offset="0.45" data-token="bevel" stop-color="#6B5E4A"/>
+      <stop offset="1" data-token="iron" stop-color="#4A4238"/>
+    </linearGradient>
+    <radialGradient id="rivetTopLeft" gradientUnits="userSpaceOnUse" cx="10.1" cy="10.1" r="2.2">
+      <stop offset="0" data-token="outline" stop-color="#8F7F63"/>
+      <stop offset="0.5" data-token="bevel" stop-color="#6B5E4A"/>
+      <stop offset="1" data-token="iron" stop-color="#4A4238"/>
+    </radialGradient>
+    <radialGradient id="rivetTopRight" gradientUnits="userSpaceOnUse" cx="44.74" cy="10.1" r="2.2">
+      <stop offset="0" data-token="outline" stop-color="#8F7F63"/>
+      <stop offset="0.5" data-token="bevel" stop-color="#6B5E4A"/>
+      <stop offset="1" data-token="iron" stop-color="#4A4238"/>
+    </radialGradient>
+    <radialGradient id="rivetBottomLeft" gradientUnits="userSpaceOnUse" cx="10.1" cy="44.74" r="2.2">
+      <stop offset="0" data-token="outline" stop-color="#8F7F63"/>
+      <stop offset="0.5" data-token="bevel" stop-color="#6B5E4A"/>
+      <stop offset="1" data-token="iron" stop-color="#4A4238"/>
+    </radialGradient>
+    <radialGradient id="rivetBottomRight" gradientUnits="userSpaceOnUse" cx="44.74" cy="44.74" r="2.2">
+      <stop offset="0" data-token="outline" stop-color="#8F7F63"/>
+      <stop offset="0.5" data-token="bevel" stop-color="#6B5E4A"/>
+      <stop offset="1" data-token="iron" stop-color="#4A4238"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#band)" fill-rule="evenodd" data-stroke-token="void" stroke="#050404" stroke-width="1" d="
+    M55.5 28 C55.5 43.19 43.19 55.5 28 55.5 C12.81 55.5 0.5 43.19 0.5 28 C0.5 12.81 12.81 0.5 28 0.5
+    C43.19 0.5 55.5 12.81 55.5 28 Z
+    M49.5 28 C49.5 16.13 39.87 6.5 28 6.5 C16.13 6.5 6.5 16.13 6.5 28 C6.5 39.87 16.13 49.5 28 49.5
+    C39.87 49.5 49.5 39.87 49.5 28 Z"/>
+  <path data-stroke-token="text" stroke="#F2EBDC" stroke-opacity="0.35" fill="none" stroke-width="0.75"
+        stroke-linecap="round" d="M2.5 21.17 C5.37 10.45 14.64 2.67 25.7 1.7"/>
+  <circle data-stroke-token="gold" stroke="#E8B84A" fill="none" stroke-width="0.8" cx="28" cy="28" r="22.25"/>
+  <circle fill="url(#rivetTopLeft)" data-stroke-token="void" stroke="#050404" stroke-width="0.5" cx="10.68"
+          cy="10.68" r="1.6"/>
+  <circle fill="url(#rivetTopRight)" data-stroke-token="void" stroke="#050404" stroke-width="0.5" cx="45.32"
+          cy="10.68" r="1.6"/>
+  <circle fill="url(#rivetBottomLeft)" data-stroke-token="void" stroke="#050404" stroke-width="0.5" cx="10.68"
+          cy="45.32" r="1.6"/>
+  <circle fill="url(#rivetBottomRight)" data-stroke-token="void" stroke="#050404" stroke-width="0.5" cx="45.32"
+          cy="45.32" r="1.6"/>
+</svg>

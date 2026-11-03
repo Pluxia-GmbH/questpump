@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Intellect: an open book on its cover, the pages dipping into the spine and one own rune cut through the left
+       page, a hollow diamond on a stave; smaller and plainer than the Book button's book, so the two never read alike.
+       Lit from the top left: the right page and the cover's right half in shadow. Drawn as is in the caller's tint. -->
+  <path data-token="tint" fill="currentColor" fill-rule="evenodd" d="
+    M3 5 C6.35 4.2 9.7 5.08 11.38 6.6 V17.2 C9.7 15.68 6.35 14.8 3 15.6 Z
+    M6.6 6.35 H7.8 V8.08 L9.8 10.2 L7.8 12.32 V14.05 H6.6 V12.32 L4.6 10.2 L6.6 8.08 Z
+    M7.2 9.2 L8.15 10.2 L7.2 11.2 L6.25 10.2 Z
+    M21 5 V15.6 C17.65 14.8 14.3 15.68 12.62 17.2 V6.6 C14.3 5.08 17.65 4.2 21 5 Z
+    M2.25 17.2 H3 C6.35 16.4 9.7 17.28 11.38 18.8 H12.62 C14.3 17.28 17.65 16.4 21 17.2 H21.75 V19.2 H21
+    C17.65 18.4 14.3 19.28 12.62 20.8 H11.38 C9.7 19.28 6.35 18.4 3 19.2 H2.25 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M21 5 V15.6 C17.65 14.8 14.3 15.68 12.62 17.2 V6.6 C14.3 5.08 17.65 4.2 21 5 Z
+    M12 18.8 H12.62 C14.3 17.28 17.65 16.4 21 17.2 H21.75 V19.2 H21 C17.65 18.4 14.3 19.28 12.62 20.8 H12 Z"/>
+</svg>

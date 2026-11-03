@@ -1,0 +1,595 @@
+name: Helper release
+# The signed release of QuestPump for Mac and Windows, built from helper/ (helper/README.md, "Releasing"). A pushed tag
+# helper-vX.Y.Z runs, in order:
+#   check    the tag equals the versions in tauri.conf.json and src-tauri/Cargo.toml, the updater's public key, feed,
+#            secrets and variables are in place, contract/store.json holds Google Play's licensing key (without it every
+#            Android phone's Pro proof is refused), cargo deny passes;
+#   draft    a draft release for the tag (a re-run reuses it);
+#   build    macOS Apple silicon and Intel (the Intel build cross-built on the arm64 runner), Developer ID signed and
+#            notarised; Windows x64 NSIS signed through Artifact Signing; the minisign-signed updater files and
+#            latest.json, all uploaded to the draft; each build's symbols (the release profile's line tables, split
+#            out: macOS's dSYM, Windows' PDB) kept as a workflow artifact, so a crash report's frames can be named
+#            (contract/crash-api.yaml, "Symbols");
+#   sbom     one CycloneDX SBOM per shipped target, attached to the draft;
+#   verify   what a player downloads, from the draft: the Windows installer and the program it installs signed by
+#            Pluxia GmbH, installed, started until its pipe says hello, uninstalled (on x64, and on arm64 under
+#            emulation); each disk image's app Developer ID signed by the team, notarised and stapled;
+#   publish  latest.json checked for all six platform keys and for the key installed helpers trust, its URLs rewritten
+#            to github.com downloads, the release
+#            published without taking Latest (the addon's v* releases keep it), and the permanent helper-updater
+#            release given the desktop app's films (figures-<films_digest>.zip, tools/figures/publish.py --zip, once
+#            per film set: the app fetches its set from there by contract/figures/figures.json's films_digest), then
+#            latest.json (the feed tauri.conf.json names) and the three installers under the fixed names the
+#            site's download links reach through the report Worker's /get/ redirects (contract/get-api.yaml); the
+#            add-on's feed beside them (addon.json, its signature, QuestPump-addon.zip) is addon-release.yml's and stays;
+#   cask     Casks/questpump.rb in the tap Pluxia-GmbH/homebrew-tap;
+#   winget   the winget-pkgs pull request (skipped with a notice without WINGET_TOKEN).
+# Run from the Actions tab (rehearse), it rehearses a release of the commit it runs on, at the version its files name:
+# check, a draft named helper-rehearsal-<run id> with no tag, build, sbom and verify as above, and then the draft is
+# deleted; nothing is published, and the tap, winget and helper-updater stay as they are. A helper tag and the addon's
+# vX.Y.Z may sit on the same commit: the packager takes the tag it was pushed for.
+# It runs only in the public repository Pluxia-GmbH/questpump: the updater cannot read a private repository's release
+# files, so in any other repository every job is skipped. Every action is pinned to a commit with its version beside
+# it, as in all of the repository's workflows (since 2026-10-13; the build job hands them the signing secrets).
+on:
+  push:
+    tags: ["helper-v*"]
+  workflow_dispatch:
+    inputs:
+      rehearse:
+        description: Rehearse a release of this commit, then delete its draft (a release runs only from a pushed tag)
+        type: boolean
+        default: true
+permissions: {}
+concurrency:
+  # one helper release at a time: each one moves the helper-updater release
+  group: helper-release
+  cancel-in-progress: false
+env:
+  # a rehearsal's draft carries a name no tag uses
+  TAG: >-
+    ${{ github.event_name == 'workflow_dispatch' && format('helper-rehearsal-{0}', github.run_id)
+    || github.ref_name }}
+jobs:
+  check:
+    if: github.repository == 'Pluxia-GmbH/questpump'
+    runs-on: ubuntu-latest
+    # Signing secrets live in this environment, whose rules admit helper-v* and v* tags and main alone.
+    environment: release-signing
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      # the whole commit graph but no file contents, so the next step can tell the commit is main's
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          filter: blob:none
+      # a tag or a rehearsal signs only what main holds (main is what tools/public/export.py pushes): a tag pushed on
+      # any other commit would have its code signed with the Developer ID and the updater's key
+      - name: The release commit is on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_SHA is not a commit of main: tag (or rehearse) a commit of main"; exit 1
+          fi
+      - name: The tag matches tauri.conf.json and Cargo.toml
+        id: version
+        env:
+          REHEARSE: ${{ inputs.rehearse }}
+        run: |
+          conf="$(jq -r .version helper/src-tauri/tauri.conf.json)"
+          cargo="$(sed -n 's/^version = "\(.*\)"$/\1/p' helper/src-tauri/Cargo.toml | head -n 1)"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            if [ "$REHEARSE" != true ]; then
+              echo "::error::a helper release runs only from a pushed helper-vX.Y.Z tag: run this with rehearse"
+              exit 1
+            fi
+            v="$conf"
+          else
+            v="${TAG#helper-v}"
+          fi
+          if ! [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$TAG is not helper-vX.Y.Z (or tauri.conf.json's version $conf is not X.Y.Z)"; exit 1
+          fi
+          if [ "$v" != "$conf" ] || [ "$v" != "$cargo" ]; then
+            echo "::error::$TAG does not match tauri.conf.json ($conf) and src-tauri/Cargo.toml ($cargo)"; exit 1
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - name: The updater's public key and feed are set
+        run: |
+          conf=helper/src-tauri/tauri.conf.json
+          if [ -z "$(jq -r '.plugins.updater.pubkey // ""' "$conf")" ]; then
+            echo "::error::plugins.updater.pubkey in $conf is empty: commit the updater key's public key" \
+              "(helper/README.md, Releasing)"
+            exit 1
+          fi
+          feed="https://github.com/$GITHUB_REPOSITORY/releases/download/helper-updater/latest.json"
+          if [ "$(jq -r '.plugins.updater.endpoints[0] // ""' "$conf")" != "$feed" ]; then
+            echo "::error::plugins.updater.endpoints[0] in $conf is not $feed"; exit 1
+          fi
+      - name: Google Play's licensing key is built in
+        # the helper builds contract/store.json in: without play.license_key it refuses every Android phone's Pro proof
+        # (questpump-core pro.rs, Refusal::Key), so a paying Android player would never see Pro's extras on the computer
+        run: |
+          if ! jq -e '.play.license_key | strings | length > 0' contract/store.json > /dev/null; then
+            echo "::error::contract/store.json has no play.license_key: copy the app's licensing key from Play" \
+              "Console (Monetize with Play, Monetization setup, Licensing) before a helper release (helper/README.md," \
+              "Releasing)"
+            exit 1
+          fi
+      - name: Every secret and variable the release needs is set
+        env:
+          HAS_TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
+          HAS_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE != '' }}
+          HAS_APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD != '' }}
+          HAS_APPLE_API_KEY: ${{ secrets.APPLE_API_KEY != '' }}
+          HAS_APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER != '' }}
+          HAS_APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 != '' }}
+          HAS_AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID != '' }}
+          HAS_AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET != '' }}
+          HAS_AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID != '' }}
+          HAS_AZURE_ARTIFACT_SIGNING_ACCOUNT: ${{ vars.AZURE_ARTIFACT_SIGNING_ACCOUNT != '' }}
+          HAS_AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE: ${{ vars.AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE != '' }}
+          HAS_HOMEBREW_TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY != '' }}
+        # TAURI_SIGNING_PRIVATE_KEY_PASSWORD may be empty (a key made without one); WINGET_TOKEN only adds the winget
+        # job
+        run: |
+          missing=""
+          for name in TAURI_SIGNING_PRIVATE_KEY APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_API_KEY \
+            APPLE_API_ISSUER APPLE_API_KEY_P8 AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_TENANT_ID \
+            AZURE_ARTIFACT_SIGNING_ACCOUNT AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE HOMEBREW_TAP_DEPLOY_KEY; do
+            has="HAS_$name"
+            [ "${!has}" = true ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::not set in the repository's secrets or variables:$missing (helper/README.md, Releasing)"
+            exit 1
+          fi
+      - name: The workspace's Rust
+        id: rust
+        # the cargo-deny action's image carries an older Rust: cargo-deny runs on the toolchain file's channel
+        run: echo "channel=$(sed -n 's/^channel = "\(.*\)"$/\1/p' helper/rust-toolchain.toml)" >> "$GITHUB_OUTPUT"
+      - name: Licences, advisories, bans and sources (cargo deny)
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          manifest-path: helper/Cargo.toml
+          rust-version: ${{ steps.rust.outputs.channel }}
+
+  draft:
+    if: github.repository == 'Pluxia-GmbH/questpump'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      release_id: ${{ steps.release.outputs.id }}
+    steps:
+      - name: Draft the release (a re-run reuses its draft)
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          V: ${{ needs.check.outputs.version }}
+        run: |
+          draft="$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null || true)"
+          case "$draft" in
+            true) echo "Reusing the draft of $TAG" ;;
+            false) echo "::error::$TAG is already published"; exit 1 ;;
+            *) notes="QuestPump $V for macOS (Apple silicon and Intel) and Windows (x64)"
+               if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+                 # no tag behind it: a draft names its commit, and the cleanup job deletes it
+                 gh release create "$TAG" --draft --target "$GITHUB_SHA" \
+                   --title "Rehearsal: QuestPump for Mac and Windows $V" \
+                   --notes "A rehearsal of the release of $GITHUB_SHA, deleted when its run ends."
+               else
+                 gh release create "$TAG" --draft --verify-tag --title "QuestPump for Mac and Windows $V" \
+                   --notes "$notes, with a CycloneDX SBOM for each build."
+               fi ;;
+          esac
+          echo "id=$(gh release view "$TAG" --json databaseId --jq .databaseId)" >> "$GITHUB_OUTPUT"
+
+  build:
+    if: github.repository == 'Pluxia-GmbH/questpump'
+    needs: [check, draft]
+    environment: release-signing
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-26
+            target: aarch64-apple-darwin
+            args: --target aarch64-apple-darwin --bundles app,dmg --config tauri.release.conf.json -- --locked
+            symbols: helper/target/aarch64-apple-darwin/release/questpump-helper.dSYM
+          # cross-built on the arm64 runner: screencapturekit's build script builds its Swift bridge for the target
+          - os: macos-26
+            target: x86_64-apple-darwin
+            args: --target x86_64-apple-darwin --bundles app,dmg --config tauri.release.conf.json -- --locked
+            symbols: helper/target/x86_64-apple-darwin/release/questpump-helper.dSYM
+          - os: windows-2025
+            target: x86_64-pc-windows-msvc
+            args: --bundles nsis --config tauri.release.conf.json --config tauri.release-windows.conf.json -- --locked
+            # built without --target: the workspace's own release folder
+            symbols: helper/target/release/questpump_helper.pdb
+    runs-on: ${{ matrix.os }}
+    # a new Apple team's first notarisation can take a day: notarise one build by hand before the first tag
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # no rust-cache here: a release builds from a clean cache, so nothing cached reaches a signed build
+      # a commit of master, which takes the toolchain as its input (a version branch's commit has no such input); the
+      # input equals helper/rust-toolchain.toml's channel, so the matrix target lands in the toolchain cargo runs
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, 2026-10-16
+        with:
+          toolchain: 1.99.1
+          targets: ${{ matrix.target }}
+      - name: The Tauri CLI, pinned to the tauri crate's version
+        run: npm install -g @tauri-apps/cli@2.12.4
+      - name: The notarisation key file
+        if: runner.os == 'macOS'
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          path="$RUNNER_TEMP/AuthKey_$APPLE_API_KEY.p8"
+          (umask 077 && printf '%s' "$APPLE_API_KEY_P8" | base64 --decode > "$path")
+          echo "APPLE_API_KEY_PATH=$path" >> "$GITHUB_ENV"
+      - name: The Artifact Signing CLI and the tools it calls
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          # Microsoft.ArtifactSigning.Client 1.0.146 (2026-10-08), the signing client artifact-signing-cli 0.12.0 names,
+          # checked by its SHA-256 and put where the CLI looks first, since the CLI's own download from nuget.org is
+          # checked by nothing and the client runs inside SignTool with the signing credentials
+          SIGNING_CLIENT_URL: https://api.nuget.org/v3-flatcontainer/microsoft.artifactsigning.client/1.0.146/microsoft.artifactsigning.client.1.0.146.nupkg
+          SIGNING_CLIENT_SHA256: 7761e5d8f31e54b764da21d33cd8b0a2940e1b05526c7dfcb5e94b0431426f70
+        run: |
+          cargo install artifact-signing-cli --version 0.12.0 --locked
+          if ($LASTEXITCODE -ne 0) { throw "cargo install artifact-signing-cli failed" }
+          $client = Join-Path $env:RUNNER_TEMP 'signing-client.nupkg'
+          Invoke-WebRequest -Uri $env:SIGNING_CLIENT_URL -OutFile $client
+          $hash = (Get-FileHash -Algorithm SHA256 $client).Hash
+          if ($hash -ne $env:SIGNING_CLIENT_SHA256) { throw "the signing client's SHA-256 is $hash" }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::ExtractToDirectory($client, (Join-Path $HOME '.artifact-signing-cli\lib'))
+          $dlib = Join-Path $HOME '.artifact-signing-cli\lib\bin\x64\Azure.CodeSigning.Dlib.dll'
+          if (-not (Test-Path $dlib)) { throw "the signing client has no $dlib" }
+          $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe'
+          if (-not (Test-Path $signtool)) { throw "signtool.exe is not at $signtool" }
+          "SIGNTOOL_PATH=$signtool" >> $env:GITHUB_ENV
+          "AZURE_CLI_PATH=$((Get-Command az.cmd).Source)" >> $env:GITHUB_ENV
+      - name: Build, sign, notarise and upload to the draft
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # macOS: the bundler imports the .p12 into a temporary keychain, signs, notarises with the team key, staples
+          APPLE_SIGNING_IDENTITY: "Developer ID Application: Pluxia GmbH (PQFUQJH377)"
+          APPLE_CERTIFICATE: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE || '' }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_API_KEY: ${{ runner.os == 'macOS' && secrets.APPLE_API_KEY || '' }}
+          APPLE_API_ISSUER: ${{ runner.os == 'macOS' && secrets.APPLE_API_ISSUER || '' }}
+          # Windows: tauri.release-windows.conf.json's signCommand reads these through artifact-signing-cli
+          AZURE_CLIENT_ID: ${{ runner.os == 'Windows' && secrets.AZURE_CLIENT_ID || '' }}
+          AZURE_CLIENT_SECRET: ${{ runner.os == 'Windows' && secrets.AZURE_CLIENT_SECRET || '' }}
+          AZURE_TENANT_ID: ${{ runner.os == 'Windows' && secrets.AZURE_TENANT_ID || '' }}
+          AZURE_ARTIFACT_SIGNING_ACCOUNT: ${{ vars.AZURE_ARTIFACT_SIGNING_ACCOUNT }}
+          AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE: ${{ vars.AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE }}
+        with:
+          projectPath: helper/src-tauri
+          tauriScript: tauri
+          args: ${{ matrix.args }}
+          releaseId: ${{ needs.draft.outputs.release_id }}
+          # only latest.json's "notes": the draft keeps its own text
+          releaseBody: QuestPump ${{ needs.check.outputs.version }}
+          uploadUpdaterJson: true
+          updaterJsonPreferNsis: true
+      # the shipped program carries no line tables: they stay here, the longest a public repository keeps an artifact
+      # (download a release's before then to keep it longer)
+      - name: Keep this build's symbols
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: symbols-${{ needs.check.outputs.version }}-${{ matrix.target }}
+          path: ${{ matrix.symbols }}
+          if-no-files-found: error
+          retention-days: 90
+
+  sbom:
+    if: github.repository == 'Pluxia-GmbH/questpump'
+    needs: [check, draft]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, 2026-10-16
+        with:
+          toolchain: 1.99.1
+      - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
+        with:
+          tool: cargo-cyclonedx@0.5.9
+      - name: One CycloneDX SBOM per shipped target (every dependency, JSON, spec 1.5)
+        working-directory: helper
+        env:
+          V: ${{ needs.check.outputs.version }}
+        run: |
+          # the commit's time as the SBOM's timestamp: the same commit gives the same files
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          export SOURCE_DATE_EPOCH
+          mkdir -p "$RUNNER_TEMP/sbom"
+          for t in aarch64-apple-darwin x86_64-apple-darwin x86_64-pc-windows-msvc; do
+            cargo cyclonedx --format json --spec-version 1.5 --target "$t" --target-in-filename
+            mv "src-tauri/questpump-helper_$t.cdx.json" "$RUNNER_TEMP/sbom/QuestPump_${V}_$t.cdx.json"
+          done
+      - name: Attach them to the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$TAG" "$RUNNER_TEMP"/sbom/*.cdx.json --clobber
+
+  verify:
+    if: github.repository == 'Pluxia-GmbH/questpump'
+    needs: [check, build]
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-11-arm: the x64 installer under Windows' own x64 emulation, as an arm64 PC runs it
+        os: [windows-2025, windows-11-arm, macos-26]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    permissions:
+      contents: write # a draft's files need push access to read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      V: ${{ needs.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: helper/tools
+      - name: The Windows installer is signed, installs, starts and uninstalls
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          gh release download $env:TAG --dir dl --pattern "QuestPump_$($env:V)_x64-setup.exe"
+          helper/tools/installer-check.ps1 -Setup "dl/QuestPump_$($env:V)_x64-setup.exe" -Publisher 'Pluxia GmbH'
+      - name: Each disk image's app is signed by the team, notarised and stapled
+        if: runner.os == 'macOS'
+        run: |
+          gh release download "$TAG" --dir dl --pattern "QuestPump_${V}_aarch64.dmg" \
+            --pattern "QuestPump_${V}_x64.dmg"
+          for dmg in dl/*.dmg; do
+            mnt="$(mktemp -d)"
+            hdiutil attach -nobrowse -readonly -mountpoint "$mnt" "$dmg" > /dev/null
+            app="$mnt/QuestPump.app"
+            codesign --verify --deep --strict --verbose=2 "$app"
+            team="$(codesign --display --verbose=2 "$app" 2>&1 | sed -n 's/^TeamIdentifier=//p')"
+            if [ "$team" != PQFUQJH377 ]; then
+              echo "::error::$dmg: the app is signed by team '$team', not PQFUQJH377"; exit 1
+            fi
+            xcrun stapler validate "$app"
+            hdiutil detach "$mnt" > /dev/null
+            echo "$dmg: signed by PQFUQJH377, notarised, stapled"
+          done
+
+  publish:
+    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
+    needs: [check, draft, build, sbom, verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      V: ${{ needs.check.outputs.version }}
+      RELEASE_ID: ${{ needs.draft.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # the films' zip: tools/figures/publish.py --zip checks contract/figures against the pack, the library and the
+          # tokens, and player.js's copies in the desktop app and the site, before it writes it
+          sparse-checkout: |
+            helper/src-tauri
+            helper/dist/lib
+            contract
+            tools/figures
+            QuestPump_FigArmor
+            site/src/scripts
+      - name: latest.json names every platform the updater asks for
+        # each build job merges its platforms into the draft's latest.json, and two jobs at once can lose one
+        run: |
+          gh release download "$TAG" --pattern latest.json --dir feed
+          jq -e --arg v "$V" '.version == $v' feed/latest.json > /dev/null || {
+            echo "::error::latest.json is not for $V"; exit 1; }
+          for k in darwin-aarch64 darwin-aarch64-app darwin-x86_64 darwin-x86_64-app \
+            windows-x86_64 windows-x86_64-nsis; do
+            jq -e --arg k "$k" '.platforms[$k] | ((.url // "") | length > 0) and ((.signature // "") | length > 0)' \
+              feed/latest.json > /dev/null || {
+              echo "::error::latest.json lacks $k: re-run the build job of that platform, then this job"; exit 1; }
+          done
+      - name: Every updater file is signed with the key installed helpers trust
+        # the CLI only warns when TAURI_SIGNING_PRIVATE_KEY is not the key of plugins.updater.pubkey, and every helper
+        # would then refuse the update; both are base64 of minisign's text, whose second line holds the key id at
+        # bytes 2-9
+        run: |
+          keyid() { base64 --decode | sed -n 2p | base64 --decode | od -An -tx1 -j2 -N8 | tr -d ' \n'; }
+          trusted="$(jq -r .plugins.updater.pubkey helper/src-tauri/tauri.conf.json | keyid)"
+          for k in $(jq -r '.platforms | keys[]' feed/latest.json); do
+            signed="$(jq -r --arg k "$k" '.platforms[$k].signature' feed/latest.json | keyid)"
+            if [ "$signed" != "$trusted" ]; then
+              echo "::error::$k is signed with key $signed, and installed helpers trust $trusted:" \
+                "TAURI_SIGNING_PRIVATE_KEY is not the updater's key"
+              exit 1
+            fi
+          done
+      - name: The feed's URLs point at github.com downloads
+        # tauri-action writes api.github.com asset URLs, and every updater download would count against the
+        # unauthenticated API limit of the player's network
+        run: |
+          gh api "repos/$GH_REPO/releases/$RELEASE_ID/assets?per_page=100" > assets.json
+          jq --slurpfile a assets.json --arg base "https://github.com/$GH_REPO/releases/download/$TAG" '
+            .platforms |= map_values(. as $p
+              | ([$a[0][] | select(.url == $p.url)] | first) as $asset
+              | if $asset == null then error("no release file behind \($p.url)")
+                else .url = "\($base)/\($asset.name)" end)
+          ' feed/latest.json > latest.json
+          cat latest.json
+      - name: Publish, never as Latest (the addon's v* releases keep Latest)
+        run: gh release edit "$TAG" --draft=false --latest=false
+      - name: The permanent helper-updater release gets the feed and the installers under fixed names
+        run: |
+          if ! gh release view helper-updater > /dev/null 2>&1; then
+            notes="The update feed of QuestPump for Mac and Windows (latest.json), its newest installers under"
+            notes="$notes fixed names, which questpump.com's download links reach, its move films, and the add-on's"
+            notes="$notes feed (addon.json, signed, with QuestPump-addon.zip), from which QuestPump on your computer"
+            notes="$notes installs and updates the add-on. Each version has its own release, tagged helper-vX.Y.Z"
+            notes="$notes or vX.Y.Z."
+            gh release create helper-updater --prerelease --latest=false --target "$GITHUB_SHA" \
+              --title "QuestPump for Mac and Windows: update feed and downloads" --notes "$notes"
+          fi
+          # the films before the feed: an updated app finds its set; a set already there (named by its digest) stays
+          films="$(python3 -B tools/figures/publish.py --zip "$RUNNER_TEMP/films")"
+          if gh release view helper-updater --json assets --jq '.assets[].name' | grep -qxF "$(basename "$films")"; then
+            echo "helper-updater already holds $(basename "$films")"
+          else
+            gh release upload helper-updater "$films"
+          fi
+          gh release download "$TAG" --dir dl --pattern "QuestPump_${V}_aarch64.dmg" \
+            --pattern "QuestPump_${V}_x64.dmg" --pattern "QuestPump_${V}_x64-setup.exe"
+          mkdir stable
+          cp "dl/QuestPump_${V}_aarch64.dmg" stable/QuestPump-mac-apple-silicon.dmg
+          cp "dl/QuestPump_${V}_x64.dmg" stable/QuestPump-mac-intel.dmg
+          cp "dl/QuestPump_${V}_x64-setup.exe" stable/QuestPump-windows-setup.exe
+          gh release upload helper-updater stable/* latest.json --clobber
+
+  cask:
+    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
+    needs: [check, publish]
+    environment: release-signing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      V: ${{ needs.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: helper/packaging/homebrew
+      # the tap's write deploy key: it reaches that one repository and nothing else, and stays in tap/'s config for the
+      # push below; the job uploads no artifact
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked]
+        with:
+          repository: Pluxia-GmbH/homebrew-tap
+          ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+          path: tap
+      - name: Casks/questpump.rb for this version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release download "$TAG" --dir dmg --pattern "QuestPump_${V}_aarch64.dmg" \
+            --pattern "QuestPump_${V}_x64.dmg"
+          arm="$(sha256sum "dmg/QuestPump_${V}_aarch64.dmg" | cut -d ' ' -f 1)"
+          intel="$(sha256sum "dmg/QuestPump_${V}_x64.dmg" | cut -d ' ' -f 1)"
+          mkdir -p tap/Casks
+          sed -e "s/@VERSION@/$V/g" -e "s/@SHA256_ARM@/$arm/g" -e "s/@SHA256_INTEL@/$intel/g" \
+            helper/packaging/homebrew/questpump.rb > tap/Casks/questpump.rb
+          if grep -n '@[A-Z0-9_]*@' tap/Casks/questpump.rb; then
+            echo "::error::a placeholder is left in the cask"; exit 1
+          fi
+          ruby -c tap/Casks/questpump.rb
+      - name: Push it to the tap
+        run: |
+          cd tap
+          git add Casks/questpump.rb
+          if git diff --cached --quiet; then
+            echo "::notice::The tap already has questpump $V."; exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "questpump $V"
+          git push origin HEAD
+
+  winget:
+    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
+    needs: [check, publish]
+    environment: release-signing
+    runs-on: windows-2025
+    timeout-minutes: 20
+    permissions: {}
+    defaults:
+      run:
+        shell: bash
+    env:
+      HAS_TOKEN: ${{ secrets.WINGET_TOKEN != '' }}
+    steps:
+      - name: Skipped without WINGET_TOKEN
+        if: env.HAS_TOKEN != 'true'
+        run: echo "::notice::WINGET_TOKEN is not set, so no winget pull request was opened (helper/README.md)."
+      - name: The winget-pkgs pull request
+        if: env.HAS_TOKEN == 'true'
+        env:
+          # a classic token with public_repo of an account with no rights in Pluxia-GmbH: wingetcreate forks
+          # microsoft/winget-pkgs under its owner
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          V: ${{ needs.check.outputs.version }}
+          # wingetcreate 1.12.13.0 (2026-07-23), checked by its SHA-256 before it runs with the token
+          WINGETCREATE_URL: https://github.com/microsoft/winget-create/releases/download/v1.12.13.0/wingetcreate.exe
+          WINGETCREATE_SHA256: 24042bd37915805615e6cf969ac57c6439124c3fe85823327f5f3fb24bd9ffea
+        run: |
+          # wingetcreate update needs the package in winget-pkgs: its first version goes in by hand
+          # (helper/packaging/winget)
+          code="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $WINGET_CREATE_GITHUB_TOKEN" \
+            https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/p/Pluxia/QuestPump)"
+          case "$code" in
+            200) ;;
+            404) echo "::notice::Pluxia.QuestPump is not in winget-pkgs yet: submit its first version by hand" \
+                   "from helper/packaging/winget."
+                 exit 0 ;;
+            *) echo "::error::GitHub answered $code for the winget-pkgs manifests"; exit 1 ;;
+          esac
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/QuestPump_${V}_x64-setup.exe"
+          curl -fsSL -o wingetcreate.exe "$WINGETCREATE_URL"
+          echo "$WINGETCREATE_SHA256  wingetcreate.exe" | sha256sum --check --strict
+          ./wingetcreate.exe update Pluxia.QuestPump --version "$V" --urls "$url|x64" --submit --no-open
+
+  # a rehearsal's end, whatever came of it: its draft goes once the draft job made it
+  cleanup:
+    if: >-
+      always() && github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'workflow_dispatch'
+      && needs.draft.result == 'success'
+    needs: [draft, build, sbom, verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Delete the rehearsal's draft
+        run: |
+          case "$TAG" in
+            helper-rehearsal-*) ;;
+            *) echo "::error::$TAG is no rehearsal's draft"; exit 1 ;;
+          esac
+          if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" != true ]; then
+            echo "::error::$TAG is not a draft: left as it is"; exit 1
+          fi
+          gh release delete "$TAG" --yes
+          echo "::notice::the rehearsal's draft $TAG is deleted"

@@ -1,0 +1,52 @@
+{
+  "move": "one_arm_doorframe_row_back",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 8},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "doorframe", "f": 50, "wall": "-l"}],
+  "poses": {
+    "lean": {
+      "line": {"pivot": "toes", "at": 24, "angle": 105.35, "width": 11, "lift": 0, "shift": 34.0},
+      "leg_near": {"foot": [24, -23.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [24, 45.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "chest": [0, 0, 10],
+      "head": [6, 0, -10],
+      "arm_near": {"ik": [44.0, 116.0, -8.0], "pole": [-1, -0.5, 0.3], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [4, -58, 30], "rel": "neck", "pole": [-0.5, 0, 1], "hand": [0.15, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "pulled": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 24, "angle": 93, "width": 11, "lift": 0, "shift": 34.0},
+      "chest": [0, 0, -5],
+      "head": [0, 0, 5],
+      "arm_near": {"ik": [44.0, 116.0, -8.0], "pole": [-1, 0, -0.1], "hand": [1, 0, 0]}
+    },
+    "twist": {
+      "from": "pulled",
+      "trunk": [0, 0, 20],
+      "line": {"pivot": "toes", "at": 24, "angle": 94, "width": 11, "lift": 0, "shift": 34.0}
+    }
+  },
+  "timeline": [
+    {"pose": "lean"},
+    {"hold": 0.3, "phase": "arm_straight"},
+    {"to": "pulled", "s": 1.0, "phase": "pull", "effort": 1.0},
+    {"hold": 0.2, "phase": "chest_to_frame", "effort": 0.9},
+    {"to": "lean", "s": 1.5, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "pulled",
+  "fault": {
+    "pose": "twist",
+    "caption": "hips_twist",
+    "breaks": {"check": "offset", "joint": "hip_far", "from": "hip_near", "axis": "f", "min": -4, "max": 4}
+  },
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "pulled", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "pulled", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 110},
+    {"at": "lean", "check": "offset", "joint": "toe_near", "from": "wrist_near", "axis": "f", "max": -2}
+  ],
+  "note": "The one-arm doorframe row with the toes back from the frame's base (the ankles 20 cm nearer the camera, the toes in front of the jamb's face where the row's stand beside it), the hand on the same grip: the straight-arm lean comes out at about 15 degrees back against the row's 25, so the arm carries about 21 % of the body against its 37 %; at the top the body stands nearly upright, the chest as near the frame as the feet allow; the free arm hangs at its side. Its fault turns the hips open toward the free side (hips_twist), its stop line's break."
+}

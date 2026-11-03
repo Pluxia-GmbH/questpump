@@ -1,0 +1,55 @@
+{
+  "move": "bird_dog",
+  "view": "side",
+  "camera": {"yaw": -6, "pitch": 26},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "mat", "f0": -75, "f1": 82}],
+  "poses": {
+    "quad": {
+      "pelvis": [0, 55, 0],
+      "trunk": [86, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [47, 4.3, 24], "pole": [-1, 0.2, 0.4], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-42.7, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "reach_near": {
+      "from": "quad",
+      "arm_near": {"fk": [176, 4, 0, 0, 0]},
+      "leg_far": {"fk": [-4, 0, 0, -60]},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "wrist_far", "hand_tip_far"]
+    },
+    "reach_far": {
+      "from": "quad",
+      "arm_far": {"fk": [176, 4, 0, 0, 0]},
+      "leg_near": {"fk": [-4, 0, 0, -60]},
+      "contacts": ["knee_far", "toe_far", "ankle_far", "wrist_near", "hand_tip_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "quad"},
+    {"to": "reach_near", "s": 1.2, "phase": "reach_long", "effort": 0.8},
+    {"hold": 1.0, "phase": "hips_level", "effort": 0.9},
+    {"to": "quad", "s": 1.0, "phase": "back_in", "effort": 0.5},
+    {"to": "reach_far", "s": 1.2, "phase": "reach_long", "effort": 0.8},
+    {"hold": 1.0, "phase": "hips_level", "effort": 0.9},
+    {"to": "quad", "s": 1.0, "phase": "back_in", "effort": 0.5}
+  ],
+  "key": "reach_near",
+  "targets": [
+    {"at": "reach_near", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "reach_near", "check": "height", "joint": "ankle_far", "min": 45},
+    {"at": "reach_far", "check": "height", "joint": "ankle_near", "min": 45}
+  ]
+}

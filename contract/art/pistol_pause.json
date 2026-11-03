@@ -1,0 +1,6 @@
+{
+  "move": "pistol_pause",
+  "variant_of": "pistol",
+  "phases": {"sit_down": 2.0, "bottom": 2.0},
+  "note": "Down in 2, hold 2 at the bottom, stand: the pistol's frames with its bottom held."
+}

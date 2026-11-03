@@ -1,0 +1,43 @@
+{
+  "move": "desk_updog",
+  "view": "side",
+  "camera": {"yaw": -15, "pitch": 8},
+  "working": ["pauldron", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "plank": {
+      "line": {"pivot": "toes", "at": 14.5, "angle": 59, "width": 14},
+      "head": [4, 0, 0],
+      "arms": {"ik": [102, 77.3, 24], "pole": [-1, 0, 0.7], "hand": [1, -0.15, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "updog": {
+      "from": "plank",
+      "line": {"pivot": "toes", "at": 14.5, "angle": 51, "width": 14, "hips": 19},
+      "chest": [-14, 0, 0],
+      "head": [-8, 0, 0]
+    },
+    "updog_in": {
+      "from": "updog",
+      "line": {"pivot": "toes", "at": 14.5, "angle": 50.6, "width": 14, "hips": 20.5},
+      "chest": [-16, 0, 0],
+      "head": [-9, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "plank"},
+    {"hold": 0.6, "phase": "hands_on_edge", "effort": 0.25},
+    {"to": "updog", "s": 1.8, "phase": "hips_forward_chest_up", "effort": 0.55},
+    {"to": "updog_in", "s": 1.8, "phase": "breathe", "effort": 0.6},
+    {"to": "updog", "s": 1.8, "phase": "breathe", "effort": 0.6},
+    {"to": "updog_in", "s": 1.8, "phase": "breathe", "effort": 0.6},
+    {"to": "plank", "s": 1.8, "phase": "ease_back", "effort": 0.3}
+  ],
+  "key": "updog",
+  "targets": [
+    {"at": "updog", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "updog", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "max": 168}
+  ],
+  "note": "Hands on the desk's edge, arms straight, legs straight behind on the balls of the feet: the hips sink forward toward the desk while the chest lifts and opens through the arms, the shoulders down from the ears and the eyes ahead and a little up."
+}

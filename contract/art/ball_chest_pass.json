@@ -1,0 +1,49 @@
+{
+  "move": "ball_chest_pass",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["chest", "upper_arm"],
+  "ballistic": true,
+  "props": [{"kind": "wall", "f": 150}],
+  "items": [
+    {
+      "kind": "ball",
+      "r": 13,
+      "off": [4, 1, 0],
+      "free": [{"leave": 0.15, "land": 0.36, "lift": 0.36, "back": 0.6, "at": [136.5, 129, 0], "arc": 3}]
+    }
+  ],
+  "poses": {
+    "chest": {
+      "pelvis": [0, 91, 0],
+      "trunk": [8, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [27, 122, 14], "pole": [-0.2, -1, 0.5], "hand": [0.4, 0.8, -0.35]},
+      "legs": {"foot": [0, 15], "turn": 10, "knee_out": 8},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "throw": {
+      "from": "chest",
+      "pelvis": [3, 92, 0],
+      "trunk": [12, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [62, 127, 11], "pole": [0, -0.4, 1], "hand": [1, -0.1, 0.25]}
+    },
+    "reach": {
+      "from": "chest",
+      "pelvis": [2, 92, 0],
+      "trunk": [10, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [54, 125, 15.5], "pole": [-0.2, -1, 0.6], "hand": [0.8, 0.5, -0.3]}
+    }
+  },
+  "timeline": [
+    {"pose": "chest"},
+    {"to": "throw", "s": 0.22, "ease": "out", "phase": "throw", "effort": 1.0},
+    {"hold": 0.12, "phase": "throw", "effort": 0.6},
+    {"to": "reach", "s": 0.26, "phase": "catch", "effort": 0.4},
+    {"to": "chest", "s": 0.45, "phase": "catch", "effort": 0.6},
+    {"hold": 0.25, "phase": "catch", "effort": 0.3}
+  ],
+  "key": "throw"
+}

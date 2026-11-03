@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- XP: a cut crystal, a six-sided shaft pointed at both ends, its three near faces between a pyramid top and a
+       pyramid foot (a gem, never a coin). Lit from the top left: the upper left facet brightest, the others darkening
+       in steps toward the lower right. One plate in the tint, so the caller colours it by state (gold, or disabled grey
+       on a missed chip); drawn as is, never mirrored. -->
+  <path data-token="tint" fill="currentColor" d="
+    M12 1.75 L18.75 7.5 L18.75 15.5 L12 22.25 L5.25 15.5 L5.25 7.5 Z"/>
+  <path data-token="void" fill-opacity="0.1" d="
+    M5.25 7.5 L9.5 7.5 L9.5 15.5 L5.25 15.5 Z
+    M12 1.75 L14.5 7.5 L9.5 7.5 Z"/>
+  <path data-token="void" fill-opacity="0.22" d="
+    M5.25 15.5 L9.5 15.5 L12 22.25 Z
+    M9.5 7.5 L14.5 7.5 L14.5 15.5 L9.5 15.5 Z
+    M12 1.75 L18.75 7.5 L14.5 7.5 Z"/>
+  <path data-token="void" fill-opacity="0.36" d="
+    M9.5 15.5 L14.5 15.5 L12 22.25 Z
+    M14.5 7.5 L18.75 7.5 L18.75 15.5 L14.5 15.5 Z"/>
+  <path data-token="void" fill-opacity="0.5" d="
+    M14.5 15.5 L18.75 15.5 L12 22.25 Z"/>
+</svg>

@@ -1,0 +1,101 @@
+{
+  "move": "situp_lowering",
+  "view": "side",
+  "camera": {"yaw": -10, "pitch": 8},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -92, "f1": 92}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [-14, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [2, 0, 0],
+      "arm_near": {"ik": [24, -2, -8], "rel": "neck", "pole": [0.639, -0.335, 0.9], "hand": [0, 0.35, -1]},
+      "arm_far": {"ik": [21, -10, -8], "rel": "neck", "pole": [0.639, -0.335, 0.9], "hand": [0, 0.35, -1]},
+      "legs": {"foot": [48, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "round": {
+      "pelvis": [0, 15.6, 0],
+      "trunk": [-24, 0, 0],
+      "chest": [24, 0, 0],
+      "head": [18, 0, 0],
+      "arm_near": {"ik": [24, -2, -8], "rel": "neck", "pole": [0.6, -0.4, 0.9], "hand": [0, 0.35, -1]},
+      "arm_far": {"ik": [21, -10, -8], "rel": "neck", "pole": [0.6, -0.4, 0.9], "hand": [0, 0.35, -1]},
+      "legs": {"foot": [48, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "rise": {
+      "pelvis": [0, 15.6, 0],
+      "trunk": [-40, 0, 0],
+      "chest": [28, 0, 0],
+      "head": [20, 0, 0],
+      "arm_near": {"ik": [24, -2, -8], "rel": "neck", "pole": [0.67, -0.267, 0.9], "hand": [0, 0.35, -1]},
+      "arm_far": {"ik": [21, -10, -8], "rel": "neck", "pole": [0.67, -0.267, 0.9], "hand": [0, 0.35, -1]},
+      "legs": {"foot": [48, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "peel": {
+      "pelvis": [0, 15.8, 0],
+      "trunk": [-62, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [20, 0, 0],
+      "arm_near": {"ik": [24, -2, -8], "rel": "neck", "pole": [0.721, -0.021, 0.9], "hand": [0, 0.35, -1]},
+      "arm_far": {"ik": [21, -10, -8], "rel": "neck", "pole": [0.721, -0.021, 0.9], "hand": [0, 0.35, -1]},
+      "legs": {"foot": [48, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "curl": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [20, 0, 0],
+      "arm_near": {"ik": [24, -2, -8], "rel": "neck", "pole": [0.646, 0.32, 0.9], "hand": [0, 0.35, -1]},
+      "arm_far": {"ik": [21, -10, -8], "rel": "neck", "pole": [0.646, 0.32, 0.9], "hand": [0, 0.35, -1]},
+      "legs": {"foot": [48, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["waist", "pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "lie": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {"ik": [24, -2, -8], "rel": "neck", "pole": [0.4, 0.6, 0.9], "hand": [0, 0.35, -1]},
+      "arm_far": {"ik": [21, -10, -8], "rel": "neck", "pole": [0.4, 0.6, 0.9], "hand": [0, 0.35, -1]},
+      "legs": {"foot": [48, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["neck", "waist", "pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "feet_up": {
+      "from": "peel",
+      "legs": {"foot": [44, 14], "y": 18, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["pelvis"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "sit_tall", "effort": 0.3},
+    {"to": "round", "s": 0.4, "ease": "in", "phase": "lower_slowly", "effort": 0.6, "dynamic": true},
+    {"to": "rise", "s": 0.5, "ease": "linear", "phase": "lower_slowly", "effort": 0.8, "dynamic": true},
+    {"to": "peel", "s": 0.8, "ease": "linear", "phase": "lower_slowly", "effort": 0.9, "dynamic": true},
+    {"to": "curl", "s": 0.8, "ease": "linear", "phase": "lower_slowly", "effort": 1.0, "dynamic": true},
+    {"to": "lie", "s": 0.5, "ease": "out", "phase": "lower_slowly", "effort": 0.6},
+    {"hold": 0.3, "phase": "lie", "effort": 0.2},
+    {"to": "curl", "s": 0.3, "ease": "in", "phase": "sit_up", "effort": 0.6},
+    {"to": "peel", "s": 0.3, "ease": "linear", "phase": "sit_up", "effort": 0.7, "dynamic": true},
+    {"to": "round", "s": 0.4, "ease": "linear", "phase": "sit_up", "effort": 0.6, "dynamic": true},
+    {"to": "tall", "s": 0.3, "ease": "out", "phase": "sit_up", "effort": 0.4, "dynamic": true}
+  ],
+  "key": "peel",
+  "fault": {
+    "pose": "feet_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "height", "joint": "ankle_near", "max": 10}
+  },
+  "targets": [
+    {"at": "tall", "check": "height", "joint": "neck", "min": 60},
+    {"at": "peel", "check": "angle", "joints": ["pelvis", "waist", "neck"], "max": 160},
+    {"at": "rise", "check": "height", "joint": "ankle_near", "max": 10},
+    {"at": "peel", "check": "height", "joint": "ankle_near", "max": 10}
+  ],
+  "note": "Seated tall, arms crossed on the chest, the chin tucked and the back rounded, rolled down over 3 s to lying, then up to sitting again any way: the slow roll down is the rep."
+}

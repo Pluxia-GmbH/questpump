@@ -1,0 +1,139 @@
+# QuestPump's secret-scanning rules.
+#
+# Read by betterleaks: the CI check Secret Scan (.github/workflows/secrets.yml) over each pull request's commits, from
+# the pull request's base branch (main), never from the pull request itself, and `betterleaks git . --pre-commit
+# --staged --config .gitleaks.toml --ignore-gitleaks-allow` before a commit (pr.mjs commit scans the commit it builds
+# with the base's copy). The Gitleaks format, which betterleaks reads, so the file works with either engine.
+#
+# Policy: a finding is a leak until shown otherwise. Allowlist only a value that is public by design (the Firebase
+# client config, AGENTS.md "Commits") or a test vector, each block as narrow as its false positives allow (the rules it
+# covers, the paths, the shape of the value, all required at once) with a dated comment saying what it clears and why.
+# A change here counts once it is on main: it lands in a pull request of its own, ahead of the change that needs it, and
+# Secret Scan flags it with a warning. Never allowlist a live credential to quiet the scan: take it out of the tree and
+# rotate it. No gitleaks:allow or betterleaks:allow comment and no .gitleaksignore or .betterleaksignore file: Secret
+# Scan counts none of them (the review of PR #3, 2026-10-09).
+
+title = "QuestPump secret-scanning rules"
+
+[extend]
+# betterleaks' default rules (1.9.0); its private-key rule also catches a service account's JSON key and a .p8 key
+useDefault = true
+
+# Each [[allowlists]] block stands on its own (a finding any block matches is quiet). Inside a block, condition = "AND"
+# makes every check hold at once (paths and regexes), and targetRules limits the block to those rules, so any other
+# rule still fails in the same file.
+
+# The move figures' table (2026-10-09: 494 generic-api-key and 7 sumologic-access-token hits over the history, nothing
+# else): tools/figures/publish.py writes each published file's SHA-256 under its name, and "key.png": "<digest>" reads
+# as a generic key, "sumo_squat.mp4": "<digest>" as a Sumo Logic token (checked on stills/sumo_squat.png: its value
+# is that file's SHA-256). Only a 64-hex value in that one file is quiet.
+[[allowlists]]
+description = "SHA-256 digests in the figures' table"
+targetRules = ["generic-api-key", "sumologic-access-token"]
+condition = "AND"
+paths = ['''^contract/figures/figures\.json$''']
+regexTarget = "secret"
+regexes = ['''^[0-9a-f]{64}$''']
+
+# The Pro proof's wire fixture (2026-10-09: 2 jwt hits): the App Store transaction and renewal are synthetic JWS whose
+# x5c chain reads "synthetic leaf", "synthetic intermediate", "synthetic root" and whose signature is the base64url of
+# "synthetic signature, never a real one: r||s" padded with dots to ES256's 64 bytes. Only a JWS ending in exactly
+# that signature, in the fixtures, is quiet.
+[[allowlists]]
+description = "Synthetic JWS in the wire fixture"
+targetRules = ["jwt"]
+condition = "AND"
+paths = ['''^contract/fixtures/wire\.json$''']
+regexTarget = "secret"
+regexes = ['''^ey[A-Za-z0-9_-]+\.ey[A-Za-z0-9_-]+\.c3ludGhldGljIHNpZ25hdHVyZSwgbmV2ZXIgYSByZWFsIG9uZTogcnx8cy4uLi4uLi4uLi4uLi4uLi4uLi4uLg$''']
+
+# The pairing's security-test vectors (2026-10-09: 1 generic-api-key hit each in contract/fixtures/seal.json and the
+# phones' PairLinkTest.kt and PairLinkTests.swift; 2026-10-16: 1 in contract/fixtures/ble.json): the pairing key is the
+# bytes 00 to 1f (base64url AAECAwQF...Hh8 in the pair link tests), seal_key_hex its HKDF seal key and ble_key_hex its
+# HKDF Bluetooth key (slice 43); 2026-10-30, slice 60 (4 hits in seal.json's sync block): the sync root secret is the
+# bytes a0 to af, seal_key_hex and auth its HKDF seal and auth keys, auth_sha256_hex the auth key's SHA-256 and
+# link_key_hex the link answer's HKDF key; 2026-10-31, the release security review (1 hit in seal.json's sync block):
+# link_key_hex is now the HKDF key of the link answer's ECDH secret, the request's P-256 secret the bytes 40 to 5f and
+# the answerer's the bytes 60 to 7f (info questpump link v2), in place of the HKDF key of the old request's T;
+# 2026-11-01, the account's new key (10 hits in seal.json's rekey block): device_key the P-256 public key of the
+# secret bytes 80 to 9f (also as the refused MACs' key) and another public key of the bytes e0 to ff, mac_key_hex the
+# MAC's HKDF key under the sync root secret, the new root secret's (the bytes b0 to bf) seal_key_hex, auth,
+# auth_sha256_hex and mac_key_hex, and wrap_key_hex the wrap's HKDF key of the ECDH secret with the ephemeral bytes c0
+# to df; 2026-11-01, the release security review's L3 (1 hit in seal.json, 19 in ble.json's gatt cases):
+# hello_key_hex is the HKDF hello key (info questpump hello v1) of the pairing key 00 to 1f, and of 32 bytes of 7, the
+# cases' new pairing code; 2026-11-01, the store token (1 hit in seal.json's sync block): store_token the UUID from
+# HKDF of the sync block's account id (info questpump store account v1), a name and no secret. Only these eighteen
+# values, in the fixtures and the two phone cores' test trees, are quiet.
+[[allowlists]]
+description = "Pairing test vectors in the security tests"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = [
+  '''^contract/fixtures/[^/]+\.json$''',
+  '''^android/core/src/test/''',
+  '''^apple/Packages/QuestPumpCore/Tests/''',
+]
+regexTarget = "secret"
+regexes = [
+  '''^AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8$''',
+  '''^342d27dab92a76c7c3fb936619389193bc0bdbe17c47261c91521e3d3ea5a0b6$''',
+  '''^eaf55d468f0ddcf3b0baeef556217e764c4d0e77bba9c485f5d7cb351e899b31$''',
+  '''^526f3a6f72be69b46da85ac9fb85634219bfc195d247c77050bd9bc7569f9295$''',
+  '''^RIP3novx32biaw4GCvbBGynvkFvqyFR250d21fE6uZc$''',
+  '''^3fc0c44a25a0a855f9b01b15e815d993e82f9e27892076c2d401ea26d34dcb15$''',
+  '''^e2797050a877c2b3ad9d4bdfed95a96019422aaa7faf0d448af7c4a118630f05$''',
+  '''^BBNQM4lDbDjIyxo4FWnXLcsBuzuZ0QXYH_vbDioV9xoNsV_C1s4crj805b8ha6shoEgqZ08xNyO026B2_I4ByZI$''',
+  '''^e6c65bf358d6c3ceeecd4645b20ebce9b1551a015321185d87d4d82ca7acfafa$''',
+  '''^BDVOA1AWl6kSnJub0mI5dZRULmyLwiVDaO9fw-sBj32xIlnt10OUEvm8T31_zD3VxvxrhllAxy_Ko8ZzCDdn9O8$''',
+  '''^dbe7f21613e686d0d7c16d70f55dfbcb4a5d45f14d11ff0e4bb58390892443b9$''',
+  '''^VQeryPU2p3sUwMv7LkXwnafGGyZRAlydmEKteK8VGtY$''',
+  '''^7198c3f411a00099a664e34782d9933743bfee099727b626741a393b7d5612f0$''',
+  '''^c33b1180bcb6dc7dac8e43f6c23bdf1c7c020cc51a7b342ba19d32565e157b63$''',
+  '''^4c0fae5621a713f5dae210bdda0333de01289d19cc78b76d84922483655097bf$''',
+  '''^473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325$''',
+  '''^10ead35c28ca344c1ec73c4789da66f6c87c576b49cb9d06a41d44cdbe990b23$''',
+  '''^cbf59766-d03e-84ab-b654-a33b1fd73897$''',
+]
+
+# The Firebase client config files (2026-10-09: 1 gcp-api-key hit in google-services.json, and the generic key rule's
+# on the same value once that one is quiet): their API keys identify the questpump project and ship in every app,
+# public by design (AGENTS.md, "Commits"; App Check guards the calls). Only a Google API key there is quiet; a service
+# account's key or any other value in them still fails.
+[[allowlists]]
+description = "Firebase client config: public API keys by design"
+targetRules = ["gcp-api-key", "generic-api-key"]
+condition = "AND"
+paths = [
+  '''^android/phone/google-services\.json$''',
+  '''^apple/iOS/GoogleService-Info\.plist$''',
+]
+regexTarget = "secret"
+regexes = ['''^AIza[0-9A-Za-z_-]{35}$''']
+
+# The Play licensing key (2026-10-09: 1 generic-api-key hit in contract/store.json, from 6c1b7524 on main, read once
+# Secret Scan diffs a merge of main): play.license_key is the base64 DER of an RSA-2048 public key
+# (SubjectPublicKeyInfo, exponent 65537), the public half of the key Play signs purchases with, which apps carry:
+# public by design (tools/store/store.py checks its shape, questpump-core's pro.rs verifies Play proofs with it). Only
+# a 2048-bit RSA public key of that shape in that file is quiet; any other value there, or the key elsewhere, fails.
+[[allowlists]]
+description = "The Play licensing key: an RSA public key"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^contract/store\.json$''']
+regexTarget = "secret"
+regexes = ['''^MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA[A-Za-z0-9+/]{342}IDAQAB$''']
+
+# "login" in prose (2026-10-09: 5 generic-password hits in the rust-helper skill's macos-capture-and-tcc.md and 2 in
+# helper/src-tauri/src/autostart.rs, all "login (<words>, `<code>`)"): the rule reads a parenthesis after "login" with
+# a comma and a quoted or backticked part as login(user, "password"). Only a match that starts "login (" with its
+# space, in those two files, is quiet; the same prose elsewhere fails until its file joins the list here.
+[[allowlists]]
+description = "Start-at-login prose read as a login call"
+targetRules = ["generic-password"]
+condition = "AND"
+paths = [
+  '''^\.claude/skills/rust-helper/references/macos-capture-and-tcc\.md$''',
+  '''^helper/src-tauri/src/autostart\.rs$''',
+]
+regexTarget = "match"
+regexes = ['''^login \(''']

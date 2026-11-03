@@ -1,0 +1,6 @@
+{
+  "move": "backpack_sl_rdl_slow.dumbbells",
+  "gear_of": "backpack_sl_rdl_slow",
+  "gear": "dumbbells",
+  "items": [{"kind": "dumbbell", "hand": "near"}]
+}

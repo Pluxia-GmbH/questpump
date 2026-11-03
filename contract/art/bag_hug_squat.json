@@ -1,0 +1,55 @@
+{
+  "move": "bag_hug_squat",
+  "view": "side",
+  "camera": {"yaw": 40, "pitch": 8},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [38, -13, 23], "rel": "neck", "pole": [-0.2, -1, 0.8], "hand": [0.3, 0, -1]},
+      "legs": {"foot": [0, 13], "turn": 22, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "squat": {
+      "from": "tall",
+      "pelvis": [-14, 33, 0],
+      "trunk": [26, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"ik": [38, -13, 23], "rel": "neck", "pole": [-0.2, -1, 0.8], "hand": [0.3, 0, -1]},
+      "legs": {"foot": [0, 13], "turn": 22, "knee_out": 37}
+    },
+    "squat_in": {"from": "squat", "pelvis": [-14, 32.6, 0], "legs": {"foot": [0, 13], "turn": 22, "knee_out": 38}},
+    "heels_up": {
+      "from": "squat",
+      "pelvis": [-12, 37, 0],
+      "trunk": [22, 0, 0],
+      "legs": {"foot": [0, 13], "turn": 22, "knee_out": 37, "lift": 30}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "squat", "s": 2.4, "phase": "squat_deep", "effort": 0.6},
+    {"to": "squat_in", "s": 1.6, "phase": "knees_out", "effort": 0.7},
+    {"to": "squat", "s": 1.6, "phase": "heels_down", "effort": 0.6},
+    {"to": "tall", "s": 2.2, "phase": "stand_up", "effort": 0.6}
+  ],
+  "key": "squat",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "squat", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "squat", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "squat", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  ],
+  "items": [{"kind": "backpack", "on": "chest"}],
+  "note": "A light bag hugged to the chest: the hips sink between the heels below the knees, the elbows inside the knees, the heels flat, and the bag stays close all the way up."
+}

@@ -1,0 +1,7 @@
+{
+  "move": "backpack_row.kettlebell",
+  "gear_of": "backpack_row",
+  "gear": "kettlebell",
+  "items": [{"kind": "kettlebell", "hand": "near", "hold": "down"}],
+  "poses": {"hang": {"arm_near": {"fk": [60, 8, 4]}}, "row": {"arm_near": {"fk": [-25, 14, 85]}}}
+}

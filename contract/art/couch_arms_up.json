@@ -1,0 +1,64 @@
+{
+  "move": "couch_arms_up",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 12},
+  "working": ["thigh_near", "tasset_near"],
+  "props": [{"kind": "bench", "f0": -104, "f1": -44, "u": 44}],
+  "items": [{"kind": "towel", "under": "knee_near"}],
+  "poses": {
+    "set": {
+      "pelvis": [-24, 54, 0],
+      "fit": {"joint": "knee_near", "u": 10},
+      "trunk": [32, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [25, 62, 34], "pole": [-0.6, 0, 1], "hand": [1, -0.5, -0.1]},
+      "leg_near": {"ik": [-51, 47.5, 12], "pole": [0, -1, 0], "toe": [-1, -0.05, 0]},
+      "leg_far": {"foot": [38, 12], "turn": 4, "knee_out": 4},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "up": {
+      "from": "set",
+      "pelvis": [-18, 54, 0],
+      "trunk": [-2, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [-13, 59, 29], "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.2]}
+    },
+    "front": {"from": "up", "arms": {"fk": [80, 8, 12]}},
+    "reach": {"from": "up", "chest": [-3, 0, 0], "head": [-6, 0, 0], "arms": {"fk": [168, 10, 4]}},
+    "reach_in": {"from": "reach", "pelvis": [-17.4, 54, 0], "trunk": [-3, 0, 0], "arms": {"fk": [171, 12, 2]}},
+    "arch": {
+      "from": "reach",
+      "trunk": [-14, 0, 0],
+      "chest": [-16, 0, 0],
+      "head": [18, 0, 0],
+      "arms": {"fk": [160, 10, 4]}
+    }
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.6, "phase": "knee_down"},
+    {"to": "up", "s": 2.2, "phase": "chest_up", "effort": 0.6},
+    {"to": "front", "s": 0.6, "phase": "arms_up", "effort": 0.7},
+    {"to": "reach", "s": 0.8, "phase": "arms_up", "effort": 0.75},
+    {"to": "reach_in", "s": 1.5, "phase": "breathe", "effort": 0.85},
+    {"to": "reach", "s": 1.5, "phase": "breathe", "effort": 0.85},
+    {"to": "front", "s": 0.5, "phase": "hands_down", "effort": 0.5},
+    {"to": "up", "s": 0.7, "phase": "hands_down", "effort": 0.5},
+    {"to": "set", "s": 1.8, "phase": "lean_forward", "effort": 0.3}
+  ],
+  "key": "reach",
+  "fault": {
+    "pose": "arch",
+    "caption": "low_back_arches",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 155}
+  },
+  "targets": [
+    {"at": "reach", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 155},
+    {"at": "reach", "check": "height", "joint": "wrist_near", "min": 135},
+    {"at": "reach", "check": "height", "joint": "ankle_near", "min": 40},
+    {"at": "reach", "check": "height", "joint": "knee_near", "max": 11}
+  ],
+  "note": "The couch stretch (couch_stretch) a stage on: once the body is upright with the back shin up the sofa, both arms reach straight up beside the ears, the seat squeezed and the ribs down so the low back does not arch."
+}

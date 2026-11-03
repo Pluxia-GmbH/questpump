@@ -1,0 +1,61 @@
+{
+  "move": "planche_lean",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 10},
+  "working": ["pauldron", "chest", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -66, "f1": 130}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -70, "angle": 16.5, "width": 12, "y": 1},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 26], "pole": [-1, 0.2, 0.7], "hand": [0.92, -0.14, 0.36]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": -62, "angle": 17.0, "width": 12, "y": 1, "lift": 90},
+      "chest": [5, 0, 0],
+      "head": [-2, 0, 0]
+    },
+    "lean_in": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": -62, "angle": 16.9, "width": 12, "y": 1, "lift": 90},
+      "chest": [6, 0, 0]
+    },
+    "bent": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": -66, "angle": 14.5, "width": 12, "y": 1, "lift": 90},
+      "head": [-2, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.4, "phase": "arms_straight"},
+    {"to": "lean", "s": 1.5, "phase": "lean_forward", "effort": 0.7},
+    {"to": "lean_in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "lean", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "lean_in", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "lean", "s": 1.4, "phase": "breathe", "effort": 0.9},
+    {"to": "top", "s": 1.2, "phase": "rock_back", "effort": 0.4}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {
+      "at": "lean",
+      "check": "offset",
+      "joint": "shoulder_near",
+      "from": "hand_tip_near",
+      "axis": "f",
+      "min": -3,
+      "max": 3
+    }
+  ]
+}

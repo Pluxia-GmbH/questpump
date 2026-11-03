@@ -1,0 +1,72 @@
+{
+  "move": "crow_prep",
+  "view": "side",
+  "camera": {"yaw": 8, "pitch": 4},
+  "working": ["forearm", "upper_arm", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -50, "f1": 80, "l0": -40, "l1": 40}],
+  "poses": {
+    "squat": {
+      "pelvis": [-30, 38, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [100, 8, 30, 0, 0]},
+      "legs": {"foot": [-16, 20], "y": 1, "turn": 10, "lift": 0, "knee_out": 0, "pole": [0.85, 0, 1.4]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hands": {
+      "from": "squat",
+      "pelvis": [-22, 42, 0],
+      "trunk": [70, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "prep": {
+      "pelvis": [2, 65, 0],
+      "trunk": [104, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arms": {"ik": [30, 4.3, 20], "pole": [-1, 0.3, -0.8], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-16, 20], "y": 1, "turn": 10, "lift": 70, "knee_out": 0, "pole": [1, -0.2, 0.9]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "prep_in": {"from": "prep", "pelvis": [2, 65.5, 0], "chest": [9, 0, 0]},
+    "head_down": {"from": "prep", "head": [20, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "squat"},
+    {"hold": 0.4, "phase": "squat_deep"},
+    {"to": "hands", "s": 1.1, "phase": "hands_down", "effort": 0.3},
+    {"to": "prep", "s": 1.6, "phase": "shift_forward", "effort": 0.6},
+    {"to": "prep_in", "s": 1.2, "phase": "breathe", "effort": 0.7},
+    {"to": "prep", "s": 1.2, "phase": "breathe", "effort": 0.7},
+    {"to": "prep_in", "s": 1.2, "phase": "breathe", "effort": 0.7},
+    {"to": "prep", "s": 1.2, "phase": "breathe", "effort": 0.7},
+    {"to": "hands", "s": 1.4, "phase": "rock_back", "effort": 0.4},
+    {"to": "squat", "s": 1.0, "phase": "sit_back", "effort": 0.2}
+  ],
+  "key": "prep",
+  "fault": {
+    "pose": "head_down",
+    "caption": "head_drops",
+    "breaks": {"check": "offset", "joint": "head", "from": "neck", "axis": "u", "min": 0}
+  },
+  "targets": [
+    {"at": "prep", "check": "height", "joint": "ankle_near", "min": 18},
+    {"at": "prep", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 95, "max": 140},
+    {"at": "prep", "check": "height", "joint": "pelvis", "min": 55}
+  ],
+  "note": "Hands shoulder width on the mat, fingers forward; the knees wide on the backs of the upper arms near the armpits, the heels up on the balls of the feet, the shoulders a hand past the wrists (the weight forward, the feet still down)."
+}

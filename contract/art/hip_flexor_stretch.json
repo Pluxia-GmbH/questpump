@@ -1,0 +1,40 @@
+{
+  "move": "hip_flexor_stretch",
+  "view": "side",
+  "camera": {"yaw": 25, "pitch": 18},
+  "working": ["thigh_near", "tasset_near"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -84, "f1": 52}],
+  "poses": {
+    "tall": {
+      "pelvis": [-20.0, 55, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [-62.7, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [24.799999999999997, 12], "turn": 6, "knee_out": 4, "y": 1},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "toe_far"]
+    },
+    "tuck": {"from": "tall", "trunk": [-3, 0, 0], "chest": [2, 0, 0]},
+    "shift": {"from": "tuck", "pelvis": [-4.6, 52.3, 0]},
+    "shift_in": {"from": "shift", "pelvis": [-2.6, 51.8, 0], "trunk": [-4, 0, 0]},
+    "arch": {"from": "shift", "trunk": [-15, 0, 0], "chest": [-20, 0, 0], "head": [22, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "kneel_tall"},
+    {"to": "tuck", "s": 1.0, "phase": "tuck_tailbone", "effort": 0.5},
+    {"to": "shift", "s": 2.2, "phase": "shift_forward", "effort": 0.7},
+    {"to": "shift_in", "s": 1.4, "phase": "breathe", "effort": 0.75},
+    {"to": "shift", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "tall", "s": 2.0, "phase": "release", "effort": 0.3}
+  ],
+  "key": "shift",
+  "fault": {
+    "pose": "arch",
+    "caption": "low_back_arches",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 155}
+  },
+  "targets": [{"at": "shift", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 155}]
+}

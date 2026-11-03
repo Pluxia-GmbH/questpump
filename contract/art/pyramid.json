@@ -1,0 +1,95 @@
+{
+  "move": "pyramid",
+  "view": "side",
+  "camera": {"yaw": 6, "pitch": 6},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.4, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"fk": [6, 6, 16]},
+      "leg_near": {"foot": [0, 18], "turn": 20, "knee_out": 10},
+      "leg_far": {"foot": [0, 10], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-10, 89, 0],
+      "trunk": [6, 0, 0],
+      "leg_far": {"foot": [-45, 11], "turn": 20, "y": 12, "lift": 30, "knee_out": 2},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "stance": {
+      "from": "tall",
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_far": {"foot": [-88.4, 10], "turn": 28, "knee_out": 2},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "stance",
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [70, 0, 0],
+      "head": [-8, 0, 0],
+      "arm_near": {"ik": [4, 46, 33], "pole": [-0.6, 0.2, 1], "hand": [0.4, -0.9, 0]},
+      "arm_far": {"ik": [2, 46, 15], "pole": [-0.6, 0.2, 1], "hand": [0.4, -0.9, 0]}
+    },
+    "fold": {
+      "from": "stance",
+      "pelvis": [-44, 82.85, 0],
+      "trunk": [94, 0, 0],
+      "chest": [26, 0, 0],
+      "head": [10, 0, 0],
+      "arm_near": {"ik": [2, 16.2, 30], "pole": [-0.6, 0.2, 1], "hand": [0.35, -0.94, 0]},
+      "arm_far": {"ik": [1, 16.4, 10], "pole": [-0.6, 0.2, 1], "hand": [0.35, -0.94, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold_in": {"from": "fold", "trunk": [94.4, 0, 0], "chest": [26.2, 0, 0], "head": [13, 0, 0]},
+    "rounded": {
+      "from": "fold",
+      "trunk": [55, 0, 0],
+      "chest": [65, 0, 0],
+      "head": [16, 0, 0],
+      "arm_near": {"ik": [-4, 36, 32], "pole": [-0.6, 0.4, 1], "hand": [0.3, -1, 0]},
+      "arm_far": {"ik": [-14, 42, 0], "pole": [-0.6, 0.2, 1], "hand": [0.3, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.6, "ease": "in", "phase": "step_back", "effort": 0.3, "dynamic": true},
+    {"to": "stance", "s": 0.7, "ease": "out", "phase": "step_back", "effort": 0.35, "dynamic": true},
+    {"to": "hinge", "s": 1.4, "ease": "in", "phase": "back_flat", "effort": 0.5},
+    {"to": "fold", "s": 1.4, "ease": "out", "phase": "hands_down", "effort": 0.7},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "hinge", "s": 1.4, "ease": "in", "phase": "rise_slowly", "effort": 0.5},
+    {"to": "stance", "s": 1.2, "ease": "out", "phase": "rise_slowly", "effort": 0.4},
+    {"to": "reach", "s": 0.7, "ease": "in", "phase": "step_forward", "effort": 0.35, "dynamic": true},
+    {"to": "tall", "s": 0.6, "ease": "out", "phase": "step_forward", "effort": 0.3, "dynamic": true}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 148}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "fold", "check": "height", "joint": "hand_tip_near", "max": 3}
+  ],
+  "note": "The front leg is the near one. From standing, the far foot steps back a leg-length, both knees straight and the hips square; the body hinges forward and the back rounds a little until the fingertips touch the floor either side of the front foot, the arms nearly straight, then rises slowly and steps back in."
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 1088">
+  <!-- The watch icons' ground, lifted from the phone's night ground (Apple's watchOS icon guidance: lighten a black
+       background so the icon does not melt into the display's black; Wear OS shows its launcher icon on black at
+       start): the raised iron tone at the top falling to the card tone at the bottom, under the same warm light from
+       above as ground.svg. Every layer covers the whole square: tools/icons.py gives it the watches' disc. -->
+  <defs>
+    <linearGradient id="lift" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1088">
+      <stop offset="0" data-token="raised" stop-color="#241F19"/>
+      <stop offset="1" data-token="card" stop-color="#1A1612"/>
+    </linearGradient>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="544" cy="-652" r="1275">
+      <stop offset="0.5" data-token="gold" stop-color="#E8B84A" stop-opacity="0.12"/>
+      <stop offset="0.85" data-token="gold" stop-color="#E8B84A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect fill="url(#lift)" width="1088" height="1088"/>
+  <rect fill="url(#glow)" width="1088" height="1088"/>
+</svg>

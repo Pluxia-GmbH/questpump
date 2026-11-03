@@ -1,0 +1,62 @@
+{
+  "move": "curl_up",
+  "view": "side",
+  "camera": {"yaw": -10, "pitch": 10},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -92, "f1": 92}],
+  "poses": {
+    "lie": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [-18, 4.3, 15], "pole": [0.3, 0.02, 1], "hand": [0.3, -0.12, -1]},
+      "leg_near": {"foot": [32, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "leg_far": {"fk": [-2, 4, 2, -45]},
+      "contacts": [
+        "neck",
+        "waist",
+        "pelvis",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "toe_near",
+        "ankle_near",
+        "toe_far",
+        "ankle_far"
+      ]
+    },
+    "top": {
+      "from": "lie",
+      "chest": [18, 0, 0],
+      "arms": {"ik": [-18, 4.3, 15], "pole": [0.3, -0.2, 1], "hand": [0.3, -0.12, -1]},
+      "contacts": [
+        "waist",
+        "pelvis",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "toe_near",
+        "ankle_near",
+        "toe_far",
+        "ankle_far"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "lie"},
+    {"to": "top", "s": 1.0, "phase": "shoulders_up", "effort": 0.7},
+    {"hold": 5.0, "phase": "hold", "effort": 0.9},
+    {"to": "lie", "s": 1.0, "phase": "lower", "effort": 0.4}
+  ],
+  "key": "top",
+  "targets": [
+    {"at": "top", "check": "height", "joint": "neck", "min": 21, "max": 29},
+    {"at": "top", "check": "height", "joint": "waist", "max": 17}
+  ]
+}

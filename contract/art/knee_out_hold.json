@@ -1,0 +1,64 @@
+{
+  "move": "knee_out_hold",
+  "view": "front",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "shift": {
+      "from": "tall",
+      "pelvis": [1, 94.2, -6],
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 60},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "knee": {
+      "from": "tall",
+      "pelvis": [1, 94.3, -7],
+      "leg_far": {"fk": [90, 10, 95, 0]},
+      "arm_near": {"ik": [1, 100, 33], "pole": [-0.5, 0, 1], "hand": [0.7, -0.6, -0.3]},
+      "arm_far": {"ik": [30, 92, 16], "pole": [0, -0.5, 1], "hand": [0.6, -0.3, 0.6]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "open": {"from": "out", "arm_far": {"ik": [21, 87, 31], "pole": [0, -0.5, 1], "hand": [0.3, -0.1, 0.95]}},
+    "out": {
+      "from": "knee",
+      "pelvis": [1, 94.3, -8],
+      "leg_far": {"fk": [90, 60, 95, 0]},
+      "arm_far": {"ik": [1, 101, 17], "pole": [-0.5, 0, 1], "hand": [0.6, -0.7, -0.35]}
+    },
+    "out_in": {"from": "out", "pelvis": [1, 94.6, -8], "chest": [-2, 0, 0]},
+    "low": {"from": "out", "leg_far": {"fk": [62, 52, 95, 0]}}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "shift", "s": 0.5, "phase": "one_leg", "effort": 0.3},
+    {"to": "knee", "s": 0.9, "phase": "knee_up", "effort": 0.5},
+    {"to": "open", "s": 1.0, "phase": "open_out", "effort": 0.7},
+    {"to": "out", "s": 0.6, "phase": "let_go", "effort": 0.8},
+    {"to": "out_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "out_in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "open", "s": 0.6, "phase": "lower", "effort": 0.6},
+    {"to": "knee", "s": 0.9, "phase": "lower", "effort": 0.5},
+    {"to": "shift", "s": 0.7, "phase": "lower", "effort": 0.3},
+    {"to": "tall", "s": 0.5, "phase": "foot_down", "effort": 0.2}
+  ],
+  "key": "out",
+  "fault": {"pose": "low", "caption": "knee_drops", "breaks": {"check": "height", "joint": "knee_far", "min": 88}},
+  "targets": [
+    {"at": "out", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "out", "check": "height", "joint": "knee_far", "min": 88},
+    {"at": "out", "check": "offset", "joint": "knee_far", "from": "hip_far", "axis": "l", "min": 30}
+  ],
+  "note": "Seen from behind: the near leg stands straight, the near hand on the hip; the far knee lifts in front to hip height with the far hand under it and opens out to the side, the foot hanging; then the far hand lets go to the hip and the knee stays up by itself at hip height, both hands on the hips, the hips level and the chest facing ahead."
+}

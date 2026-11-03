@@ -1,0 +1,86 @@
+{
+  "move": "half_split_lift",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 32},
+  "working": ["thigh_far"],
+  "props": [
+    {"kind": "step", "f0": 38, "f1": 64, "u": 28, "l0": -58, "l1": -32},
+    {"kind": "step", "f0": 38, "f1": 64, "u": 28, "l0": 32, "l1": 58}
+  ],
+  "items": [{"kind": "towel", "under": "knee_near"}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-10, 54, 0],
+      "fit": {"joint": "knee_near", "u": 10},
+      "trunk": [14, 0, 0],
+      "arms": {"ik": [14, 58, 25], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]},
+      "leg_near": {"foot": [-56, 12], "y": -3, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [46, 12], "turn": 4, "knee_out": 4},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "back": {
+      "from": "lunge",
+      "pelvis": [-14, 54, 0],
+      "trunk": [56, 0, 0],
+      "head": [-16, 0, 0],
+      "arms": {"ik": [46, 31.6, 42], "pole": [0.4, 0.2, 1], "hand": [1, -0.04, 0]},
+      "leg_near": {"foot": [-57, 12], "y": -3, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [62, 12], "y": 1, "turn": 0, "lift": -60, "knee_out": 2, "pole": [0.25, 1, 0.65]},
+      "contacts": [
+        "knee_near",
+        "toe_near",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {
+      "from": "back",
+      "trunk": [60, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [-18, 0, 0],
+      "leg_far": {"foot": [72.5, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0.25, 1, 0.65]}
+    },
+    "lift": {
+      "from": "fold",
+      "leg_far": {"ik": [65, 16.5, 12], "pole": [0.25, 1, 0.65], "toe": [0.26, 0.97, 0]},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "set_heel": {"from": "fold", "leg_far": {"ik": [60.5, 8.2, 12], "pole": [0.25, 1, 0.65], "toe": [0.26, 0.97, 0]}},
+    "knee_bent": {
+      "from": "lift",
+      "leg_far": {"ik": [60.5, 17.5, 12], "pole": [0.25, 1, 0.65], "toe": [0.26, 0.97, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "back"},
+    {"hold": 0.5, "phase": "kneel"},
+    {"to": "fold", "s": 1.6, "phase": "leg_out", "effort": 0.65},
+    {"to": "set_heel", "s": 0.3, "phase": "squeeze", "effort": 0.75},
+    {"to": "lift", "s": 0.9, "phase": "front_leg_up", "effort": 0.9},
+    {"hold": 1.8, "phase": "hold", "effort": 0.95},
+    {"to": "set_heel", "s": 0.9, "phase": "heel_down", "effort": 0.7},
+    {"to": "fold", "s": 0.3, "phase": "heel_down", "effort": 0.7},
+    {"to": "set_heel", "s": 0.3, "phase": "squeeze", "effort": 0.75},
+    {"to": "lift", "s": 0.9, "phase": "front_leg_up", "effort": 0.9},
+    {"hold": 1.8, "phase": "hold", "effort": 0.95},
+    {"to": "set_heel", "s": 0.9, "phase": "heel_down", "effort": 0.7},
+    {"to": "fold", "s": 0.3, "phase": "heel_down", "effort": 0.7},
+    {"to": "back", "s": 1.2, "phase": "bend_front_knee", "effort": 0.4}
+  ],
+  "key": "lift",
+  "fault": {
+    "pose": "knee_bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 166}
+  },
+  "targets": [
+    {"at": "lift", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 166},
+    {"at": "lift", "check": "height", "joint": "ankle_far", "min": 12},
+    {"at": "lift", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  ],
+  "note": "The half split on books (half_split_books), its front leg lifted: from the hold the front thigh tightens and the heel lifts a few fingers off the floor, the knee straight and the toes up, held for a few counts and lowered; twice in a loop."
+}

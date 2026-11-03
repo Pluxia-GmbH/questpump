@@ -1,0 +1,54 @@
+{
+  "move": "ring_fallout",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["abdomen", "pauldron"],
+  "items": [{"kind": "straps", "at": [76.1, 250], "half": 32}],
+  "poses": {
+    "lean": {
+      "line": {"pivot": "toes", "at": 0, "angle": 79, "width": 12},
+      "head": [0, 0, 0],
+      "arms": {"fk": [62, 6, 2, 0, 0]},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "tip": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 68.5, "width": 12},
+      "arms": {"fk": [80, 6, 2, 0, 0]}
+    },
+    "reach": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 59.25, "width": 12},
+      "arms": {"fk": [105, 6, 2, 0, 0]}
+    },
+    "far": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 49.25, "width": 12},
+      "arms": {"fk": [138, 6, 2, 0, 0]}
+    },
+    "out": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 0, "angle": 39, "width": 12},
+      "head": [-6, 0, 0],
+      "arms": {"fk": [172, 6, 2, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lean"},
+    {"to": "tip", "s": 0.45, "ease": "in", "phase": "lean_forward", "effort": 0.6, "dynamic": true},
+    {"to": "reach", "s": 0.35, "ease": "linear", "phase": "lean_forward", "effort": 0.7, "dynamic": true},
+    {"to": "far", "s": 0.4, "ease": "linear", "phase": "lean_forward", "effort": 0.8, "dynamic": true},
+    {"to": "out", "s": 0.5, "ease": "out", "phase": "lean_forward", "effort": 0.9, "dynamic": true},
+    {"to": "out", "s": 0.3, "phase": "lean_forward", "effort": 1.0, "dynamic": true},
+    {"to": "far", "s": 0.45, "ease": "in", "phase": "pull_back", "effort": 1.0, "dynamic": true},
+    {"to": "reach", "s": 0.35, "ease": "linear", "phase": "pull_back", "effort": 0.9, "dynamic": true},
+    {"to": "tip", "s": 0.3, "ease": "linear", "phase": "pull_back", "effort": 0.8, "dynamic": true},
+    {"to": "lean", "s": 0.4, "ease": "out", "phase": "pull_back", "effort": 0.6, "dynamic": true},
+    {"to": "lean", "s": 0.3, "phase": "pull_back", "effort": 0.4, "dynamic": true}
+  ],
+  "key": "out",
+  "targets": [
+    {"at": "out", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "out", "check": "angle", "joints": ["hip_near", "shoulder_near", "wrist_near"], "min": 160}
+  ]
+}

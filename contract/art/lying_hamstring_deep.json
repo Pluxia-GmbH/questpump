@@ -1,0 +1,45 @@
+{
+  "move": "lying_hamstring_deep",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 12},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -92, "f1": 108, "u": 45}],
+  "items": [{"kind": "band", "strands": [["grip_near", "toe_near"], ["grip_far", "toe_near"]]}],
+  "poses": {
+    "lie": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [-90, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [-14, 84, 14], "pole": [0.2, -0.3, 1], "hand": [0.6, 0.6, -0.4]},
+      "leg_near": {"fk": [20, 2, 30, 0]},
+      "leg_far": {"foot": [99.6, 11], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": ["pelvis", "waist", "neck", "head", "knee_far", "ankle_far", "toe_far"]
+    },
+    "up": {
+      "from": "lie",
+      "leg_near": {"fk": [102, 2, 0, 0]},
+      "arm_near": {"ik": [-35, 96, 18], "pole": [0.1, 0.2, 1], "hand": [0.5, 0.75, -0.3]},
+      "arm_far": {"ik": [-35, 96, 6], "pole": [0.1, 0.2, 1], "hand": [0.5, 0.75, 0.3]}
+    },
+    "up_in": {
+      "from": "up",
+      "leg_near": {"fk": [104, 2, 0, 0]},
+      "arm_near": {"ik": [-36, 95, 18], "pole": [0.1, 0.2, 1], "hand": [0.5, 0.75, -0.3]},
+      "arm_far": {"ik": [-36, 95, 6], "pole": [0.1, 0.2, 1], "hand": [0.5, 0.75, 0.3]}
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.5, "phase": "lie_flat", "effort": 0.2},
+    {"to": "up", "s": 2.0, "phase": "leg_up", "effort": 0.5},
+    {"to": "up_in", "s": 1.6, "phase": "breathe", "effort": 0.65},
+    {"to": "up", "s": 1.6, "phase": "breathe", "effort": 0.65},
+    {"to": "up_in", "s": 1.6, "phase": "breathe", "effort": 0.65},
+    {"to": "up", "s": 1.6, "phase": "breathe", "effort": 0.65},
+    {"to": "lie", "s": 2.0, "phase": "lower", "effort": 0.3}
+  ],
+  "key": "up",
+  "targets": [{"at": "up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}],
+  "note": "Lying on a bed, a strap round the near foot: the straight leg is drawn in past upright until the heel is above the belly button; the other leg lies flat."
+}

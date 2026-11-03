@@ -1,0 +1,126 @@
+{
+  "move": "monster_walk",
+  "view": "side",
+  "camera": {"yaw": 52.0, "pitch": 10.0},
+  "working": ["thigh"],
+  "props": [{"kind": "runner", "f0": -200, "f1": 200, "belt": -57.14}],
+  "items": [
+    {
+      "kind": "band",
+      "strands": [
+        [{"at": "knee_near", "off": [5, 7, 3]}, {"at": "knee_far", "off": [5, 7, -3]}],
+        [{"at": "knee_near", "off": [-6, 4, 3]}, {"at": "knee_far", "off": [-6, 4, -3]}]
+      ]
+    }
+  ],
+  "poses": {
+    "w0": {
+      "pelvis": [-6.0, 75.0, -0.0],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [20.0, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [-8.57, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "ankle_near", "toe_far", "toe_near"]
+    },
+    "w1": {
+      "pelvis": [-6.0, 75.0, -0.0],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [8.57, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [-20.0, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "ankle_near", "toe_far", "toe_near"]
+    },
+    "w2": {
+      "pelvis": [-6.0, 75.85, -2.83],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [4.29, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [-16.37, 30.31], "y": 9.19, "turn": 8, "lift": 22, "knee_out": 22},
+      "contacts": ["ankle_near", "toe_near"]
+    },
+    "w3": {
+      "pelvis": [-6.0, 76.2, -4.0],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [0.0, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [0.0, 31.24], "y": 13.0, "turn": 8, "lift": 0, "knee_out": 22},
+      "contacts": ["ankle_near", "toe_near"]
+    },
+    "w4": {
+      "pelvis": [-6.0, 75.85, -2.83],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [-4.29, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [16.37, 23.95], "y": 9.19, "turn": 8, "lift": -4, "knee_out": 22},
+      "contacts": ["ankle_near", "toe_near"]
+    },
+    "w5": {
+      "pelvis": [-6.0, 75.0, 0.0],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [-8.57, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [20.0, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "ankle_near", "toe_far", "toe_near"]
+    },
+    "w6": {
+      "pelvis": [-6.0, 75.0, 0.0],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [-20.0, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "leg_far": {"foot": [8.57, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "ankle_near", "toe_far", "toe_near"]
+    },
+    "w7": {
+      "pelvis": [-6.0, 75.85, 2.83],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [-16.37, 30.31], "y": 9.19, "turn": 8, "lift": 22, "knee_out": 22},
+      "leg_far": {"foot": [4.29, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "toe_far"]
+    },
+    "w8": {
+      "pelvis": [-6.0, 76.2, 4.0],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [0.0, 31.24], "y": 13.0, "turn": 8, "lift": 0, "knee_out": 22},
+      "leg_far": {"foot": [0.0, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "toe_far"]
+    },
+    "w9": {
+      "pelvis": [-6.0, 75.85, 2.83],
+      "trunk": [30.0, 0, 0],
+      "head": [-22.0, 0, 0],
+      "arms": {"ik": [-2, 12, 24], "rel": "pelvis", "pole": [-0.6, 0, 1], "hand": [0.5, -0.6, -0.35]},
+      "leg_near": {"foot": [16.37, 23.95], "y": 9.19, "turn": 8, "lift": -4, "knee_out": 22},
+      "leg_far": {"foot": [-4.29, 22.0], "y": 0, "turn": 8, "lift": 0, "knee_out": 18},
+      "contacts": ["ankle_far", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "w0"},
+    {"to": "w1", "s": 0.4, "ease": "linear", "phase": "step_wide", "effort": 0.8},
+    {"to": "w2", "s": 0.15, "ease": "linear", "phase": "step_wide", "effort": 0.8},
+    {"to": "w3", "s": 0.15, "ease": "linear", "phase": "step_wide", "effort": 0.8},
+    {"to": "w4", "s": 0.15, "ease": "linear", "phase": "step_wide", "effort": 0.8},
+    {"to": "w5", "s": 0.15, "ease": "linear", "phase": "step_wide", "effort": 0.8},
+    {"to": "w6", "s": 0.4, "ease": "linear", "phase": "knees_out", "effort": 0.8},
+    {"to": "w7", "s": 0.15, "ease": "linear", "phase": "knees_out", "effort": 0.8},
+    {"to": "w8", "s": 0.15, "ease": "linear", "phase": "knees_out", "effort": 0.8},
+    {"to": "w9", "s": 0.15, "ease": "linear", "phase": "knees_out", "effort": 0.8},
+    {"to": "w0", "s": 0.15, "ease": "linear", "phase": "knees_out", "effort": 0.8}
+  ],
+  "key": "w3",
+  "rep_ends": ["step_wide", "knees_out"],
+  "targets": [
+    {"at": "w0", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 105, "max": 135}
+  ]
+}

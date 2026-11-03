@@ -1,0 +1,61 @@
+{
+  "move": "wall_sit_punches",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 6},
+  "working": ["thigh", "pauldron"],
+  "props": [{"kind": "wall", "f": -30, "behind": true}],
+  "poses": {
+    "stand": {"from": "in", "pelvis": [-15.5, 81.5, 0], "head": [2, 0, 0], "arms": {"fk": [4, 10, 16]}},
+    "in": {
+      "pelvis": [-15.5, 50.0, 0],
+      "trunk": [0, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [22, 6, 11], "rel": "neck", "pole": [0.1, -1, 0.4], "hand": [0.3, 1, -0.1]},
+      "legs": {"foot": [29.5, 15], "turn": 10, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "pelvis"]
+    },
+    "near_punch": {
+      "from": "in",
+      "trunk": [0, 0, -4],
+      "arm_near": {"ik": [54, -2, 15], "rel": "neck", "pole": [0, -0.7, 1], "hand": [1, 0.05, -0.1]}
+    },
+    "far_punch": {
+      "from": "in",
+      "trunk": [0, 0, 4],
+      "arm_far": {"ik": [54, -2, 15], "rel": "neck", "pole": [0, -0.7, 1], "hand": [1, 0.05, -0.1]}
+    },
+    "knee_fwd": {"from": "near_punch", "legs": {"foot": [8, 15], "turn": 10, "knee_out": 6}}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "back_on_wall"},
+    {"to": "in", "s": 1.5, "phase": "slide_down", "effort": 0.6},
+    {"to": "near_punch", "s": 0.24, "ease": "out", "phase": "punch", "effort": 0.85},
+    {"to": "in", "s": 0.22, "ease": "inout", "phase": "back_to_chin", "effort": 0.8},
+    {"to": "far_punch", "s": 0.24, "ease": "out", "phase": "punch", "effort": 0.85},
+    {"to": "in", "s": 0.22, "ease": "inout", "phase": "back_to_chin", "effort": 0.8},
+    {"hold": 0.1, "phase": "hold", "effort": 0.8},
+    {"to": "near_punch", "s": 0.24, "ease": "out", "phase": "punch", "effort": 0.85},
+    {"to": "in", "s": 0.22, "ease": "inout", "phase": "back_to_chin", "effort": 0.8},
+    {"to": "far_punch", "s": 0.24, "ease": "out", "phase": "punch", "effort": 0.85},
+    {"to": "in", "s": 0.22, "ease": "inout", "phase": "back_to_chin", "effort": 0.8},
+    {"hold": 0.1, "phase": "hold", "effort": 0.8},
+    {"to": "near_punch", "s": 0.24, "ease": "out", "phase": "punch", "effort": 0.85},
+    {"to": "in", "s": 0.22, "ease": "inout", "phase": "back_to_chin", "effort": 0.8},
+    {"to": "far_punch", "s": 0.24, "ease": "out", "phase": "punch", "effort": 0.85},
+    {"to": "in", "s": 0.22, "ease": "inout", "phase": "back_to_chin", "effort": 0.8},
+    {"hold": 0.1, "phase": "hold", "effort": 0.8},
+    {"to": "stand", "s": 1.5, "phase": "slide_up", "effort": 0.5}
+  ],
+  "key": "near_punch",
+  "fault": {
+    "pose": "knee_fwd",
+    "caption": "knee_past_toes",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "f", "max": 6}
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 84, "max": 96},
+    {"at": "near_punch", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 150},
+    {"at": "far_punch", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 150}
+  ]
+}

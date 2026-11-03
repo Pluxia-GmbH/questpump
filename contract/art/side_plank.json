@@ -1,0 +1,56 @@
+{
+  "move": "side_plank",
+  "view": "front",
+  "camera": {"yaw": -24, "pitch": 16},
+  "working": ["abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -30, "f1": 55, "l0": -105, "l1": 85}],
+  "poses": {
+    "lie": {
+      "from": "in",
+      "pelvis": [0, 22.06, -2.38],
+      "trunk": [0, 60, 0],
+      "chest": [0, -25, 0],
+      "arm_near": {"ik": [2, 44, 8], "pole": [-0.6, 0.8, 0], "hand": [0.2, -0.4, 1]},
+      "leg_near": {"fk": [0, 27, 2, 0]},
+      "leg_far": {"fk": [0, -27.06, 2, 0]},
+      "contacts": ["hip_far", "knee_far", "toe_far", "ankle_far", "elbow_far", "wrist_far", "hand_tip_far"]
+    },
+    "in": {
+      "pelvis": [0, 47.18, 0],
+      "trunk": [0, 70.9, 0],
+      "head": [0, -8, 0],
+      "arm_far": {"ik": [26, 5.5, 50], "pole": [0, -1, 0.2], "hand": [1, -0.05, 0]},
+      "arm_near": {"ik": [2, 70, 4], "pole": [-0.6, 0.8, 0], "hand": [0.2, -0.4, 1]},
+      "legs": {"fk": [0, 0, 2, 0]},
+      "contacts": ["toe_far", "ankle_far", "elbow_far", "wrist_far", "hand_tip_far"]
+    },
+    "out": {"from": "in", "pelvis": [0, 47.58, 0], "trunk": [0, 70.4, 0]},
+    "sag": {
+      "from": "in",
+      "pelvis": [0, 34, 6],
+      "fit": {"joint": "ankle_far", "u": 8},
+      "trunk": [0, 55, 0],
+      "head": [0, -2, 0],
+      "arm_near": {"ik": [2, 55.2, 0.7], "pole": [-0.6, 0.8, 0], "hand": [0.2, -0.4, 1]},
+      "leg_near": {"fk": [0, 24, 2, 0]},
+      "leg_far": {"fk": [0, -24, 2, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "onto_side"},
+    {"to": "in", "s": 1.0, "phase": "hips_up", "effort": 0.7},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.5, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "lie", "s": 1.0, "phase": "hips_down", "effort": 0.4}
+  ],
+  "key": "in",
+  "fault": {
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_far", "pelvis", "neck"], "min": 168},
+    "pose": "sag"
+  }
+}

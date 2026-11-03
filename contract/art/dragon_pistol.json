@@ -1,0 +1,42 @@
+{
+  "move": "dragon_pistol",
+  "view": "front",
+  "camera": {"yaw": 20, "pitch": 10},
+  "working": ["thigh_near"],
+  "poses": {
+    "top": {
+      "pelvis": [2, 94, -3],
+      "trunk": [8, 0, 25],
+      "chest": [4.7, -3.4, -24.5],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [96, 4, 6]},
+      "leg_near": {"foot": [0, 12], "turn": 10, "knee_out": 6},
+      "leg_far": {"ik": [-26.1, 19.4, -32.3], "pole": [0.81, -0.45, 0.38], "toe": [0.75, -0.55, 0.2]},
+      "contacts": ["toe_near"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-22, 40, -4],
+      "trunk": [30, 0, 55],
+      "chest": [35.6, -30.3, -32.3],
+      "head": [-30, 0, 0],
+      "arms": {"fk": [150, 6, 4]},
+      "leg_far": {"ik": [-50.8, 24.0, -81.4], "pole": [0.11, -0.98, 0.16], "toe": [1, -0.3, 0.1]}
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "one_leg"},
+    {"to": "bottom", "s": 2.0, "phase": "sit_down", "effort": 0.7},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.9},
+    {"to": "top", "s": 1.4, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 60},
+    {"at": "bottom", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 150},
+    {"at": "bottom", "check": "height", "joint": "toe_far", "min": 10},
+    {"at": "bottom", "check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "l", "min": -3}
+  ],
+  "note": "No fault still: the camera sits behind, where the hips and the crossing leg hide the standing knee, so a knee caving in shows only as the knee vanishing behind the hips."
+}

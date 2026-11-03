@@ -1,0 +1,95 @@
+{
+  "move": "plank_taps",
+  "view": "side",
+  "camera": {"yaw": 50, "pitch": 20},
+  "working": ["abdomen", "pauldron"],
+  "props": [{"kind": "mat", "f0": -64, "f1": 110, "l0": -40, "l1": 40}],
+  "poses": {
+    "quad": {
+      "from": "plank",
+      "line": {"pivot": "knees", "at": 31.9, "angle": 88, "hips": -81.5, "width": 9, "y": 1},
+      "head": [-4, 0, 0],
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "near_lift": {
+      "from": "quad",
+      "leg_near": {"foot": [-50, 9], "y": 13, "turn": 0, "lift": 75, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": ["knee_far", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "near_back": {
+      "from": "quad",
+      "leg_near": {"foot": [-68.8, 9], "y": 1, "turn": 0, "lift": 74, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": ["knee_far", "toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "far_lift": {
+      "pelvis": [34.5, 50.4, 0],
+      "trunk": [78.5, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "leg_near": {"foot": [-69.4, 9], "y": 1, "turn": 0, "lift": 74, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [-50, 9], "y": 13, "turn": 0, "lift": 75, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": ["toe_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "plank": {
+      "line": {"pivot": "toes", "at": -70, "angle": 16, "width": 9, "y": 1},
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "tap_near": {
+      "from": "plank",
+      "line": {"pivot": "toes", "at": -70, "angle": 16, "width": 9, "shift": 5.5, "y": 1},
+      "arm_near": {"ik": [20, -2, -14], "rel": "neck", "pole": [0, -1, 0.5], "hand": [-0.5, 0.8, -0.3]},
+      "contacts": ["toe_near", "toe_far", "wrist_far", "hand_tip_far"]
+    },
+    "tap_far": {
+      "from": "plank",
+      "line": {"pivot": "toes", "at": -70, "angle": 16, "width": 9, "shift": -5.5, "y": 1},
+      "arm_far": {"ik": [20, -2, -14], "rel": "neck", "pole": [0, -1, 0.5], "hand": [-0.5, 0.8, -0.3]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "sag": {
+      "from": "tap_near",
+      "line": {"pivot": "toes", "at": -70, "angle": 7, "hips": 30, "width": 9, "shift": 5.5, "y": 1, "lift": 73.5},
+      "chest": [12, 0, 0],
+      "head": [20, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "quad"},
+    {"hold": 0.4, "phase": "hands_and_knees"},
+    {"to": "near_lift", "s": 0.35, "phase": "step_back", "ease": "in", "effort": 0.4},
+    {"to": "near_back", "s": 0.35, "phase": "step_back", "ease": "out", "effort": 0.5},
+    {"to": "far_lift", "s": 0.35, "phase": "step_back", "ease": "in", "effort": 0.5},
+    {"to": "plank", "s": 0.35, "phase": "step_back", "ease": "out", "effort": 0.6},
+    {"hold": 0.2, "phase": "hips_still"},
+    {"to": "tap_near", "s": 0.45, "phase": "tap_shoulder", "effort": 0.7},
+    {"hold": 0.15, "phase": "tap_shoulder", "effort": 0.7},
+    {"to": "plank", "s": 0.45, "phase": "hips_still", "effort": 0.6},
+    {"hold": 0.2, "phase": "hips_still"},
+    {"to": "tap_far", "s": 0.45, "phase": "tap_shoulder", "effort": 0.7},
+    {"hold": 0.15, "phase": "tap_shoulder", "effort": 0.7},
+    {"to": "plank", "s": 0.45, "phase": "hips_still", "effort": 0.6},
+    {"to": "far_lift", "s": 0.35, "phase": "step_in", "ease": "in", "effort": 0.4},
+    {"to": "near_back", "s": 0.35, "phase": "step_in", "ease": "out", "effort": 0.4},
+    {"to": "near_lift", "s": 0.35, "phase": "step_in", "ease": "in", "effort": 0.3},
+    {"to": "quad", "s": 0.35, "phase": "step_in", "ease": "out", "effort": 0.3}
+  ],
+  "key": "tap_near",
+  "fault": {
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    "pose": "sag"
+  }
+}

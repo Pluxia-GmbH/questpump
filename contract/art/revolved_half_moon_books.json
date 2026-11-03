@@ -1,0 +1,86 @@
+{
+  "move": "revolved_half_moon_books",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 10},
+  "working": ["thigh_near", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "step", "f0": 28, "f1": 50, "u": 20, "l0": -14, "l1": 10}],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 10], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "hinge": {
+      "from": "tall",
+      "pelvis": [-10, 93.8, -2],
+      "trunk": [60, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"fk": [70, 6, 8]},
+      "leg_far": {"fk": [-6, 2, 0, 20]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-12, 92.5, -3],
+      "trunk": [94, 0, 0],
+      "head": [-6, 0, -14],
+      "leg_far": {"fk": [20, 2, 0, 0]},
+      "arm_far": {"ik": [38, 24, -1], "pole": [-0.5, 0, 1], "hand": [1, -0.1, 0]},
+      "arm_near": {
+        "ik": [35.1, 105, 24.7],
+        "orbit": {"r": 55, "deg": 180, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0.1, -1, 0.3]
+      },
+      "contacts": ["toe_near", "ankle_near", "wrist_far", "hand_tip_far"],
+      "chest": [0, -2, -36]
+    },
+    "twist": {
+      "from": "reach",
+      "trunk": [80, 0, 0],
+      "chest": [0, -4, -72],
+      "head": [0, 0, -40],
+      "leg_far": {"fk": [-10, 2, 0, 0]},
+      "arm_far": {"ik": [38, 24, -1], "pole": [-0.5, 0, 1], "hand": [1, -0.1, 0]},
+      "arm_near": {
+        "ik": [26.9, 126.9, 11.5],
+        "orbit": {"r": 55.5, "deg": 19, "plane": "ul"},
+        "pole": [-1, 0, 0.2],
+        "hand": [0, 0.95, 0.33]
+      },
+      "pelvis": [-13, 93.3, -3]
+    },
+    "twist_in": {"from": "twist", "chest": [0, -4, -75]},
+    "bent": {"from": "twist", "pelvis": [-12.5, 91.3, -3]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "hinge", "s": 1.2, "phase": "lean_forward", "effort": 0.5},
+    {"to": "reach", "s": 1.2, "phase": "hand_down", "effort": 0.6},
+    {"to": "twist", "s": 1.8, "phase": "arm_to_ceiling", "effort": 0.75},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "reach", "s": 1.6, "phase": "return_slowly", "effort": 0.6},
+    {"to": "hinge", "s": 1.2, "phase": "rise_slowly", "effort": 0.5},
+    {"to": "tall", "s": 1.2, "phase": "rise_slowly", "effort": 0.3}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "twist", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "twist", "check": "height", "joint": "ankle_far", "min": 82, "max": 105},
+    {"at": "twist", "check": "height", "joint": "hand_tip_near", "min": 150}
+  ],
+  "note": "On the near leg, the far palm on a 20 cm stack of books ahead of the standing foot, the far leg level behind: the chest rises a little and turns 72 degrees so the near arm reaches up in line with the shoulders."
+}

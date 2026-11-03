@@ -1,0 +1,58 @@
+{
+  "move": "floor_wrist_lean",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 24},
+  "working": ["forearm"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -95, "f1": 85}],
+  "poses": {
+    "table": {
+      "line": {"pivot": "knees", "at": -20, "width": 12, "feet": "flat", "y": 1, "angle": 88.0, "hips": -80.6},
+      "chest": [4, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [28, 4.3, 24], "pole": [-1, 0.2, 0.3], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {
+      "from": "table",
+      "line": {"pivot": "knees", "at": -20, "width": 12, "feet": "flat", "y": 1, "angle": 68.0, "hips": -58.4},
+      "head": [-6, 0, 0]
+    },
+    "lean_in": {"from": "lean", "chest": [5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "table"},
+    {"hold": 0.4, "phase": "hands_down"},
+    {"to": "lean", "s": 1.6, "phase": "lean_forward", "effort": 0.5},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "table", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 168},
+    {
+      "at": "lean",
+      "check": "offset",
+      "joint": "shoulder_near",
+      "from": "hand_tip_near",
+      "axis": "f",
+      "min": -3,
+      "max": 3
+    }
+  ],
+  "note": "On all fours on a mat, the knees under the hips, palms flat under the shoulders, fingers forward. The lean takes the shoulders forward over the fingertips with the arms straight, the knees staying down and the back long, so the wrists take more of the body's weight than at the desk."
+}

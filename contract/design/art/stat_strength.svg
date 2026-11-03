@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Strength: a flexed armoured arm in profile, the upper arm lying level from a domed pauldron with a rivet at the
+       shoulder, the biceps swelling up from it in a round ball parted from the forearm by a crease, the vambrace
+       standing up from the elbow and the gauntlet's fist on top, its fingers cut toward the shoulder. Lit from the top
+       left: the right side of the fist and the vambrace, the ball's lower right and the undersides of the arm and the
+       pauldron in shadow. Drawn as is in the caller's tint. -->
+  <path data-token="tint" fill="currentColor" fill-rule="evenodd" d="
+    M16.75 2.25 H19.75 C20.72 2.25 21.5 3.03 21.5 4 V6.75 C21.5 7.3 21.05 7.75 20.5 7.75 H15.6
+    C15.08 7.75 14.75 7.42 14.75 6.9 V6.5 H16.5 V5.9 H14.75 V4.7 H16.5 V4.1 H14.75 C14.75 3.07 15.65 2.25 16.75 2.25 Z
+    M17 8.75 H21 C21.45 11 21.75 13.5 21.75 16.25 V17.75 C21.75 19.4 20.4 20.75 18.75 20.75 H9.25 V15.6
+    C9.6 15.6 9.82 14.76 9.87 14.16 C9.42 12.48 10.27 10.72 11.86 10.04 C13.46 9.35 15.32 9.93 16.23 11.41
+    C17.14 12.89 16.83 14.81 15.5 15.93 L16.08 16.62 C17.71 15.25 18.13 12.9 17.06 11.05 L17 8.75 Z M8.15 20.75 H2.25
+    V17.25 C2.25 15 4.1 13.25 6.4 13.25 C7.1 13.25 7.7 13.4 8.15 13.65 Z M5.85 16.25 C5.85 16.72 5.47 17.1 5 17.1
+    C4.53 17.1 4.15 16.72 4.15 16.25 C4.15 15.78 4.53 15.4 5 15.4 C5.47 15.4 5.85 15.78 5.85 16.25 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M15.98 11.05 C17.1 12.45 16.99 14.46 15.72 15.72 C14.46 16.99 12.45 17.1 11.05 15.98
+    C12.46 16.48 14.02 16.12 15.07 15.07 C16.12 14.02 16.48 12.46 15.98 11.05 Z M19 2.25 H19.75
+    C20.72 2.25 21.5 3.03 21.5 4 V6.75 C21.5 7.3 21.05 7.75 20.5 7.75 H19 Z M19.5 8.75 H21
+    C21.45 11 21.75 13.5 21.75 16.25 V17.75 C21.75 19.4 20.4 20.75 18.75 20.75 H9.25 V18.6 H18.75
+    C19.2 18.6 19.5 18.3 19.5 17.85 Z M8.15 18.6 V20.75 H2.25 V18.6 Z"/>
+</svg>

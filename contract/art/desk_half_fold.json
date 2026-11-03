@@ -1,0 +1,67 @@
+{
+  "move": "desk_half_fold",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 86}],
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.5, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"fk": [4, 6, 10]},
+      "legs": {"foot": [0, 11], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [-2, 94.5, 0],
+      "trunk": [75, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {"ik": [90, 77.3, 20], "pole": [-0.3, -1, 0.3], "hand": [1, -0.12, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {"from": "reach", "pelvis": [-10, 94.0, 0], "trunk": [90, 0, 0], "chest": [0, 0, 0], "head": [0, 0, 0]},
+    "fold_in": {"from": "fold", "trunk": [91, 0, 0]},
+    "rounded": {
+      "from": "fold",
+      "pelvis": [-7, 94.5, 0],
+      "trunk": [74, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [4.0, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "stand_tall", "effort": 0.2},
+    {"to": "reach", "s": 1.6, "phase": "hands_on_desk", "effort": 0.4},
+    {"to": "fold", "s": 1.8, "phase": "back_flat", "effort": 0.65},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "reach", "s": 1.6, "phase": "rise_slowly", "effort": 0.4},
+    {"to": "tall", "s": 1.6, "phase": "rise_slowly", "effort": 0.2}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "fold", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "u", "min": -6, "max": 6}
+  ],
+  "note": "Facing the desk, the hands on its edge: the hips push back over the heels until the back is flat and level with the floor, the legs straight and the head between the arms, never lower than the hips."
+}

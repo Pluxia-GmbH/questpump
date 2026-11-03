@@ -1,0 +1,215 @@
+{
+ "about": "The link's keys and seal (contract/companion-api.yaml; rust-helper protocol-and-mirror.md, \"The LAN API\"): four values come from the 32-byte pairing key with HKDF-SHA256, salt empty. The bearer (info \"questpump bearer v1\", 32 bytes) goes base64url without padding in every request's Authorization header. The seal key (info \"questpump seal v1\", 32 bytes) seals every body with AES-256-GCM as nonce (12 bytes), ciphertext, tag (16 bytes), its associated data the body's route (since the release security review of 2026-10-31, L1): the ASCII text \"questpump route v1 \", the way (\"request\" for a body the device sends, \"answer\" for one the helper sends back, a sealed refusal included), a space, the HTTP method in capitals, a space and the path without its query (\"/v1/sync\"), so a body opens only as the route and the way it was sealed for. The hello key (info \"questpump hello v1\", 32 bytes) keys the proof of the key in the LAN's hello (find.json) and the Bluetooth hello (ble.json gatt). The key's id kid (info \"questpump id v1\", 8 bytes, base64url without padding) is the name a phone keeps for its pairing on the device; nothing sends it since 2026-11-01. Every app derives them from key_hex, opens each sealed case under its aad to its plain text and nonce, seals the plain text under its nonce and aad to the same bytes, and refuses each refused case opened as its way, method and path. Written with Node's crypto (OpenSSL), not with the helper's code (kid with Python's hmac, 2026-09-30; the route and the hello key 2026-11-01).",
+ "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+ "bearer": "p52Eui3lCNZb-pa8A_Ebh7j8vJ2V3rlnLanU5B80h7Q",
+ "kid": "Ks6YfiYRqH4",
+ "seal_key_hex": "342d27dab92a76c7c3fb936619389193bc0bdbe17c47261c91521e3d3ea5a0b6",
+ "hello_key_hex": "473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325",
+ "sealed": [
+  {
+   "about": "a sync request",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "aad": "questpump route v1 request POST /v1/sync",
+   "nonce_hex": "000000000000000000000001",
+   "plain": "{\"device\":\"watchos\",\"t0\":1000,\"since\":0}",
+   "sealed_b64": "AAAAAAAAAAAAAAABTAVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hjzzkLjYrYitruOqZaCmCwc="
+  },
+  {
+   "about": "an answer: the empty object as GET /v1/sheet's, under another nonce",
+   "way": "answer",
+   "method": "GET",
+   "path": "/v1/sheet",
+   "aad": "questpump route v1 answer GET /v1/sheet",
+   "nonce_hex": "ffeeddccbbaa998877665544",
+   "plain": "{}",
+   "sealed_b64": "/+7dzLuqmYh3ZlVEikbEfDs1U9erprTe929E1Jca"
+  },
+  {
+   "about": "a PUT's request: the account route",
+   "way": "request",
+   "method": "PUT",
+   "path": "/v1/account",
+   "aad": "questpump route v1 request PUT /v1/account",
+   "nonce_hex": "000000000000000000000003",
+   "plain": "{\"device\":\"ios\"}",
+   "sealed_b64": "AAAAAAAAAAAAAAADKoPYlUCDCsvrY92mBVZGtyXu85ZgCugWbGGiTLzPQHc="
+  }
+ ],
+ "refused": [
+  {
+   "about": "the tag's last byte changed",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAABTAVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hjzzkLjYrYitruOqZaCmCwY="
+  },
+  {
+   "about": "a ciphertext byte changed",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAABTQVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hjzzkLjYrYitruOqZaCmCwc="
+  },
+  {
+   "about": "sealed under another pairing key",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAABEwkpupB+CeYF+ilatXmiog6BbKHRqPfXlfsQsmw9FjYPavP86F2q99OIvAD+ixSHFpt4tNJWMyg="
+  },
+  {
+   "about": "shorter than a nonce and a tag",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcH"
+  },
+  {
+   "about": "sealed for another route (POST /v1/unpair's request): a body opens only at the route it was sealed for",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAABTAVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hpoQtiZiE8lZdm/0y4H5bxM="
+  },
+  {
+   "about": "sealed as the route's answer (the other way): a body sent back at the helper never opens",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAABTAVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hnlO3pQkK3RIvzK9tWfQNSI="
+  },
+  {
+   "about": "sealed with no associated data (the seal before 2026-11-01)",
+   "way": "request",
+   "method": "POST",
+   "path": "/v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAABTAVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hrhqwV8oGiqY3lSrpIUE/tY="
+  },
+  {
+   "about": "a ping's answer sealed with the query in its path: the route never carries the query",
+   "way": "answer",
+   "method": "GET",
+   "path": "/v1/ping",
+   "sealed_b64": "AAAAAAAAAAAAAADxSEt5g5NCawxq7QlalvFNRkQL"
+  }
+ ],
+ "refusals": {
+  "about": "POST /v1/sync's 422 (a body that opened but does not read; contract/companion-api.yaml SyncUnreadable, since the release security review of 2026-10-31) is sealed under the seal key as the route's answer (its aad \"questpump route v1 answer POST /v1/sync\") and names the refused request's nonce, base64url without padding (`{\"nonce\": ...}`): a device drops what that request carried only on such an answer, and keeps it on any other 422. Every case answers the request request_b64, the first sealed case above (its nonce 000000000000000000000001): every app finds refused that request's refusal and none of others, and the helper seals refused.plain under refused.nonce_hex and refused.aad to the same bytes. Written with Node's crypto, not with the helper's code (2026-10-31; the route's associated data 2026-11-01).",
+  "request_b64": "AAAAAAAAAAAAAAABTAVFLqS8JuwZ7swd9zfy8JitsBiPbLcI8a+d+/ME9kbHbeV17Kn1hjzzkLjYrYitruOqZaCmCwc=",
+  "refused": {
+   "plain": "{\"nonce\":\"AAAAAAAAAAAAAAAB\"}",
+   "nonce_hex": "0000000000000000000000a1",
+   "aad": "questpump route v1 answer POST /v1/sync",
+   "sealed_b64": "AAAAAAAAAAAAAAChDHSTw2UWIoTfJh68vQfnLvkt5/+9sTAKKOIi1zaTpyoeDzfsPHSTWmk/2eU="
+  },
+  "others": [
+   {
+    "about": "the refusal of another request: the second sealed case's nonce",
+    "sealed_b64": "AAAAAAAAAAAAAACiLyvCBzaOVLVysMsa52E/VqHjSIcFZyITuM+kn2uHL52iAFhKKiqQHn+QfPo="
+   },
+   {
+    "about": "this request's nonce sealed under another pairing key",
+    "sealed_b64": "AAAAAAAAAAAAAACjpxFKnjRx4Rno1SlLpD0qJNr4jD8d3V5fw/sQbDYc/8l6pdfoKsTIMkm+U1A="
+   },
+   {
+    "about": "this request's nonce sealed as another route's answer (POST /v1/body's): only the sync's own answer refuses a sync",
+    "sealed_b64": "AAAAAAAAAAAAAACk9JhfI1nGPz+cSpgRr7vgG1ZfDUoZGNlIxClS2TdNCIme9LfTX3Ga/gyVpRo="
+   },
+   {
+    "about": "a bare 422, no body: what any other device at the address answers, and the helper on every other route",
+    "sealed_b64": ""
+   }
+  ]
+ },
+ "rekey": {
+  "about": "The account's new key (contract/sync-api.yaml, \"The account's new key\"; docs/plan.md slice 60), on the sync block's R (R_hex, its kid): a device's P-256 key pair (device_secret_hex its secret, device_public_hex its public key, SEC1 uncompressed, 65 bytes, sent as device_key, base64url without padding) is registered with its MAC, HMAC-SHA256 under HKDF-SHA256(R, salt empty, info \"questpump sync device v1\", 32 bytes: mac_key_hex) over the device id's 16 bytes followed by the key's 65 bytes (81 bytes, no length or separator), base64url without padding, beside the kid of the R it was made under. A rekey's new R (next.R_hex) gives its seal key, auth key, kid and restore code as R does, and the same device's MAC under it (next.mac). Its wrap for the device is the rekeying device's fresh P-256 key E (wrap.ephemeral_secret_hex its secret e; SEC1 uncompressed, 65 bytes) followed by the new R sealed (AES-256-GCM, nonce, ciphertext, tag, no associated data) under HKDF-SHA256(the x coordinate of ECDH(e, the device's key), which is ECDH(the device's secret, E)'s, salt empty, info \"questpump sync rekey v1\", 32 bytes: wrap_key_hex) with wrap.nonce_hex, 109 bytes in all, standard base64; prev is R sealed under the new R's seal key with prev.nonce_hex, 44 bytes. Every app makes mac from device_secret_hex and R_hex and next.mac from next.R_hex and refuses each of mac_refused (the MAC over another device's id, the MAC over another key, the MAC under the new R named under R's kid); the device that rekeys seals next.R_hex with e to wrap.sealed_b64 and R_hex to prev.sealed_b64, and the device it wraps to opens wrap.sealed_b64 with its secret to next.R_hex, whose kid is next.kid, and opens prev.sealed_b64 under next.seal_key_hex to R_hex, whose kid it holds. Written with Node's crypto (OpenSSL 3), the sync block's values replayed first; the ECDH, HKDF and HMAC checked again with Python's integers, hmac and hashlib (2026-11-01).",
+  "R_hex": "a0a1a2a3a4a5a6a7a8a9aaabacadaeaf",
+  "kid": "wrPE6QMipP4",
+  "device": "AAECAwQFBgcICQoLDA0ODw",
+  "device_secret_hex": "808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f",
+  "device_public_hex": "0413503389436c38c8cb1a381569d72dcb01bb3b99d105d81ffbdb0e2a15f71a0db15fc2d6ce1cae3f34e5bf216bab21a0482a674f313723b4dba076fc8e01c992",
+  "device_key": "BBNQM4lDbDjIyxo4FWnXLcsBuzuZ0QXYH_vbDioV9xoNsV_C1s4crj805b8ha6shoEgqZ08xNyO026B2_I4ByZI",
+  "mac_key_hex": "e6c65bf358d6c3ceeecd4645b20ebce9b1551a015321185d87d4d82ca7acfafa",
+  "mac": "Phx8NLAV_-O-RzvY6X577xkTGkrSpecZz1OiqK0DztI",
+  "mac_refused": [
+   {
+    "device": "EBESExQVFhcYGRobHB0eHw",
+    "key": "BBNQM4lDbDjIyxo4FWnXLcsBuzuZ0QXYH_vbDioV9xoNsV_C1s4crj805b8ha6shoEgqZ08xNyO026B2_I4ByZI",
+    "mac": "Phx8NLAV_-O-RzvY6X577xkTGkrSpecZz1OiqK0DztI",
+    "kid": "wrPE6QMipP4"
+   },
+   {
+    "device": "AAECAwQFBgcICQoLDA0ODw",
+    "key": "BDVOA1AWl6kSnJub0mI5dZRULmyLwiVDaO9fw-sBj32xIlnt10OUEvm8T31_zD3VxvxrhllAxy_Ko8ZzCDdn9O8",
+    "mac": "Phx8NLAV_-O-RzvY6X577xkTGkrSpecZz1OiqK0DztI",
+    "kid": "wrPE6QMipP4"
+   },
+   {
+    "device": "AAECAwQFBgcICQoLDA0ODw",
+    "key": "BBNQM4lDbDjIyxo4FWnXLcsBuzuZ0QXYH_vbDioV9xoNsV_C1s4crj805b8ha6shoEgqZ08xNyO026B2_I4ByZI",
+    "mac": "6JKQ__im1Xt2SnVxgPozY9uSrAnFdI6BvLhkm2hbDsU",
+    "kid": "wrPE6QMipP4"
+   }
+  ],
+  "next": {
+   "R_hex": "b0b1b2b3b4b5b6b7b8b9babbbcbdbebf",
+   "seal_key_hex": "dbe7f21613e686d0d7c16d70f55dfbcb4a5d45f14d11ff0e4bb58390892443b9",
+   "auth": "VQeryPU2p3sUwMv7LkXwnafGGyZRAlydmEKteK8VGtY",
+   "auth_sha256_hex": "7198c3f411a00099a664e34782d9933743bfee099727b626741a393b7d5612f0",
+   "kid": "BO-vqQi5BL0",
+   "restore": "P2RV-5CXM-PPVB-FE5S-QAXV-SFDY-QWR",
+   "mac_key_hex": "c33b1180bcb6dc7dac8e43f6c23bdf1c7c020cc51a7b342ba19d32565e157b63",
+   "mac": "6JKQ__im1Xt2SnVxgPozY9uSrAnFdI6BvLhkm2hbDsU"
+  },
+  "wrap": {
+   "ephemeral_secret_hex": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf",
+   "ephemeral_public_hex": "0473a56eced343896b8adeea1d0a26b196f4e0ebb4209c601a46ef6a27c5477451f13b88419aff65c0c1112310f1e6e5bf1ba82589f889f0f228e1cec9ed88f8bd",
+   "wrap_key_hex": "4c0fae5621a713f5dae210bdda0333de01289d19cc78b76d84922483655097bf",
+   "nonce_hex": "0000000000000000000000c3",
+   "sealed_b64": "BHOlbs7TQ4lrit7qHQomsZb04Ou0IJxgGkbvaifFR3RR8TuIQZr/ZcDBESMQ8eblvxuoJYn4ifDyKOHOye2I+L0AAAAAAAAAAAAAAMNXeiTywZQnt32aXwkV1xYwEYI2k7Ukgaj9Gf7ApicvCw=="
+  },
+  "prev": {
+   "nonce_hex": "0000000000000000000000d4",
+   "sealed_b64": "AAAAAAAAAAAAAADUOFZEZlWj4njN/5voSugkVjoAAgJIpu2zeuNpkEZjtWo="
+  }
+ },
+ "sync": {
+  "about": "The sync account's keys (contract/sync-api.yaml, docs/plan.md slice 60): from the 16-byte root secret R, HKDF-SHA256 with an empty salt gives the seal key (info \"questpump sync seal v1\", 32 bytes), the auth key (info \"questpump sync auth v1\", 32 bytes, base64url without padding; the server keeps its SHA-256) and the key id kid (info \"questpump sync id v1\", 8 bytes, base64url without padding). A batch's plain text is compressed with raw DEFLATE and sealed as the link's bodies are (AES-256-GCM, nonce, ciphertext, tag, no associated data); a link request carries the requester's P-256 public key P (request_secret_hex its secret d; SEC1 compressed, 33 bytes), and its answer is the answerer's fresh P-256 key E (link.ephemeral_secret_hex its secret e; SEC1 uncompressed, 65 bytes) followed by {\"account\",\"r\"} sealed under HKDF-SHA256(the x coordinate of ECDH(e, P), which is ECDH(d, E)'s, salt empty, info \"questpump link v2\", 32 bytes: link_key_hex); the check code both devices show is the first 4 bytes of HKDF-SHA256(the same x coordinate, salt empty, info \"questpump link check\") (link.check_hex), read as a big-endian unsigned 32-bit number, its remainder by 1,000,000 written as six digits with leading zeros (link.check); a request code of another key (request_refused: an older 32-byte T, 33 bytes that are no curve point) reads as no link code. The store token a purchase carries (Apple's appAccountToken, Play's obfuscatedAccountId) is the first 16 bytes of HKDF-SHA256 of the account id's text in UTF-8 (account, salt empty, info \"questpump store account v1\") with the version and variant bits of RFC 9562's version 8 set (the seventh byte's high nibble 8, the ninth byte's two high bits 10), written as a lower-case UUID (store_token); every app and the sync Worker derive it from account. Every app derives the values from R_hex, opens batch.sealed_b64 and inflates it to batch.plain, seals batch.deflated_b64 under batch.nonce_hex to the same bytes, and reads and writes the restore code, the link code and the request code (both forms: request_code, request_link) as given; the phones, which answer, seal link.plain with e under link.nonce_hex to link.sealed_b64, and the desktop app, which requests, opens it with d; both derive link.check. Written with Python's hmac and zlib and Apple's CryptoKit, not with the apps' code (2026-10-30; the link answer's ECDH with Python's integers, checked with OpenSSL 4.0.3 and CryptoKit, 2026-10-31; the check code with Python's hmac, checked with OpenSSL 4.0.3's HKDF, 2026-11-01; the store token with Python's hmac, checked with OpenSSL 4.0.3's HKDF, 2026-11-01).",
+  "R_hex": "a0a1a2a3a4a5a6a7a8a9aaabacadaeaf",
+  "account": "ABEiM0RVZneImaq7zN3u_w",
+  "store_token": "cbf59766-d03e-84ab-b654-a33b1fd73897",
+  "seal_key_hex": "526f3a6f72be69b46da85ac9fb85634219bfc195d247c77050bd9bc7569f9295",
+  "auth": "RIP3novx32biaw4GCvbBGynvkFvqyFR250d21fE6uZc",
+  "auth_sha256_hex": "3fc0c44a25a0a855f9b01b15e815d993e82f9e27892076c2d401ea26d34dcb15",
+  "kid": "wrPE6QMipP4",
+  "restore": "M2GT-58X4-MPKA-FA59-NANT-SBDE-NW3",
+  "link_code": "questpump-link:1:ABEiM0RVZneImaq7zN3u_w:oKGio6SlpqeoqaqrrK2urw",
+  "request_code": "questpump-link:1:req:EBESExQVFhcYGRobHB0eHw:A2jsfPCM1BBuQ7FN6JVCZSK9CkUVDAJ-RceVNDTXR-e6",
+  "request_link": "https://questpump.com/link#req.EBESExQVFhcYGRobHB0eHw.A2jsfPCM1BBuQ7FN6JVCZSK9CkUVDAJ-RceVNDTXR-e6",
+  "request_refused": [
+   "questpump-link:1:req:EBESExQVFhcYGRobHB0eHw:QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8",
+   "questpump-link:1:req:EBESExQVFhcYGRobHB0eHw:AlBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQ",
+   "https://questpump.com/link#req.EBESExQVFhcYGRobHB0eHw.QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8"
+  ],
+  "request_secret_hex": "404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+  "request_public_hex": "0368ec7cf08cd4106e43b14de895426522bd0a45150c027e45c7953434d747e7ba",
+  "batch": {
+   "nonce_hex": "0000000000000000000000a1",
+   "plain": "{\"v\":1,\"account\":\"ABEiM0RVZneImaq7zN3u_w\",\"device\":\"AAECAwQFBgcICQoLDA0ODw\",\"seq\":1,\"made_at\":1793400000000,\"kind\":\"rows\",\"body\":{\"pumps\":[],\"rows\":[\"example row\"],\"game\":{\"rows\":[]}}}",
+   "deflated_b64": "LYzLDoIwFER/xdx1FxBMiN2VhwmJj+DChYSQ2t6QRktBBFTCv1uU2c3MmRmhB+oS4EKYrnoCBRbEau+czpcKE80b/3PwumIAAhJ7JXAmWByyId0GpUjC1Owi5hyjmWix+Z1pLrHg9sz1N97aWUTgpipp9w8ztJa+GvkGOkLd6boFmuXk39AM8MV1fceV9WDjkmucyaXOp2n6Ag==",
+   "sealed_b64": "AAAAAAAAAAAAAAChymV5iGJlxgQRFhHsNzDSKbmMPTtc+JLaK1APP7nIBjdkYby+KmHu1Do6mLSPuz19vJC/JtuxYGar6clYQqETj8IHWJMQLiSHmt21Q88cn/9l6BZt3KIIbnk1jyjafYbI97iI1GKGW/TCsUf+8nyt3A2agaYTSTgN0XJJkqEN0cd/WBqUYw/p9DmTnT3I+MfXYiyl3bpatEzdRJFvW9terug0ZGRRNWCW36k="
+  },
+  "link_key_hex": "e2797050a877c2b3ad9d4bdfed95a96019422aaa7faf0d448af7c4a118630f05",
+  "link": {
+   "ephemeral_secret_hex": "606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f",
+   "ephemeral_public_hex": "04bf97d0ee1866aac6f80826ebadc42f3d81e1b6b8f298f5d3ebe7542b7cb483a7de8f14ddde9aa2e765b2e60ece60cfa1b095683a8f6f62af8bacee7f4dfa18ea",
+   "nonce_hex": "0000000000000000000000b2",
+   "plain": "{\"account\":\"ABEiM0RVZneImaq7zN3u_w\",\"r\":\"oKGio6SlpqeoqaqrrK2urw\"}",
+   "sealed_b64": "BL+X0O4YZqrG+Agm663ELz2B4ba48pj10+vnVCt8tIOn3o8U3d6aoudlsuYOzmDPobCVaDqPb2Kvi6zuf036GOoAAAAAAAAAAAAAALLyVM9sCuwbuD4uKk9U4iIoANxAb67zhHYt9o+zrQaflU16sMnFhW64PIDY/7kHnh7ET5SUgcabcaapzgESQGfuIlNmsN37uB+pgD7FfO9Wjjc=",
+   "check_hex": "379c3273",
+   "check": "983411"
+  }
+ }
+}

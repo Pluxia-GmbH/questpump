@@ -1,0 +1,57 @@
+{
+  "move": "clap_pushup",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 14},
+  "working": ["chest", "upper_arm"],
+  "ballistic": true,
+  "props": [{"kind": "mat", "f0": -66, "f1": 114}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": -70, "angle": 16.5, "width": 12, "y": 1},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "bottom": {"from": "top", "line": {"pivot": "toes", "at": -70, "angle": 4.5, "width": 12, "y": 1}},
+    "rise": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": -70, "angle": 22, "width": 12, "y": 1},
+      "arms": {"ik": [78, 18, 24], "pole": [-1, 0.2, 0.7], "hand": [1, -0.3, 0]},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "clap": {
+      "from": "rise",
+      "line": {"pivot": "toes", "at": -70, "angle": 25, "width": 12, "y": 1},
+      "arms": {"ik": [88, 50, 5.8], "pole": [0, -1, 0.4], "hand": [0.5, 0.85, -0.05]}
+    },
+    "catch": {"from": "top", "line": {"pivot": "toes", "at": -70, "angle": 13, "width": 12, "y": 1}},
+    "sag": {
+      "from": "clap",
+      "line": {"pivot": "toes", "at": -70, "angle": 13, "hips": 34, "width": 12, "y": 1},
+      "chest": [8, 0, 0],
+      "head": [16, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "bottom"},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.8},
+    {"to": "top", "s": 0.2, "ease": "in", "phase": "push_up", "effort": 1.0},
+    {"to": "rise", "s": 0.1, "phase": "hands_off", "effort": 1.0, "dynamic": true},
+    {"to": "clap", "s": 0.12, "ease": "out", "phase": "clap", "effort": 1.0, "dynamic": true},
+    {"to": "rise", "s": 0.12, "ease": "in", "phase": "land_softly", "effort": 0.9, "dynamic": true},
+    {"to": "catch", "s": 0.14, "ease": "in", "phase": "land_softly", "effort": 0.8, "dynamic": true},
+    {"to": "bottom", "s": 0.9, "phase": "lower", "effort": 0.6}
+  ],
+  "key": "clap",
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "clap", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "clap", "check": "offset", "joint": "wrist_near", "from": "neck", "axis": "l", "max": 6},
+    {"at": "catch", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 160}
+  ]
+}

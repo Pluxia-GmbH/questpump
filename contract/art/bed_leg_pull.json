@@ -1,0 +1,86 @@
+{
+  "move": "bed_leg_pull",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 14},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -98, "f1": 96, "u": 52}],
+  "poses": {
+    "flat": {
+      "pelvis": [0, 67, 0],
+      "trunk": [-90, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [-6, 55.6, 24], "pole": [0, 0.3, 1], "hand": [1, 0, 0]},
+      "legs": {"fk": [-5.7, 2, 0, 10]},
+      "contacts": ["head", "neck", "waist", "pelvis", "ankle_near", "ankle_far", "wrist_near", "wrist_far"]
+    },
+    "hands_up": {
+      "from": "flat",
+      "arms": {"ik": [-6, 80, 30], "pole": [0, 0.3, 1], "hand": [1, 0, 0]},
+      "contacts": ["head", "neck", "waist", "pelvis", "ankle_far"],
+      "leg_near": {"fk": [50, 2.5, 45, 5]}
+    },
+    "knee": {
+      "from": "flat",
+      "leg_near": {"fk": [108, 3, 85, 0]},
+      "arm_near": {"ik": [-5.0, 93.9, 29.1], "pole": [0.3, 0.3, 1], "hand": [0.72, 0.27, -0.64]},
+      "arm_far": {"ik": [-5.6, 95.5, 4.1], "pole": [0.3, 0.3, 1], "hand": [0.74, 0.2, -0.64]},
+      "contacts": ["head", "neck", "waist", "pelvis", "ankle_far"]
+    },
+    "grip": {
+      "from": "knee",
+      "leg_near": {"fk": [121, 3, 0, 8]},
+      "arm_near": {"ik": [-14.3, 97.0, 29.0], "pole": [0.3, 0.3, 1], "hand": [0.64, 0.42, -0.64]},
+      "arm_far": {"ik": [-15.2, 98.5, 3.4], "pole": [0.3, 0.3, 1], "hand": [0.67, 0.37, -0.64]}
+    },
+    "walk": {
+      "from": "grip",
+      "arm_near": {"ik": [-21.0, 105.7, 31.6], "hand": [0.71, 0.46, -0.53], "pole": [0.3, 0.3, 1]},
+      "arm_far": {"ik": [-19.1, 106.7, 3.2], "hand": [0.66, 0.35, -0.67], "pole": [0.3, 0.3, 1]}
+    },
+    "long": {
+      "from": "knee",
+      "leg_near": {"fk": [121, 3, 0, 8]},
+      "arm_near": {"ik": [-29.4, 112.5, 29.0], "pole": [0.3, 0.3, 1], "hand": [0.77, 0.49, -0.42]},
+      "arm_far": {"ik": [-24.8, 111.8, 0.9], "pole": [0.3, 0.3, 1], "hand": [0.67, 0.37, -0.64]}
+    },
+    "long_in": {
+      "from": "long",
+      "leg_near": {"fk": [124, 3, 0, 8]},
+      "arm_near": {"ik": [-31.7, 110.9, 29.0], "pole": [0.3, 0.3, 1], "hand": [0.74, 0.53, -0.42]},
+      "arm_far": {"ik": [-27.2, 110.4, 0.9], "pole": [0.3, 0.3, 1], "hand": [0.65, 0.4, -0.64]}
+    },
+    "lifted": {"from": "long", "leg_far": {"fk": [35, 2, 40, 10]}, "contacts": ["head", "neck", "waist", "pelvis"]}
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.5, "phase": "lie"},
+    {"to": "hands_up", "s": 0.55, "phase": "knee_to_chest", "effort": 0.4},
+    {"to": "knee", "s": 0.85, "phase": "knee_to_chest", "effort": 0.4},
+    {"to": "grip", "s": 0.6, "phase": "leg_out", "effort": 0.6},
+    {"to": "walk", "s": 0.5, "phase": "leg_out", "effort": 0.6},
+    {"to": "long", "s": 0.5, "phase": "leg_out", "effort": 0.6},
+    {"to": "long_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "long", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "long_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "long", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "walk", "s": 0.3, "phase": "lower_slowly", "effort": 0.3},
+    {"to": "grip", "s": 0.3, "phase": "lower_slowly", "effort": 0.3},
+    {"to": "knee", "s": 0.7, "phase": "lower_slowly", "effort": 0.3},
+    {"to": "hands_up", "s": 0.6, "phase": "lower_slowly", "effort": 0.3},
+    {"to": "flat", "s": 0.4, "phase": "lower_slowly", "effort": 0.3}
+  ],
+  "key": "long",
+  "fault": {
+    "pose": "lifted",
+    "caption": "long_knee_lifts",
+    "breaks": {"check": "height", "joint": "knee_far", "max": 63}
+  },
+  "targets": [
+    {"at": "long", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "long", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "long", "check": "height", "joint": "knee_far", "max": 63},
+    {"at": "long", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "f", "max": -20}
+  ],
+  "note": "Lying on the back along a bed, the far leg straight and resting on it: the near knee comes to the chest, both hands take the back of its thigh, then the leg straightens toward the ceiling and the hands walk up to the calf, drawing it gently past straight up until the foot is over the chest, both knees straight and the far leg flat on the bed."
+}

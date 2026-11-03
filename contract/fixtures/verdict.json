@@ -1,0 +1,647 @@
+{
+  "about": "The heart-rate verdict (docs/plan.md slice 8; questpump-core verdict.rs): the rise over the median of the minute before the start, 20 bpm for a dynamic move and 12 for an isometric or mobility one, in two samples in a row within 60 s of the start; a move scored after its set (push-ups, burpees) looks at the 30 s after the set. t is seconds from the pump's start; source says whether a heart-rate source was paired (none is \"no HR\", a stream missing from one is unproven). rise, when present, is the rise a calibrated source needs instead of the class's default (the null windows, slice 8). The watch's Verdict follows these too.",
+  "cases": [
+    {
+      "about": "a dynamic move: two samples 20 bpm over the baseline",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 5.0,
+            "bpm": 78
+          },
+          {
+            "t": 10.0,
+            "bpm": 86
+          },
+          {
+            "t": 15.0,
+            "bpm": 91
+          },
+          {
+            "t": 20.0,
+            "bpm": 92
+          },
+          {
+            "t": 25.0,
+            "bpm": 93
+          },
+          {
+            "t": 30.0,
+            "bpm": 88
+          }
+        ]
+      },
+      "outcome": {
+        "verdict": "proven",
+        "peak": 93,
+        "delta": 23
+      }
+    },
+    {
+      "about": "a dynamic move whose rise shows in one sample only",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 5.0,
+            "bpm": 78
+          },
+          {
+            "t": 10.0,
+            "bpm": 91
+          },
+          {
+            "t": 15.0,
+            "bpm": 85
+          },
+          {
+            "t": 20.0,
+            "bpm": 89
+          },
+          {
+            "t": 25.0,
+            "bpm": 84
+          }
+        ]
+      },
+      "outcome": {
+        "verdict": "unproven",
+        "peak": 91,
+        "delta": 21
+      }
+    },
+    {
+      "about": "an isometric move needs 12",
+      "input": {
+        "class": "iso",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 10.0,
+            "bpm": 80
+          },
+          {
+            "t": 15.0,
+            "bpm": 82
+          },
+          {
+            "t": 20.0,
+            "bpm": 83
+          },
+          {
+            "t": 25.0,
+            "bpm": 81
+          }
+        ]
+      },
+      "outcome": {
+        "verdict": "proven",
+        "peak": 83,
+        "delta": 13
+      }
+    },
+    {
+      "about": "a calibrated source needs its own rise: the same 23 bpm falls short of 25",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 5.0,
+            "bpm": 78
+          },
+          {
+            "t": 10.0,
+            "bpm": 86
+          },
+          {
+            "t": 15.0,
+            "bpm": 91
+          },
+          {
+            "t": 20.0,
+            "bpm": 92
+          },
+          {
+            "t": 25.0,
+            "bpm": 93
+          },
+          {
+            "t": 30.0,
+            "bpm": 88
+          }
+        ],
+        "rise": 25
+      },
+      "outcome": {
+        "verdict": "unproven",
+        "peak": 93,
+        "delta": 23
+      }
+    },
+    {
+      "about": "a calm source's rise at the band's floor: 16 bpm proves a dynamic move at 15",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 5.0,
+            "bpm": 78
+          },
+          {
+            "t": 10.0,
+            "bpm": 86
+          },
+          {
+            "t": 15.0,
+            "bpm": 86
+          },
+          {
+            "t": 20.0,
+            "bpm": 86
+          },
+          {
+            "t": 25.0,
+            "bpm": 86
+          },
+          {
+            "t": 30.0,
+            "bpm": 86
+          }
+        ],
+        "rise": 15
+      },
+      "outcome": {
+        "verdict": "proven",
+        "peak": 86,
+        "delta": 16
+      }
+    },
+    {
+      "about": "a rise after the window does not count",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 30.0,
+            "bpm": 80
+          },
+          {
+            "t": 55.0,
+            "bpm": 85
+          },
+          {
+            "t": 65.0,
+            "bpm": 95
+          },
+          {
+            "t": 70.0,
+            "bpm": 96
+          }
+        ]
+      },
+      "outcome": {
+        "verdict": "unproven",
+        "peak": 85,
+        "delta": 15
+      }
+    },
+    {
+      "about": "push-ups scored on the 30 s after the set, where the wrist reads again",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": 25.0,
+        "samples": [
+          {
+            "t": -60.0,
+            "bpm": 70
+          },
+          {
+            "t": -55.0,
+            "bpm": 71
+          },
+          {
+            "t": -50.0,
+            "bpm": 69
+          },
+          {
+            "t": -45.0,
+            "bpm": 70
+          },
+          {
+            "t": -40.0,
+            "bpm": 72
+          },
+          {
+            "t": -35.0,
+            "bpm": 70
+          },
+          {
+            "t": -30.0,
+            "bpm": 71
+          },
+          {
+            "t": -25.0,
+            "bpm": 70
+          },
+          {
+            "t": -20.0,
+            "bpm": 69
+          },
+          {
+            "t": -15.0,
+            "bpm": 70
+          },
+          {
+            "t": -10.0,
+            "bpm": 71
+          },
+          {
+            "t": -5.0,
+            "bpm": 70
+          },
+          {
+            "t": 5.0,
+            "bpm": 60
+          },
+          {
+            "t": 15.0,
+            "bpm": 58
+          },
+          {
+            "t": 30.0,
+            "bpm": 91
+          },
+          {
+            "t": 35.0,
+            "bpm": 94
+          },
+          {
+            "t": 50.0,
+            "bpm": 88
+          }
+        ]
+      },
+      "outcome": {
+        "verdict": "proven",
+        "peak": 94,
+        "delta": 24
+      }
+    },
+    {
+      "about": "a stream that starts with the pump: no baseline, unproven",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": [
+          {
+            "t": 5.0,
+            "bpm": 100
+          },
+          {
+            "t": 10.0,
+            "bpm": 120
+          },
+          {
+            "t": 15.0,
+            "bpm": 125
+          }
+        ]
+      },
+      "outcome": {
+        "verdict": "unproven",
+        "peak": 125,
+        "delta": null
+      }
+    },
+    {
+      "about": "a paired watch whose stream dropped for the whole pump",
+      "input": {
+        "class": "dynamic",
+        "source": true,
+        "set_end": null,
+        "samples": []
+      },
+      "outcome": {
+        "verdict": "unproven",
+        "peak": null,
+        "delta": null
+      }
+    },
+    {
+      "about": "no heart-rate source",
+      "input": {
+        "class": "dynamic",
+        "source": false,
+        "set_end": null,
+        "samples": []
+      },
+      "outcome": {
+        "verdict": "no_hr",
+        "peak": null,
+        "delta": null
+      }
+    }
+  ]
+}

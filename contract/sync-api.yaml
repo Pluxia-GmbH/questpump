@@ -1,0 +1,1020 @@
+openapi: 3.1.1
+info:
+  title: QuestPump sync
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    One sync for every device of a player and the optional email link (docs/plan.md slice 60, decided by David on
+    2026-10-30; the research: docs/research/account-sync-2026-10-30.html), and since slice 64 the account's Pro. The
+    Worker `questpump-sync` serves it on questpump.com and www.questpump.com (`site/sync/`); the iPhone app, the
+    Android app, the desktop app and, since slice 63, a browser at questpump.com/play call it. The watches never call
+    it: they ride their phones. The game never calls it: it has no network, and the desktop app writes what it takes
+    in into each install's mirror.
+
+    The files of the contract:
+
+    - this file: the routes, the bodies, the answers, the limits, the batch and the link codes;
+    - `contract/fixtures/seal.json`, its `sync` block: the account's root secret R, the three values derived from it,
+      a sealed batch and a sealed link answer, which the three security tests replay (`cargo test`, `swift test`,
+      `./gradlew :core:test`); its `rekey` block: a device's key and MAC, a new R, its wrap to that key and the old R
+      sealed under it (below, "The account's new key");
+    - `contract/fixtures/backup.json`: the body a `rows` batch carries (a backup file's body);
+    - `contract/store.json`: the store facts a Pro proof is checked against, and its `web` block, Paddle's environment
+      and prices and the Pro token's public keys; `contract/companion-api.yaml` `ProProof`: a phone's proof;
+    - `contract/copy/en.json` (`menu.sync.*`, `menu.email.*`, `menu.restore.*`, `menu.linkdevice.*`,
+      `setup.welcome.played`, `desk.menu.sync.*`, `desk.menu.link.*`) and `contract/design/screens.json` (`menu.backup`,
+      `menu.email`, `menu.email.code`, `menu.restore`, `menu.linkdevice` and their `desk.menu.*` twins): the screens.
+
+    **The account and its keys.** An account is a random 16-byte id (`account`, base64url without padding) and a random
+    16-byte root secret R that only the player's devices hold. From R, HKDF-SHA256 with an empty salt gives the seal key
+    (info `questpump sync seal v1`, 32 bytes), the auth key (`questpump sync auth v1`, 32 bytes) and the key id (`kid`,
+    `questpump sync id v1`, 8 bytes, base64url without padding). The seal is the LAN's (contract/companion-api.yaml):
+    AES-256-GCM, a fresh random 12-byte nonce, then the ciphertext, then the 16-byte tag, no associated data. The server
+    keeps the SHA-256 of the auth key and never R, the seal key or a row's plain text.
+
+    **Tokens.** Every route but the account's creation, the session, the email's codes, the sign-in, the two web
+    deletions, the link answer's read, Paddle's webhook and the App Store's notifications takes a device token, 32
+    random bytes made by the server, base64url without padding, in `Authorization: Bearer <token>`. The server keeps the
+    token's SHA-256 beside its device. A wrong, revoked or unknown token answers 401 with no body; the device then drops
+    its token and turns Sync off with `menu.sync.removed`.
+
+    **App Check.** The phones send their Firebase App Check token in `X-Firebase-AppCheck` on every request, as the
+    report Worker reads it (`site/report/src`, the one verifier); the desktop app and a browser have none. A request
+    with a token that does not verify, or whose keys Google did not serve, is taken as one without, under the tighter
+    limits below: App Check sets only the limits, never who may sync, so it never answers 401.
+
+    **Origins.** The apps, Paddle and Apple send no `Origin`; questpump.com/delete and a browser at questpump.com/play
+    send `https://questpump.com` or `https://www.questpump.com`, which every route takes as it takes none. A request
+    with any other `Origin` answers 403, but the live socket's upgrade, which a token alone opens. A browser is a device
+    of kind `web` with the desktop app's limits.
+
+    **Limits.** Every route has a rate limit per address (an IPv6 address by its /64): 60 requests a minute with an App
+    Check token, 20 without; the link answer's `GET`, which a computer without a token repeats every 2 s, is counted on
+    its own, 30 a minute; account creation 10 an hour an address. The code routes count the asking network by its
+    peppered hash (an IPv4 address whole, an IPv6 address by its /48, the most an end site is usually given, RFC 6177):
+    10 codes an hour and 20 a UTC day a network (every email together); per email hash 3 codes an hour an asker (the
+    asking device's account for `link` and `change`, else the asking network) and 10 an hour for all its askers, one
+    live code an asker and 3 at once; and 1,000 code mails a UTC day for the codes asked with a device's token (`link`,
+    `change`) and 1,000 apart for those asked without (`signin`, `delete`), every address together (past one, a code
+    waits for the next day). A code that a day's count refuses, or whose mail does not go, is taken back with its ask
+    and the day's counts it took (429, 503). Whether an account holds the address never changes the answer. Paddle's
+    webhook from Paddle's own addresses (each environment's list, which Paddle names for its webhooks) has no limit, its
+    signature checked first; nor have the App Store's notifications from Apple's own addresses (`17.0.0.0/8`, which
+    Apple names for them); from any other address both take the 20 a minute. An account holds at most 64 MiB of batches
+    and takes at most 5,000 a day; a batch is at most 256 KiB sealed. An account holds at most 100 devices (a join past
+    them answers 409 `devices`) and takes at most 10 rekeys a UTC day (below, "The account's new key"). Past a limit:
+    429 with `Retry-After` in seconds; the device waits that long, and its line says `menu.sync.failed`.
+
+    **The batch.** What a device pushes: the plain text is JSON, UTF-8, snake_case,
+    `{"v":1,"account":<id>,"device":<id>,"seq":<int>,"made_at":<unix ms>,"kind":"rows"|"device","body":{...}}`,
+    compressed with raw DEFLATE (no zlib header), then sealed with the seal key and sent base64 (standard, with padding)
+    in `Batch.sealed`. `seq` rises by one with each batch a device makes, from 1, and a retry sends the same seq and
+    bytes. `kind` `rows`: `body` is a backup file's body (`contract/fixtures/backup.json`: `pumps`, `rows`, `game.rows`)
+    holding only what the device made or changed since its last batch, each pump without its `pending` flag (a catch-up
+    waiting for its computer is the device's own business); `kind` `device`: `body` is
+    `{"name","kind","profile","stamps","sheets"}`, the device's own name, its kind (`ios`, `android`, `desktop`, `web`),
+    its profile with the body stamps (merged field by field, the latest `changed_at` winning, the place fields kept each
+    device's own) and each character's newest game sheet (`contract/sheet.json`), a field the device has none of left
+    out, never `null`; the server keeps only the newest `device` batch of each device. The desktop app adds two fields
+    to its bodies: `hid`, its install id (base64url), to both, and `chars` to a rows body whose `game.rows` name a
+    character, an object from each character index those rows use to the character's GUID
+    (`{"1":"Player-1305-0A1B2C3D"}`). A device that keeps another computer's game rows renumbers each into its own
+    numbering by that GUID on taking it in (a GUID it does not know yet joins its characters as a new one), never by the
+    index alone, which two computers reuse; a game row of no character (index 0) stays 0. A device that keeps no game
+    rows reads past both. The game's reset (`/qp reset all`) is the player's on every device: the latest reset row of
+    any computer floors every device's game rows and app rows, and a computer takes another's reset as its own (its game
+    resets at the next load, slice 26) without sending it again. A device that fetches a batch opens it with the seal
+    key the batch's `kid` names, checks that the plain text's `account`, `device` and `seq` are the ones the server
+    listed, and takes the body in as a backup file (the union); a batch whose `v` is newer than it reads is kept unread
+    and read again after an update (`menu.sync.newer`); one that does not open or does not read is skipped and counted,
+    never retried.
+
+    **Live.** `GET /api/sync/v1/live` upgrades to a WebSocket (the Durable Object's hibernation API). The device sends
+    its token as the first message, `{"token":<token>}`, within 10 s, or the socket closes with 4401; afterwards the
+    server sends `{"cursor":<int>,"pro":<int>,"keys":<int>}` at once and again whenever the account's cursor, its Pro or
+    its keys move, and nothing else: `cursor` the account's cursor, on which the device pulls; `pro` the count of the
+    changes of the account's Pro (below, "Every device reads it"), 0 for an account that never had one; `keys` the
+    account's key generation (below, "The account's new key"), on whose change the device pulls as on the cursor's, the
+    page carrying the keys' news. A device asks `GET /api/sync/v1/pro` when a message's `pro` differs from the last it
+    saw on that connection (the first message after a connect counts as different), and besides at its start, after a
+    session and every 24 hours; never on every message. A message without `pro` (a server before slice 64's) asks
+    nothing, and one without `keys` (a server before the new key's) pulls on nothing more.
+
+    **Linking a device by a code.** A device with R shows `questpump-link:1:<account>:<R>` (both base64url without
+    padding) as a QR; a phone scans it with the pairing's scanner. A device without R and without a camera (a computer)
+    makes a P-256 key pair for each request, its secret d kept on that device alone (a browser's non-extractable), and
+    shows `questpump-link:1:req:<r>:<P>` (r 16 random bytes, P the public key in SEC1's compressed form, 33 bytes, both
+    base64url without padding); a browser (docs/plan.md slice 63) shows the same request as a link,
+    `https://questpump.com/link#req.<r>.<P>`, which a phone's camera opens in the phone app (the universal link and the
+    verified App Link, `/link`; the fragment never reaches the server), and the phones read both forms. A request whose
+    key is no compressed point of the curve (an older code's 32-byte T among them) reads as no link code. A phone that
+    holds R answers only a request its own scanner read on Link a device, after the player's Let in on "Let {device}
+    open your progress?" (a computer's or a browser's, by the code's form); a request link that reaches the phone from
+    outside the app (the camera, a page, a message, another app) answers nothing and only opens Link a device with its
+    scanner, so a planted link can never take R in one tap. The answer is `PUT /api/sync/v1/link/{r}`: the phone makes a
+    fresh P-256 key pair e and E and sends E (SEC1 uncompressed, 65 bytes) followed by `{"account","r"}` (R base64url) as
+    JSON, sealed with the key HKDF-SHA256(the x coordinate of ECDH(e, P), salt empty, info `questpump link v2`, 32
+    bytes); the requesting device opens it with ECDH(d, E). The requesting device reads it with `GET` until it comes, at
+    most every 2 s; the server deletes it at the first read or after 10 minutes. Only d opens an answer: a code seen on
+    a screen and an answer read from the server tell nothing, and the server never holds a key. The server keeps the
+    first answer to a request and refuses any later one with 409, so whoever saw the code could answer first: both
+    sides therefore derive a check code from the same x coordinate, HKDF-SHA256(x, salt empty, info `questpump link
+    check`), whose first 4 bytes read as a big-endian unsigned number give its remainder by 1,000,000, written as six
+    digits with leading zeros (seal.json's `sync.link.check`). The phone shows it once the server took its answer (204;
+    "Check this number on the other screen", `menu.linkdevice.check`); a 409 shows no number, only that another device
+    answered that code first (`menu.linkdevice.taken`). A computer whose email sign-in found an account and asked for
+    its key joins only that account, the binding kept with the request it showed under that sign-in: an answer naming
+    another is refused (`desk.menu.link.other`) and a new request shown. Without that sign-in, the requesting device
+    opens the answer and joins nothing yet: it shows the six digits in the code's place, "Does your phone show this
+    number?" (`desk.menu.link.check.title`), and joins only on Yes, join; No drops the answer and shows a new request
+    (a browser, slice 63, the same).
+
+    **The restore code.** R in Crockford base32 (alphabet `0123456789ABCDEFGHJKMNPQRSTVWXYZ`), its 128 bits big-endian
+    and two zero bits after them, 26 symbols, then one check symbol: the 26 symbols' values summed mod 37, written with Crockford's check alphabet (the 32 symbols then
+    `*~$=U`). Shown in groups of four, `XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXC` (seal.json's `sync.restore`). Read case-blind, with `O` as `0`, `I` and `L`
+    as `1`, hyphens and spaces skipped. A code alone does not tell its account: after an email sign-in the device knows
+    the account; without one it asks the server for the account whose auth key it derives (`POST
+    /api/sync/v1/session` with `account` left out).
+
+    **The email.** The server keeps only `HMAC-SHA256(pepper, lower(trim(address)))` (the pepper a Worker secret) and
+    the address only for the moment it mails a code. A code is six digits, valid 10 minutes; a new code replaces only
+    its asker's own (the account for `link` and `change`, the asking network, by its peppered hash, for `signin` and
+    `delete`), so a stranger's ask never replaces the player's, and an answer is checked against every live code of its
+    purpose and account, at most 3. Wrong answers count per email hash for each answering asker (the answering account
+    for `link` and `change`, else the answering network) and for all of them together. An asker's 5th wrong answer
+    ends its own live code and locks that asker alone for 15 minutes (it asks no code, 429, and answers none, 410),
+    each lock after it twice the last up to a day; its right answer starts its count again (its locks stay counted),
+    and its count is forgotten a day after the later of its last wrong answer and its lock's end. An asker's 10th wrong
+    answer within 24 hours, whatever its locks and right answers between, ends its own code and locks it until the
+    oldest of those 10 is a day old, so no one network alone reaches the hash's ceiling. The hash's 20th
+    wrong answer within 24 hours, from all askers together and whatever right answers came between, ends every live
+    code and locks the hash for everyone (429, 410) until the oldest of those 20 is a day old. So in any 24 hours at
+    most 20 guesses meet at most 3 live codes of one address: a guess comes right at most 60 times in a million. A 403's
+    `tries_left` is the fewer of the asker's and the hash's tries left. The mail's subject is `{code} is your QuestPump
+    code`, its body the code and three plain lines: what it is for, that it works for 10 minutes, and that a code no
+    one asked for can be ignored; no link. It comes from `noreply@questpump.com` with `Reply-To:
+    contact@questpump.com`, `Auto-Submitted: auto-generated` and `X-Auto-Response-Suppress: OOF, AutoReply`. A sign-in
+    code to an address no account holds sends a mail that says so, so the answer never tells who has an account. Before
+    any code or count, the server asks Cloudflare's DNS over HTTPS (the domain alone) whether the address's domain takes
+    mail and answers 400 when it surely does not: the name does not exist, its MX is a null MX (RFC 7505), or it has no
+    MX, A or AAAA record; any other answer, an error or 1.5 s without one lets the code go. An address Email Sending
+    holds back after a bounce or a spam report also answers 400, its code taken back. The review address (a Worker
+    secret) takes a fixed code (another secret) under the same limits, skips the domain's check and gets no mail.
+
+    **The account's new key.** A removed device keeps R, and R alone opens the account and its batches, so every
+    removal makes a new R due, which a device that stays makes, wraps to every other device that stays and posts with
+    the new auth key; from then on the old R joins nothing and opens nothing new (the release security review's M5,
+    2026-10-31). The values are seal.json's `rekey` block.
+
+    - *Each device's key.* After every session (`POST /accounts`, `POST /session`) and whenever it takes a new R, a
+      device registers a P-256 key pair of its own with `PUT /api/sync/v1/devices/self/key`: `key` its public key, SEC1
+      uncompressed (65 bytes); `mac` HMAC-SHA256 under HKDF-SHA256(R, salt empty, info `questpump sync device v1`, 32
+      bytes) over 81 bytes, the device id's 16 then the key's 65, with no length or separator; `kid` R's kid; all three
+      base64url without padding. Its secret stays on the device alone and never syncs (a keychain or keystore item of
+      that device only; a browser's non-extractable key), and the device keeps the same pair under each new R. The
+      server checks that the key is a point of the curve and keeps the three beside the device in place of any before;
+      it cannot check the MAC, which only a holder of R can make, and every device checks it before it wraps to the key.
+      Once a rekey named the account's kid, a `kid` other than it answers 409 `kid`.
+    - *Due.* Every removal (`DELETE /devices/{device}`, `DELETE /session`, the 730-day removal) makes the new R due
+      while a device that registered a key is left. The account's `generation` moves with each removal, new device, key
+      registered and rekey. While it is due the auth key joins nothing: `POST /session` and `POST /accounts` with it
+      answer 409 `rekey`. A device refused so says `menu.sync.rekey`: the R it holds joins nothing once the new key is
+      in, so it links again from one of the other devices, or with the new restore code they show. An account where no
+      device registered a key is never due (none could make the new R), so an account whose devices all run an app from
+      before this rule works as it did; and when the last device that registered a key leaves, nothing is due any more,
+      though an earlier removal made it so, since none is left to make it (below, "What it does not").
+    - *Hearing it.* Each session's answer and each page of `GET /batches` carry the keys' news (`KeyNews`): the
+      account's `kid` (null until the first rekey names one), its `generation`, `due`, whether a wrap waits for this
+      device (`wrapped`) and, while due, every device's key, MAC and kid. A device pulls at its start, after each push,
+      on each live message whose `cursor` or `keys` moved, and every 5 minutes in front; a device that removed another
+      reads `GET /api/sync/v1/account/keys` at once, and after a sign-out, whose token is gone, the devices left hear it
+      on their sockets.
+    - *Making the new R.* A device that registered its key and holds the current R (its kid the account's, or, before
+      the first rekey, the one it registered under) makes a new random 16-byte R' as soon as the news says `due`; never
+      from news whose `devices` leave itself out (a server that lies, or a stale read). For each other device of the
+      news it checks the MAC under the R its `kid` names (the current R, or an earlier one the chain gives, below): one
+      whose MAC holds gets a wrap, E then R' sealed, where E is the public key of a fresh P-256 pair e made for that
+      wrap alone (SEC1 uncompressed, 65 bytes) and the seal key is HKDF-SHA256(the x coordinate of ECDH(e, the device's
+      key), salt empty, info `questpump sync rekey v1`, 32 bytes), 109 bytes in all, standard base64 (a link answer's
+      construction, its own info); one with no key, or a MAC that does not hold, gets none. It keeps R' beside R and
+      posts `POST /api/sync/v1/account/rekey` (`Rekey`): the news' `generation`, R''s auth key and kid, its own MAC
+      under R', `prev_kid` R's kid, `prev` R sealed under R''s seal key (44 bytes, standard base64) and the wraps. On
+      204 R' is its R (in the keychain item's place) and it pushes under R''s kid. A device keeps R' until the account
+      settles it. After a lost answer it resends the exact body it posted, kept in memory, and the server answers an
+      exact replay of the rekey in place with 204. After a 409 it reads GET /account/keys first, and R''s kid there
+      makes R' its R. When the keys still name the kid R' replaced, at the generation R' was made from, with a rekey due
+      (after a restart that kept R' but not the body, among others), it posts again with the same R' and kid and fresh
+      wraps. It drops R' only when the account names a kid other than R''s at a generation past the one R' was made
+      from. The same body sent again once its rekey is in answers 204 and changes nothing, so a retry never loses R'.
+      Two devices may race: the server takes one, and the other's 409 `generation` and read find its wrap waiting.
+    - *The server's side.* `POST /account/rekey` first answers 204 with no change for the rekey the account took last,
+      sent again by the device that made it (the account's kid and auth key are the body's, the chain's link names its
+      `kid` and `prev_kid`, and this device's MAC and kid are still the body's). Else it checks in one transaction: the
+      body's `generation` is the account's and a rekey is due (else 409 `generation`), this device registered a key (409
+      `key`), `prev_kid` is the account's kid, or before the first rekey this device's (409 `kid`), `kid` and `auth` are
+      new to the account (no link names the kid, no rekey replaced that auth key) and every wrap is for another device
+      that registered a key (400). Then it keeps the SHA-256 of the new auth key in place of the old, adds the chain's
+      link (`kid`, `prev_kid`, `prev`, and the replaced auth key's hash, never answered), keeps the wraps in place of
+      any before, sets this device's MAC and kid to the new ones, removes every other device the body brings no wrap for
+      as `DELETE /devices/{device}` removes one (its token answers 401, its socket closes), makes `kid` the account's,
+      clears `due` and moves the generation. From then on the old auth key finds no account: `POST /session` answers 404
+      without `account` and 403 with it, `POST /account/by-restore` deletes nothing, and `POST /accounts` makes a new,
+      empty account (the old key's pointer goes after the transaction, or by the account's alarm 10 minutes later when
+      that failed, and one still left answers as none).
+    - *A replaced R.* `POST /session` naming an account answers 403 when the auth key is not the account's (its R was
+      replaced, or a code typed wrong) and 404 when the account does not exist; without `account`, 404 when no account
+      holds the key. A device that held R for that account takes 403 as replaced: it keeps the account and its R, says
+      `menu.sync.rekey` and never makes a new account, and links again from one of its other devices.
+    - *Taking the wrap.* A device whose news says `wrapped` reads `GET /account/keys`, opens `wrap` with its key's
+      secret (ECDH with the wrap's E), checks that R''s kid is the account's `kid` and that the chain reaches an R it
+      holds: from the account's kid back, each link's `prev` opened under the newer R's seal key gives an R whose kid is
+      the link's `prev_kid`, until one is the kid it holds. Only then is R' its R: it registers its key under R' (`PUT
+      /devices/self/key` with R''s MAC and kid), which ends its wrap, and seals again under R' what it had not pushed. A
+      wrap that does not open or check is not taken: the device signs out (`DELETE /session`) and turns Sync off with
+      `menu.sync.removed`. A wrap waits until its device registers under the new kid, and a later rekey replaces it,
+      so a device that was off for months still finds the latest R waiting.
+    - *Batches under older kids.* While the account names a kid, a new batch sealed under another answers 409 `kid`
+      (with `last_seq`): the device takes its wrap first and sends the batch again under the new R with the same seq.
+      The batches already kept stay as they were; a device opens each with the R its `kid` names, the older ones
+      through the chain (`GET /account/keys`, newest link first, 100 links a page, the next page `from` the last link's
+      `prev_kid`). A device that joins with the new R (its restore code, a link) reads the whole history this way.
+    - *The restore code* is R's, so it changes with every rekey: a device shows its current R's, and the code it showed
+      before finds no account once a rekey replaced it.
+    - *Limits.* At most 100 devices an account, so a rekey's at most 99 wraps fit its body (at most 32 KiB); at most 10
+      rekeys a UTC day (429 with `Retry-After`, the rekey due until the next day), so the chain grows by at most 10
+      links a day, each about 100 bytes.
+    - *What it guards.* A removed device's token answers 401 at once. Once the rekey is in, its R joins nothing, makes
+      nothing of the account and deletes nothing, and it gets no wrap, since the device that rekeys wraps only to the
+      keys whose MAC it checked and the server keeps a wrap only for a device that stays: it reads nothing made after
+      the rekey (what it pulled before stays with it). A device that stays but was off gets its wrap when it calls
+      again. The server never holds R or R': it holds auth keys' hashes, MACs, wraps sealed to the devices' keys and
+      earlier Rs sealed under later ones. A server that lies can withhold a wrap or remove a device, which the device
+      sees as its removal, but it cannot have its own key wrapped (its MAC needs R) or hand a device an R of its own
+      (the chain's check needs the device's R sealed under it).
+    - *What it does not.* Until the rekey is in (seconds while another device is online, else until one opens), a
+      removed device that kept R cannot join, but it can delete the account by its restore code (`POST
+      /account/by-restore`), as the player can. When the last device that registered a key leaves before one made the
+      new R, nothing is due any more and a device removed earlier joins again with R: a due kept with none left to make
+      the new R would lock the player out instead. A phone still paired over the LAN with a computer of the account
+      reads the current R from it (`GET /v1/account`) until it is unpaired. A server working with a removed device,
+      which holds R, can have a key of its own MACed under R and so be wrapped the next R: the rule keeps R from the
+      server, never from the server and a removed device together. A device that shares the player's keychain account
+      (an iPhone signed in to the same Apple Account with iCloud Keychain, which syncs the R item) receives each new R
+      through it: removing such a device keeps it out only once it also leaves that keychain, or once its app keeps R in
+      an item that does not sync. An app from before this rule registers no key, so the account's next rekey removes it;
+      it then joins again with the new restore code or a link. Older decoders read past the new fields, and the push's
+      409 still carries `last_seq`.
+
+    **Pro on the account** (docs/plan.md slice 64). The server keeps the account's Pro outside its sealed rows, one
+    grant a subscription: its `ref`, the SHA-256 (hex) of Apple's `originalTransactionId`, Play's `purchaseToken` or
+    Paddle's subscription id; its `source` (`app_store`, `play` or `web`); `until` (unix ms), when the store or Paddle
+    ends it; its `status`; and for a store's, the device whose proof brought it. One object a `ref` binds the
+    subscription to one account at a time: a newer claim (a proof from another account's phone, of a purchase made
+    outside any account) moves it, and the account it leaves loses the grant (Family Sharing is off for Pro,
+    `contract/store.json`). Every purchase a phone makes while it is in an account carries the account's store token,
+    Apple's `appAccountToken` on each StoreKit purchase and Play's `obfuscatedAccountId` on each `BillingFlowParams`
+    (the release security review of 2026-10-31): the first 16 bytes of HKDF-SHA256 of the account id's text in UTF-8
+    (salt empty, info `questpump store account v1`) with RFC 9562's version 8 and variant bits set (the seventh byte's
+    high nibble 8, the ninth byte's two high bits 10), written as a lower-case UUID (`contract/fixtures/seal.json`
+    `sync` `store_token`; the apps' `SyncKeys.storeToken`, the Worker's `storeToken`). It names the account and keeps no
+    secret: the server derives it from the account id. A phone outside an account passes none.
+
+    - *From the stores.* A phone posts the `ProProof` it sends the desktop app (`POST /api/sync/v1/pro/proof`), when it
+      changed and at least every 24 hours while Sync is on. The server checks it first as the desktop app does
+      (`helper/crates/questpump-core/src/pro.rs`, each rule in its order): Apple's JWS chain to the pinned
+      Apple Root CA - G3, valid at the JWS's own `signedDate`, its signature, the bundle id and a Pro product of
+      `contract/store.json`, the `Production` environment alone (a TestFlight or Xcode purchase is refused), not
+      revoked, upgraded or ended past the grace week; Play's RSA signature (PKCS #1 v1.5, SHA-1) under
+      `play.license_key` over the purchase text's exact bytes, the package and the Pro product, purchased, not
+      suspended. A store not the device's kind's (an App Store proof from `android`) is refused. So is a proof whose
+      purchase carries a store token (the transaction's `appAccountToken`, the purchase text's `obfuscatedAccountId`,
+      compared without case) other than the posting device's account's, or one that account took in from an account
+      merged into it, after the store's own checks and before Play is asked (`account`); a purchase without one binds as
+      before. Two accounts become one when a device in one joins the other (`POST /session`, or `POST /accounts` while
+      it holds a token): it sends its token in the account it leaves as `from`, before it leaves, and the account it
+      joins takes in that account's store token and every one that account took in itself, at most 256, kept beside its
+      Pro and deleted with it (the release security review of 2026-11-01). A `from` that names no device, or a device
+      of the account joined, brings nothing and never refuses the join. So a subscription bought in an account binds to
+      every account that account was merged into, and never to another: not to a new account after Delete account, nor
+      after Sign out, where the device holds no token to send; there Pro stays on the phone and on a computer the phone
+      proves it to, not on the account. Apple's grant lasts until the later of the transaction's `expiresDate` and the
+      renewal's `gracePeriodExpiresDate`, `past_due` in billing grace, `trialing` in a free trial, else `active`. Play's
+      signed text carries no end and never changes across renewals, so a Play proof that holds offline is then asked of
+      Play (the Play Developer API's `purchases.subscriptionsv2.get` for its `packageName` and `purchaseToken`, under a
+      service account that may read the app's purchases): `until` is the latest `expiryTime` of its Pro line items;
+      `SUBSCRIPTION_STATE_ACTIVE` and `_CANCELED` (renewal off) grant `active` (`trialing` in a free trial's offer
+      phase), `_IN_GRACE_PERIOD` `past_due` (Play moves `expiryTime` to the grace's end), `_EXPIRED` (run out, revoked
+      or charged back) ends the grant of that subscription, `canceled`, `until` now at the latest; `_ON_HOLD`, `_PAUSED`
+      and `_PENDING` are refused, and so is every Play proof while the server holds no service account or Play does not
+      answer. A licence tester's purchase counts. A refused proof changes nothing. `none` ends the store grants this
+      device's proofs brought: `canceled`, `until` now. Each hour the server lists the app's voided purchases of the
+      last 3 days (`purchases.voidedpurchases.list`, `type=1`: refunded and revoked, or charged back) and asks Play for
+      each voided token an account holds the subscription of, while Play's word has not ended its grant, as for a proof:
+      `_EXPIRED` ends that grant, so every device of the account loses Pro at once, without waiting for the phone's next
+      proof.
+    - *The App Store's notifications* (`POST /api/sync/v1/pro/apple`, App Store Server Notifications V2 for
+      Production, its URL in `contract/store.json` `apple.notifications`): `{"signedPayload":<JWS>}`, its chain and
+      signature checked as a proof's at its own `signedDate`, then the transaction (`signedTransactionInfo`) and renewal
+      info (`signedRenewalInfo`) it carries, the `Production` environment, the bundle id, a Pro product, `PURCHASED`.
+      `REFUND` ends the grant of that subscription (`refunded`, `until` the `revocationDate`), and so do `REVOKE`,
+      `EXPIRED`, `GRACE_PERIOD_EXPIRED` and `DID_FAIL_TO_RENEW` without the `GRACE_PERIOD` subtype (`canceled`); a
+      refund or a revocation also refuses every App Store proof signed (`signedDate`) no later than the notification,
+      since such a transaction still names its old end, until the latest end it names and 7 days after have passed.
+      `DID_RENEW`, `SUBSCRIBED`, `REFUND_REVERSED`, `RENEWAL_EXTENDED` and `DID_FAIL_TO_RENEW` with `GRACE_PERIOD` set
+      the grant as a proof of that transaction would. A subscription takes only news newer (`signedDate`) than every
+      proof and notification it took, so a retry that comes after newer news changes nothing; a notification changes
+      only the account the subscription is bound to, and binds none. Another type, environment, app or product, or a
+      `TEST`, answers 200 and changes nothing; one that is not the App Store's answers 403; a missing fact of the
+      server's own build 503, which Apple sends again (five times, 1, 12, 24, 48 and 72 hours apart).
+    - *From the website.* Paddle Billing sells the plans of `contract/store.json` `web.paddle.prices`, as merchant of
+      record, in the environment `web.paddle.environment` names (`sandbox`: `https://sandbox-api.paddle.com`; `live`:
+      `https://api.paddle.com`); a subscription whose items hold none of those prices is not Pro, and none counts while
+      the environment is not `live` (a price id and the client-side token stand in the file only then, so a sandbox
+      test card never unlocks Pro; a sandbox test runs on a local copy). Get Pro on a device opens questpump.com/pro,
+      whose checkout carries nothing of the account. A purchase comes by the customer's email alone (its peppered hash,
+      as "The email" keeps it, of the address Paddle holds), which the buyer proved by paying with it: it comes to the
+      account that holds that email, which one account at a time does, or waits on its hash, at most 16 a hash, until
+      a device links the address (`POST /api/sync/v1/email`). So no link or page made by someone else takes a buyer's
+      purchase or its customer portal. A purchase waiting for an address goes with that address's web deletion. (Slice
+      64's Get Pro nonce, which a checkout carried as custom data, went on 2026-11-01: the email alone binds.)
+    - *Paddle's webhook* (`POST /api/sync/v1/pro/paddle`, a notification destination with the subscription and
+      adjustment events): `Paddle-Signature: ts=<unix s>;h1=<hex>`, HMAC-SHA256 under the destination's secret over
+      `<ts>:` and the raw body's bytes as they came (never text decoded from them), any `h1` that holds, `ts` within 5
+      minutes, then the bytes read as UTF-8 JSON. Every event is taken once by its `event_id`, and a
+      subscription keeps the state of its newest event by `occurred_at`. `until` is the period's end
+      (`current_billing_period.ends_at`, else `next_billed_at`), a scheduled cancel or pause's `effective_at` before
+      it, or the moment it was canceled or paused; `status` is Paddle's. A full refund or a chargeback, once
+      approved, ends the period it was asked for in (its `created_at`): `refunded`, `until` that moment; a renewal
+      after it grants again. An event the Worker cannot take in whole (Paddle's API or a Worker secret missing for the
+      customer's email) answers 503, and Paddle sends it again.
+    - *Every device reads it.* `GET /api/sync/v1/pro` answers the grant every device shows: of the grants that stand
+      (`active`, `trialing` or `past_due`, and `until` plus 7 days still ahead) the one with the latest `until`, with
+      its token; else the one that ended last, with its status (one that ran out under a standing status shows
+      `canceled`) and no token; else nulls. The token is a compact JWS, header `ProTokenHeader`, claims
+      `ProTokenClaims` (below; the dates in unix seconds, `exp` `until` plus 7 days, no `nbf`, since a device clock
+      behind the Worker's would refuse a token just signed), signed under a Worker secret whose public key is a JWK in
+      `contract/store.json` `web.pro_token_keys` by its `kid`; a device checks it offline against those keys (none
+      listed: it takes no token), refuses it unless `typ`, `iss` and `aud` are exactly this file's, so no other token
+      the key might sign and no token for another audience passes, and keeps it while `exp` is ahead. Whenever the
+      grant every device reads changes, the account's count of Pro changes moves by one and the live socket sends it
+      (above, "Live"; the cursor stays); a device then asks `GET /pro` again.
+    - *Manage Pro.* `POST /api/sync/v1/pro/portal` answers a Paddle customer portal link for the website's
+      subscription, made at each call and never kept.
+    - *Kept.* A store's ended grant stays 30 days past its grace week, to say how it ended, then goes with its binding
+      at the next `GET /pro`; a canceled Paddle subscription's grant, binding and state go 30 days past its grace week,
+      and a paused or refunded one's stay while Paddle keeps the subscription. An App Store refund's cutoff (the
+      subscription's `ref`, the notification's `signedDate` and the latest end it guards, never an account) stays past
+      its binding until that end and 7 days after.
+
+    **Deleting.** `DELETE /api/sync/v1/account` and the two web deletions (questpump.com/delete: by a code mailed to the
+    linked email, `POST /api/sync/v1/account/by-email`, or by the restore code, `POST /api/sync/v1/account/by-restore`)
+    delete the account's batches, its email hash, its devices, its tokens, its pending links, its devices' keys, wraps
+    and chain, and its Pro grants with their bindings and their Paddle state at once; an account none of whose devices
+    is left and that no email holds is deleted when its last device leaves. Removing a device (`DELETE
+    /devices/{device}`, `DELETE /session`, the 730-day removal) also takes its key and its wrap and makes the new R due
+    (above, "The account's new key"). A device whose last request (`seen_at`) is 730 days (24 months) old is removed
+    as `DELETE /devices/{device}` removes one, its token then answering 401, and the account is deleted the same way,
+    whole, once no device is left that way: when its newest device's last request is 730 days old, and for an account an
+    email holds after its last device left, 730 days after that unless a device signs in before; each within a day
+    after.
+servers:
+  - url: https://questpump.com
+paths:
+  /api/sync/v1/accounts:
+    post:
+      summary: Make a new account with this device in it
+      security: []
+      description: |
+        The first device that syncs makes the account in silence. It makes R, sends the auth key, and gets its ids and
+        token back. It keeps the account id and R in the platform keychain (an iCloud Keychain item that syncs, Block
+        Store with its cloud copy only end to end encrypted) and its token on the device only. R is saved before the
+        call, so a retry whose answer was lost sends the same auth key, which joins the account it made (a new device
+        token, no limit counted) and never makes a second one. A device that holds a token in another account (one whose
+        R it no longer holds) sends that token as `from` and leaves that account after the new token works ("Pro on the
+        account").
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewAccount" }
+      responses:
+        "200": { description: Made, content: { application/json: { schema: { $ref: "#/components/schemas/Session" } } } }
+        "400": { description: A body that does not read }
+        "409":
+          description: >-
+            An account holds this auth key and refuses a device now: a new R is due (`rekey`), or it holds 100 devices
+            (`devices`)
+          content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "429": { description: Too many accounts from this address }
+        "503": { description: Accounts cannot be made right now (the server's pepper is missing) }
+  /api/sync/v1/session:
+    post:
+      summary: Bring a device into the account whose R it holds
+      security: []
+      description: |
+        A device that holds R (from the keychain, a scanned code, pairing or the restore code) proves it with the auth
+        key and gets a device token. With `account` left out (a restore code typed on its own), the server finds the
+        account by the auth key's SHA-256. A device already in another account sends its token there as `from`, so this
+        account takes in that account's store tokens ("Pro on the account"), then sends what it made there to this one
+        and leaves the old one (`DELETE /api/sync/v1/session` with its old token, after the new token works).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Join" }
+      responses:
+        "200": { description: In, content: { application/json: { schema: { $ref: "#/components/schemas/Session" } } } }
+        "403": { description: "The auth key is not this account's: its R was replaced, or a code typed wrong" }
+        "404": { description: "No account has this auth key, or the account named does not exist (deleted)" }
+        "409":
+          description: >-
+            A new R is due (`rekey`; above, "The account's new key"), or the account holds 100 devices (`devices`)
+          content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "429": { description: Too many tries }
+    delete:
+      summary: Sign out this device
+      description: >-
+        Revokes this device's token and removes the device from the account, which makes a new R due (above, "The
+        account's new key"). The device keeps its rows.
+      security: [{ device: [] }]
+      responses:
+        "204": { description: Out }
+        "401": { description: Unknown token }
+  /api/sync/v1/batches:
+    post:
+      summary: Push one sealed batch
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Push" }
+      responses:
+        "200":
+          description: Kept, or kept already under this device and seq
+          content: { application/json: { schema: { $ref: "#/components/schemas/Pushed" } } }
+        "401": { description: Unknown token }
+        "409":
+          description: >-
+            `seq`: this seq was kept with other bytes, or is at or below the device's last; the device starts its seq
+            after `last_seq`. `kid`: sealed under another kid than the account's; the device takes its wrap first and
+            sends it again under the new R (above, "The account's new key")
+          content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "413": { description: "Larger than 256 KiB sealed, or the account is full (64 MiB)" }
+        "429": { description: Too many batches today or too many requests }
+    get:
+      summary: Pull the batches after a cursor
+      security: [{ device: [] }]
+      parameters:
+        - { name: after, in: query, required: true, schema: { type: integer, minimum: 0 }, description: "The last cursor this device took in; 0 for every batch" }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
+      responses:
+        "200": { description: A page, content: { application/json: { schema: { $ref: "#/components/schemas/Page" } } } }
+        "401": { description: Unknown token }
+  /api/sync/v1/live:
+    get:
+      summary: The cursor's nudges over a WebSocket
+      description: The token goes as the first message (above, "Live"). The watches never open it.
+      security: []
+      responses:
+        "101": { description: Upgraded }
+        "426": { description: Not a WebSocket request }
+  /api/sync/v1/devices:
+    get:
+      summary: The account's devices
+      description: >-
+        Kinds and dates, and whether an email holds the account; each device's name travels sealed in its `device`
+        batch.
+      security: [{ device: [] }]
+      responses:
+        "200": { description: The list, content: { application/json: { schema: { $ref: "#/components/schemas/Devices" } } } }
+        "401": { description: Unknown token }
+  /api/sync/v1/devices/{device}:
+    delete:
+      summary: Remove another device
+      description: >-
+        Revokes its token and drops its `device` batch, its key and its wrap; the rows it sent stay. It makes a new R
+        due (above, "The account's new key"): a device that removed another reads `GET /account/keys` at once (its own
+        id signs it out, and the devices left hear it on their sockets).
+      security: [{ device: [] }]
+      parameters:
+        - { name: device, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Removed }
+        "401": { description: Unknown token }
+        "404": { description: No such device in this account }
+  /api/sync/v1/devices/self/key:
+    put:
+      operationId: putDeviceKey
+      summary: Register this device's public key and its MAC under R
+      description: >-
+        In place of any key it had (above, "Each device's key"); a MAC under the account's kid also ends the wrap that
+        waited for this device. The generation moves.
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/KeyPut" }
+      responses:
+        "204": { description: Kept }
+        "400": { description: "A body that does not read, or a key that is no point of P-256" }
+        "401": { description: Unknown token }
+        "409":
+          description: "`kid`: another kid than the account's; the device takes its wrap first"
+          content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+  /api/sync/v1/email/code:
+    post:
+      summary: Mail a code
+      description: |
+        `link` and `change` need this device's token and mail the address given; `signin` and `delete` need none. A
+        `signin` or `delete` code to an address no account holds sends the mail that says so.
+      security: [{}, { device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CodeAsk" }
+      responses:
+        "204": { description: Sent }
+        "400":
+          description: Not an address, or one that takes no mail (its domain surely has none, or Email Sending holds it back)
+        "401": { description: "`link` or `change` without a known token" }
+        "429": { description: "Too many codes for the network, asker or address, a lock, or the day's codes or mails" }
+        "503": { description: Mail cannot go right now }
+  /api/sync/v1/email:
+    post:
+      summary: Link or change this account's email with its code
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CodeAnswer" }
+      responses:
+        "204": { description: Linked }
+        "401": { description: Unknown token }
+        "403": { description: Wrong code; `tries_left` in the body }
+        "409": { description: Another account holds this address (`taken`) }
+        "410": { description: "No live code of its purpose, or this asker or the address locked" }
+    delete:
+      summary: Remove the email; the account stays
+      security: [{ device: [] }]
+      responses:
+        "204": { description: Removed }
+        "401": { description: Unknown token }
+  /api/sync/v1/signin:
+    post:
+      summary: Find the account an email holds
+      security: []
+      description: |
+        Answers the account id and its devices (kinds and dates). The device still needs R: the keychain, a scan from a
+        device that has it, or the restore code, then `POST /api/sync/v1/session`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CodeAnswer" }
+      responses:
+        "200": { description: Found, content: { application/json: { schema: { $ref: "#/components/schemas/Found" } } } }
+        "403": { description: Wrong code; `tries_left` in the body }
+        "410": { description: "No live code of its purpose, a lock, or no account holds the address" }
+  /api/sync/v1/account:
+    delete:
+      summary: Delete the account from one of its devices
+      security: [{ device: [] }]
+      responses:
+        "204": { description: Deleted }
+        "401": { description: Unknown token }
+  /api/sync/v1/account/by-email:
+    post:
+      summary: Delete the account an email holds (questpump.com/delete)
+      security: []
+      description: Takes a `delete` code. Answers 204 whether or not an account held the address, once the code holds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CodeAnswer" }
+      responses:
+        "204": { description: Deleted }
+        "403": { description: Wrong code }
+        "410": { description: "No live code of its purpose, or this asker or the address locked" }
+  /api/sync/v1/account/by-restore:
+    post:
+      summary: Delete the account of a restore code (questpump.com/delete)
+      security: []
+      description: |
+        The page's way for an account no email holds, though it deletes any account its auth key opens. The page reads
+        the restore code in the browser as "The restore code" above says, derives the auth key from R and sends only
+        the auth key, never R. The server deletes the account whose auth key has this SHA-256 and answers 204 whether
+        or not one had it, as `by-email` does.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RestoreDeletion" }
+      responses:
+        "204": { description: "Deleted, or no account had this auth key" }
+        "400": { description: A body that does not read }
+        "429": { description: Too many requests from this address }
+  /api/sync/v1/account/rekey:
+    post:
+      operationId: postRekey
+      summary: The account's new R, from a device that holds the current one
+      description: As "The server's side" says (above, "The account's new key").
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Rekey" }
+      responses:
+        "204": { description: "In: the new auth key, kid and wraps kept, every device without a wrap removed" }
+        "400":
+          description: >-
+            A body that does not read or is larger than 32 KiB, a kid or auth key the account had, a wrap for this
+            device or for one with no key
+        "401": { description: Unknown token }
+        "409":
+          description: >-
+            `generation`: the generation moved or no rekey is due, so the device reads the keys again; `key`: this
+            device registered no key; `kid`: `prev_kid` is not the account's kid
+          content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "429": { description: "The account's 10 rekeys of this UTC day, or too many requests" }
+  /api/sync/v1/account/keys:
+    get:
+      operationId: getKeys
+      summary: The account's keys, this device's wrap and the chain
+      security: [{ device: [] }]
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string }
+          description: "The kid the chain's page starts at, going back; the account's kid when left out"
+      responses:
+        "200":
+          description: The keys
+          content: { application/json: { schema: { $ref: "#/components/schemas/Keys" } } }
+        "400": { description: "A `from` that is no kid" }
+        "401": { description: Unknown token }
+  /api/sync/v1/link/{r}:
+    put:
+      summary: Answer a computer's link request
+      security: [{ device: [] }]
+      parameters:
+        - { name: r, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LinkAnswer" }
+      responses:
+        "204": { description: Kept for 10 minutes }
+        "400": { description: "A body that does not read, or a sealed answer under 93 or over 512 bytes" }
+        "401": { description: Unknown token }
+        "409": { description: Answered already }
+    get:
+      summary: Read the answer to this device's link request
+      security: []
+      parameters:
+        - { name: r, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "The answer, deleted with this read", content: { application/json: { schema: { $ref: "#/components/schemas/LinkAnswer" } } } }
+        "204": { description: Not yet }
+        "404": { description: Expired or read already }
+  /api/sync/v1/pro:
+    get:
+      operationId: getPro
+      summary: The account's Pro and its token
+      security: [{ device: [] }]
+      responses:
+        "200": { description: The state, content: { application/json: { schema: { $ref: "#/components/schemas/ProState" } } } }
+        "401": { description: Unknown token }
+  /api/sync/v1/pro/proof:
+    post:
+      operationId: postProProof
+      summary: A phone's store proof
+      description: |
+        Checked as "From the stores" says (above); a refused proof answers the state as it was. `transaction` and
+        `renewal` from `ios`, `purchase` and `signature` from `android`; `none` from either.
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProProofPost" }
+      responses:
+        "200": { description: The state after it, content: { application/json: { schema: { $ref: "#/components/schemas/ProState" } } } }
+        "400": { description: A body that does not read }
+        "401": { description: Unknown token }
+        "413": { description: Larger than a proof }
+  /api/sync/v1/pro/portal:
+    post:
+      operationId: postProPortal
+      summary: A Paddle customer portal link for Manage Pro
+      security: [{ device: [] }]
+      responses:
+        "200": { description: The link, content: { application/json: { schema: { $ref: "#/components/schemas/ProPortal" } } } }
+        "401": { description: Unknown token }
+        "409": { description: "The account's Pro is not from the website, or there is none" }
+        "503": { description: "Paddle did not answer, or the server holds no Paddle key" }
+  /api/sync/v1/pro/apple:
+    post:
+      operationId: postAppleNotification
+      summary: The App Store's server notifications, version 2
+      description: |
+        As App Store Connect sends them for Production (above, "The App Store's notifications"); the URL is
+        `contract/store.json` `apple.notifications`, which `tools/store/store.py asc` sets.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [signedPayload]
+              properties:
+                signedPayload:
+                  type: string
+                  description: The JWS of responseBodyV2DecodedPayload, signed by the App Store
+      responses:
+        "200": { description: "Taken, or nothing to take" }
+        "400": { description: "Not JSON, or no signedPayload that reads" }
+        "403": { description: "Its chain or its signature does not hold: not the App Store's" }
+        "413": { description: Larger than 64 KiB }
+        "503": { description: "The server's own build lacks a fact (Apple's root, a store fact): Apple sends it again" }
+  /api/sync/v1/pro/paddle:
+    post:
+      operationId: postPaddleWebhook
+      summary: Paddle's webhook
+      description: |
+        Paddle's event as it sends it (`event_id`, `event_type`, `occurred_at`, `data`); an event of another type or
+        of no Pro price changes nothing and answers 200.
+      security: []
+      parameters:
+        - { name: Paddle-Signature, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: "Taken, or nothing to take" }
+        "400": { description: "Not JSON, or not UTF-8" }
+        "401": { description: "The signature does not hold, or is older than 5 minutes" }
+        "413": { description: Larger than 256 KiB }
+        "429": { description: "From an address that is not Paddle's, past the 20 a minute" }
+        "503": { description: "The secret is not set, or the event could not be taken in whole: Paddle sends it again" }
+components:
+  securitySchemes:
+    device: { type: http, scheme: bearer }
+  schemas:
+    Kind:
+      type: string
+      enum: [ios, android, desktop, web]
+      description: >-
+        The kinds the server takes; `web` a browser's, at questpump.com/play (slice 63). A device reads a kind it does
+        not know (a newer client's) as a device of no known kind, listed and removable all the same, so a new kind
+        never fails `GET /devices` or `POST /signin`.
+    NewAccount:
+      type: object
+      required: [auth, kind]
+      properties:
+        auth: { type: string, description: "The auth key, base64url without padding" }
+        kind: { $ref: "#/components/schemas/Kind" }
+        from: { $ref: "#/components/schemas/From" }
+    Join:
+      type: object
+      required: [auth, kind]
+      properties:
+        account: { type: string, description: "Left out for a restore code typed on its own" }
+        auth: { type: string }
+        kind: { $ref: "#/components/schemas/Kind" }
+        from: { $ref: "#/components/schemas/From" }
+    From:
+      type: string
+      description: >-
+        This device's token in the account it leaves for this one, sent while it holds one and before it signs out
+        there; left out otherwise. The account joined takes in the store tokens that account answers for ("Pro on the
+        account"). A token no device holds, or one of the account joined, brings nothing; a `from` that is no string
+        answers 400.
+    Session:
+      type: object
+      required: [account, device, token, cursor]
+      properties:
+        account: { type: string }
+        device: { type: string, description: "16 random bytes, base64url without padding, made by the server" }
+        token: { type: string }
+        cursor: { type: integer, description: "The account's cursor now" }
+        email: { type: boolean, description: "Whether an email holds the account" }
+        keys: { $ref: "#/components/schemas/KeyNews" }
+    Push:
+      type: object
+      required: [seq, kid, kind, sealed]
+      properties:
+        seq: { type: integer, minimum: 1 }
+        kid: { type: string }
+        kind: { type: string, enum: [rows, device] }
+        sealed: { type: string, description: "Base64 of the sealed, compressed plain text" }
+    Pushed:
+      type: object
+      required: [cursor, last_seq]
+      properties:
+        cursor: { type: integer, description: "The cursor this batch was kept under" }
+        last_seq: { type: integer, description: "The highest seq the server holds from this device" }
+    Batch:
+      type: object
+      required: [cursor, device, seq, kid, kind, sealed]
+      properties:
+        cursor: { type: integer }
+        device: { type: string }
+        seq: { type: integer }
+        kid: { type: string }
+        kind: { type: string, enum: [rows, device] }
+        sealed: { type: string }
+    Page:
+      type: object
+      required: [batches, more, cursor]
+      properties:
+        batches: { type: array, items: { $ref: "#/components/schemas/Batch" } }
+        more: { type: boolean }
+        cursor: { type: integer, description: "The account's cursor now" }
+        keys: { $ref: "#/components/schemas/KeyNews" }
+    Device:
+      type: object
+      required: [device, kind, made_at, seen_at]
+      properties:
+        device: { type: string }
+        kind: { $ref: "#/components/schemas/Kind" }
+        made_at: { type: integer, description: unix ms }
+        seen_at: { type: integer, description: "unix ms of its last request" }
+    Devices:
+      type: object
+      required: [devices]
+      properties:
+        devices: { type: array, items: { $ref: "#/components/schemas/Device" } }
+        email:
+          type: boolean
+          description: >-
+            Whether an email holds the account (`GET /devices` only; `POST /signin` leaves it out): every device reads
+            it at each devices read, so an email linked on one device reaches the Email row, the Save your progress
+            card and the pairing question of all.
+    RestoreDeletion:
+      type: object
+      required: [auth]
+      properties:
+        auth: { type: string, description: "The auth key derived from the restore code's R, base64url without padding" }
+    CodeAsk:
+      type: object
+      required: [email, purpose]
+      properties:
+        email: { type: string, maxLength: 254 }
+        purpose: { type: string, enum: [link, change, signin, delete] }
+    CodeAnswer:
+      type: object
+      required: [email, code]
+      properties:
+        email: { type: string, maxLength: 254 }
+        code: { type: string, pattern: "^[0-9]{6}$" }
+    Found:
+      type: object
+      required: [account, devices]
+      properties:
+        account: { type: string }
+        devices: { type: array, items: { $ref: "#/components/schemas/Device" } }
+    LinkAnswer:
+      type: object
+      required: [sealed]
+      properties:
+        sealed: { type: string, description: "Base64 of the answerer's P-256 key E (65 bytes) and {\"account\",\"r\"} sealed under HKDF(ECDH(e, P), info questpump link v2): at least 93 bytes (E, the 12-byte nonce, the 16-byte tag) and at most 512, or the PUT answers 400" }
+    ProProofPost:
+      type: object
+      required: [proof]
+      properties:
+        proof: { $ref: "./companion-api.yaml#/components/schemas/ProProof" }
+    ProState:
+      type: object
+      required: [token, until, source, status]
+      description: All four null while the account has no grant.
+      properties:
+        token:
+          type: [string, "null"]
+          description: The compact JWS (above, "Every device reads it") while a grant stands, else null.
+        until: { type: [integer, "null"], description: "unix ms: when the store or Paddle ends it, before the grace week" }
+        source: { type: [string, "null"], enum: [app_store, play, web, null] }
+        status: { type: [string, "null"], enum: [active, trialing, past_due, paused, canceled, refunded, null] }
+    ProTokenHeader:
+      type: object
+      required: [alg, kid, typ]
+      description: >-
+        The Pro token's JOSE header. `typ` (RFC 8725 3.11) marks it as this token alone; contract/store.json
+        `web.pro_token` holds the same value for the code, and tools/store/store.py --check fails when they differ.
+      properties:
+        alg: { const: ES256 }
+        kid: { type: string, description: "The kid of a key in contract/store.json web.pro_token_keys" }
+        typ: { const: "pro+jwt" }
+    ProTokenClaims:
+      type: object
+      required: [iss, aud, account, until, source, iat, exp]
+      description: >-
+        The Pro token's claims; `iss` and `aud` are exactly these strings (an array `aud` is refused), held for the
+        code in contract/store.json `web.pro_token` like `typ`.
+      properties:
+        iss: { const: "https://questpump.com/api/sync" }
+        aud: { const: "questpump-devices" }
+        account: { type: string }
+        until: { type: integer, description: "unix s: when the store or Paddle ends the grant" }
+        source: { type: string, enum: [app_store, play, web] }
+        iat: { type: integer, description: "unix s: when the Worker signed it" }
+        exp: { type: integer, description: "unix s: until plus 7 days; the token holds while it is ahead" }
+    ProPortal:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, description: "Paddle's customer portal, its temporary token in the link; never cached" }
+    Refusal:
+      type: object
+      required: [reason]
+      description: A 409's body (above, "The account's new key").
+      properties:
+        reason:
+          type: string
+          enum: [rekey, devices, seq, kid, key, generation]
+          description: >-
+            `rekey` a new R is due; `devices` the account holds 100; `seq` a push's seq taken; `kid` sealed or
+            registered under another kid than the account's; `key` no key registered; `generation` the keys moved
+        last_seq: { type: integer, description: "A push's: the highest seq the server holds from this device" }
+    KeyNews:
+      type: object
+      required: [kid, generation, due, wrapped]
+      description: What a session and each page of batches tell of the keys (above, "Hearing it").
+      properties:
+        kid: { type: [string, "null"], description: "The account's kid; null until the first rekey names one" }
+        generation: { type: integer, description: "Moves with each removal, new device, key registered and rekey" }
+        due: { type: boolean, description: "A removal made a new R due" }
+        wrapped: { type: boolean, description: "A wrap of the account's R waits for this device" }
+        devices:
+          type: array
+          items: { $ref: "#/components/schemas/DeviceKey" }
+          description: While `due` only, every device of the account with its key, the one to wrap to
+    DeviceKey:
+      type: object
+      required: [device, key, mac, kid]
+      description: A device and the key it registered; the three null while it registered none.
+      properties:
+        device: { type: string }
+        key: { type: [string, "null"], description: "P-256, SEC1 uncompressed, 65 bytes, base64url without padding" }
+        mac: { type: [string, "null"], description: "HMAC-SHA256 under R's device key over its id and key, base64url" }
+        kid: { type: [string, "null"], description: "The kid of the R the MAC was made under" }
+    KeyPut:
+      type: object
+      required: [key, mac, kid]
+      properties:
+        key: { type: string, description: "P-256, SEC1 uncompressed, 65 bytes, base64url without padding" }
+        mac: { type: string, description: "32 bytes, base64url without padding (above, \"Each device's key\")" }
+        kid: { type: string, description: "The kid of the R it was made under, the account's once one is named" }
+    Rekey:
+      type: object
+      required: [generation, auth, kid, mac, prev_kid, prev, wraps]
+      properties:
+        generation: { type: integer, minimum: 0, description: "The generation of the news it was made from" }
+        auth: { type: string, description: "The new R's auth key, base64url without padding" }
+        kid: { type: string, description: "The new R's kid" }
+        mac: { type: string, description: "This device's MAC under the new R" }
+        prev_kid: { type: string, description: "The kid of the R it replaces, the account's" }
+        prev: { type: string, description: "The R it replaces sealed under the new R's seal key, 44 bytes, base64" }
+        wraps:
+          type: array
+          maxItems: 99
+          items: { $ref: "#/components/schemas/Wrap" }
+          description: One for each other device whose MAC holds, each device once; a device without one is removed
+    Wrap:
+      type: object
+      required: [device, wrap]
+      properties:
+        device: { type: string }
+        wrap: { type: string, description: "E (65 bytes) and the new R sealed, 109 bytes, base64" }
+    Keys:
+      type: object
+      required: [kid, generation, due, wrap, devices, chain, more]
+      properties:
+        kid: { type: [string, "null"], description: "The account's kid; null until the first rekey names one" }
+        generation: { type: integer }
+        due: { type: boolean }
+        wrap: { type: [string, "null"], description: "The wrap of the account's R for this device, base64, or null" }
+        devices: { type: array, items: { $ref: "#/components/schemas/DeviceKey" } }
+        chain:
+          type: array
+          items: { $ref: "#/components/schemas/KeyLink" }
+          description: From `from` (else the account's kid) back, the newest first, at most 100
+        more: { type: boolean, description: "Older links remain: the next page is `from` the last link's `prev_kid`" }
+    KeyLink:
+      type: object
+      required: [kid, prev_kid, prev]
+      properties:
+        kid: { type: string }
+        prev_kid: { type: string }
+        prev: { type: string, description: "The R of `prev_kid` sealed under the seal key of `kid`'s R, base64" }

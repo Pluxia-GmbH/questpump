@@ -1,0 +1,71 @@
+{
+  "move": "sl_slide_lowering",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 8},
+  "working": ["thigh", "abdomen"],
+  "props": [{"kind": "mat", "f0": -100, "f1": 8, "l0": -40, "l1": 40}],
+  "items": [{"kind": "towel", "feet": "near", "at": "heels"}],
+  "poses": {
+    "in": {
+      "pelvis": [-8.1, 33.8, 0],
+      "trunk": [-110, 0, 0],
+      "head": [20, 0, 0],
+      "arms": {"ik": [0, 5.5, 32], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [34, 14], "turn": 4, "lift": -20, "y": 1, "pole": [0.2, 1, 0]},
+      "contacts": [
+        "neck",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "toe_near",
+        "ankle_near",
+        "toe_far",
+        "ankle_far"
+      ]
+    },
+    "one": {
+      "from": "in",
+      "leg_far": {"fk": [52, 0, 14, -12]},
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far", "toe_near", "ankle_near"]
+    },
+    "slid": {
+      "from": "one",
+      "pelvis": [-5, 23, 0],
+      "trunk": [-98, 0, 0],
+      "head": [10, 0, 0],
+      "leg_near": {"foot": [86, 14], "turn": 4, "lift": -40, "y": 1, "pole": [0.2, 1, 0]},
+      "leg_far": {"fk": [62, 0, 8, -12]}
+    },
+    "both": {
+      "from": "in",
+      "pelvis": [-5, 23, 0],
+      "trunk": [-98, 0, 0],
+      "head": [10, 0, 0],
+      "legs": {"foot": [86, 14], "turn": 4, "lift": -40, "y": 1, "pole": [0.2, 1, 0]}
+    },
+    "sag": {
+      "from": "one",
+      "pelvis": [-5, 19.5, 0],
+      "trunk": [-94, 0, 0],
+      "head": [5, 0, 0],
+      "leg_near": {"foot": [57.4, 14], "turn": 4, "lift": -29, "y": 1, "pole": [0.2, 1, 0]},
+      "leg_far": {"fk": [66, 0, 8, -12]}
+    }
+  },
+  "timeline": [
+    {"pose": "in"},
+    {"hold": 0.3, "phase": "hips_up"},
+    {"to": "one", "s": 0.8, "phase": "one_leg", "effort": 0.6},
+    {"to": "slid", "s": 3.0, "phase": "slide_out", "effort": 0.9},
+    {"to": "both", "s": 0.8, "phase": "heel_down", "effort": 0.5},
+    {"to": "in", "s": 1.2, "phase": "pull_in", "effort": 1.0}
+  ],
+  "key": 2.6,
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "pelvis", "knee_near"], "min": 165}
+  },
+  "targets": [{"at": 2.6, "check": "angle", "joints": ["shoulder_near", "pelvis", "knee_near"], "min": 165}]
+}

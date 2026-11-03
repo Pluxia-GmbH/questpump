@@ -1,0 +1,47 @@
+{
+  "move": "crunch",
+  "view": "side",
+  "camera": {"yaw": -10, "pitch": 10},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -92, "f1": 92}],
+  "poses": {
+    "lie": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "legs": {"foot": [34, 14], "y": 1, "turn": 4, "pole": [0.2, 1, 0]},
+      "contacts": ["neck", "waist", "pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"],
+      "arms": {"ik": [-8.7, -0.3, 28.7], "rel": "head", "pole": [-0.4, 0.4, 1], "hand": [0.67, 0.33, -0.67]}
+    },
+    "top": {
+      "from": "lie",
+      "chest": [30, 0, 0],
+      "head": [24, 0, 0],
+      "contacts": ["waist", "pelvis", "toe_near", "ankle_near", "toe_far", "ankle_far"],
+      "arms": {"ik": [-8.1, 3.2, 28.7], "rel": "head", "pole": [-0.4, 0.4, 1], "hand": [0.74, 0.03, -0.67]}
+    },
+    "pulled": {
+      "from": "top",
+      "chest": [20, 0, 0],
+      "head": [60, 0, 0],
+      "arms": {"ik": [0, 18, 15], "rel": "neck", "pole": [0.9, -0.6, 1], "hand": [-0.2, 0.6, -0.8]}
+    }
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.4, "phase": "lie"},
+    {"to": "top", "s": 1.0, "phase": "shoulders_up", "effort": 0.8},
+    {"hold": 0.3, "phase": "top", "effort": 0.9},
+    {"to": "lie", "s": 2.0, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "top",
+  "fault": {
+    "pose": "pulled",
+    "caption": "head_pulled_forward",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 140}
+  },
+  "targets": [
+    {"at": "top", "check": "height", "joint": "neck", "min": 24},
+    {"at": "top", "check": "height", "joint": "waist", "max": 17},
+    {"at": "top", "check": "angle", "joints": ["waist", "neck", "head"], "min": 140}
+  ]
+}

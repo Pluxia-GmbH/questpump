@@ -1,0 +1,121 @@
+{
+  "move": "thread_needle",
+  "view": "side",
+  "camera": {"yaw": 38, "pitch": 20},
+  "working": ["back"],
+  "props": [{"kind": "mat", "f0": -95, "f1": 85}],
+  "poses": {
+    "table": {
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -84, "y": 1},
+      "chest": [0, 0, 0],
+      "head": [5, 0, 0],
+      "arms": {"ik": [28, 4.3, 24], "pole": [-1, 0.2, 0.3], "hand": [1, -0.14, 0]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "slide": {
+      "from": "table",
+      "line": {"pivot": "knees", "at": -20, "angle": 91, "width": 12, "feet": "flat", "hips": -98, "y": 1},
+      "chest": [10, 0, -28],
+      "head": [5, 0, -10],
+      "arm_far": {"ik": [8, 6, -24], "pole": [-0.3, -1, 0.2], "hand": [0.3, -0.1, -1]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near"
+      ]
+    },
+    "thread": {
+      "from": "table",
+      "line": {"pivot": "knees", "at": -20, "angle": 92, "width": 12, "feet": "flat", "hips": -117, "y": 1},
+      "chest": [20, 0, -60],
+      "head": [-21, -5, -30],
+      "arm_far": {"ik": [6, 5.3, -49], "pole": [-1, 0, 0], "hand": [0.05, -0.05, -1]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "shoulder_far",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [28, 4.3, 24], "pole": [-0.4, 0.2, 1], "hand": [1, -0.14, 0]}
+    },
+    "thread_deep": {"from": "thread", "chest": [21, 0, -62]},
+    "sweep": {
+      "from": "table",
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -78, "y": 1},
+      "chest": [-3, 0, 22],
+      "head": [-4, -3, 24],
+      "arm_far": {"ik": [22, 58, 76], "pole": [-1, 0, 0], "hand": [0, 0.3, 1]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "hand_tip_near"
+      ]
+    },
+    "open": {
+      "from": "sweep",
+      "line": {"pivot": "knees", "at": -20, "angle": 90, "width": 12, "feet": "flat", "hips": -68, "y": 1},
+      "chest": [-5, 0, 40],
+      "head": [-10, -8, 38],
+      "arm_far": {"ik": [0, 144, 36], "pole": [-1, 0, 0], "hand": [0, 1, 0.2]}
+    },
+    "back": {
+      "from": "thread",
+      "line": {"pivot": "knees", "at": -20, "angle": 104, "width": 12, "feet": "flat", "hips": -122, "y": 1},
+      "arm_far": {"ik": [2, 5.3, -49], "pole": [-1, 0, 0], "hand": [0.05, -0.05, -1]}
+    }
+  },
+  "timeline": [
+    {"pose": "table"},
+    {"hold": 0.4, "phase": "slide_under", "effort": 0.3},
+    {"to": "slide", "s": 1.0, "phase": "slide_under", "effort": 0.4},
+    {"to": "thread", "s": 1.6, "phase": "shoulder_down", "effort": 0.5},
+    {"to": "thread_deep", "s": 1.2, "phase": "breathe", "effort": 0.5},
+    {"to": "thread", "s": 1.2, "phase": "breathe", "effort": 0.5},
+    {"to": "slide", "s": 1.2, "phase": "back_in", "effort": 0.4},
+    {"to": "table", "s": 0.8, "phase": "back_in", "effort": 0.3},
+    {"to": "sweep", "s": 0.9, "phase": "open_up", "effort": 0.4},
+    {"to": "open", "s": 1.0, "phase": "open_up", "effort": 0.5},
+    {"hold": 0.8, "phase": "open_up", "effort": 0.5},
+    {"to": "sweep", "s": 0.9, "phase": "hands_down", "effort": 0.4},
+    {"to": "table", "s": 0.9, "phase": "hands_down", "effort": 0.3}
+  ],
+  "key": "thread",
+  "fault": {
+    "pose": "back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "knee_near", "axis": "f", "min": -6}
+  },
+  "targets": [
+    {"at": "thread", "check": "height", "joint": "shoulder_far", "max": 13},
+    {"at": "open", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 160}
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "move": "lunge_foot_hold",
+  "view": "side",
+  "camera": {"yaw": 8, "pitch": 12},
+  "working": ["thigh_near", "tasset_near"],
+  "breathe": true,
+  "items": [{"kind": "towel", "under": "knee_near"}],
+  "poses": {
+    "set": {
+      "pelvis": [-10, 50, 0],
+      "fit": {"joint": "knee_near", "u": 10},
+      "trunk": [8, 0, 0],
+      "arms": {"ik": [20, 56, 14], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]},
+      "leg_near": {"fk": [-42, 2, 32, -99]},
+      "leg_far": {"foot": [38, 12], "turn": 4, "knee_out": 4},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "held": {
+      "from": "set",
+      "pelvis": [-10, 50, 0],
+      "trunk": [4, 0, 0],
+      "leg_near": {"fk": [-42, 2, 131, -60]},
+      "arm_near": {"ik": [-47, 64, 20], "pole": [0.2, -0.3, 1], "hand": [-0.5, 0.8, -0.3]},
+      "arm_far": {"ik": [14, 58, 14], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]},
+      "contacts": ["knee_near", "toe_far", "ankle_far"]
+    },
+    "held_in": {"from": "held", "leg_near": {"fk": [-43, 2, 133, -60]}},
+    "lean": {
+      "from": "held",
+      "trunk": [19, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-14, 0, 0],
+      "arm_far": {"ik": [16, 59, 19], "pole": [-0.4, -0.1, 1], "hand": [0.5, -0.8, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.5, "phase": "knee_down"},
+    {"to": "held", "s": 2.4, "phase": "heel_to_buttock", "effort": 0.55},
+    {"to": "held_in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "held", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "held_in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "held", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "set", "s": 2.2, "phase": "release", "effort": 0.3}
+  ],
+  "key": "held",
+  "fault": {
+    "pose": "lean",
+    "caption": "chest_leans",
+    "breaks": {"check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "max": 10}
+  },
+  "targets": [
+    {"at": "held", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "max": 10},
+    {"at": "held", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "held", "check": "height", "joint": "knee_near", "max": 11}
+  ],
+  "note": "The back leg is the near one, its knee on a folded towel; the front foot is the far one, a long step ahead. From a low lunge the near hand reaches back for the back foot and draws the heel toward the seat, the body upright, the far hand on the front thigh."
+}

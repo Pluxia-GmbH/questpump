@@ -1,0 +1,47 @@
+{
+  "move": "peacock",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 8},
+  "working": ["forearm", "upper_arm", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -110, "f1": 70, "l0": -40, "l1": 40}],
+  "poses": {
+    "toes": {
+      "pelvis": [-24, 37.8, 0],
+      "trunk": [84, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"ik": [0, 4.3, 14], "pole": [-1, 0, 0], "hand": [-1, -0.14, 0]},
+      "legs": {"ik": [-110, 20, 9.5], "pole": [0, -1, 0], "toe": [-0.5, -0.87, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "float": {
+      "pelvis": [-16, 41.8, 0],
+      "trunk": [92, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-25, 0, 0],
+      "arms": {"ik": [0, 4.3, 14], "pole": [-1, 0, 0], "hand": [-1, -0.14, 0]},
+      "legs": {"ik": [-104, 42.8, 9.5], "pole": [0, -1, 0], "toe": [-1, 0.1, 0]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "float_in": {"from": "float", "pelvis": [-16, 42.199999999999996, 0], "chest": [1, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "toes"},
+    {"hold": 0.5, "phase": "hands_together"},
+    {"to": "float", "s": 1.5, "phase": "lean_forward", "effort": 0.8},
+    {"to": "float_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "float", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "float_in", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "float", "s": 1.1, "phase": "breathe", "effort": 0.9},
+    {"to": "toes", "s": 1.5, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "float",
+  "targets": [
+    {"at": "float", "check": "height", "joint": "toe_near", "min": 30},
+    {"at": "float", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "float", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 95, "max": 135},
+    {"at": "float", "check": "offset", "joint": "elbow_near", "from": "waist", "axis": "u", "min": -14, "max": -4}
+  ],
+  "note": "Mayurasana: the hands flat and close together with the fingers pointing back toward the feet, the elbows bent and set into the belly just below the ribs, the legs straight back on the toes. The body leans forward over the hands until the feet float and the body is level from head to heels, the elbows carrying it."
+}

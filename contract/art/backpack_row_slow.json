@@ -1,0 +1,6 @@
+{
+  "move": "backpack_row_slow",
+  "variant_of": "backpack_row",
+  "phases": {"pull_to_hip": 1.0, "lower": 3.0},
+  "note": "Pull in 1, lower for 3: the backpack row's frames on a slower table."
+}

@@ -1,0 +1,61 @@
+{
+  "move": "chair_pose",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 6},
+  "working": ["thigh"],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [6, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 4, "knee_out": 3},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {"from": "tall", "chest": [-3, 0, 0], "head": [-6, 0, 0], "arms": {"fk": [176, 4, 2]}},
+    "chair": {
+      "from": "tall",
+      "pelvis": [-20, 66, 0],
+      "trunk": [38, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-18, 0, 0],
+      "arms": {"fk": [178, 4, 2]}
+    },
+    "chair_in": {
+      "from": "chair",
+      "pelvis": [-21.5, 64.2, 0],
+      "trunk": [40, 0, 0],
+      "chest": [-10, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"fk": [180, 4, 2]}
+    },
+    "heels_up": {
+      "from": "chair",
+      "pelvis": [-6, 65, 0],
+      "trunk": [30, 0, 0],
+      "legs": {"foot": [0, 9], "turn": 4, "knee_out": 3, "lift": 45},
+      "contacts": ["toe_near", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "reach", "s": 1.6, "phase": "arms_up", "effort": 0.3},
+    {"to": "chair", "s": 2.4, "phase": "sit_back", "effort": 0.6},
+    {"to": "chair_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "chair", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "chair_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "chair", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "tall", "s": 2.6, "phase": "stand_up", "effort": 0.4}
+  ],
+  "key": "chair",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "height", "joint": "ankle_near", "max": 9}
+  },
+  "targets": [
+    {"at": "chair", "check": "height", "joint": "pelvis", "max": 72},
+    {"at": "chair", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 125}
+  ]
+}

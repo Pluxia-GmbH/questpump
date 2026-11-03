@@ -1,0 +1,75 @@
+{
+  "move": "noose_reach",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 10},
+  "working": ["back", "thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 7.5], "turn": 3, "knee_out": 0},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "squat": {
+      "from": "tall",
+      "pelvis": [-16, 35.5, 0],
+      "trunk": [25, 0, 0],
+      "chest": [15, 0, 0],
+      "head": [-20, 0, 0],
+      "arms": {"ik": [44, 58, 20], "pole": [0, -0.3, 1], "hand": [1, 0, 0]},
+      "legs": {"foot": [0, 7.5], "turn": 3, "knee_out": -3}
+    },
+    "turn": {
+      "from": "squat",
+      "trunk": [20, 0, -7],
+      "chest": [24, 0, -75],
+      "head": [-15, 0, -18],
+      "arm_far": {"ik": [48, 60, -26], "pole": [0, 1, -0.3], "hand": [1, 0, -0.3]},
+      "arm_near": {"ik": [10, 50, 30], "pole": [-1, 0, 0.6], "hand": [0.5, -0.5, 0.3]}
+    },
+    "reach": {
+      "from": "squat",
+      "trunk": [18, 0, -10],
+      "chest": [28, 0, -90],
+      "head": [-10, 0, -25],
+      "arm_far": {"ik": [22, 21, -28], "pole": [0.3, -0.3, -1], "hand": [-0.7, -0.5, -0.3]},
+      "arm_near": {"ik": [-50, 52, 26], "pole": [-0.6, -0.4, 1], "hand": [-0.6, -0.8, 0.1]}
+    },
+    "reach_in": {"from": "reach", "chest": [28, 0, -93], "head": [-10, 0, -28]},
+    "heels_up": {
+      "from": "reach",
+      "pelvis": [-15, 41, 0],
+      "trunk": [12, 0, -10],
+      "legs": {"foot": [0, 7.5], "turn": 3, "knee_out": -3, "lift": 30}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "tall"},
+    {"to": "squat", "s": 2.0, "phase": "squat_deep", "effort": 0.5},
+    {"to": "turn", "s": 0.8, "phase": "turn_to_knee", "effort": 0.6},
+    {"to": "reach", "s": 0.9, "phase": "turn_to_knee", "effort": 0.7},
+    {"to": "reach_in", "s": 1.5, "phase": "breathe_out", "effort": 0.8},
+    {"to": "reach", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "turn", "s": 0.7, "phase": "release", "effort": 0.5},
+    {"to": "squat", "s": 0.5, "phase": "release", "effort": 0.4},
+    {"to": "tall", "s": 2.0, "phase": "stand_up", "effort": 0.6}
+  ],
+  "key": "reach",
+  "fault": {
+    "pose": "heels_up",
+    "caption": "heels_lift",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "reach", "check": "height", "joint": "pelvis", "max": 36},
+    {"at": "reach", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 50},
+    {"at": "reach", "check": "offset", "joint": "shoulder_far", "from": "knee_near", "axis": "l", "max": -4},
+    {"at": "reach", "check": "height", "joint": "hand_tip_far", "min": 6},
+    {"at": "reach", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  ],
+  "note": "The bound squat twist held by the body's own muscles: feet together, heels flat, the far armpit past both knees, the far arm reaching down past the shins and the near arm reaching back, the hands touching nothing (the pump mirrors it for the other side)."
+}

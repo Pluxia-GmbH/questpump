@@ -1,0 +1,60 @@
+{
+  "move": "downward_dog",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 8},
+  "working": ["pauldron", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -82, "f1": 100}],
+  "poses": {
+    "quad": {
+      "from": "in",
+      "line": {"pivot": "knees", "at": -2, "angle": 51.88, "width": 12, "hips": -33.47, "y": 1},
+      "head": [-4, 0, 0],
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "in": {
+      "line": {"pivot": "toes", "at": -60, "angle": 49, "width": 12, "hips": -96, "lift": 16, "gap": 0.2, "y": 1},
+      "head": [-8, 0, 0],
+      "arms": {"ik": [70.5, 4.3, 24], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "out": {
+      "from": "in",
+      "line": {"pivot": "toes", "at": -60, "angle": 49.3, "width": 12, "hips": -99, "lift": 13, "gap": 0.2, "y": 1}
+    },
+    "rounded": {
+      "from": "in",
+      "line": {"pivot": "toes", "at": -54, "angle": 49, "width": 12, "hips": -96, "lift": 16, "gap": 0.2, "y": 1},
+      "chest": [34, 0, 0],
+      "head": [-46, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "quad"},
+    {"hold": 0.5, "phase": "hands_and_knees"},
+    {"to": "in", "s": 1.6, "phase": "hips_up", "effort": 0.5},
+    {"to": "out", "s": 2.5, "phase": "hips_high", "effort": 0.5},
+    {"to": "in", "s": 2.5, "phase": "breathe", "effort": 0.5},
+    {"to": "quad", "s": 1.6, "phase": "knees_down", "effort": 0.3}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "shoulder_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "in", "check": "angle", "joints": ["pelvis", "shoulder_near", "wrist_near"], "min": 165},
+    {"at": "in", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 70, "max": 95}
+  ]
+}

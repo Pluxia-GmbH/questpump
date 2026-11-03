@@ -1,0 +1,60 @@
+{
+  "move": "knee_over_toe_kneel",
+  "view": "side",
+  "camera": {"yaw": 25, "pitch": 14},
+  "working": ["shin_near", "thigh_near"],
+  "items": [{"kind": "towel", "under": "knee_far"}],
+  "poses": {
+    "tall": {
+      "pelvis": [-53.2, 54.2, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [0, -9, 25], "rel": "waist", "pole": [-0.7, -0.1, 1], "hand": [0.7, -0.6, -0.4]},
+      "leg_near": {"foot": [0, 12], "turn": 4, "knee_out": 2},
+      "leg_far": {"foot": [-96, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": ["knee_far", "toe_far", "ankle_far", "toe_near", "ankle_near"]
+    },
+    "deep": {
+      "from": "tall",
+      "pelvis": [-15, 33, 0],
+      "trunk": [4, 0, 0],
+      "leg_far": {"foot": [-96, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]}
+    },
+    "deep_in": {"from": "deep", "pelvis": [-14.5, 32.6, 0]},
+    "heel_up": {
+      "from": "deep",
+      "pelvis": [-17, 35, 0],
+      "leg_near": {"foot": [0, 12], "turn": 4, "knee_out": 2, "lift": 26, "y": 1}
+    },
+    "mid1": {"from": "tall", "pelvis": [-41.6, 52.7, 0], "trunk": [1, 0, 0]},
+    "mid2": {"from": "tall", "pelvis": [-30.7, 48.2, 0], "trunk": [2, 0, 0]},
+    "mid3": {"from": "tall", "pelvis": [-21.4, 41.0, 0], "trunk": [3, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "kneel_tall"},
+    {"to": "mid1", "s": 0.6, "phase": "slide_forward", "effort": 0.5},
+    {"to": "mid2", "s": 0.6, "phase": "slide_forward", "effort": 0.55},
+    {"to": "mid3", "s": 0.6, "phase": "slide_forward", "effort": 0.6},
+    {"to": "deep", "s": 0.8, "phase": "slide_forward", "effort": 0.6},
+    {"to": "deep_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "deep", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "mid3", "s": 0.7, "phase": "release", "effort": 0.5},
+    {"to": "mid2", "s": 0.5, "phase": "release", "effort": 0.4},
+    {"to": "mid1", "s": 0.5, "phase": "release", "effort": 0.4},
+    {"to": "tall", "s": 0.5, "phase": "release", "effort": 0.3}
+  ],
+  "key": "deep",
+  "fault": {
+    "pose": "heel_up",
+    "caption": "heel_lifts",
+    "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "deep", "check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2},
+    {"at": "deep", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 45},
+    {"at": "deep", "check": "offset", "joint": "knee_near", "from": "toe_near", "axis": "f", "min": 8}
+  ],
+  "note": "Half kneeling on a folded towel, hands on the hips: the hips sink and slide forward until the front thigh rests on the calf and the front knee is far past the toes, the front heel flat, the body upright, the back knee down (the ATG split squat's bottom)."
+}

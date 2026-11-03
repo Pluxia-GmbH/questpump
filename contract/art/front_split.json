@@ -1,0 +1,97 @@
+{
+  "move": "front_split",
+  "view": "side",
+  "camera": {"yaw": 16, "pitch": 14},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -112, "f1": 112}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-15, 45.8, 0],
+      "trunk": [66, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"ik": [56, 17, 42], "pole": [1, 0.3, 0.3], "hand": [0.35, -0.94, 0]},
+      "leg_near": {"foot": [-85, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [28, 28], "y": 1, "turn": 22, "knee_out": 4, "pole": [1, 0, 0.9]},
+      "contacts": ["knee_near", "ankle_near", "toe_near", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"],
+      "fit": {"joint": "knee_near", "u": 10}
+    },
+    "low": {
+      "from": "lunge",
+      "pelvis": [0, 27, 0],
+      "trunk": [48, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-16, 0, 0],
+      "leg_near": {"foot": [-85.0, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [97.55, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0.2, 0.4, 1]},
+      "contacts": ["ankle_near", "toe_near", "ankle_far", "toe_far", "hand_tip_near", "hand_tip_far"],
+      "fit": {"joint": "knee_near", "u": 12.9}
+    },
+    "split": {
+      "from": "lunge",
+      "pelvis": [0, 15.4, 0],
+      "trunk": [23, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-6, 0, 0],
+      "leg_near": {"foot": [-87.4, 11], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [99.57, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": [
+        "pelvis",
+        "knee_near",
+        "ankle_near",
+        "toe_near",
+        "knee_far",
+        "ankle_far",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "fit": {"joint": "knee_near", "u": 10},
+      "arms": {"ik": [22, 4.3, 30], "pole": [-1, 0, 0.4], "hand": [1, -0.05, 0]}
+    },
+    "split_in": {"from": "split", "trunk": [24, 0, 0], "chest": [-7, 0, 0], "head": [-3, 0, 0]},
+    "knee_bent": {
+      "from": "split",
+      "leg_far": {"foot": [90, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 0.6, 0.8]},
+      "contacts": [
+        "pelvis",
+        "knee_near",
+        "ankle_near",
+        "toe_near",
+        "ankle_far",
+        "toe_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.6, "phase": "lunge", "effort": 0.3},
+    {"to": "low", "s": 1.8, "phase": "slide_out", "effort": 0.6},
+    {"to": "split", "s": 1.4, "phase": "sit_tall", "effort": 0.7},
+    {"to": "split_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "split", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "low", "s": 1.4, "phase": "lean_forward", "effort": 0.5},
+    {"to": "lunge", "s": 1.8, "phase": "slide_back", "effort": 0.3}
+  ],
+  "key": "split",
+  "fault": {
+    "pose": "knee_bent",
+    "caption": "front_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  },
+  "targets": [
+    {"at": "split", "check": "height", "joint": "pelvis", "max": 16.5},
+    {"at": "split", "check": "height", "joint": "knee_near", "max": 12},
+    {"at": "split", "check": "height", "joint": "knee_far", "max": 12.5},
+    {"at": "split", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
+    {"at": "split", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168}
+  ],
+  "note": "The front leg is the far one. From a low lunge with the fingertips down ahead of and beside the front foot (the hands wide, the front knee falling out over a foot turned out a little, so the knee rises beside the chest and inside the far arm), the front heel slides out (toes up) through the low split, the hands planted and the chest leaning over them, then the hips settle until both thighs lie on the floor, the pelvis seated on the mat and the trunk tall, palms flat beside the hips. fit sets the pelvis from the back knee's height in every pose, so the knee rests on the floor in the lunge and the split and never sinks between them."
+}

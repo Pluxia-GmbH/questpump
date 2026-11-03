@@ -1,0 +1,44 @@
+{
+  "move": "band_good_morning",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 8},
+  "working": ["thigh", "abdomen"],
+  "items": [
+    {
+      "kind": "band",
+      "strands": [
+        [{"at": "sole_near", "off": [9, 0, 0]}, "grip_near"], [{"at": "sole_far", "off": [9, 0, 0]}, "grip_far"],
+        ["grip_near", {"at": "neck", "torso": [-8, 4, -14]}], ["grip_far", {"at": "neck", "torso": [-8, 4, 14]}]
+      ]
+    }
+  ],
+  "poses": {
+    "top": {
+      "pelvis": [3, 94.4, 0],
+      "trunk": [1, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {"ik": [12, -9, 19], "rel": "neck", "pole": [0.4, -1, 0.3], "hand": [0.2, 1, -0.2]},
+      "legs": {"foot": [0, 14], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-28, 89.5, 0],
+      "trunk": [72, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [12, -9, 19], "rel": "neck", "pole": [-0.82, -0.7, 0.3], "hand": [0.2, 1, -0.2]}
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "bottom", "s": 1.6, "phase": "hips_back", "effort": 0.6},
+    {"hold": 0.2, "phase": "back_flat", "effort": 0.8},
+    {"to": "top", "s": 1.2, "phase": "rise", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 150}
+  ]
+}

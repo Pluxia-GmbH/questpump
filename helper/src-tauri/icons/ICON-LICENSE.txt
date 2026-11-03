@@ -1,0 +1,5 @@
+Copyright (c) 2026 Pluxia GmbH. All rights reserved.
+
+The QuestPump icon in this folder (the program icons, the Icon Composer document and the menu bar and tray icons) is
+not open source: the MIT licence at the repository root covers the desktop app's code, not these images.
+contract/design/LEDGER.md lists each file.

@@ -1,0 +1,6 @@
+{
+  "move": "desk_pushup_slow",
+  "variant_of": "desk_pushup",
+  "phases": {"chest_to_edge": 3.0, "push_away": 1.0},
+  "note": "Lower for 3, push up in 1: the desk push-up's frames on a slower table."
+}

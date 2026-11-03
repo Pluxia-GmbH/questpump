@@ -1,0 +1,6 @@
+{
+  "move": "tempo_squat",
+  "variant_of": "air_squat",
+  "phases": {"sit_back": 3.0, "bottom": 1.0, "drive_up": 1.0},
+  "note": "Down for 3, pause 1, up in 1: the air squat's frames on a slower table."
+}

@@ -1,0 +1,51 @@
+{
+  "move": "pullup_assisted",
+  "view": "side",
+  "camera": {"yaw": 50, "pitch": 4},
+  "working": ["upper_arm", "pauldron"],
+  "props": [{"kind": "bar", "f": 8, "u": 196, "ground": true}, {"kind": "chair", "f": 25, "l": 22, "back": "+l"}],
+  "poses": {
+    "hang": {
+      "pelvis": [4, 87, 0],
+      "trunk": [4, 0, 0],
+      "arms": {"ik": [8, 189.6, 30], "pole": [-0.2, -1, 0.6], "hand": [0.6, 0.8, 0]},
+      "leg_far": {"foot": [26, 12], "y": 46, "turn": 8, "knee_out": 6},
+      "leg_near": {"fk": [2, 2, 95, -25]},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "head": [-8, 0, 0]
+    },
+    "top": {
+      "from": "hang",
+      "pelvis": [-2, 135, 0],
+      "head": [-6, 0, 0],
+      "leg_near": {"fk": [12, 2, 95, -25]},
+      "arms": {"ik": [8, 189.6, 30], "pole": [0, -1, 0.8], "hand": [0.6, 0.8, 0]},
+      "trunk": [-8, 0, 0]
+    },
+    "half": {
+      "from": "top",
+      "pelvis": [-4, 114, 0],
+      "trunk": [-8, 0, 0],
+      "head": [-4, 0, 0],
+      "leg_near": {"fk": [8, 2, 95, -25]}
+    },
+    "mid": {
+      "from": "top",
+      "pelvis": [-4, 117, 0],
+      "trunk": [-9, 0, 0],
+      "head": [-12, 0, 0],
+      "leg_near": {"fk": [8, 2, 95, -25]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "mid", "s": 0.55, "phase": "chin_over_bar", "effort": 0.9, "ease": "in"},
+    {"to": "top", "s": 0.55, "phase": "chin_over_bar", "effort": 0.9, "ease": "out"},
+    {"hold": 0.2, "phase": "top", "effort": 0.8},
+    {"to": "mid", "s": 0.7, "phase": "lower_with_control", "effort": 0.5, "ease": "in"},
+    {"to": "hang", "s": 0.7, "phase": "lower_with_control", "effort": 0.5, "ease": "out"}
+  ],
+  "key": "top",
+  "fault": {"pose": "half", "caption": "chin_below_bar", "breaks": {"check": "height", "joint": "head", "min": 202}}
+}

@@ -1,0 +1,52 @@
+{
+  "move": "sl_wall_sit_90",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 6},
+  "working": ["thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": -30, "behind": true}],
+  "poses": {
+    "stand": {
+      "from": "in",
+      "pelvis": [-15.5, 81.5, 0],
+      "head": [2, 0, 0],
+      "legs": {"foot": [29.5, 12], "turn": 10, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "pelvis"]
+    },
+    "sit": {
+      "from": "in",
+      "legs": {"foot": [29.5, 12], "turn": 10, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "pelvis"]
+    },
+    "lift": {"from": "in", "leg_far": {"ik": [38, 22, 13], "pole": [1, 0.2, 0], "toe": [1, 0.15, 0]}},
+    "in": {
+      "pelvis": [-15.5, 50.0, 0],
+      "trunk": [0, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"fk": [4, 10, 16]},
+      "leg_near": {"foot": [29.5, 12], "turn": 10, "knee_out": 6},
+      "leg_far": {"fk": [67, 2, 2, 8]},
+      "contacts": ["toe_near", "pelvis"]
+    },
+    "out": {"from": "in", "pelvis": [-15.5, 50.4, 0], "chest": [-1, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "back_on_wall"},
+    {"to": "sit", "s": 1.3, "phase": "slide_down", "effort": 0.6},
+    {"to": "lift", "s": 0.5, "phase": "leg_out", "effort": 0.7},
+    {"to": "in", "s": 0.6, "phase": "leg_out", "effort": 0.8},
+    {"to": "out", "s": 1.3, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.3, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.3, "phase": "breathe", "effort": 0.8},
+    {"to": "lift", "s": 0.6, "phase": "lower", "effort": 0.7},
+    {"to": "sit", "s": 0.5, "phase": "lower", "effort": 0.6},
+    {"to": "stand", "s": 1.3, "phase": "slide_up", "effort": 0.5}
+  ],
+  "key": "in",
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 84, "max": 96},
+    {"at": "in", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170}
+  ]
+}

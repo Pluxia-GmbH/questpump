@@ -1,0 +1,64 @@
+{
+  "move": "one_arm_doorframe_hold",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 8},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "breathe": true,
+  "props": [{"kind": "doorframe", "f": 50, "wall": "-l"}],
+  "poses": {
+    "lean": {
+      "line": {"pivot": "toes", "at": 44, "angle": 115.5, "width": 11, "lift": 0, "shift": 34.0},
+      "leg_near": {"foot": [44, -23.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [44, 45.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "chest": [0, 0, 10],
+      "head": [6, 0, -10],
+      "arm_near": {"ik": [44.0, 116.0, -8.0], "pole": [-1, -0.5, 0.3], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [4, -58, 30], "rel": "neck", "pole": [-0.5, 0, 1], "hand": [0.15, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "in": {
+      "line": {"pivot": "toes", "at": 44, "angle": 101.4, "width": 11, "lift": 0, "shift": 34.0},
+      "leg_near": {"foot": [44, -23.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [44, 45.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "chest": [0, 0, -15],
+      "head": [0, 0, 5],
+      "arm_near": {"ik": [44.0, 116.0, -8.0], "pole": [-1, 0, -0.1], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [4, -58, 30], "rel": "neck", "pole": [-0.5, 0, 1], "hand": [0.15, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "out": {
+      "from": "in",
+      "line": {"pivot": "toes", "at": 44, "angle": 101.8, "width": 11, "lift": 0, "shift": 34.0},
+      "chest": [-1.5, 0, -15]
+    },
+    "caved": {
+      "from": "in",
+      "line": {"pivot": "toes", "at": 44, "angle": 102.4, "width": 11, "lift": 0, "shift": 34.0},
+      "chest": [22, 0, -15],
+      "head": [10, 0, 5]
+    }
+  },
+  "timeline": [
+    {"pose": "lean"},
+    {"hold": 0.4, "phase": "arm_straight"},
+    {"to": "in", "s": 0.8, "phase": "pull", "effort": 0.85},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.85},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.85},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.85},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.85},
+    {"to": "lean", "s": 1.0, "phase": "release", "effort": 0.5}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "caved",
+    "caption": "chest_caves",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "in", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "in", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 80, "max": 100},
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "lean", "check": "offset", "joint": "toe_near", "from": "wrist_near", "axis": "f", "min": 10}
+  ],
+  "note": "The one-arm doorframe row's stance (one_arm_doorframe_row: the toes a hand's length from the frame's base, in the doorway beside the jamb, the hand round its doorway face) held at the top: it leans back on the straight arm (about 37 % of the body, as the row's), pulls the chest toward the frame to about a 90-degree elbow, elbow back and the chest opened about 15 degrees toward the working arm, and holds there breathing, then lets the arm straighten again. The top carries about 19 % of the body (taken along the arm, statics about the feet; the toes a foot's length back, as one_arm_doorframe_row_back's, left it nearly upright at about 4 %). The fault rounds the chest forward, the shoulder lost (chest_caves, the L-sits' caption for shoulders that creep up; no caption names a shrug); the free arm hangs at its side, as the one-arm rows'."
+}

@@ -1,0 +1,249 @@
+openapi: 3.1.1
+info:
+  title: QuestPump telemetry
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    QuestPump's telemetry (2026-10-12; David: "lets do a full telemetry pass and implementation for questpump", asked
+    crash only, usage analytics or anonymous counts: "all"). Three channels, each under the player's switches:
+
+    - **Crash reports** (contract/crash-api.yaml): the phones through Firebase Crashlytics, the desktop app to
+      `/api/crash`, under "Send crash reports".
+    - **Usage analytics** on the iPhone and Android apps alone: Google Analytics for Firebase (the iPhone links
+      `FirebaseAnalyticsCore`, never `FirebaseAnalytics`, so no IDFA or ad-conversion code ships; Android's
+      `firebase-analytics` with the advertising id off and the `AD_ID` permission removed), under "Usage
+      statistics". No Firebase Performance (dropped in the review of 2026-10-12: on the iPhone it fetched its own
+      Remote Config before any answer and after a "no", its Sessions events and its own traces went beside the custom
+      ones, and the app's start and hangs are in App Store Connect's and Play's own vitals).
+    - **Anonymous counts** from every app with a network (the iPhone, Android and the desktop app, and the game's
+      through the desktop app): one batch a game day of data points without any id to `POST /api/counts` on the
+      report Worker, which writes them to Workers Analytics Engine (dataset `questpump_counts`), under "Usage
+      statistics".
+
+    The watches send nothing (the phone counts their rows); the addon sends nothing (the desktop app counts the game's
+    rows it already holds, under its own switch). `contract/telemetry.json` holds every name and value the channels
+    may carry; `tools/telemetry.py` writes each side's catalog from it.
+
+    **The switches and the consent.** Two switches in every app's Menu (the QuestPump group): "Send crash reports"
+    (`menu.crash`, crash-api.yaml) and "Usage statistics" (`menu.usage`). Each has three states kept by the app, the
+    player's answer on or off, or not answered yet, with the moment of the answer and the copy version of the words
+    shown (`copyVersion`, `privacy.v2` since slice 51's `standing` point, `privacy.v1` before it; a new version
+    asks no player again, it records which words an answer saw), on the device only (GDPR Art. 7(1); no account to keep it elsewhere). Not
+    answered reads by the region (crash-api.yaml "The opt-in regions", the same rule and lists): on outside an opt-in
+    region, off inside one; the regional default is never stored, so a player who moves is read again. At the first
+    start (the phones: once the first start's setup closed; the desktop app: the first window the player opens) the
+    window `privacy.ask` (`desk.privacy` on the computer) asks once a start until answered: what each purpose sends,
+    the two switches, set as the region reads them (off in an opt-in region, never pre-ticked there; on elsewhere),
+    and Done, which stores both as the player's answers; closed any other way, nothing is answered. In an opt-in
+    region the window takes learnclash's buttons instead (its `consent_dialog.dart`; David, 2026-10-13: "So people
+    dont need to toggle on themselves before pressing done", then "Can we not copy what learnclash does", asked which
+    part: its buttons): the primary Accept all (`privacy.accept`), which stores both on as the player's answers, and
+    under it Reject all (`privacy.reject`), a full button of the same size, which stores both off, so a yes and a no
+    take one tap each; once the player moves a switch in the window the primary reads Save choices (`privacy.save`),
+    which stores both as set. A switch set on for the player there would be no consent (GDPR recital 32; CJEU
+    C-673/17, Planet49). Elsewhere, where both start on, Done is the one button. A crash's own ask
+    (`crash.ask`) stays for a player whose crash switch is still not answered. Turning a switch off stops its channel
+    at once and deletes what waits (crash-api.yaml for crash reports; for usage: Analytics' collection off and its
+    data reset, the counts' outbox emptied). No feature, Pro included, depends on either switch.
+
+    **Firebase starts only for a purpose that reads on.** The iPhone configures Firebase (`FirebaseApp.configure()`)
+    only while a switch reads on, by the player's answer or by the region, or the coach's consent is given, and the
+    moment one of them turns so; with both switches off and the coach off nothing starts, so nothing reaches Google
+    (FirebaseAnalyticsCore registers a Firebase installation as Firebase starts, whatever its collection says, seen
+    2026-10-12 with GoogleAppMeasurement 13.0.1). Until Firebase starts, a crash is not captured and a feedback
+    message goes without an App Check token. Android's Firebase starts with the app and sends nothing while both
+    switches read off and the coach is off (seen in an emulator's capture, 2026-10-12); Google Play Billing's own
+    diagnostics go at each start whatever the switches say (the privacy page names them).
+
+    **Fitness points need the player's own yes on a phone.** A count point marked `fitness` in telemetry.json (pumps,
+    the 14-day done ratio, move quality, the training setup, the first pump, the talent trees' cards and starts, and
+    since 2026-11-01 the features about a pump or health, `fitness_feature_day`: a pump's Live Activity or Live Update,
+    the strap, the walking pad, a workout saved to Apple Health or Health Connect, the watch's pumps, a coach line about
+    a set or a week's pumps; and the computer's match offers, `game_offer_desk`; the release security review found
+    `health_sync` in `feature_day`) is kept and
+    goes from the iPhone or Android only while "Usage statistics" holds the player's answer on, never by the regional
+    default (Apple 5.1.3: data from the fitness context only with permission; Google Play's Health apps policy). The
+    desktop app sends its own and the game's fitness points while the switch reads on. Google Analytics never carries
+    a pump, a move, a count or any exercise fact at all.
+
+    **Google Analytics on the phones.** Collection held off in the build (iPhone Info.plist
+    `FIREBASE_ANALYTICS_COLLECTION_ENABLED` false, `GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED` false, the four
+    `GOOGLE_ANALYTICS_DEFAULT_ALLOW_*` false, `FirebaseAutomaticScreenReportingEnabled` false; Android meta-data
+    `firebase_analytics_collection_enabled`, `google_analytics_adid_collection_enabled`,
+    `google_analytics_default_allow_*` and `google_analytics_automatic_screen_reporting_enabled` false, the merged
+    `com.google.android.gms.permission.AD_ID`, `ACCESS_ADSERVICES_AD_ID` and `ACCESS_ADSERVICES_ATTRIBUTION` removed;
+    the iPhone also `FirebaseAppDelegateProxyEnabled` and `GOOGLE_ANALYTICS_REGISTRATION_WITH_AD_NETWORK_ENABLED`
+    false). At each start, right after Firebase is configured and before
+    anything is logged, the app applies the usage switch: `setAnalyticsCollectionEnabled(on)` and consent (Consent
+    Mode's basic form: `analytics_storage` granted while on, the three ad signals always denied); off by the player's
+    answer also `resetAnalyticsData()`. The app's events, parameters and values only from telemetry.json
+    `analytics.events`, beside the SDK's own automatic ones while it collects (`first_open`, `session_start`,
+    `user_engagement`, `app_update`, `os_update`, and Crashlytics' mark of a report it sends, `_ae`), none of which
+    carries an exercise fact;
+    `screen_view` only for a screen in `analytics.screens` (logged by hand: automatic screen reporting is off); user
+    properties only from `analytics.userProperties`, cleared when the switch goes off. No `setUserId`, no purchase
+    logging (`logTransaction`), no in-pump, health, safety or Body screen. The GA4 property (David's console): Google
+    signals off, every data-sharing setting off, ads personalization off, retention 14 months (event and user data,
+    "Reset on new user activity" off), granular location and device data off in the 49 countries and territories of
+    the opt-in regions of 2026-10-12, the UK and Switzerland among them (the property
+    `questpump`, p558600887, in the account "Pluxia GmbH", set so on 2026-10-12).
+
+    **The anonymous counts.** Each app keeps, on the device, counters per game day and the facts that happen (an
+    install, a pairing, a return after a break), and at its first start of a game day while the switch reads on it
+    sends the finished game days it holds: `POST https://questpump.com/api/counts` with the body below, at most
+    `counts.maxPoints` points, with no App Check token (the counts carry nothing to guard, and a token would reach Google
+    every day). Rules every point keeps:
+
+    - one fact a point, its blobs and doubles from telemetry.json `counts.points` (a `move` blob is a move key of
+      contract/library.json, a `cohort_week` an ISO week, `2026-W45`), its doubles bounded there;
+    - no id of any kind, no time finer than the game day, no free text; the Worker adds the country
+      (`request.cf.country`) to `install` alone;
+    - each app counts the rows it made: the phone its own and the watch's it relays (a phone with a paired watch counts
+      the watch's rows the first time they reach it, by any path), the desktop app its computer pumps, and the game's
+      (`source` `game`) from the rows the addon writes; a row another device made is never counted twice, so a skip
+      counts on the device whose Skip made it (a watch's Skip, which goes from the watch straight to the computer and
+      reaches the phone only as the game's row, is counted by none), and `day_pumps.unfinished_end`, the game's unfinished moves at the day's
+      end, comes from the desktop app's `game` source alone (a phone's and the computer's own are 0);
+    - `review_numbers.max_sets` rounds the median up before its band (4.5 reads `5-6`), so a median above four, the
+      review's trigger, never reads as four; the other bands take the whole number below (`done_ratio` 89.5 reads
+      `80-89`, `age_week` the whole weeks);
+    - `tree_day` (slice 36, the talent trees) counts the app's own trees that game day: `cards` the step cards opened,
+      `starts_<kind>` each Start made from a step's card or a move's window by `ns.StartFor`'s kind (own, held, climb,
+      path, earn, place, since slice 42 check, a stretch check's, and since slice 55 haul, a Long Haul's, last;
+      `starts_path` held the same column as `starts_proof` until slice 42, the climb's turn for what it waits for past
+      its days, the proof's then and its path's now, so the catalog's `was` reads an older app's `starts_proof` as
+      `starts_path` and the Worker fills its missing `starts_check` and `starts_haul` with 0), and `refused_<reason>`
+      each card opened whose Start was refused or greyed, by its reason (`setup`, `off`, `game` while the game asks the
+      pumps, `reading` while the engine folds or the sheet is read, `busy` while a pump is on screen), each within its
+      bound; a refusal for a pain flag or felt unwell is counted under no name (the cards opened mix those with the
+      cards only read, so no difference isolates them); the game's tree is not counted, its starts being asked pumps'
+      rows like any other;
+    - `link_ble` (slice 43, the Bluetooth link) says a game day's Bluetooth link as each app saw it: `ble` the
+      computer's state as the helper last said it that day (`Helper.ble` in contract/companion-api.yaml; `unknown`
+      from a helper that says none), `link` the phone's own by one rule on both phones (slice 43's review,
+      2026-10-17): each look at the link gives the first that holds of `linked` (the link is up), `denied` (the phone
+      may not use Bluetooth for it: Android's Nearby devices refused, set up or not; the iPhone's Bluetooth or its
+      accessory's access turned off in Settings), `unlinked` (no link set up: no accessory kept on the iPhone, none set
+      up on Android, a phone below Android 12 too), `bluetooth_off` (set up, the phone's Bluetooth off; never for a
+      phone with no link set up) and `away` (set up, Bluetooth on, out of reach), and the day keeps the best it saw in
+      the order `linked`, `away`, `unlinked`, `denied`, `bluetooth_off`, so `bluetooth_off` stands for a day the set-up
+      link's phone had Bluetooth off all along; from the desktop app `linked` once a phone linked by Bluetooth that
+      day, else `unlinked`) and `transport` the transports that answered the link that day (`ble`, `lan`, `both`,
+      `none`); a phone sends it
+      on each game day it was paired, the desktop app on each game day a phone was paired, never a time or a count of
+      what went over it;
+    - `standing` (2026-10-21, Rapha: the share cards' "Only 4% of players ..." line) says where the player stands, once
+      a game day the app was used: `streak_best` the best streak the player ever kept, in game days (the streak board's
+      best, the one the streak page shows), and `colour_top` the highest colour any ladder's unlocked step reached (the
+      Book's colours: 1 Starter to 7 Artifact, 0 before any ladder is placed), both as they stand when the day is sent.
+      It is a fitness point, so a phone sends it only with the player's own yes. One player counts once a day: a phone
+      always sends it, the desktop app only on a game day no phone was paired with it (a paired phone sends its own);
+      the game's rows send none. The Worker tallies it for `GET /api/standing` (contract/standing-api.yaml);
+    - a fact kept for a later point (the last day used, for `return`) is kept on the device whatever the switch says,
+      and only its points wait for the switch;
+    - no number that subtracts to a never item: no pumps offered (offered less finished less banked would show the
+      felt-unwell stops), no pauses;
+    - a batch that cannot go stays in an outbox at most 7 days (feedback-api.yaml's outbox rules, its own file); the
+      switch turned off empties it.
+
+    **The Worker.** `POST /api/counts` on the report Worker (`site/report/`), checked as `/api/feedback` is: 400
+    without reading the body when the `Content-Type` is not `application/json` or an `Origin` header comes; at most
+    16,384 bytes (413); exactly the fields below and, for each point, its catalog's blobs and doubles (the Worker's
+    catalog is generated from telemetry.json), else 400; it reads no token. Three tolerances keep an installed older
+    app's batch, which a 400 would drop whole: a double renamed in place is read under its new name from its old one
+    (the point's `was` in telemetry.json, the column unchanged), and a point that lacks only the doubles a newer catalog
+    grew at its end is taken with those doubles 0 (both slice 42's fix round, 2026-10-17); a point whose blob holds a
+    value that left it for another point (the point's `moved` in telemetry.json: `feature_day`'s pump and health
+    features, which moved to `fitness_feature_day` on 2026-11-01) is dropped alone and the rest of the batch kept,
+    never read as the point the value went to, since an older app sent it without the player's own yes that point may
+    need (2026-11-01, the security review of PR #278); a missing double before the last one sent, an unknown or doubled
+    name, a value in no list and a blob missing stay a 400, so a point grows only at its end, and a new blob on a point
+    older apps send is a new point. Each count point becomes one Analytics
+    Engine data point: the index `<point>:<source>` (the sampling key), the blobs `point`, `source`, `version`, `day`,
+    then the point's own blobs in the catalog's order (and `country` for `install`), the doubles in the catalog's
+    order. Limits: ten batches a minute for a client
+    address (IPv4 whole, IPv6 by its /64, a limiter key never stored: a home's phones and computer share one), 600
+    batches a minute for all together, per Cloudflare location. Analytics Engine stamps each data point with the moment
+    it is written, which a Worker cannot set, so the batch's data points wait in the Worker's Durable Object
+       (`CountsBuffer`, one row a point with a random place in the line, nothing else; at most 300,000 points wait, and a
+       batch past that answers 429) until the day's flush at 04:00 UTC, which writes the due points 240 at a time in that
+       random order, drawn from every batch at once, and deletes each once written: a point's moment then says nothing of
+       when the app started, a write's moment is shared by points of many batches and holds no batch whole while more
+       wait, and the points of one batch carry nothing that ties them together. It keeps no IP, user agent or token; Analytics Engine keeps a point three
+       months. The flush also adds each `standing` point to a tally in the same Durable Object, the number of points by
+       game day and band pair and nothing else, kept 14 game days, which `GET /api/standing` reads
+       (contract/standing-api.yaml). Reading (the
+    questpump-telemetry skill): the SQL API with a read-only token, `SUM(_sample_interval)` for every count, no group
+    of fewer than 5 points reported.
+servers:
+  - url: https://questpump.com
+paths:
+  /api/counts:
+    post:
+      operationId: sendCounts
+      summary: One app's anonymous counts of one game day, sent while its usage switch reads on.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Counts"
+      responses:
+        "204":
+          description: Taken (it waits for the day's flush). The app drops the batch.
+        "400":
+          description: Not JSON, an Origin header, or a field or point outside the catalog. The app drops the batch.
+        "413":
+          description: Past 16,384 bytes. The app drops the batch.
+        "429":
+          description: >-
+            A limit is reached, or the waiting room is full. The app keeps the batch and sends it again a minute later
+            at the earliest.
+        "5XX":
+          description: The Worker failed. The app keeps the batch.
+components:
+  schemas:
+    Counts:
+      type: object
+      additionalProperties: false
+      required: [source, version, day, points]
+      properties:
+        source:
+          enum: [iphone, android, desktop, game]
+        version:
+          type: string
+          pattern: "^[A-Za-z0-9._+-]{1,32}$"
+          description: The sending app's version (the desktop app's for the game's points).
+        day:
+          type: string
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          description: The game day the points count (its date at the game day's start, 04:00).
+        points:
+          type: array
+          minItems: 1
+          maxItems: 40
+          items:
+            $ref: "#/components/schemas/Point"
+    Point:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: A point of telemetry.json counts.points.
+        blobs:
+          type: object
+          additionalProperties:
+            type: string
+            maxLength: 40
+          description: The point's blobs by name, each from its closed list (or a library move key, an ISO week).
+        doubles:
+          type: object
+          additionalProperties:
+            type: number
+            minimum: 0
+          description: The point's doubles by name, each within its bound.

@@ -1,0 +1,49 @@
+{
+  "move": "air_squat",
+  "view": "side",
+  "camera": {"yaw": 25, "pitch": 8},
+  "working": ["thigh", "shin"],
+  "poses": {
+    "tall": {
+      "pelvis": [4, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [8, 4, 12, 0, 0]},
+      "legs": {"foot": [0, 16], "turn": 20, "knee_out": 10},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "deep": {
+      "from": "tall",
+      "pelvis": [-18, 38, 0],
+      "trunk": [38, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [92, 6, 4, 0, 0]},
+      "legs": {"foot": [0, 16], "turn": 20, "knee_out": 18}
+    },
+    "rounded": {
+      "from": "deep",
+      "trunk": [38, 0, 0],
+      "chest": [32, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"fk": [96, 6, 50, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.3, "phase": "tall"},
+    {"to": "deep", "s": 1.3, "ease": "inout", "phase": "sit_back", "effort": 0.55},
+    {"hold": 0.25, "phase": "bottom", "effort": 0.8},
+    {"to": "tall", "s": 1.0, "ease": "inout", "phase": "drive_up", "effort": 1.0}
+  ],
+  "key": "deep",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "deep", "check": "height", "joint": "pelvis", "max": 40},
+    {"at": "deep", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 55}
+  ]
+}

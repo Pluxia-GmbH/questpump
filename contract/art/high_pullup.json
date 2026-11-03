@@ -1,0 +1,77 @@
+{
+  "move": "high_pullup",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 4},
+  "working": ["upper_arm", "pauldron", "back"],
+  "ballistic": true,
+  "props": [{"kind": "bar", "f": 8, "u": 222, "ground": true}],
+  "poses": {
+    "hang": {
+      "pelvis": [8, 112.4, 0],
+      "trunk": [0, 0, 0],
+      "arms": {
+        "ik": [8, 222, 26],
+        "orbit": {"r": 6.4, "deg": -90, "plane": "fu"},
+        "pole": [0.5, -0.87, 0.05],
+        "hand": [0.6, 0.8, 0]
+      },
+      "legs": {"fk": [4, 2, 8, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "head": [-8, 0, 0]
+    },
+    "top": {
+      "from": "hang",
+      "pelvis": [-1, 183, 0],
+      "trunk": [-15, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {
+        "ik": [8, 222, 26],
+        "orbit": {"r": 6.4, "deg": -140, "plane": "fu"},
+        "pole": [-0.5, -0.87, 0.15],
+        "hand": [0.766, 0.643, 0]
+      },
+      "legs": {"fk": [12, 2, 20, -30]}
+    },
+    "chin": {
+      "from": "top",
+      "pelvis": [-6, 165, 0],
+      "trunk": [-8, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {
+        "ik": [8, 222, 26],
+        "orbit": {"r": 6.4, "deg": -100, "plane": "fu"},
+        "pole": [0, -1, 0.3],
+        "hand": [0.174, 0.985, 0]
+      },
+      "legs": {"fk": [18, 2, 30, -30]}
+    },
+    "mid": {
+      "from": "hang",
+      "pelvis": [-4, 148, 0],
+      "trunk": [-8, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {
+        "ik": [8, 222, 26],
+        "orbit": {"r": 6.4, "deg": -100, "plane": "fu"},
+        "pole": [-0.4, -1, 0.4],
+        "hand": [0.7, 0.71, 0]
+      },
+      "legs": {"fk": [10, 2, 20, -30]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.4, "phase": "dead_hang"},
+    {"to": "mid", "s": 0.3, "phase": "pull", "effort": 1.0, "ease": "linear"},
+    {"to": "top", "s": 0.4, "phase": "pull", "effort": 1.0, "ease": "out"},
+    {"hold": 0.15, "phase": "top", "effort": 0.9},
+    {"to": "mid", "s": 1.0, "phase": "lower_slowly", "effort": 0.6, "ease": "in"},
+    {"to": "hang", "s": 1.0, "phase": "lower_slowly", "effort": 0.6, "ease": "out"}
+  ],
+  "key": "top",
+  "fault": {"pose": "chin", "caption": "bar_at_chin", "breaks": {"check": "height", "joint": "waist", "min": 205}},
+  "targets": [
+    {"at": "top", "check": "height", "joint": "waist", "min": 205},
+    {"at": "hang", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  ]
+}

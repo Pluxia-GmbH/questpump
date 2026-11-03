@@ -1,0 +1,40 @@
+{
+  "move": "shrimp_squat",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 8},
+  "working": ["thigh_near"],
+  "props": [{"kind": "mat", "f0": -54, "f1": -4, "l0": -10, "l1": 36}],
+  "poses": {
+    "top": {
+      "pelvis": [2, 94.6, 0],
+      "trunk": [8, 0, 0],
+      "arms": {"fk": [84, 4, 6]},
+      "leg_near": {"foot": [0, 12], "turn": 8, "knee_out": 6},
+      "leg_far": {"fk": [-6, 2, 100, 30]},
+      "contacts": ["toe_near"]
+    },
+    "bottom": {
+      "from": "top",
+      "pelvis": [-18, 53.5, 0],
+      "trunk": [50, 0, 0],
+      "chest": [-4, 0, 0],
+      "head": [-24, 0, 0],
+      "arms": {"fk": [118, 6, 4]},
+      "leg_far": {"fk": [40, 2, 112, 40]},
+      "contacts": ["toe_near", "knee_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "one_leg"},
+    {"to": "bottom", "s": 2.0, "phase": "knee_down", "effort": 0.7},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.9},
+    {"to": "top", "s": 1.3, "phase": "stand_up", "effort": 1.0}
+  ],
+  "key": "bottom",
+  "targets": [
+    {"at": "bottom", "check": "height", "joint": "knee_far", "max": 12},
+    {"at": "bottom", "check": "height", "joint": "toe_far", "min": 10},
+    {"at": "bottom", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 75}
+  ]
+}

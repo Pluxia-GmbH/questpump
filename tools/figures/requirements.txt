@@ -1,0 +1,5 @@
+# The pack build's Python packages (tools/figures/setup.sh installs them into tools/figures/.venv); the bake, the
+# checks and their tests use only the standard library, so CI needs none of these.
+numpy==2.5.4
+pillow==13.0.0
+scipy==1.18.1

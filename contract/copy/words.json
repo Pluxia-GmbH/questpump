@@ -1,0 +1,99 @@
+{
+ "about": "The player-word rules (docs/plan.md slice 18, \"The content lints\"; the glossary at the top of docs/plan.md; AGENTS.md, \"Legal minimum\"): the words no player-facing text may say beyond the health-claim stems of contract/deny-list.txt and the promotion list of tools/quests/deny.lua. Each rule binds the sources it lists: addon is the addon's L (Locales/enUS.lua) and the ## Notes of the TOCs it ships (tools/lint.lua's locale section), copy the apps' strings (contract/copy/en.json), store the names and descriptions of contract/store.json, and site the text a reader sees on questpump.com (site/src, tools/site_text.lua); copy, store and site are its content section's. A word matches whole or in its plural with s or es (\"bout\" is not in \"about\", nor \"station\" in \"stationary\"; \"bouts\" counts), a space inside it matching any run of white space or hyphens, and case-blind, but for the words a rule lists under cased: those that are also common English words (wow, a blizzard, a horde, an alliance, an inn) match only as written, while a name no English sentence says otherwise (Warcraft, Azeroth, Battle.net, Hearthstone, Soulbound) matches in any case; keys limits a rule to those keys and except exempts keys, where an entry ending in a dot names a family of keys and any other one key (a site page's key is its file's name under site/src without .astro, pages/on-its-own); a word inside a phrase that allow gives a source (in any case) does not count (tools/quests/deny.lua, says). names are the products and screens whose names hold a deny-list stem (Health holds heal): the content lints read each as one word before the stems run.",
+ "rules": [
+  {
+   "id": "companions",
+   "why": "The addon names QuestPump on this computer (the helper, by its player name since slice 35) and the phone app only where it asks for them: the setup screen, the status lines and the help (AGENTS.md, \"Legal minimum\"). By decision, the keys that name where a move was done name the app and the watch too: the sheet Log's source and device (docs/plan.md slice 26 asks for a row's source in the addon's sheet Log) and the app's share of the day's moves and records on the Today tab and in the QP line's tooltip (slice 26, so the day's counts show every source). The program's name is the addon's own, so the rule also reads its forms \"for this computer\" and \"for your computer\"; the mirror folder's ## Notes (toc.QuestPump_Mirror, which the program writes into the game's AddOns folder: helper/crates/questpump-core/src/mirror.rs) names the program that wrote it.",
+   "words": ["on this computer", "for this computer", "for your computer", "phone"],
+   "sources": ["addon"],
+   "except": ["ui.setup.", "status.", "cmd.status.", "cmd.help.", "log.app", "log.device.", "today.app", "tip.hud.app", "tip.hud.app.one", "toc.QuestPump_Mirror"]
+  },
+  {
+   "id": "helper",
+   "why": "The program is QuestPump wherever a player meets it: \"QuestPump on this computer\" in the game and the desktop app, \"QuestPump on your computer\" (or on {computer}) on the phones, the watches, the site and the stores; the docs and the code keep the word helper (docs/plan.md slice 35, the rename). The phones' demo mode keeps its own name, the demo helper (App Review's notes name it), and the download page's address stays questpump.com/helper; the security page names the local socket's file and pipe as they are, and the firewall's steps name the program's file (questpump-helper.exe, Cargo's binary name).",
+   "words": ["helper"],
+   "sources": ["addon", "copy", "store", "site"],
+   "except": ["menu.demo.", "menu.sync.demo"],
+   "allow": {
+    "copy": ["questpump.com/helper", "questpump-helper.exe"],
+    "site": ["questpump.com/helper", "helper.sock", "questpump-helper"]
+   }
+  },
+  {
+   "id": "recommended",
+   "why": "The helper and the phone app are strongly recommended, never required or optional, in every text (AGENTS.md; David, 2026-09-23).",
+   "words": ["required", "optional"],
+   "sources": ["addon", "copy", "store", "site"]
+  },
+  {
+   "id": "glossary",
+   "why": "Player text says pump, move and unfinished, never bout, station or debt, and the start is never character creation (the glossary; David, 2026-09-23 and 2026-09-30).",
+   "words": ["bout", "station", "debt", "character creation"],
+   "sources": ["addon", "copy", "store", "site"]
+  },
+  {
+   "id": "owed",
+   "why": "Unfinished is the player's word for owed moves, in every text (the glossary).",
+   "words": ["owed"],
+   "sources": ["addon", "copy", "store", "site"]
+  },
+  {
+   "id": "care",
+   "why": "A reminder offers a pump and names nothing lost, and the streak never speaks of loss, debt or a deadline (docs/plan.md slice 32; docs/safety.md row 11; docs/game-design.md, \"Care, not compulsion\"): \"your streak ends in 2 hours\" never. Since 2026-10-16 the same holds for the games on the phone and Pump first (docs/phone-games.md §6 and B14): the question after a game, its sheet, Pump home's offer card and every word of Pump first speak of finishing and of waiting, never of a loss. Since slice 45 (2026-10-16) the streak card's words, its share text and the game's milestone chat line too. Since slice 48 the computer's match-over card's own words too (desk.card.: its line before the next queue, docs/computer-games.md §4). Since slice 51 the streak page's words too (pump.streak.: the days, the rest tokens, the next milestone and the best streak; docs/plan.md slice 51).",
+   "words": ["lose", "lost", "losing", "miss", "missed", "missing", "break", "broken", "end", "ending", "expire", "expired", "deadline", "hurry", "last chance", "too late", "don't let", "before midnight"],
+   "sources": ["copy", "addon"],
+   "keys": ["reminders.", "pump.home.streak.", "kit.fanfare.streak", "kit.fanfare.streak.spoken", "widget.", "watch.tile.", "watch.complication.", "watch.glance.", "live.", "menu.reminders", "menu.reminders.off", "character.streak", "character.streak.tokens", "watch.widget.wear.description", "pump.reward.streak", "pump.reward.streak.new", "pump.reward.rested", "pump.reward.token", "pump.reward.welcome", "toast.streak", "toast.streak.new", "toast.milestone", "toast.token", "tip.rating.block", "tip.rating.defense", "tip.hud.streak", "desk.reminders.", "desk.tray.streak.", "phonegames.", "pumpfirst.", "pump.matches.", "pump.offer.", "offers.pumpfirst.", "share.streak.", "share.text.streak", "share.text.streak.years", "share.milestone", "share.milestone.years", "desk.card.", "pump.streak."]
+  },
+  {
+   "id": "waits",
+   "why": "Pump first's apps wait for today's pump, never locked or blocked (docs/phone-games.md §6 and B14: player text says \"waits\", never \"locked\", \"blocked\" or a word of loss): an opt-in the player turns on, with a one-tap way out, Open for 15 minutes, which keeps David's \"never a blockade\" of 2026-10-04. menu.pumpfirst is its Menu row and the page's title, menu.pumpfirst. the row's lines.",
+   "words": ["locked", "lock", "blocked", "block"],
+   "sources": ["copy"],
+   "keys": ["pumpfirst.", "offers.pumpfirst.", "menu.pumpfirst", "menu.pumpfirst."]
+  },
+  {
+   "id": "trial",
+   "why": "The first records are the Trial only in the code: \"Start the Trial\" read like a paid trial (David, 2026-09-30). The apps' copy and the store may name Pro's free trial (contract/store.json's yearly plan).",
+   "words": ["trial"],
+   "sources": ["addon", "site"]
+  },
+  {
+   "id": "social",
+   "why": "Nothing social ranks players or names who has not paid (docs/plan.md slice 13).",
+   "words": ["leaderboard", "rank", "missed", "behind", "not yet", "lazy", "slacker"],
+   "sources": ["addon"],
+   "keys": ["social.", "guild.", "cheer.", "toast.cheer.", "share."]
+  },
+  {
+   "id": "blizzard",
+   "why": "No lore noun, Blizzard name or WoW-style claim outside the game (docs/ui.md, the distance test). The site names the game the add-on is for, World of Warcraft (with Forever), carries the trademark line in its footer (components/Trademark, which the waitlist's pages leave out) and names Blizzard's game servers in its privacy policy; the desktop app's Screen Recording usage string on the Mac (desk.plist.screen, its Info.plist) names the game whose window it reads; the phones' card that adds the add-on names the game it is for, as the site does (pump.addon.title), and so does the row of the Menu's Your QuestPump card that stands for it (menu.yours.game, 2026-10-09), whose words also name the game among Pump home's recent games on the desktop app (2026-10-27); the desktop app's Games tab names Hearthstone, a game it hears through its own log (links.name.hearthstone, slice 48), and Warcraft III: Reforged, heard by its replays (links.name.warcraft, 2026-10-29); the desktop app's What it does on Windows names the Battle.net installs its detector reads (desk.menu.does.detect.windows, slice 48's double-check); the addon says Azeroth and Blizzard inside the game and is not bound.",
+   "words": ["WoW Token", "WoW-style", "Warcraft-inspired", "World of Warcraft UI", "World of Warcraft", "Warcraft", "WoW", "Blizzard", "Battle.net", "Azeroth", "Horde", "Alliance", "Hearthstone", "Soulbound", "Inn"],
+   "cased": ["WoW", "Blizzard", "Horde", "Alliance", "Inn"],
+   "sources": ["copy", "store", "site"],
+   "except": ["menu.yours.game", "links.name.hearthstone", "links.name.warcraft", "desk.menu.does.detect.windows"],
+   "allow": {
+    "copy": [
+     "the QuestPump addon shows in the corner of World of Warcraft",
+     "Add QuestPump to World of Warcraft"
+    ],
+    "site": [
+     "World of Warcraft",
+     "World of Warcraft is a trademark of Blizzard Entertainment, Inc. QuestPump is not affiliated with or endorsed by Blizzard Entertainment.",
+     "Blizzard's game servers"
+    ]
+   }
+  },
+  {
+   "id": "waitlist",
+   "why": "The Story quests waitlist (pages/on-its-own; its visible name was \"QuestPump on its own\" until 2026-10-09, when it clashed with the phone app's \"works on its own\") tests demand for quests on days without a game, so its four pages and the layout around them (layouts/Base; its trademark prop leaves the footer's not-affiliated line out) name no game: a game's mark may not title a page that tests demand for a paid mode (docs/plan.md slice 35; contract/waitlist-api.yaml).",
+   "words": ["World of Warcraft", "Warcraft", "WoW", "Blizzard", "Battle.net", "Azeroth", "Counter-Strike", "Dota", "League of Legends", "Teamfight Tactics", "TFT", "Rocket League", "Riot Games"],
+   "cased": ["WoW", "Blizzard", "TFT"],
+   "sources": ["site"],
+   "keys": ["layouts/Base", "pages/on-its-own", "pages/on-its-own/joined", "pages/on-its-own/later", "pages/on-its-own/sorry"]
+  }
+ ],
+ "names": {
+  "why": "Names of products and of a system screen that hold a deny-list stem, read as one word (case kept) before the stems run: the health stores the apps write to, and the warning Windows shows for a new installer.",
+  "words": ["Apple Health", "Health Connect", "HealthKit", "Health Services", "Health app", "Windows protected your PC"]
+ }
+}

@@ -1,0 +1,52 @@
+{
+  "move": "dragon_flag_tuck",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 6},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "bench", "f0": -88, "f1": -33, "u": 44}],
+  "poses": {
+    "top": {
+      "pelvis": [22, 60, 0],
+      "fit": {"joint": "neck", "u": 13},
+      "trunk": [-155, 0, 0],
+      "head": [67, 0, 0],
+      "arms": {"ik": [-30, 36, 26], "pole": [-1, -0.1, 0.2], "hand": [-0.3, 1, 0]},
+      "legs": {"fk": [112, 4, 122, -25]},
+      "contacts": ["neck", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "m1": {"from": "top", "pelvis": [35.5, 50, 0], "trunk": [-137, 0, 0], "head": [49, 0, 0]},
+    "m2": {"from": "top", "pelvis": [45.3, 40, 0], "trunk": [-119.5, 0, 0], "head": [31.5, 0, 0]},
+    "low": {"from": "top", "pelvis": [50.9, 25, 0], "trunk": [-102, 0, 0], "head": [14, 0, 0]},
+    "rolled": {
+      "from": "top",
+      "pelvis": [-4.5, 64.8, 0],
+      "trunk": [-185, 0, 0],
+      "head": [97, 0, 0],
+      "arms": {"ik": [-30, 36, 26], "pole": [-1, 0.05, 0.2], "hand": [-0.3, 1, 0]},
+      "legs": {"fk": [95, 4, 105, -25]}
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.3, "phase": "top"},
+    {"to": "m1", "s": 1.2, "ease": "in", "phase": "lower_slowly", "effort": 0.8},
+    {"to": "m2", "s": 0.6, "ease": "linear", "phase": "lower_slowly", "effort": 0.85},
+    {"to": "low", "s": 1.2, "ease": "out", "phase": "lower_slowly", "effort": 0.9},
+    {"hold": 0.2, "phase": "bottom", "effort": 0.9},
+    {"to": "m2", "s": 0.55, "ease": "in", "phase": "lift_breathe_out", "effort": 1.0},
+    {"to": "m1", "s": 0.3, "ease": "linear", "phase": "lift_breathe_out", "effort": 1.0},
+    {"to": "top", "s": 0.55, "ease": "out", "phase": "lift_breathe_out", "effort": 1.0}
+  ],
+  "key": "m1",
+  "fault": {
+    "pose": "rolled",
+    "caption": "neck_takes_weight",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "neck", "axis": "f", "min": 10}
+  },
+  "targets": [
+    {"at": "top", "check": "height", "joint": "pelvis", "min": 50},
+    {"at": "top", "check": "offset", "joint": "pelvis", "from": "neck", "axis": "f", "min": 10},
+    {"at": "m1", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165},
+    {"at": "low", "check": "height", "joint": "pelvis", "max": 28}
+  ]
+}

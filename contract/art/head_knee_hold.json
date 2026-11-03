@@ -1,0 +1,55 @@
+{
+  "move": "head_knee_hold",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 24},
+  "working": ["thigh_far", "back"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -50, "f1": 122, "u": 45}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [-2, 0, 0],
+      "leg_near": {"ik": [24, 53, 4], "pole": [0.25, 0.0, 1], "toe": [1, 0, -0.3]},
+      "leg_far": {"foot": [99.6, 11], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": ["pelvis", "knee_near", "knee_far", "ankle_near", "ankle_far", "toe_near", "toe_far"],
+      "arm_near": {"ik": [28, 76, -1], "pole": [-0.2, 0.3, 1], "hand": [0.95, -0.25, 0]},
+      "arm_far": {"ik": [26, 76, 21], "pole": [-0.2, 0.3, 1], "hand": [0.95, -0.25, 0]}
+    },
+    "fold": {
+      "from": "tall",
+      "trunk": [42, 0, 0],
+      "chest": [14, 4, 4],
+      "head": [10, 0, 4],
+      "arm_near": {"ik": [82, 61, 2], "pole": [0, 0.3, 1], "hand": [0.95, 0.05, -0.12]},
+      "arm_far": {"ik": [79, 61, 24], "pole": [0, 0.3, 1], "hand": [0.95, 0.05, -0.12]},
+      "contacts": ["pelvis", "knee_near", "knee_far", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    },
+    "fold_in": {"from": "fold", "trunk": [43, 0, 0], "chest": [15, 4, 4]},
+    "slide": {
+      "from": "tall",
+      "trunk": [18.0, 0, 0],
+      "chest": [14, 4, 4],
+      "head": [8, 0, 2],
+      "arm_near": {"ik": [56, 76, 0], "pole": [-0.1, 0.3, 1], "hand": [0.95, -0.2, 0]},
+      "arm_far": {"ik": [52, 77, 22], "pole": [-0.1, 0.3, 1], "hand": [0.95, -0.2, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.2},
+    {"to": "slide", "s": 1.4, "phase": "fold_forward", "effort": 0.5},
+    {"to": "fold", "s": 1.4, "phase": "fold_forward", "effort": 0.6},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "slide", "s": 1.2, "phase": "sit_up", "effort": 0.4},
+    {"to": "tall", "s": 1.2, "phase": "sit_up", "effort": 0.3}
+  ],
+  "key": "fold",
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "fold", "check": "height", "joint": "knee_far", "max": 56}
+  ],
+  "note": "Sitting on a bed, the near leg bent with its sole against the far thigh and its knee resting out to the side (the bent knee toward the camera); the far leg straight along the bed, heel down and toes up; the fold from the hips with a long back takes both hands round the far foot."
+}

@@ -1,0 +1,79 @@
+{
+  "move": "wall_lean_back",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 6},
+  "working": ["abdomen", "back", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": -60, "behind": true, "u": 220}],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 12], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "up": {
+      "from": "tall",
+      "pelvis": [6, 93.8, 0],
+      "trunk": [-4, 0, 0],
+      "chest": [-6, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"fk": [168, 14, 6]}
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [13, 92.8, 0],
+      "trunk": [-15, 0, 0],
+      "chest": [-22, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [-56.7, 158, 18], "pole": [0.3, 0.3, 1], "hand": [0, -1, 0.1]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lean": {
+      "from": "reach",
+      "pelvis": [20, 88, 0],
+      "trunk": [-25, 0, 0],
+      "chest": [-25, 0, 0],
+      "head": [15, 0, 0],
+      "arms": {"ik": [-56.7, 150, 18], "pole": [0.3, 0.3, 1], "hand": [0, -1, 0.1]}
+    },
+    "lean_in": {"from": "lean", "pelvis": [20.5, 87.8, 0], "chest": [-26, 0, 0]},
+    "hips_back": {"from": "lean", "pelvis": [3, 90, 0], "trunk": [-5, 0, 0], "chest": [-20, 0, 0], "head": [15, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "up", "s": 1.2, "phase": "hips_forward", "effort": 0.3},
+    {"to": "reach", "s": 1.4, "phase": "to_wall", "effort": 0.5},
+    {"to": "lean", "s": 2.0, "phase": "walk_hands_down", "effort": 0.7},
+    {"to": "lean_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "lean", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "reach", "s": 1.8, "phase": "walk_hands_up", "effort": 0.5},
+    {"to": "up", "s": 1.2, "phase": "stand_tall", "effort": 0.3},
+    {"to": "tall", "s": 1.2, "phase": "stand_tall", "effort": 0.2}
+  ],
+  "key": "lean",
+  "fault": {
+    "pose": "hips_back",
+    "caption": "hips_drift_back",
+    "breaks": {"check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 6}
+  },
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "lean", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "f", "min": 6},
+    {"at": "lean", "check": "height", "joint": "wrist_near", "min": 150, "max": 166},
+    {"at": "lean", "check": "angle", "joints": ["waist", "neck", "head"], "min": 125}
+  ],
+  "note": "Back to a wall, heels two foot-lengths from it: the seat squeezes and the hips press forward, the arms reach up and back until the hands touch the wall, fingers pointing down, then the hands walk down the wall to about head height with the arms straight, the eyes on the hands."
+}

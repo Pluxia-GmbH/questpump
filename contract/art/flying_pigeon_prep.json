@@ -1,0 +1,52 @@
+{
+  "move": "flying_pigeon_prep",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["upper_arm", "forearm", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [
+    {"kind": "mat", "f0": -100, "f1": 110, "l0": -70, "l1": 45},
+    {"kind": "step", "f0": -100, "f1": -70, "u": 12, "l0": -2, "l1": 28}
+  ],
+  "poses": {
+    "set": {
+      "pelvis": [-4, 63, 0],
+      "trunk": [92, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-36, 0, 0],
+      "arm_near": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [28, 34, -15], "pole": [0.3, -0.2, 1.4], "toe": [0, -0.5, -0.85]},
+      "leg_far": {"ik": [-77, 27, 13], "pole": [0, -1, 0], "toe": [-0.75, -0.65, 0]},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "prep": {
+      "pelvis": [4, 61, 0],
+      "trunk": [104, 0, 0],
+      "chest": [3, 0, 0],
+      "head": [-36, 0, 0],
+      "arm_near": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [26, 33.5, -15], "pole": [0.3, -0.3, 1.4], "toe": [0, -0.5, -0.85]},
+      "leg_far": {"ik": [-77, 27, 13], "pole": [0, -1, 0], "toe": [-0.75, -0.65, 0]},
+      "contacts": ["toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "prep_in": {"from": "prep", "pelvis": [4, 62, 0], "chest": [5, 0, 0], "head": [-34, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "set"},
+    {"hold": 0.4, "phase": "hook_toes"},
+    {"to": "prep", "s": 1.5, "phase": "lean_forward", "effort": 0.7},
+    {"to": "prep_in", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "prep", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "prep_in", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "prep", "s": 1.1, "phase": "breathe", "effort": 0.8},
+    {"to": "set", "s": 1.5, "phase": "lean_back", "effort": 0.4}
+  ],
+  "key": "prep",
+  "targets": [
+    {"at": "prep", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 80, "max": 130},
+    {"at": "prep", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 165}
+  ],
+  "note": "The flying pigeon's first stage: the front shin across the backs of both upper arms just above the elbows, its foot hooked round the far arm, the back leg long behind with its toes on a stack of books 12 cm high. The body leans forward over the bent elbows with the hips level, the back foot still resting on the books."
+}

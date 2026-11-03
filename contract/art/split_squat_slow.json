@@ -1,0 +1,6 @@
+{
+  "move": "split_squat_slow",
+  "variant_of": "split_squat",
+  "phases": {"knee_down": 3.0, "rise": 1.0},
+  "note": "Lower for 3, rise in 1: the split squat's frames on a slower table."
+}

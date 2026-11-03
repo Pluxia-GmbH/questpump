@@ -1,0 +1,499 @@
+{
+  "about": "The felt-unwell lock (AGENTS.md: \"felt unwell\" locks every pump in the game and the apps until the next game day, 04:00; docs/safety.md hazard 2; docs/plan.md slice 17): `ends` is the lock's end, the start of the next game day after the stop: the game day is the local date 4 hours earlier (library.json day_offset_h; ns.day), so it turns at 04:00 local, and with a fixed offset (utc_offset_s, the zone's offset at the stop) that is the first 04:00 strictly after the stop; `zoned` holds the same rule in a named zone (IANA), where a night the clocks change turns the game day at 03:00 or 05:00 by the clock; `rows` is which of the addon's rows lock (DB.lua's fold, ns.LockedToday; the helper's Row::locks): a move row other than a paid row whose reason (flags bits 0-2) is 4, felt unwell, or a pump or level-up row banked with it, and the lock's end at `now` from the latest such row, null when none holds; `relay` is how a device keeps the locks it hears (a sync response's locked_until from the helper, the phone's or the watch's over WatchConnectivity or the Data Layer, its own stop): each is heard at a moment (`at`) on a device whose zone is the case's utc_offset_s, each device obeys the latest end it has heard while it lies ahead, an older lock heard after a newer one and a response without locked_until change nothing, and an end past the hearing device's own next game day is kept only to that turn (a real lock never ends later, so a wrong clock elsewhere locks no device for good); `catchup` is how the helper dates a catch-up's or the watch's own pump's felt-unwell stop (a phone sends its own stop, an app pump's or a game pump's it timed, as one of its rows instead, slice 26, and the desktop app keeps its own pump's as one of the computer's app rows, slice 35, both of which `rows` covers) (a `pump_done` with `unwell`, its `start_at` and `stopped_at` in milliseconds on the helper's clock): one pump row banked with the reason at `stopped_at` floored to the second (`start_at` when it is absent), `row_ts`, and the lock's end at `now`. QuestPumpCore and the Android core implement ends, zoned, rows and relay and send `stopped_at`; the helper's questpump-core, which reads the computer's zone at each instant it needs (`session::Zone`, since slice 25), implements ends, zoned, rows and catchup.",
+  "ends": [
+    {
+      "about": "an evening stop locks until 04:00 the next morning",
+      "at": 1790100000,
+      "utc_offset_s": 0,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "03:59:59 belongs to the game day before: the lock ends one second later",
+      "at": 1790049599,
+      "utc_offset_s": 0,
+      "locked_until": 1790049600
+    },
+    {
+      "about": "04:00:00 opens a new game day: the lock holds 24 hours",
+      "at": 1790049600,
+      "utc_offset_s": 0,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "00:30 after midnight is still the game day before: free at 04:00 that morning",
+      "at": 1790037000,
+      "utc_offset_s": 0,
+      "locked_until": 1790049600
+    },
+    {
+      "about": "Zurich in summer (UTC+2): 22:30 local locks until 04:00 local, 02:00 UTC",
+      "at": 1790109000,
+      "utc_offset_s": 7200,
+      "locked_until": 1790128800
+    },
+    {
+      "about": "Los Angeles in summer (UTC-7): 03:00 local is the game day before, free at 04:00 local",
+      "at": 1790071200,
+      "utc_offset_s": -25200,
+      "locked_until": 1790074800
+    },
+    {
+      "about": "India (UTC+5:30), a half-hour zone: 23:00 local locks until 04:00 local",
+      "at": 1790098200,
+      "utc_offset_s": 19800,
+      "locked_until": 1790116200
+    }
+  ],
+  "zoned": [
+    {
+      "about": "Zurich on an ordinary evening: 04:00 the next morning",
+      "zone": "Europe/Zurich",
+      "at": 1790969400,
+      "locked_until": 1790992800
+    },
+    {
+      "about": "Zurich the night the clocks go back (25 October 2026): the game day turns 4 hours after midnight, 03:00 by the clock",
+      "zone": "Europe/Zurich",
+      "at": 1792872000,
+      "locked_until": 1792893600
+    },
+    {
+      "about": "Zurich the night the clocks go forward (28 March 2027): the game day turns 4 hours after midnight, 05:00 by the clock",
+      "zone": "Europe/Zurich",
+      "at": 1806181200,
+      "locked_until": 1806202800
+    },
+    {
+      "about": "New York the night the clocks go back (1 November 2026)",
+      "zone": "America/New_York",
+      "at": 1793502000,
+      "locked_until": 1793520000
+    },
+    {
+      "about": "Zurich, 02:30 by the clock for the second time after the clocks went back (25 October 2026): still the game day before, which ends at 03:00",
+      "zone": "Europe/Zurich",
+      "at": 1792891800,
+      "locked_until": 1792893600
+    },
+    {
+      "about": "Zurich, 03:30 that morning: the new game day began at 03:00, so the lock holds until 04:00 the next morning",
+      "zone": "Europe/Zurich",
+      "at": 1792895400,
+      "locked_until": 1792983600
+    },
+    {
+      "about": "Zurich, 03:30 by the clock after the clocks went forward (28 March 2027): still the game day before, which ends at 05:00",
+      "zone": "Europe/Zurich",
+      "at": 1806197400,
+      "locked_until": 1806202800
+    },
+    {
+      "about": "Zurich, 04:30 that morning: the game day has not turned yet, the lock ends at 05:00",
+      "zone": "Europe/Zurich",
+      "at": 1806201000,
+      "locked_until": 1806202800
+    },
+    {
+      "about": "New York the night the clocks go forward (14 March 2027): 05:00 by the clock",
+      "zone": "America/New_York",
+      "at": 1804993200,
+      "locked_until": 1805014800
+    }
+  ],
+  "rows": [
+    {
+      "about": "a cardio move stopped for felt unwell (outcome stopped, reason 4)",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|0|0|6|2|1|3|0|42|6|4"
+      ],
+      "now": 1790100060,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "a pump banked for felt unwell (kind pump, outcome banked, reason 4): an app's stop before its first move too",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|1|0|0|0|0|6|0|0|9|4"
+      ],
+      "now": 1790100060,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "a done move with the stop's reason beside the watch and owed bits (16 + 32 + 4)",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|0|0|1|1|12|1|10|30|5|52"
+      ],
+      "now": 1790100060,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "a level-up's pump banked for felt unwell (kind ding)",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|0|0|0|0|0|5|1|0|9|4"
+      ],
+      "now": 1790100060,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "a paid row repeats its owed row's reason and never locks",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|0|0|6|2|1|3|0|0|10|36"
+      ],
+      "now": 1790100060,
+      "locked_until": null
+    },
+    {
+      "about": "a move stopped for pain (reason 3) does not lock",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|0|0|1|1|12|1|4|30|2|3"
+      ],
+      "now": 1790100060,
+      "locked_until": null
+    },
+    {
+      "about": "a pump banked for pain (reason 3) does not lock",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|2|0|0|0|0|6|2|0|9|3"
+      ],
+      "now": 1790100060,
+      "locked_until": null
+    },
+    {
+      "about": "an offered pump row carries no reason",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|2|0|0|0|0|6|2|1|7|0"
+      ],
+      "now": 1790100060,
+      "locked_until": null
+    },
+    {
+      "about": "the lock has ended at 04:00",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|1|0|0|0|0|6|0|0|9|4"
+      ],
+      "now": 1790136000,
+      "locked_until": null
+    },
+    {
+      "about": "still locked one second before 04:00",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|1|0|0|0|0|6|0|0|9|4"
+      ],
+      "now": 1790135999,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "two stops a day apart: the later one's day",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|1|0|1|0|0|0|0|6|0|0|9|4",
+        "1790186400|1|0|0|0|6|2|1|3|0|20|6|4"
+      ],
+      "now": 1790186460,
+      "locked_until": 1790222400
+    },
+    {
+      "about": "a pump banked for felt unwell in Zurich at 01:00 local: free at 04:00 local the same night",
+      "utc_offset_s": 7200,
+      "rows": [
+        "1790118000|1|0|1|0|0|0|0|6|0|0|9|4"
+      ],
+      "now": 1790118060,
+      "locked_until": 1790128800
+    },
+    {
+      "about": "an app's felt-unwell stop as the phone sends it among its rows (slice 26): char 0, a pump banked for felt unwell with the app and phone bits (2048 + 128 + 4); the helper and the game lock on it as on their own",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|0|0|1|0|0|0|0|6|0|0|9|2180"
+      ],
+      "now": 1790100060,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "a desktop app pump's felt-unwell stop as the helper keeps it (slice 35): char 0, a pump banked for felt unwell with the app and computer bits (2048 + 4096 + 4); the helper locks on it at once (`Session::keep_computer`), the phones and the game as on any app row",
+      "utc_offset_s": 0,
+      "rows": [
+        "1790100000|0|0|1|0|0|0|0|6|0|0|9|6148"
+      ],
+      "now": 1790100060,
+      "locked_until": 1790136000
+    }
+  ],
+  "relay": [
+    {
+      "about": "a lock from the helper (a sync response's locked_until) holds until its end",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "helper",
+            "locked_until": 1790136000,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790100060,
+            "locked_until": 1790136000
+          }
+        },
+        {
+          "check": {
+            "now": 1790135999,
+            "locked_until": 1790136000
+          }
+        },
+        {
+          "check": {
+            "now": 1790136000,
+            "locked_until": null
+          }
+        }
+      ]
+    },
+    {
+      "about": "a lock from the phone, heard on the watch",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "phone",
+            "locked_until": 1790136000,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790100060,
+            "locked_until": 1790136000
+          }
+        }
+      ]
+    },
+    {
+      "about": "a lock from the watch, heard on the phone",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "watch",
+            "locked_until": 1790136000,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790100060,
+            "locked_until": 1790136000
+          }
+        }
+      ]
+    },
+    {
+      "about": "the device's own stop",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "self",
+            "locked_until": 1790136000,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790100000,
+            "locked_until": 1790136000
+          }
+        }
+      ]
+    },
+    {
+      "about": "an older lock heard after a newer one changes nothing: the latest end wins",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "watch",
+            "locked_until": 1790222400,
+            "at": 1790186400
+          }
+        },
+        {
+          "heard": {
+            "from": "helper",
+            "locked_until": 1790136000,
+            "at": 1790186400
+          }
+        },
+        {
+          "check": {
+            "now": 1790186460,
+            "locked_until": 1790222400
+          }
+        }
+      ]
+    },
+    {
+      "about": "a response without locked_until (a helper reset, or one that never heard the stop) lifts no lock a device holds",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "phone",
+            "locked_until": 1790136000,
+            "at": 1790100000
+          }
+        },
+        {
+          "heard": {
+            "from": "helper",
+            "locked_until": null,
+            "at": 1790100030
+          }
+        },
+        {
+          "check": {
+            "now": 1790100060,
+            "locked_until": 1790136000
+          }
+        }
+      ]
+    },
+    {
+      "about": "an ended lock is no lock, and a later stop locks again",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "self",
+            "locked_until": 1790136000,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790136000,
+            "locked_until": null
+          }
+        },
+        {
+          "heard": {
+            "from": "phone",
+            "locked_until": 1790222400,
+            "at": 1790136030
+          }
+        },
+        {
+          "check": {
+            "now": 1790136060,
+            "locked_until": 1790222400
+          }
+        }
+      ]
+    },
+    {
+      "about": "an end past the hearing device's next game day (a clock set wrong on the helper or the other device) is kept only to that turn, so no lock outlives the day",
+      "utc_offset_s": 0,
+      "ops": [
+        {
+          "heard": {
+            "from": "helper",
+            "locked_until": 1792728000,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790100060,
+            "locked_until": 1790136000
+          }
+        },
+        {
+          "check": {
+            "now": 1790136000,
+            "locked_until": null
+          }
+        }
+      ]
+    },
+    {
+      "about": "the hearing device's own zone sets that turn: two hours east of UTC it comes two hours sooner",
+      "utc_offset_s": 7200,
+      "ops": [
+        {
+          "heard": {
+            "from": "watch",
+            "locked_until": 1790222400,
+            "at": 1790100000
+          }
+        },
+        {
+          "check": {
+            "now": 1790100060,
+            "locked_until": 1790128800
+          }
+        },
+        {
+          "check": {
+            "now": 1790128800,
+            "locked_until": null
+          }
+        }
+      ]
+    }
+  ],
+  "catchup": [
+    {
+      "about": "a phone's catch-up started at 03:55 and stopped for felt unwell at 04:03: the banked row is dated the stop, so the lock holds the new game day until 04:00 the next morning (dated the start, it would have ended at 04:00, before the stop)",
+      "utc_offset_s": 0,
+      "event": {
+        "type": "pump_done",
+        "pump_id": "p-5d1c",
+        "start_at": 1790049300000,
+        "stopped_at": 1790049780500,
+        "unwell": true
+      },
+      "row_ts": 1790049780,
+      "now": 1790049790,
+      "locked_until": 1790136000
+    },
+    {
+      "about": "an app that sends no stopped_at: the stop is dated start_at, and a stop past 04:00 then locks nothing",
+      "utc_offset_s": 0,
+      "event": {
+        "type": "pump_done",
+        "pump_id": "p-5d1c",
+        "start_at": 1790049300000,
+        "unwell": true
+      },
+      "row_ts": 1790049300,
+      "now": 1790049790,
+      "locked_until": null
+    },
+    {
+      "about": "the watch's own pump stopped (w-, no moves): start_at and stopped_at are both the moment of the stop",
+      "utc_offset_s": 0,
+      "event": {
+        "type": "pump_done",
+        "pump_id": "w-3f0d",
+        "start_at": 1790100000000,
+        "stopped_at": 1790100000000,
+        "unwell": true
+      },
+      "row_ts": 1790100000,
+      "now": 1790100060,
+      "locked_until": 1790136000
+    }
+  ]
+}

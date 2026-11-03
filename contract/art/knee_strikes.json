@@ -1,0 +1,51 @@
+{
+  "move": "knee_strikes",
+  "view": "side",
+  "camera": {"yaw": 28, "pitch": 8},
+  "working": ["abdomen", "thigh"],
+  "fast_phase": 0.4,
+  "poses": {
+    "guard": {
+      "pelvis": [2, 93.6, 0],
+      "trunk": [4, 0, 0],
+      "arms": {"ik": [38, 12, 12], "rel": "neck", "pole": [0, -1, 0.6], "hand": [0.8, 0.3, -0.4]},
+      "legs": {"foot": [0, 13], "turn": 8, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "near_knee": {
+      "from": "guard",
+      "pelvis": [8, 96.4, 1],
+      "trunk": [-6, 0, 0],
+      "head": [8, 0, 0],
+      "arms": {"ik": [36, -14, 14], "rel": "neck", "pole": [-0.3, -1, 0.8], "hand": [0.7, -0.5, -0.5]},
+      "leg_near": {"fk": [122, 4, 118, 18]},
+      "leg_far": {"foot": [0, 13], "turn": 8, "lift": 22, "knee_out": 4},
+      "contacts": ["toe_far"]
+    },
+    "far_knee": {
+      "from": "guard",
+      "pelvis": [8, 96.4, -1],
+      "trunk": [-6, 0, 0],
+      "head": [8, 0, 0],
+      "arms": {"ik": [36, -14, 14], "rel": "neck", "pole": [-0.3, -1, 0.8], "hand": [0.7, -0.5, -0.5]},
+      "leg_near": {"foot": [0, 13], "turn": 8, "lift": 22, "knee_out": 4},
+      "leg_far": {"fk": [122, 4, 118, 18]},
+      "contacts": ["toe_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "guard"},
+    {"to": "near_knee", "s": 0.2, "ease": "inout", "phase": "drive", "effort": 1.0},
+    {"hold": 0.04, "phase": "drive", "effort": 1.0},
+    {"to": "guard", "s": 0.22, "ease": "inout", "phase": "foot_down", "effort": 0.6},
+    {"to": "far_knee", "s": 0.2, "ease": "inout", "phase": "drive", "effort": 1.0},
+    {"hold": 0.04, "phase": "drive", "effort": 1.0},
+    {"to": "guard", "s": 0.22, "ease": "inout", "phase": "foot_down", "effort": 0.6}
+  ],
+  "key": "near_knee",
+  "targets": [
+    {"at": "near_knee", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "u", "min": 8},
+    {"at": "far_knee", "check": "offset", "joint": "knee_far", "from": "hip_far", "axis": "u", "min": 8},
+    {"at": "guard", "check": "height", "joint": "wrist_near", "min": 150}
+  ]
+}

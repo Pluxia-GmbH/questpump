@@ -1,0 +1,51 @@
+{
+  "move": "chest_opener",
+  "view": "side",
+  "camera": {"yaw": -14, "pitch": 6},
+  "working": ["chest", "pauldron"],
+  "breathe": true,
+  "poses": {
+    "clasp": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "arms": {"ik": [-15, 95, 4.5], "pole": [-0.6, 0, 1], "hand": [-0.2, -0.9, -0.4]},
+      "legs": {"foot": [0, 12], "turn": 8, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "open": {
+      "from": "clasp",
+      "chest": [-10, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [-24, 95, 4.5], "pole": [0.2, -0.3, 1], "hand": [-0.6, -0.7, -0.3]}
+    },
+    "open_in": {
+      "from": "open",
+      "chest": [-12, 0, 0],
+      "arms": {"ik": [-25.5, 96.5, 4.5], "pole": [0.2, -0.3, 1], "hand": [-0.6, -0.7, -0.3]}
+    },
+    "bent": {"from": "open", "arms": {"ik": [-17, 101, 5], "pole": [-1, 0, 0.5], "hand": [-0.2, -0.9, -0.4]}}
+  },
+  "timeline": [
+    {"pose": "clasp"},
+    {"hold": 0.6, "phase": "clasp_behind", "effort": 0.3},
+    {"to": "open", "s": 2.0, "phase": "arms_straight", "effort": 0.6},
+    {"to": "open_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "open", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "open_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "open", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "clasp", "s": 1.8, "phase": "release", "effort": 0.3}
+  ],
+  "key": "open",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  },
+  "targets": [
+    {"at": "open", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "open", "check": "offset", "joint": "wrist_near", "from": "pelvis", "axis": "f", "max": -24, "min": -32},
+    {"at": "open", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 172}
+  ],
+  "note": "Standing tall, feet hip-width, the fingers clasped behind the back: the arms straighten and the shoulders draw back and down, then the clasped hands lift a hand's width away from the back (the arms about 27 degrees behind the body), the chest open and the ribs down."
+}

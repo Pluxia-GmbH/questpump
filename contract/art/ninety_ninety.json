@@ -1,0 +1,76 @@
+{
+  "move": "ninety_ninety",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 52},
+  "working": ["tasset_far", "tasset_near"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -78, "f1": 80, "u": 45}],
+  "poses": {
+    "prop": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [-4, 0, 0],
+      "arms": {"ik": [-31, 61.2, 39], "pole": [-0.6, 0, 0.8], "hand": [0.2, -0.97, 0.1]},
+      "leg_near": {"ik": [-43, 48.5, 55.6], "pole": [0.7, 0, 0.7], "toe": [-1, 0, 0]},
+      "leg_far": {"ik": [44.6, 52, -32], "pole": [0.7, 0, 0.7], "toe": [0.4, 0.1, -1]},
+      "contacts": [
+        "pelvis",
+        "knee_near",
+        "knee_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "tall": {
+      "from": "prop",
+      "trunk": [3, 0, 0],
+      "chest": [-2, 0, 0],
+      "arms": {"ik": [22, 81, 3.6], "pole": [-0.2, -0.6, 1], "hand": [0.12, 1, -0.04]},
+      "contacts": ["pelvis", "knee_near", "knee_far", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    },
+    "tall_in": {
+      "from": "tall",
+      "chest": [-3, 0, 0],
+      "arms": {"ik": [22, 82, 3.6], "pole": [-0.2, -0.6, 1], "hand": [0.12, 1, -0.04]}
+    },
+    "lift": {"from": "tall", "arms": {"ik": [-36, 75, 42], "pole": [-0.3, -0.3, 1], "hand": [0.5, -0.5, 0]}},
+    "slump": {
+      "from": "tall",
+      "trunk": [-3, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"ik": [21, 77, 3.6], "pole": [-0.2, -0.6, 1], "hand": [0.25, 0.97, -0.04]}
+    }
+  },
+  "timeline": [
+    {"pose": "prop"},
+    {"hold": 0.6, "phase": "sit", "effort": 0.2},
+    {"to": "lift", "s": 0.7, "phase": "sit_tall", "effort": 0.5},
+    {"to": "tall", "s": 1.3, "phase": "sit_tall", "effort": 0.5},
+    {"hold": 0.4, "phase": "hands_off", "effort": 0.6},
+    {"to": "tall_in", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "tall", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "tall_in", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "tall", "s": 1.5, "phase": "breathe", "effort": 0.6},
+    {"to": "lift", "s": 1.2, "phase": "release", "effort": 0.3},
+    {"to": "prop", "s": 0.6, "phase": "release", "effort": 0.3}
+  ],
+  "key": "tall",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165}
+  },
+  "targets": [
+    {"at": "tall", "check": "offset", "joint": "knee_far", "from": "hip_far", "axis": "f", "min": 40},
+    {"at": "tall", "check": "offset", "joint": "ankle_far", "from": "knee_far", "axis": "l", "max": -38},
+    {"at": "tall", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "l", "min": 40},
+    {"at": "tall", "check": "offset", "joint": "ankle_near", "from": "knee_near", "axis": "f", "max": -38},
+    {"at": "tall", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "tall", "check": "height", "joint": "hand_tip_near", "min": 80}
+  ],
+  "note": "The 90-90 sit on a bed: the far (front) shin lies across in front, its thigh pointing ahead, the near (back) thigh out to the side and its shin pointing back, both knees at right angles; from leaning on the fingertips behind the hips the body sits tall over the hips and the hands come off the bed, palms together at the chest."
+}

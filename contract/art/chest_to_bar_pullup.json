@@ -1,0 +1,56 @@
+{
+  "move": "chest_to_bar_pullup",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 4},
+  "working": ["upper_arm", "pauldron"],
+  "props": [{"kind": "bar", "f": 8, "u": 222, "ground": true}],
+  "poses": {
+    "hang": {
+      "pelvis": [8, 112.4, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"ik": [8, 215.6, 27], "pole": [-0.2, -1, 0.6], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [4, 2, 8, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"],
+      "head": [-8, 0, 0]
+    },
+    "top": {
+      "from": "hang",
+      "pelvis": [10, 177, 0],
+      "trunk": [-24, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"ik": [8, 215.6, 27], "pole": [-0.6, -1, 0.3], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [5, 2, 20, -30]}
+    },
+    "mid": {
+      "from": "top",
+      "pelvis": [0, 150, 0],
+      "trunk": [-12, 0, 0],
+      "head": [-12, 0, 0],
+      "legs": {"fk": [10, 2, 20, -30]},
+      "arms": {"ik": [8, 215.6, 27], "pole": [-0.6, -1, 0.3], "hand": [0.6, 0.8, 0]}
+    },
+    "short": {
+      "from": "top",
+      "pelvis": [3, 162, 0],
+      "trunk": [-18, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [8, 215.6, 27], "pole": [-0.4, -1, 0.4], "hand": [0.6, 0.8, 0]},
+      "legs": {"fk": [18, 2, 30, -30]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.3, "phase": "dead_hang"},
+    {"to": "mid", "s": 0.6, "ease": "in", "phase": "chest_to_bar", "effort": 1.0},
+    {"to": "top", "s": 0.6, "ease": "out", "phase": "chest_to_bar", "effort": 1.0},
+    {"hold": 0.2, "phase": "top", "effort": 0.9},
+    {"to": "mid", "s": 1.0, "ease": "in", "phase": "lower_fully", "effort": 0.6},
+    {"to": "hang", "s": 1.0, "ease": "out", "phase": "lower_fully", "effort": 0.6}
+  ],
+  "key": "top",
+  "fault": {"pose": "short", "caption": "chest_short", "breaks": {"check": "height", "joint": "neck", "min": 220}},
+  "targets": [
+    {"at": "top", "check": "height", "joint": "neck", "min": 220},
+    {"at": "hang", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  ]
+}

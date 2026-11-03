@@ -1,0 +1,73 @@
+{
+  "move": "half_split_books",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 16},
+  "working": ["thigh_far"],
+  "breathe": true,
+  "props": [
+    {"kind": "step", "f0": 2, "f1": 20, "u": 28, "l0": -50, "l1": -28},
+    {"kind": "step", "f0": 2, "f1": 20, "u": 28, "l0": 28, "l1": 50}
+  ],
+  "items": [{"kind": "towel", "under": "knee_near"}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-10, 54, 0],
+      "fit": {"joint": "knee_near", "u": 10},
+      "trunk": [14, 0, 0],
+      "arms": {"ik": [14, 58, 25], "pole": [-0.4, -0.1, 1], "hand": [1, -0.4, 0]},
+      "leg_near": {"foot": [-56, 12], "y": -3, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [46, 12], "turn": 4, "knee_out": 4},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "toe_far", "ankle_far"]
+    },
+    "back": {
+      "from": "lunge",
+      "pelvis": [-14, 54, 0],
+      "trunk": [23, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"ik": [6, 44.2, 39], "pole": [-0.2, 0.1, 1], "hand": [0.3, -0.95, 0]},
+      "leg_near": {"foot": [-57, 12], "y": -3, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "leg_far": {"foot": [50, 12], "y": 0, "turn": 0, "lift": 0, "knee_out": 0, "pole": [0.3, 0.75, 0.5]},
+      "contacts": [
+        "knee_near",
+        "toe_near",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "fold": {
+      "from": "back",
+      "trunk": [25, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [-8, 0, 0],
+      "leg_far": {"foot": [72.5, 12], "y": 1, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0.2, 0.4, 1]}
+    },
+    "fold_in": {"from": "fold", "trunk": [26.5, 0, 0], "chest": [2.5, 0, 0]},
+    "rounded": {"from": "fold", "trunk": [20, 0, 0], "chest": [40, 0, 0], "head": [14, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "back"},
+    {"hold": 0.5, "phase": "kneel"},
+    {"to": "fold", "s": 1.6, "phase": "leg_out", "effort": 0.65},
+    {"to": "fold_in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "fold_in", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "fold", "s": 1.5, "phase": "breathe", "effort": 0.75},
+    {"to": "back", "s": 1.4, "phase": "bend_front_knee", "effort": 0.4}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 160}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 165},
+    {"at": "fold", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "f", "min": -8, "max": 8}
+  ],
+  "note": "The back leg is the near one, its knee on a folded towel; the front leg is the far one. Kneeling with the hips over the back knee, the front knee bent and the fingertips on two piles of books beside the hips, the front leg straightens, heel down and toes up, and the body leans forward about 25 degrees with a long back, the hands staying on the books; the knee bends again to end the loop."
+}

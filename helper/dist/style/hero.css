@@ -1,0 +1,238 @@
+/* Hero on the computer (views/hero/*; docs/ui.md, "Hero, the Book and the Log"): the header beside the Portrait, the
+ * name line and the level line as buttons, the body map taking the room the blocks leave, the pages' ladder lines and
+ * value, and what Hero's own charts add to the shared ones (style/charts.css). */
+
+.qp-hero-head {
+	display: flex;
+	gap: var(--qp-layout-space14);
+	align-items: center;
+	padding-top: var(--qp-layout-space6);
+}
+
+.qp-hero-lines {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--qp-layout-space6);
+	min-width: 0;
+}
+
+/* the name with its title, the two parts each whole on its own line where the one line does not fit */
+.qp-hero-name {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 0.25em;
+	overflow-wrap: anywhere;
+}
+
+/* on the app's own sheet with a title earned, the name line opens the title window: its chevron at its end */
+.qp-name-line {
+	display: flex;
+	flex: 1;
+	flex-wrap: wrap;
+	column-gap: 0.25em;
+	align-items: center;
+	min-height: var(--qp-layout-quiet-height);
+	border-radius: var(--qp-surface-level-badge-radius);
+	text-align: start;
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-name-line:hover {
+	background: var(--qp-wide-hover);
+}
+
+.qp-name-line:active {
+	filter: brightness(0.8);
+}
+
+.qp-name-line .qp-end-nav {
+	display: flex;
+	margin-inline-start: auto;
+	color: var(--qp-color-text3);
+}
+
+.qp-level-line {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space6) var(--qp-layout-space10);
+	align-items: center;
+	min-height: var(--qp-layout-quiet-height);
+	border-radius: var(--qp-surface-level-badge-radius);
+	text-align: start;
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-level-line:hover:not(:disabled) {
+	background: var(--qp-wide-hover);
+}
+
+.qp-level-line:active:not(:disabled) {
+	filter: brightness(0.8);
+}
+
+.qp-level-line qp-xp-bar {
+	flex: 1;
+	min-width: calc(var(--qp-layout-space32) * 2);
+}
+
+.qp-level-badge {
+	padding: var(--qp-layout-space2) calc(var(--qp-layout-space8) - 1px);
+	border-radius: var(--qp-surface-level-badge-radius);
+	background: var(--qp-surface-level-badge-fill);
+	color: var(--qp-surface-level-badge-label);
+	font: 600 var(--qp-type-meta-size) / var(--qp-type-meta-line-height) var(--qp-type-body-strong-family);
+	font-variant-numeric: tabular-nums;
+}
+
+qp-muscle-map[data-hero] {
+	min-width: 0;
+}
+
+/* a page's hero card: the quality as its heading, or Not trained yet */
+qp-quality-word.qp-heading {
+	font: var(--qp-type-heading-font);
+}
+
+.qp-muted {
+	color: var(--qp-color-text2);
+}
+
+.qp-stat-value {
+	display: flex;
+	gap: var(--qp-layout-space14);
+	align-items: center;
+}
+
+.qp-stat-value > qp-art {
+	width: var(--qp-layout-glyph);
+	height: var(--qp-layout-glyph);
+	color: var(--qp-color-text2);
+}
+
+.qp-stat-value .qp-type-num-large {
+	font-variant-numeric: tabular-nums;
+}
+
+/* a ladder line: the move's tile, its name over the ladder and its quality, its record (or a family's lock) at the end */
+.qp-ladder-line {
+	display: flex;
+	gap: var(--qp-layout-space14);
+	align-items: center;
+}
+
+.qp-ladder-words {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--qp-layout-space2);
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.qp-ladder-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space2) var(--qp-layout-space8);
+	align-items: center;
+}
+
+.qp-ladder-line.qp-closed .qp-type-body-strong {
+	color: var(--qp-color-text2);
+}
+
+.qp-ladder-lock {
+	width: var(--qp-layout-space20);
+	height: var(--qp-layout-space20);
+	margin-right: var(--qp-layout-space4);
+	color: var(--qp-color-text3);
+}
+
+.qp-ladder-line .qp-type-num-row {
+	font-variant-numeric: tabular-nums;
+}
+
+/* a muscle's open line opens its move's page: the whole line a button, its chevron at its end */
+button.qp-ladder-line {
+	width: 100%;
+	min-height: var(--qp-layout-quiet-height);
+	border-radius: var(--qp-layout-tile-radius-small);
+	text-align: start;
+	transition: background-color var(--qp-motion-press);
+}
+
+button.qp-ladder-line:hover {
+	background: var(--qp-wide-hover);
+}
+
+button.qp-ladder-line:active {
+	filter: brightness(0.8);
+}
+
+button.qp-ladder-line .qp-end-nav {
+	display: flex;
+	color: var(--qp-color-text3);
+}
+
+/* Pro's charts (the frame, the axes, the line and the stars: style/charts.css) ----------------------------------- */
+
+/* a week's bar: gold, a loss below zero in the loss tone */
+.qp-chart-bar {
+	fill: var(--qp-surface-chart-mark);
+}
+
+.qp-chart-bar.qp-loss {
+	fill: var(--qp-surface-chart-loss);
+}
+
+/* a strip of weeks' first and last dates */
+.qp-chart-dates {
+	display: flex;
+	justify-content: space-between;
+	color: var(--qp-surface-chart-axis);
+}
+
+/* a muscle's moves per week: each week a square in its step's shade with its count */
+.qp-chart-weeks {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(var(--qp-surface-chart-week-cell), 1fr));
+	gap: var(--qp-layout-space4);
+}
+
+.qp-week-step {
+	display: grid;
+	place-items: center;
+	min-height: var(--qp-surface-chart-week-cell);
+	border-radius: var(--qp-layout-space4);
+	background: var(--qp-color-raised);
+	color: var(--qp-color-text2);
+	font: var(--qp-type-num-small-font);
+	font-variant-numeric: tabular-nums;
+}
+
+.qp-week-step.qp-step-1 {
+	background: color-mix(in srgb, var(--qp-color-gold) 30%, var(--qp-color-raised));
+	color: var(--qp-color-text);
+}
+
+.qp-week-step.qp-step-2 {
+	background: color-mix(in srgb, var(--qp-color-gold) 60%, var(--qp-color-raised));
+	color: var(--qp-color-gold-ink);
+}
+
+.qp-week-step.qp-step-3 {
+	background: var(--qp-color-gold);
+	color: var(--qp-color-gold-ink);
+}
+
+.qp-chart-steps {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-chart-steps .qp-week-step {
+	min-height: auto;
+	padding: var(--qp-layout-space2) var(--qp-layout-space6);
+	font: inherit;
+}

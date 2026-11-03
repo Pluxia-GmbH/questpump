@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Share: a forged arrow rising out of an open tray with sloped walls; lit from the top left, the arrow's right
+       half behind its ridge and the tray's right half in shadow. One colour: a FramedIconButton tints it (text on
+       raised). -->
+  <path data-token="tint" fill="currentColor" d="M12 1.75 L17.75 8.5 L14 7.25 V16 H10 V7.25 L6.25 8.5 Z"/>
+  <path data-token="tint" fill="currentColor" d="M2.5 13 H5 L5.79 18.5 H18.21 L19 13 H21.5 L20.36 21 H3.64 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12 1.75 L17.75 8.5 L14 7.25 V16 H12 Z
+    M12 18.5 H18.21 L19 13 H21.5 L20.36 21 H12 Z"/>
+</svg>

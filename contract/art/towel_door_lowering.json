@@ -1,0 +1,61 @@
+{
+  "move": "towel_door_lowering",
+  "view": "side",
+  "camera": {"yaw": -40, "pitch": 8},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "door", "f": 92}],
+  "items": [{"kind": "doortowel", "top": [88.8, 205.0, 0.0], "ends": ["grip_near"], "loose": [88.6, 135.0, 5.0]}],
+  "poses": {
+    "low2": {
+      "line": {"pivot": "toes", "at": 73, "angle": 132.12, "width": 11, "lift": -34},
+      "leg_near": {"foot": [73, 11.0], "turn": 0, "lift": -34, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [73, 11.0], "turn": 0, "lift": -34, "knee_out": 0, "pole": [1, 0, 0]},
+      "head": [6, 0, 0],
+      "arm_near": {"ik": [16.43, 142.5, 4.3], "pole": [-0.2, -0.85, 0.5], "hand": [0.76, 0.65, -0.02]},
+      "arm_far": {"ik": [15.63, 142.0, 6.0], "pole": [-0.2, -0.85, 0.5], "hand": [0.75, 0.65, -0.09]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "low1": {
+      "from": "low2",
+      "arm_far": {"ik": [11.03, 129.6, 12.0], "pole": [0.75, -0.11, 0.14], "hand": [0.27, 0.94, -0.21]}
+    },
+    "high2": {
+      "from": "low2",
+      "line": {"pivot": "toes", "at": 73, "angle": 117.16, "width": 11, "lift": -34},
+      "head": [0, 0, 0],
+      "arm_near": {"ik": [31.62, 128.37, 5.0], "pole": [0.32, -0.57, 0.24], "hand": [0.6, 0.8, -0.03]},
+      "arm_far": {"ik": [31.62, 128.37, 6.5], "pole": [0.32, -0.57, 0.24], "hand": [0.6, 0.8, -0.09]}
+    },
+    "high1": {
+      "from": "high2",
+      "arm_far": {"ik": [37.72, 123.67, 10.0], "pole": [0.64, -0.71, 0.1], "hand": [0.47, 0.86, -0.21]}
+    },
+    "sag": {
+      "from": "high1",
+      "line": {"pivot": "toes", "at": 73, "angle": 120.53, "hips": -24, "width": 11, "lift": -34},
+      "arm_near": {"ik": [41.39, 121.97, 5.0], "pole": [0.32, -0.57, 0.24], "hand": [0.5, 0.87, -0.03]}
+    }
+  },
+  "timeline": [
+    {"pose": "low1"},
+    {"to": "low2", "s": 0.35, "phase": "pull", "effort": 0.7, "dynamic": true},
+    {"to": "high2", "s": 1.0, "phase": "pull", "effort": 1.0, "dynamic": true},
+    {"to": "high2", "s": 0.2, "phase": "pull", "effort": 0.9, "dynamic": true},
+    {"to": "high1", "s": 0.4, "phase": "lower_on_one", "effort": 1.0, "dynamic": true},
+    {"to": "low1", "s": 3.0, "phase": "lower_on_one", "effort": 1.0, "dynamic": true},
+    {"to": "low1", "s": 0.3, "phase": "lower_on_one", "effort": 0.5, "dynamic": true}
+  ],
+  "key": "high1",
+  "fault": {
+    "pose": "sag",
+    "caption": "hips_sag",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "low1", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "high1", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "low1", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "high1", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 100}
+  ],
+  "note": "A bath towel knotted at one end and laid over the top of the door: the knot on the door's far side, out of sight, holds it when the door is shut; the rest comes over the top edge into the room. Both hands pull up on the free end at one bottom corner, a little above it (a 140-cm towel hangs about 1 m below the edge, the lean about 89 cm of it), and the other corner hangs down the door; the far hand lets go at the top and hovers by the towel while the near arm lowers over 3 s. The body in front of the door's middle, where the towel comes down; its lean solved so the towel takes what it took from the knot by the top hinge (44 % of the body at the bottom). Every step is dynamic: the lean hangs on the towel."
+}

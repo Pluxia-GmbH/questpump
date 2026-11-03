@@ -1,0 +1,73 @@
+{
+  "move": "bar_support_hold",
+  "view": "side",
+  "camera": {"yaw": 32, "pitch": 8},
+  "working": ["upper_arm", "pauldron", "chest"],
+  "breathe": true,
+  "props": [{"kind": "bar", "f": 8, "u": 130, "ground": true}, {"kind": "step", "f0": -70, "f1": -28, "u": 40}],
+  "poses": {
+    "stand": {
+      "from": "top",
+      "pelvis": [-42, 132, 0],
+      "trunk": [20, 0, 0],
+      "head": [-10, 0, 0],
+      "legs": {"foot": [-46, 10], "y": 40, "turn": 6, "knee_out": 4},
+      "contacts": [
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "top": {
+      "pelvis": [-4.2, 146.6, 0],
+      "trunk": [15, 0, 0],
+      "head": [-10, 0, 0],
+      "arms": {
+        "ik": [8, 130, 26],
+        "orbit": {"r": 6.4, "deg": -255, "plane": "fu"},
+        "pole": [-1, 0, 0.1],
+        "hand": [0.259, -0.966, 0]
+      },
+      "legs": {"fk": [12, 2, 8, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "top_in": {
+      "from": "top",
+      "pelvis": [-4.2, 146.2, 0],
+      "chest": [-6, 0, 0],
+      "head": [-2, 0, 0],
+      "legs": {"fk": [16, 2, 14, -30]}
+    },
+    "bent": {
+      "from": "top",
+      "pelvis": [-5.5, 141.5, 0],
+      "arms": {
+        "ik": [8, 130, 26],
+        "orbit": {"r": 6.4, "deg": -255, "plane": "fu"},
+        "pole": [-1, 0.1, 0.1],
+        "hand": [0.259, -0.966, 0]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand"},
+    {"to": "top", "s": 1.2, "phase": "press", "effort": 0.8},
+    {"to": "top_in", "s": 1.5, "phase": "hold", "effort": 0.8},
+    {"to": "top", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "stand", "s": 1.2, "phase": "step_down", "effort": 0.4}
+  ],
+  "key": "top",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  },
+  "targets": [{"at": "top", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}],
+  "note": "The straight-bar dip's top held: on top of a fixed bar at chest height, arms locked, shoulders pushed down, legs a little ahead, the box beside it to step down on."
+}

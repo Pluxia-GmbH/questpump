@@ -1,0 +1,231 @@
+{
+  "move": "kb_halo",
+  "view": "side",
+  "camera": {"yaw": 35, "pitch": 22},
+  "working": ["pauldron", "upper_arm", "abdomen"],
+  "items": [{"kind": "kettlebell", "hold": "up"}],
+  "poses": {
+    "front": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [0, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {
+        "ik": [4.0, 147, 7.5],
+        "orbit": {"r": 28, "deg": 0, "plane": "fl"},
+        "pole": [0, -1, 0.5],
+        "hand": [0, 1, 0.1]
+      },
+      "arm_far": {
+        "ik": [4.0, 147, 7.5],
+        "orbit": {"r": 28, "deg": 0, "plane": "fl"},
+        "pole": [0, -1, 0.5],
+        "hand": [0, 1, 0.1]
+      },
+      "legs": {"foot": [0, 16], "turn": 10, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "front_near": {
+      "from": "front",
+      "chest": [0, 0, -3],
+      "head": [0, 4, 3],
+      "arm_near": {
+        "ik": [-2.5, 153.0, 3.75],
+        "orbit": {"r": 22, "deg": 45, "plane": "fl"},
+        "pole": [0.8, -0.6, 0],
+        "hand": [0, 1, -0.25]
+      },
+      "arm_far": {
+        "ik": [10.5, 153.0, 3.75],
+        "orbit": {"r": 22, "deg": -45, "plane": "fl"},
+        "pole": [0, 0.2, 0.5],
+        "hand": [0, 0.8, -0.8]
+      }
+    },
+    "near": {
+      "from": "front",
+      "chest": [0, 0, -2],
+      "head": [0, 7, 2],
+      "arm_near": {
+        "ik": [12.25, 153.0, 4.82],
+        "orbit": {"r": 22, "deg": 90, "plane": "fl"},
+        "pole": [0.8, 0.6, 0],
+        "hand": [0, 1, -0.25]
+      },
+      "arm_far": {
+        "ik": [23.75, 147.0, 4.82],
+        "orbit": {"r": 22, "deg": -90, "plane": "fl"},
+        "pole": [0.6, -0.4, 0.6],
+        "hand": [0, 0.8, -0.8]
+      }
+    },
+    "back_near": {
+      "from": "front",
+      "chest": [0, 0, -5],
+      "head": [0, 4, 5],
+      "arm_near": {
+        "ik": [0.0, 161, 7.5],
+        "orbit": {"r": 28, "deg": 160, "plane": "fl"},
+        "pole": [0.3, 0.4, 1],
+        "hand": [-0.3, 0.5, -0.8]
+      },
+      "arm_far": {
+        "ik": [0.0, 161, 7.5],
+        "orbit": {"r": 28, "deg": -160, "plane": "fl"},
+        "pole": [0.3, 0.4, 1],
+        "hand": [-0.3, 0.5, -0.8]
+      }
+    },
+    "back": {
+      "from": "front",
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {
+        "ik": [4.0, 157, 7.5],
+        "orbit": {"r": 27, "deg": 180, "plane": "fl"},
+        "pole": [0.3, 0.4, 1],
+        "hand": [-0.3, 0.5, -0.8]
+      },
+      "arm_far": {
+        "ik": [4.0, 157, 7.5],
+        "orbit": {"r": 27, "deg": -180, "plane": "fl"},
+        "pole": [0.3, 0.4, 1],
+        "hand": [-0.3, 0.5, -0.8]
+      }
+    },
+    "back_far": {
+      "from": "front",
+      "chest": [0, 0, 5],
+      "head": [0, -4, -5],
+      "arm_near": {
+        "ik": [0.0, 161, 7.5],
+        "orbit": {"r": 28, "deg": 200, "plane": "fl"},
+        "pole": [0.3, 0.4, 1],
+        "hand": [-0.3, 0.5, -0.8]
+      },
+      "arm_far": {
+        "ik": [0.0, 161, 7.5],
+        "orbit": {"r": 28, "deg": -200, "plane": "fl"},
+        "pole": [0.3, 0.4, 1],
+        "hand": [-0.3, 0.5, -0.8]
+      }
+    },
+    "far": {
+      "from": "front",
+      "chest": [0, 0, 2],
+      "head": [0, -7, -2],
+      "arm_near": {
+        "ik": [23.75, 147.0, 4.82],
+        "orbit": {"r": 22, "deg": 270, "plane": "fl"},
+        "pole": [0.6, -0.4, 0.6],
+        "hand": [0, 0.8, -0.8]
+      },
+      "arm_far": {
+        "ik": [12.25, 153.0, 4.82],
+        "orbit": {"r": 22, "deg": -270, "plane": "fl"},
+        "pole": [0.8, 0.6, 0],
+        "hand": [0, 1, -0.25]
+      }
+    },
+    "front_far": {
+      "from": "front",
+      "chest": [0, 0, 3],
+      "head": [0, -4, -3],
+      "arm_near": {
+        "ik": [10.5, 153.0, 3.75],
+        "orbit": {"r": 22, "deg": 315, "plane": "fl"},
+        "pole": [0, 0.2, 0.5],
+        "hand": [0, 0.8, -0.8]
+      },
+      "arm_far": {
+        "ik": [-2.5, 153.0, 3.75],
+        "orbit": {"r": 22, "deg": -315, "plane": "fl"},
+        "pole": [0.8, -0.6, 0],
+        "hand": [0, 1, -0.25]
+      }
+    },
+    "front_again": {
+      "from": "front",
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arm_near": {
+        "ik": [4.0, 147, 7.5],
+        "orbit": {"r": 28, "deg": 360, "plane": "fl"},
+        "pole": [0, -1, 0.5],
+        "hand": [0, 1, 0.1]
+      },
+      "arm_far": {
+        "ik": [4.0, 147, 7.5],
+        "orbit": {"r": 28, "deg": -360, "plane": "fl"},
+        "pole": [0, -1, 0.5],
+        "hand": [0, 1, 0.1]
+      }
+    },
+    "dodge": {"from": "near", "head": [0, 30, 10]},
+    "near_up": {
+      "from": "front",
+      "chest": [0, 0, -3],
+      "head": [0, 6, 3],
+      "arm_near": {
+        "ik": [6.25, 163.0, 4.82],
+        "orbit": {"r": 22, "deg": 100, "plane": "fl"},
+        "pole": [0.6, 0.6, 0.3],
+        "hand": [0, 1, -0.25]
+      },
+      "arm_far": {
+        "ik": [17.75, 163.0, 4.82],
+        "orbit": {"r": 22, "deg": -100, "plane": "fl"},
+        "pole": [0.3, 0.6, 1],
+        "hand": [0, 0.8, -0.8]
+      }
+    },
+    "far_up": {
+      "from": "front",
+      "chest": [0, 0, 3],
+      "head": [0, -6, -3],
+      "arm_near": {
+        "ik": [17.75, 163.0, 4.82],
+        "orbit": {"r": 22, "deg": 260, "plane": "fl"},
+        "pole": [0.3, 0.6, 1],
+        "hand": [0, 0.8, -0.8]
+      },
+      "arm_far": {
+        "ik": [6.25, 163.0, 4.82],
+        "orbit": {"r": 22, "deg": -260, "plane": "fl"},
+        "pole": [0.6, 0.6, 0.3],
+        "hand": [0, 1, -0.25]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "front"},
+    {"hold": 0.4, "phase": "ribs_down", "effort": 0.3},
+    {"to": "front_near", "s": 0.9, "ease": "in", "phase": "around_head", "effort": 0.5},
+    {"to": "near", "s": 0.45, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "near_up", "s": 0.225, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "back_near", "s": 0.225, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "back", "s": 0.45, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "back_far", "s": 0.45, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "far_up", "s": 0.225, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "far", "s": 0.225, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "front_far", "s": 0.45, "ease": "linear", "phase": "around_head", "effort": 0.5},
+    {"to": "front_again", "s": 0.9, "ease": "out", "phase": "around_head", "effort": 0.5},
+    {"hold": 0.4, "phase": "ribs_down", "effort": 0.3},
+    {"to": "front_far", "s": 0.9, "ease": "in", "phase": "other_way", "effort": 0.5},
+    {"to": "far", "s": 0.45, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "far_up", "s": 0.225, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "back_far", "s": 0.225, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "back", "s": 0.45, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "back_near", "s": 0.45, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "near_up", "s": 0.225, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "near", "s": 0.225, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "front_near", "s": 0.45, "ease": "linear", "phase": "other_way", "effort": 0.5},
+    {"to": "front", "s": 0.9, "ease": "out", "phase": "other_way", "effort": 0.5}
+  ],
+  "key": "near",
+  "fault": {
+    "pose": "dodge",
+    "caption": "head_dodges",
+    "breaks": {"check": "offset", "joint": "head", "from": "neck", "axis": "l", "max": 5}
+  }
+}

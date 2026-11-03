@@ -1,0 +1,39 @@
+[package]
+name = "questpump-core"
+version = "0.1.0"
+description = "The QuestPump helper's rules: the strip decoder, the row store, the mirror writer, the protocol, the pair link and the verdict"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+ciborium = "0.2"
+flate2 = "1"
+base64 = "0.23"
+thiserror = "2"
+time = { version = "0.3", features = ["formatting", "macros", "parsing"] }
+aes-gcm = "0.11"
+hkdf = "0.13"
+sha2 = "0.11"
+subtle = "2"
+# the Pro check (pro.rs): Apple's JWS chain (ES256 leaf, P-384 intermediate and root) and Play's RSA signature, whose
+# public operation crypto-bigint does (p256 brings it); no rsa crate, whose RUSTSEC-2023-0071 has no fixed version; and
+# the sync's link request and the account's new key (sync.rs `KeyPair`): ECDH on P-256
+p256 = { version = "0.14", default-features = false, features = ["ecdsa", "ecdh"] }
+p384 = { version = "0.14", default-features = false, features = ["ecdsa"] }
+x509-cert = { version = "0.3", default-features = false }
+der = { version = "0.8", features = ["oid"] }
+spki = "0.8"
+const-oid = "0.10"
+sha1 = { version = "0.11", default-features = false }
+crypto-bigint = { version = "0.7.6", default-features = false }
+# the addon's release feed (addon.rs): its signature checked as tauri-plugin-updater checks a download, with the same
+# crate the plugin brings into the graph
+minisign-verify = "0.3"

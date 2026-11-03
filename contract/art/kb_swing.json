@@ -1,0 +1,64 @@
+{
+  "move": "kb_swing",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 6},
+  "working": ["thigh", "abdomen"],
+  "ballistic": true,
+  "items": [{"kind": "kettlebell"}],
+  "poses": {
+    "top": {
+      "pelvis": [4, 92.6, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"fk": [90, -10, 16, 70]},
+      "legs": {"foot": [0, 30], "turn": 20, "knee_out": 25},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "drop": {
+      "from": "top",
+      "pelvis": [-5.8, 92.0, 0],
+      "trunk": [47, 0, 0],
+      "head": [-6, 0, 0],
+      "arms": {"fk": [38, -10, 16, 70]}
+    },
+    "hike": {
+      "from": "top",
+      "pelvis": [-27.6, 86.9, 0],
+      "trunk": [71, 0, 0],
+      "head": [-15, 0, 0],
+      "arms": {"ik": [-31.0, 82.5, 5.6], "pole": [1, 0.39, 0.65], "hand": [-0.26, -1, -0.11]},
+      "chest": [3, 0, 0]
+    },
+    "lock": {"from": "top", "arms": {"fk": [40, -10, 16, 70]}, "pelvis": [2, 92.2, 0], "trunk": [4, 0, 0]},
+    "arms_lift": {
+      "from": "top",
+      "pelvis": [-16, 88, 0],
+      "trunk": [24, 0, 0],
+      "head": [-16, 0, 0],
+      "arms": {"fk": [120, -10, 16, 70]}
+    },
+    "pass": {
+      "from": "top",
+      "pelvis": [-14.4, 85.1, 0],
+      "trunk": [36, 0, 0],
+      "chest": [1, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"ik": [-15.3, 85.5, 4.5], "pole": [1, 0.15, 0.84], "hand": [0.16, -1, -0.09]}
+    }
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.1, "phase": "float", "effort": 0.4},
+    {"to": "drop", "s": 0.29, "phase": "hike_back", "effort": 0.4, "ease": "in"},
+    {"to": "pass", "s": 0.15, "phase": "hike_back", "effort": 0.5, "ease": "linear"},
+    {"to": "hike", "s": 0.2, "phase": "hike_back", "effort": 0.6, "ease": "out"},
+    {"to": "pass", "s": 0.11, "phase": "snap_hips", "effort": 1.0, "ease": "in"},
+    {"to": "lock", "s": 0.15, "phase": "snap_hips", "effort": 1.0, "ease": "linear"},
+    {"to": "top", "s": 0.35, "phase": "float", "effort": 0.5, "ease": "out"}
+  ],
+  "key": "top",
+  "fault": {
+    "caption": "arms_lift",
+    "breaks": {"check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 165},
+    "pose": "arms_lift"
+  }
+}

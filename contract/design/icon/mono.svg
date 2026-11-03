@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- The mark's silhouette (mark.svg's quest scroll barbell) in one colour, the caller's: a stepped profile, the rod's
+       end, a plate, a gap the rod bridges, a roll and the sheet a side (the rolls narrowed so the gap shows), the seal
+       cut out and the chevron standing in its hole. The Android phone icon's monochrome layer for themed icons and the
+       tray's four state icons, each painted in its own colour. One even-odd path on mark.svg's grid whose outline is
+       the parts' union, so tools/icons.py places it where it places the mark and the tray's edge runs only along the
+       outside, the hole and the chevron. -->
+  <path data-token="tint" fill="currentColor" fill-rule="evenodd" d="
+    M9.8 9.5 H12.2 C13.1941 9.5 14 10.3059 14 11.3 V21.5 H14.8 V14.9
+    C14.8 14.182 15.382 13.6 16.1 13.6 C16.818 13.6 17.4 14.182 17.4 14.9 V15.6952
+    C21.2561 16.5683 26.7439 16.5683 30.6 15.6952 V14.9
+    C30.6 14.182 31.182 13.6 31.9 13.6 C32.618 13.6 33.2 14.182 33.2 14.9 V21.5 H34 V11.3
+    C34 10.3059 34.8059 9.5 35.8 9.5 H38.2 C39.1941 9.5 40 10.3059 40 11.3 V21.5 H43.4
+    C44.2837 21.5 45 22.2163 45 23.1 V24.9 C45 25.7837 44.2837 26.5 43.4 26.5 H40 V36.7
+    C40 37.6941 39.1941 38.5 38.2 38.5 H35.8 C34.8059 38.5 34 37.6941 34 36.7 V26.5 H33.2 V33.1
+    C33.2 33.818 32.618 34.4 31.9 34.4 C31.182 34.4 30.6 33.818 30.6 33.1 V32.3048
+    C26.7439 31.4317 21.2561 31.4317 17.4 32.3048 V33.1
+    C17.4 33.818 16.818 34.4 16.1 34.4 C15.382 34.4 14.8 33.818 14.8 33.1 V26.5 H14 V36.7
+    C14 37.6941 13.1941 38.5 12.2 38.5 H9.8 C8.8059 38.5 8 37.6941 8 36.7 V26.5 H4.6
+    C3.7163 26.5 3 25.7837 3 24.9 V23.1 C3 22.2163 3.7163 21.5 4.6 21.5 H8 V11.3
+    C8 10.3059 8.8059 9.5 9.8 9.5 Z
+    M29 22.7 Q29.52 24 29.05 25.33 Q28.58 26.65 27.71 27.77 Q26.82 28.87 25.42 29.15 Q24 29.41 22.7 28.96
+    Q21.41 28.49 20.32 27.62 Q19.22 26.76 18.96 25.38 Q18.7 24 18.91 22.6 Q19.13 21.18 20.22 20.26
+    Q21.3 19.32 22.66 19.01 Q24 18.7 25.38 18.96 Q26.76 19.22 27.62 20.32 Q28.49 21.41 29 22.7 Z
+    M20.8 24.9 L24 21.7 L27.2 24.9 L26 26.1 L24 24.1 L22 26.1 Z"/>
+</svg>

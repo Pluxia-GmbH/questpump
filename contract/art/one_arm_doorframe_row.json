@@ -1,0 +1,41 @@
+{
+  "move": "one_arm_doorframe_row",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 8},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "doorframe", "f": 50, "wall": "-l"}],
+  "poses": {
+    "lean": {
+      "line": {"pivot": "toes", "at": 44, "angle": 115.5, "width": 11, "lift": 0, "shift": 34.0},
+      "leg_near": {"foot": [44, -23.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [44, 45.0], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "chest": [0, 0, 10],
+      "head": [6, 0, -10],
+      "arm_near": {"ik": [44.0, 116.0, -8.0], "pole": [-1, -0.5, 0.3], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [4, -58, 30], "rel": "neck", "pole": [-0.5, 0, 1], "hand": [0.15, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "pulled": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 44, "angle": 98, "width": 11, "lift": 0, "shift": 34.0},
+      "chest": [0, 0, -5],
+      "head": [0, 0, 5],
+      "arm_near": {"ik": [44.0, 116.0, -8.0], "pole": [-1, 0, -0.1], "hand": [1, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lean"},
+    {"hold": 0.3, "phase": "arm_straight"},
+    {"to": "pulled", "s": 1.0, "phase": "pull", "effort": 1.0},
+    {"hold": 0.2, "phase": "chest_to_frame", "effort": 0.9},
+    {"to": "lean", "s": 1.5, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "pulled",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "pulled", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "pulled", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 110}
+  ],
+  "note": "The toes a hand's length short of the steep row's (2026-10-22: in the doorway beside the jamb, as steep_doorframe_row's, which puts them against the base), so the lean is the rung's own; the near hand works, wrapped round the jamb's doorway face, so the camera sees it (the wall runs toward the camera, the camera looks from behind); the free arm hangs at its side; the chest turns toward the free side at the bottom, square at the top."
+}

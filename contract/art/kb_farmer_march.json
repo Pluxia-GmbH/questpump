@@ -1,0 +1,42 @@
+{
+  "move": "kb_farmer_march",
+  "view": "side",
+  "camera": {"yaw": 42, "pitch": 8},
+  "working": ["thigh", "abdomen", "forearm_near"],
+  "items": [{"kind": "kettlebell", "hand": "near", "hold": "down"}],
+  "poses": {
+    "mid": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "arm_near": {"fk": [-6, 13, 0, 0, 35]},
+      "arm_far": {"fk": [2, 14, 12, 0, 0]},
+      "leg_near": {"foot": [0, 12], "turn": 6, "knee_out": 4},
+      "leg_far": {"foot": [0, 12], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "near_up": {
+      "from": "mid",
+      "pelvis": [3, 93.8, 1.0],
+      "arm_far": {"fk": [8, 14, 16, 0, 0]},
+      "leg_near": {"foot": [12, 12], "turn": 6, "y": 32, "lift": 26, "knee_out": 4},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "far_up": {
+      "from": "mid",
+      "pelvis": [3, 93.8, -1.0],
+      "arm_far": {"fk": [-4, 14, 12, 0, 0]},
+      "leg_far": {"foot": [12, 12], "turn": 6, "y": 32, "lift": 26, "knee_out": 4},
+      "contacts": ["toe_near", "ankle_near"]
+    }
+  },
+  "timeline": [
+    {"pose": "mid"},
+    {"to": "near_up", "s": 0.36, "ease": "inout", "phase": "stand_tall", "effort": 0.6},
+    {"hold": 0.08, "phase": "stand_tall", "effort": 0.6},
+    {"to": "mid", "s": 0.3, "ease": "inout", "phase": "stand_tall", "effort": 0.5},
+    {"to": "far_up", "s": 0.36, "ease": "inout", "phase": "shoulders_down", "effort": 0.6},
+    {"hold": 0.08, "phase": "shoulders_down", "effort": 0.6},
+    {"to": "mid", "s": 0.3, "ease": "inout", "phase": "shoulders_down", "effort": 0.5}
+  ],
+  "key": "near_up"
+}

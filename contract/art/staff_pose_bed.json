@@ -1,0 +1,98 @@
+{
+  "move": "staff_pose_bed",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 10},
+  "working": ["thigh", "abdomen"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -15, "f1": 122, "u": 45}, {"kind": "wall", "f": -14.6, "behind": true}],
+  "poses": {
+    "rest": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [0, 0, 0],
+      "head": [-3, 0, 0],
+      "arms": {"ik": [13, 61.2, 33], "pole": [0.1, 0, 1], "hand": [0.3, -0.95, 0.1]},
+      "legs": {"foot": [93, 11], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "straight": {
+      "from": "rest",
+      "legs": {"foot": [99.6, 9], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "staff": {
+      "from": "straight",
+      "arms": {"ik": [52, 90, 18], "pole": [-0.2, -1, 0.3], "hand": [1, -0.15, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "ankle_near",
+        "ankle_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "staff_in": {
+      "from": "staff",
+      "chest": [-1.5, 0, 0],
+      "arms": {"ik": [52.5, 91, 18], "pole": [-0.2, -1, 0.3], "hand": [1, -0.15, 0]}
+    },
+    "bent": {
+      "from": "staff",
+      "legs": {"foot": [90, 9], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": ["pelvis", "waist", "neck", "head", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "rest"},
+    {"hold": 0.6, "phase": "back_on_wall", "effort": 0.2},
+    {"to": "straight", "s": 1.8, "phase": "knees_down", "effort": 0.5},
+    {"to": "staff", "s": 1.4, "phase": "hands_off", "effort": 0.7},
+    {"to": "staff_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "staff", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "staff_in", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "staff", "s": 1.5, "phase": "breathe", "effort": 0.7},
+    {"to": "straight", "s": 1.2, "phase": "release", "effort": 0.4},
+    {"to": "rest", "s": 1.4, "phase": "release", "effort": 0.2}
+  ],
+  "key": "staff",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}
+  },
+  "targets": [
+    {"at": "staff", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "staff", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "staff", "check": "height", "joint": "knee_near", "max": 56},
+    {"at": "staff", "check": "height", "joint": "hand_tip_near", "min": 75}
+  ],
+  "note": "Sitting on a bed, the seat and back against the wall or the headboard: from the hands on the bed beside the hips and the knees a little bent, the backs of the knees press down until the legs are straight and together, and the hands lift off the bed, reaching along the legs, the back and the head staying on the wall."
+}

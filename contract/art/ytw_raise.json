@@ -1,0 +1,112 @@
+{
+  "move": "ytw_raise",
+  "view": "front",
+  "camera": {"yaw": 30, "pitch": 40},
+  "working": ["pauldron", "back"],
+  "props": [{"kind": "mat", "f0": -112, "f1": 92}],
+  "items": [{"kind": "towel", "under": "head"}],
+  "poses": {
+    "rest_y": {
+      "pelvis": [0, 15.5, 0],
+      "trunk": [90, 0, 0],
+      "head": [7, 0, 0],
+      "arms": {
+        "ik": [47, 3.3, 26],
+        "orbit": {"r": 54.7, "deg": 40, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "hand": [0.77, -0.05, 0.64]
+      },
+      "legs": {"fk": [4.6, 3, 0, -95]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lift_y": {
+      "from": "rest_y",
+      "arms": {
+        "ik": [47, 20, 26],
+        "orbit": {"r": 55.6, "deg": 40, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "hand": [0.77, 0.1, 0.64]
+      },
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    },
+    "rest_t": {
+      "from": "rest_y",
+      "arms": {
+        "ik": [47, 3.3, 26],
+        "orbit": {"r": 54.7, "deg": 90, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "hand": [0, -0.05, 1]
+      }
+    },
+    "lift_t": {
+      "from": "lift_y",
+      "arms": {
+        "ik": [47, 20, 26],
+        "orbit": {"r": 55.6, "deg": 90, "plane": "fl"},
+        "pole": [0, 1, 0],
+        "hand": [0, 0.1, 1]
+      }
+    },
+    "rest_w": {
+      "from": "rest_y",
+      "arms": {
+        "ik": [47, 3.3, 26],
+        "orbit": {"r": 39, "deg": 92, "plane": "fl"},
+        "pole": [-1, 0.05, 0],
+        "hand": [0.7, -0.05, 0.7]
+      }
+    },
+    "lift_w": {
+      "from": "lift_y",
+      "arms": {
+        "ik": [47, 20, 26],
+        "orbit": {"r": 39, "deg": 92, "plane": "fl"},
+        "pole": [-1, 0.2, 0],
+        "hand": [0.7, 0.1, 0.7]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "rest_y"},
+    {"hold": 0.4, "phase": "lie"},
+    {"to": "lift_y", "s": 1.0, "phase": "y_raise", "effort": 0.8},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "rest_y", "s": 1.0, "phase": "lower", "effort": 0.4},
+    {"to": "rest_t", "s": 0.8, "phase": "switch", "effort": 0.2},
+    {"to": "lift_t", "s": 1.0, "phase": "t_raise", "effort": 0.85},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "rest_t", "s": 1.0, "phase": "lower", "effort": 0.4},
+    {"to": "rest_w", "s": 0.8, "phase": "switch", "effort": 0.2},
+    {"to": "lift_w", "s": 1.0, "phase": "w_raise", "effort": 0.85},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "rest_w", "s": 1.0, "phase": "lower", "effort": 0.4},
+    {"to": "rest_y", "s": 0.8, "phase": "switch", "effort": 0.2}
+  ],
+  "key": "lift_y"
+}

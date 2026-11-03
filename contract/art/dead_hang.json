@@ -1,0 +1,73 @@
+{
+  "move": "dead_hang",
+  "view": "side",
+  "camera": {"yaw": 50, "pitch": 4},
+  "working": ["forearm", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "bar", "f": 8, "u": 222}],
+  "poses": {
+    "stand": {
+      "pelvis": [5, 94.6, 0],
+      "trunk": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [6, 8, 12, 0, 0]},
+      "legs": {"foot": [4, 12], "turn": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "stand",
+      "head": [-8, 0, 0],
+      "arms": {"ik": [6, 197, 30], "pole": [-0.2, -1, 0.6], "hand": [0, 1, 0]}
+    },
+    "dip": {
+      "from": "reach",
+      "pelvis": [-1, 84, 0],
+      "trunk": [10, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [6, 186, 30], "pole": [-0.2, -1, 0.6], "hand": [0, 1, 0]}
+    },
+    "catch": {
+      "pelvis": [4, 110, 0],
+      "trunk": [-3, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"ik": [2, 211, 30], "pole": [-0.2, -1, 0.6], "hand": [0, 1, 0]},
+      "legs": {"fk": [10, 2, 24, -30]},
+      "contacts": []
+    },
+    "in": {
+      "pelvis": [6, 113.2, 0],
+      "trunk": [-6, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-0.2, -1, 0.6], "hand": [0, 1, 0]},
+      "legs": {"fk": [4, 2, 8, -30]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "out": {"from": "in", "pelvis": [6.3, 113.2, 0], "legs": {"fk": [6, 2, 10, -30]}},
+    "bent": {
+      "from": "in",
+      "pelvis": [6, 118, 0],
+      "arms": {"ik": [8, 215.2, 29.9], "pole": [0.35, -1, -0.4], "hand": [0, 1, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.4, "phase": "stand"},
+    {"to": "reach", "s": 0.6, "phase": "arms_up", "effort": 0.2},
+    {"to": "dip", "s": 0.45, "phase": "quarter_down", "effort": 0.4},
+    {"to": "catch", "s": 0.35, "phase": "jump", "effort": 0.7, "dynamic": true},
+    {"to": "in", "s": 0.45, "phase": "dead_hang", "effort": 0.8, "dynamic": true},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "out", "s": 1.4, "phase": "hold", "effort": 0.8},
+    {"to": "in", "s": 1.4, "phase": "breathe", "effort": 0.8},
+    {"to": "catch", "s": 0.4, "phase": "let_go", "effort": 0.4, "dynamic": true},
+    {"to": "dip", "s": 0.4, "phase": "land_softly", "effort": 0.4, "dynamic": true},
+    {"to": "reach", "s": 0.6, "phase": "stand_up", "effort": 0.2},
+    {"to": "stand", "s": 0.6, "phase": "arms_down", "effort": 0.1}
+  ],
+  "key": "in",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  }
+}

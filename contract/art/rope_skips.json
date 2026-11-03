@@ -1,0 +1,76 @@
+{
+  "move": "rope_skips",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 8},
+  "working": ["shin", "forearm"],
+  "items": [{"kind": "rope", "turns": -1, "phase": 0.7, "r": 98}],
+  "poses": {
+    "land": {
+      "pelvis": [4, 98, 0],
+      "trunk": [3, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 6, "deg": 162, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "legs": {"foot": [0, 8], "turn": 6, "lift": 18, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "load": {
+      "from": "land",
+      "pelvis": [4, 95.5, 0],
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 6, "deg": 90, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "legs": {"foot": [0, 8], "turn": 6, "lift": 10, "knee_out": 6}
+    },
+    "push": {
+      "from": "land",
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 6, "deg": 18, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      }
+    },
+    "air": {
+      "from": "land",
+      "pelvis": [4, 106.5, 0],
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 6, "deg": -90, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "legs": {"foot": [0, 8], "turn": 6, "y": 6.5, "lift": 34, "knee_out": 6},
+      "contacts": []
+    },
+    "land_end": {
+      "from": "land",
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 6, "deg": -198, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "land"},
+    {"to": "load", "s": 0.1, "ease": "out", "phase": "wrists_turn", "effort": 0.7},
+    {"to": "push", "s": 0.1, "ease": "in", "phase": "wrists_turn", "effort": 0.8},
+    {"to": "air", "s": 0.15, "ease": "out", "phase": "wrists_turn", "effort": 0.8},
+    {"to": "land_end", "s": 0.15, "ease": "in", "phase": "wrists_turn", "effort": 0.7}
+  ],
+  "key": "air"
+}

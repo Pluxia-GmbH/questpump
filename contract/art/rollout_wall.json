@@ -1,0 +1,31 @@
+{
+  "move": "rollout_wall",
+  "view": "side",
+  "camera": {"yaw": -4, "pitch": 20},
+  "working": ["abdomen", "pauldron"],
+  "props": [{"kind": "mat", "f0": -56, "f1": 131.5}, {"kind": "wall", "f": 133.5}],
+  "items": [{"kind": "wheel"}],
+  "poses": {
+    "tuck": {
+      "line": {"pivot": "knees", "at": -10, "angle": 70, "width": 12, "y": 1, "hips": -56},
+      "head": [-6, 0, 0],
+      "arms": {"ik": [48, 13.5, 12], "pole": [-1, 0, 0.4], "hand": [0.7, -0.6, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far"]
+    },
+    "out": {
+      "from": "tuck",
+      "line": {"pivot": "knees", "at": -10, "angle": 26, "width": 12, "y": 1, "hips": -6},
+      "chest": [6, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [119, 13.5, 12], "pole": [-1, 0, 0.4], "hand": [0.7, -0.6, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tuck"},
+    {"hold": 0.3, "phase": "kneel"},
+    {"to": "out", "s": 1.4, "phase": "to_wall", "effort": 0.8},
+    {"hold": 0.2, "phase": "to_wall", "effort": 0.95},
+    {"to": "tuck", "s": 1.2, "phase": "roll_back", "effort": 0.9}
+  ],
+  "key": "out"
+}

@@ -1,0 +1,75 @@
+{
+  "move": "cobra",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 10},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -115, "f1": 68}],
+  "poses": {
+    "down": {
+      "pelvis": [0, 16, 0],
+      "trunk": [90, 0, 0],
+      "head": [8, 0, 0],
+      "arms": {"ik": [41.5, 4.3, 25], "pole": [-0.3, 1, 0.1], "hand": [1, -0.1, 0.1]},
+      "legs": {"foot": [-87.3, 12], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "up": {
+      "from": "down",
+      "trunk": [68, 0, 0],
+      "chest": [-30, 0, 0],
+      "head": [8, 0, 0],
+      "contacts": [
+        "pelvis",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arms": {"ik": [41.5, 4.3, 25], "pole": [-1, 0.3, 0.1], "hand": [1, -0.1, 0.1]}
+    },
+    "up_in": {"from": "up", "trunk": [67, 0, 0], "chest": [-32, 0, 0]},
+    "chin": {"from": "up", "chest": [-16, 0, 0], "head": [-44, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.6, "phase": "lie", "effort": 0.2},
+    {"to": "up", "s": 2.5, "phase": "chest_up", "effort": 0.5},
+    {"to": "up_in", "s": 2.0, "phase": "breathe", "effort": 0.5},
+    {"to": "up", "s": 2.0, "phase": "breathe", "effort": 0.5},
+    {"to": "down", "s": 2.0, "phase": "lower", "effort": 0.3}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "chin",
+    "caption": "chin_leads",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 155}
+  },
+  "targets": [
+    {"at": "up", "check": "height", "joint": "pelvis", "max": 17},
+    {"at": "up", "check": "height", "joint": "neck", "min": 43, "max": 50},
+    {"at": "up", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "min": 145, "max": 152},
+    {"at": "up", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 75, "max": 105}
+  ],
+  "note": "Face down, the hands under the shoulders: the chest lifts with the hips on the floor and the belly button just off it (the neck at 47 cm, the line from the hips to the neck about 31 degrees above the legs' line, the standing arch's depth of step 2), the elbows bent at about 90 degrees and close to the sides with the hands a little ahead of the shoulders, the shoulders down and the neck long; breathe there, then lower."
+}

@@ -1,0 +1,35 @@
+# cargo deny check (rust-helper workspace-and-crates.md, "Gates"): licences, advisories, bans and sources.
+
+[graph]
+all-features = true
+# the helper ships for macOS and Windows: Tauri's Linux stack (GTK, WebKitGTK) is never built
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-pc-windows-msvc", "aarch64-pc-windows-msvc"]
+
+[advisories]
+yanked = "deny"
+
+[licenses]
+# permissive licences, and MPL-2.0 (file-level copyleft: using an unmodified crate asks nothing of this code)
+allow = [
+	"MIT",
+	"Apache-2.0",
+	"BSD-2-Clause",
+	"BSD-3-Clause",
+	"ISC",
+	"Zlib",
+	"Unicode-3.0",
+	"CC0-1.0",
+	"0BSD",
+	"MPL-2.0",
+]
+confidence-threshold = 0.9
+
+[bans]
+# Tauri 2 pulls older majors of a few crates beside the ones this workspace names
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

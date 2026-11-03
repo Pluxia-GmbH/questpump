@@ -1,0 +1,304 @@
+openapi: 3.1.1
+info:
+  title: QuestPump crash reports
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    Crash reports (2026-10-12; David, after TestFlight build 5 crashed on his iPhone: "How will we get crash logs from
+    users once released? ... implement the best (crashlytics etc?)", then "can it not work automatic like we do in
+    learnclash"). They go by themselves, the way learnclash's do: the Menu's switch "Send crash reports" is on by
+    default where the law lets a player opt out, and stays off until the player says yes where it wants an opt-in
+    first, the opt-in regions below (the EEA, guessed on the device as learnclash's `GdprRegion` does without its
+    United Kingdom and Switzerland, and India and Canada). There, after a crash, the app asks: Send (this report),
+    Always send (turns the switch on) or Don't send. The switch, on or off, is the player's own choice from then on, kept by the
+    app. With it off, or still unanswered, nothing about a crash leaves the device. The rest of the telemetry, usage
+    statistics under their own switch, is contract/telemetry-api.yaml's, which also asks both switches together at the
+    first start.
+
+    **The opt-in regions** (`x-opt-in-regions` below: learnclash's list of 2026-10-12 without the United Kingdom and
+    Switzerland, with the EU's outermost regions and Åland, where the GDPR applies under their own codes, and
+    Europe/Kiev and Europe/Kyiv, the zone Windows gives Finland, Estonia, Latvia, Lithuania and Bulgaria through "FLE
+    Standard Time", the safe side for Ukraine too; then India and Canada, added the same day (David, on the telemetry's
+    legal steps: "do all that yourself"; docs/tasks.md "With the telemetry" (8) and (9)): India's DPDP Act asks for
+    consent first from 2027-05-13, and Quebec's Law 25 (s. 8.1) wants a technology that can identify, locate or profile
+    a person off until the person turns it on, which neither a device's region nor its time zone tells apart from the
+    rest of Canada, so all of Canada asks first; each with every time zone tzdata gives it and their older names, which
+    a system may still give, Windows among them, whose India Standard Time is Asia/Calcutta). The United Kingdom and
+    Switzerland left them on 2026-10-13 (David: "can we not default turn usage statistics and send crash reports toggled
+    on. So people dont need to toggle on themselves before pressing done"; asked, he chose this with a one-tap yes in
+    the window, Turn both on, which learnclash's Accept all replaced the same day, telemetry-api.yaml): the UK's PECR,
+    since the Data (Use and Access) Act 2025 (Schedule A1, in force 2026-02-05), counts preventing or detecting
+    technical faults as strictly necessary and lets a service gather statistics on its own use with clear information
+    and a simple, free way to object, and Switzerland's FMG Art. 45c asks only for notice and a way to refuse, so both
+    switches start on there, the window and the Menu the way to say no; the GDPR's EEA, India and Canada still need a
+    yes first, and a switch the app sets on for the player is none (GDPR recital 32; CJEU C-673/17, Planet49). The Crown
+    Dependencies' and Gibraltar's zones stay (their own laws, which the UK's Act did not change, the safe side). A
+    device is in one when its region's country code (iOS `Locale.current.region`, Android the system's first locale's
+    country, never the app's own locale, the desktop OS's region setting) is in `countries`, or when its IANA time zone
+    is in `timeZones`, or when its time zone names no place: none or blank, one without a slash (`UTC`, `GMT`, `CET`,
+    an offset such as `GMT+01:00`) or one under `Etc/` (`Etc/UTC`, `Etc/GMT+1`), the safe side, since the time zone is
+    the sign of where the device is and such a zone hides it, whatever the region says (2026-11-01, the release
+    security review: a UTC zone read as outside). Both are read with the spaces, tabs and line ends around them
+    dropped, a country only as two ASCII letters, so one input gives one answer on every platform; no app reads the
+    SIM. It is a guess on the device, never a network lookup; a player who moves is read again at each start until the
+    switch holds an answer, which nothing changes but the player.
+
+    The files of the contract:
+
+    - this file: what each part captures, when it asks, what a report holds and never holds, the desktop app's route
+      and body, the Worker's checks and its mail;
+    - `contract/copy/en.json`: the words, `crash.*` (the phones' window and the desktop page, asked only in an opt-in
+      region before the player answered, share the title, the buttons and the thanks), `desk.crash.*` (the desktop
+      page's own) and the Menu's switch `menu.crash` with its line `menu.crash.note`;
+    - `contract/design/screens.json`: the phones' window `crash.ask` and the desktop app's page `desk.crash`;
+    - `site/report/src/index.js` and `site/report/wrangler.toml`: the route `/api/crash`, beside `/api/feedback` and
+      `/api/coach-report` on the same Worker (contract/feedback-api.yaml, contract/coach-api.yaml).
+
+    **The phones (the iPhone app and the Android app): Firebase Crashlytics, its collection always off, its reports
+    sent by the app.** The SDK (`FirebaseCrashlytics` in the iPhone app, Firebase Apple 13.1.1; `firebase-crashlytics`
+    from the Firebase BoM with the Crashlytics Gradle plugin in the Android phone app) catches the crash in the app's
+    own process. The build holds collection off (Info.plist `FirebaseCrashlyticsCollectionEnabled` false, the
+    manifest's `firebase_crashlytics_collection_enabled` false, as learnclash's builds do), and the app never turns it
+    on: with collection off the SDK keeps a crash's report on the phone, fetches no settings, sends no Firebase
+    Sessions events and sends nothing until the app calls `sendUnsentReports()` (firebase-ios-sdk 13.0.1
+    `FIRCLSReportManager.m`, firebase-android-sdk `CrashlyticsController.java`, read 2026-10-12). Turning collection on
+    would be stored by the SDK and win over the build's flag at the next start, before the app could read the switch
+    (a player who moved into an opt-in region would send unasked; the review of 2026-10-12), and would add a Sessions
+    event at every start: so the app sends the reports itself, and the dashboard shows no crash-free numbers. The
+    switch is the app's own setting (UserDefaults, SharedPreferences) with three states: on, off, and not answered yet
+    (read as off; only an opt-in region starts there).
+
+    - At each start, once Firebase is configured and the app's settings can be read (on the iPhone, a launch before
+      the first unlock after a restart waits until the defaults read, then reads them: an answer the locked defaults
+      hide must not read as not answered; a phone locked again after its first unlock reads them), the app calls `setCrashlyticsCollectionEnabled(false)` (clearing a value an earlier
+      build stored), reads the switch (its stored answer, else on outside an opt-in region and not answered inside one)
+      and calls `checkForUnsentReports()` (it answers once a run). With reports waiting: on, `sendUnsentReports()`,
+      nothing shown; off by the player's answer, `deleteUnsentReports()`; not answered, the window `crash.ask` once the
+      root shows and no pump runs: Send calls `sendUnsentReports()` and shows `crash.sent` as a toast, the switch still
+      not answered (the next crash asks again); Always send turns the switch on (stored) and sends the same way, with the
+      same toast; Don't send calls `deleteUnsentReports()`, the switch still not answered. The window closed any other
+      way leaves the reports waiting, and the next start asks again. A crash later in the same run waits for the next
+      start.
+    - The Menu's switch shows on or off (not answered shows off). Turning it on stores on and, while this run's reports
+      wait unsent, sends them; turning it off stores off and calls `deleteUnsentReports()`.
+    - A build without the Firebase config (an Android build without `google-services.json`) has no Crashlytics, no
+      switch and no window.
+    - **The start comes first.** The iPhone configures Firebase (with App Check's factory) only for a purpose that
+      reads on (telemetry-api.yaml, "Firebase starts only for a purpose that reads on"): at the top of the app
+      delegate's `init`, before it builds anything else, when one reads on at launch (a switch, or the coach's kept
+      consent), so a crash anywhere in the start is caught, else the moment one turns on (until then a crash is not
+      captured); Android's
+      Crashlytics starts in its own provider before `onCreate`, and the app's crash reports start first in `onCreate`.
+      With the switch on and a report waiting from a run that ended within 10 s of its start (a start that crashes
+      again and again), the app calls `sendUnsentReports()` before the rest of its start and waits up to 2 s for it.
+    - **The context a phone report carries** (telemetry.json `crashContext`): Crashlytics custom keys `screen`,
+      `pump`, `link`, `watch` and `demo`, each from its closed list, set when they change, and a log line for each
+      change (`<key> <value>`) and for the app's own moments (`app foreground`, `app background`, `memory warning`).
+      Nothing else: no user id, no free text, no number. They stay on the phone beside a run's report and leave only
+      with it; a run without a crash keeps none. While "Usage statistics" collects, Crashlytics also attaches the
+      run's Google Analytics events (telemetry.json's, nothing else) to the report as breadcrumbs.
+    - **The answer's record:** the switch's answer is kept with its moment and the copy version shown (`privacy.v1`).
+    - **Kills Crashlytics cannot see** (the iPhone on iOS 27 and later, through MetricKit's `MetricManager`; on iOS 26
+      Xcode's Organizer alone): at each start, of the diagnostic reports MetricKit delivers, a crash whose termination
+      category is a watchdog's or a task timeout's, and a memory exception, are each recorded as one Crashlytics
+      non-fatal (domain `QuestPump.Termination`, code 1 watchdog, 2 task timeout, 3 memory), its frames as image name
+      and offset (`QuestPump +0x1a2b3`), while the switch is on or not answered (off: none recorded); it then goes,
+      waits or is asked about as a crash is. Hangs, CPU and disk-write reports are not forwarded.
+    - **Android's ANRs** (the app not responding, Android 11 and later): each reaches Crashlytics as a crash does,
+      by Crashlytics' own capture (it reads `ApplicationExitInfo` at the start) when its cached settings collect ANRs,
+      else the app records it itself as one non-fatal (domain `QuestPump.Exit`, code 1, the main thread's frames from
+      the ANR trace): one of the two, never both.
+    - What a report holds (Crashlytics' own): the stack of every thread, the exception or signal with its reason, the
+      binary images, the app's version and build, the device's model, the OS's version and build, its locale, memory
+      and orientation, the Crashlytics installation UUID and, at upload, the Firebase installation id; the Remote
+      Config rollouts the app reads. Never the player's pumps, rows, health data, name or the pairing key. Google keeps
+      it 90 days (firebase.google.com/support/privacy, modified 2026-09-15), as Pluxia's processor.
+    - Symbols: the iPhone app's archive uploads its dSYM with Crashlytics' `run` script (a post-build script that runs
+      only when installing, so the gates' builds stay offline), which uploads in the background and reports nothing;
+      after every archive `apple/scripts/keep-symbols.sh` uploads the archive's dSYMs again with `upload-symbols` in
+      the foreground (its exit checked) and copies the archive to `~/.questpump/releases/ios/<version>/<build>/`,
+      outside every work tree, so each shipped build stays symbolicable. The Android phone app's signed release
+      bundles upload their R8 mapping file through the Crashlytics Gradle plugin.
+    - Store declarations: the App Privacy label lists Crash Data (not linked to the player, no tracking, App
+      Functionality) and its Other Diagnostic Data gains App Functionality (a report's memory and device details, as
+      Crashlytics' own privacy manifest declares them), and `apple/iOS/PrivacyInfo.xcprivacy` declares
+      `NSPrivacyCollectedDataTypeCrashData` the same way; Play's Data safety form lists App info and performance > Crash
+      logs and Diagnostics (collected, not shared, optional since the switch turns them off, Analytics).
+
+    **The watches have none of it.** Crashlytics on watchOS records no signal or Mach exception, so it misses Swift's
+    traps and SwiftUI's crashes, and Firebase calls watchOS community-supported; neither watch app links Firebase. Their
+    crashes reach Apple's and Google's own tools from players who share them: Xcode's Crashes organizer (every
+    TestFlight tester's, symbolicated from the dSYMs the archive uploads) and Play Console's Crashes & ANRs
+    (deobfuscated from the bundle's own mapping file).
+
+    **The desktop app (QuestPump on this computer, `helper/`): its own capture, its own page, this route.**
+
+    - A Rust panic: a panic hook, installed first in `run()`, writes the report to a file in the app's data folder
+      (`crashes/`, one file a panic, at most `crash_outbox_max` (5) a run, so a panic the app survives again and again
+      writes no more) with `std::fs` before anything else, then logs one line to `helper.log` (the log formats a
+      record before it takes its file's lock, so the line never waits on a lock the panicking thread holds), then
+      calls the default hook; it reads nothing that can panic itself. A panic
+      the engine's door catches on purpose (`desk/engine.rs`) is logged and never becomes a report: the app goes on. A
+      panic that cannot unwind (into a system callback) and its follow-up are one report.
+    - A crash the system records (a signal, an access violation, an abort): at the next start the app reads the
+      system's own report of its process. On macOS each `questpump-helper-*.ips` in `~/Library/Logs/DiagnosticReports`
+      newer than the last one it handled (its first line JSON, then the body's JSON: `exception`, `termination`,
+      `asi`, `lastExceptionBacktrace`, the faulting thread's frames with `imageIndex`, `symbol` and `imageOffset`). On
+      Windows each Windows Error Reporting report of `questpump-helper.exe` newer than the last one handled, in the
+      user's store `%LOCALAPPDATA%\Microsoft\Windows\WER` and the machine's `%ProgramData%\Microsoft\Windows\WER`,
+      each `ReportArchive` and `ReportQueue` (`AppCrash_questpump-helpe*\Report.wer`, UTF-16: the `Sig[*]`
+      application, its version, module, exception code and offset; a folder the user may not read is skipped with a
+      log line). A system report within a few seconds of a panic the app already reported, at this start or an earlier
+      one, is that panic's abort and never goes again. A report it cannot read is skipped with a log line, and one
+      written in the last minute is tried again at the next start rather than marked handled, every report after it
+      waiting with it. A report at the moment of one already handled is that one, whatever its folder's name.
+    - The report is a text the player can read whole, `report` below, at most `crash_report_max_chars` (12,000)
+      Unicode scalar values (the backtrace cut at its end first), in this order: "QuestPump on this computer <version>
+      (<os>)"; "Crashed: <date> UTC"; "Kind: panic" or "Kind: crash"; for a panic the thread's name, the message, the
+      file and line, then the backtrace's frames (function names; no addresses; on Windows, whose installer ships no
+      symbols, each frame as its module and offset, `questpump-helper.exe+0x1a2b3`, unresolved in the hook); for a crash the exception, the
+      signal or code, the termination reason, the faulting module and offset, then the faulting thread's frames (an
+      image's name, its symbol when the report names one, the offset), and an Objective-C exception's backtrace when
+      there is one. The version is the crashed build's (a panic file's own, the `.ips` header's `app_version`, the WER
+      report's application version). The home folder's path becomes `~` everywhere and in every spelling a path takes
+      (on Windows any case, backslashes single or doubled as Rust's debug format writes them, forward slashes, the
+      `\\?\` prefix), and a crash report's identifiers (the macOS
+      report's `crashReporterKey`, `userID`, `bootSessionUUID`, `incident`, `procPath`, `parentProc`; the Windows
+      report's `ReportIdentifier`, `IntegratorReportIdentifier`, `MachineName` and user fields) never go: nothing
+      names the player, the computer or the game.
+    - The switch "Send crash reports" (the Menu's QuestPump group), the app's own setting with the phones' three states
+      and the same default: on outside an opt-in region (the OS's region setting and its time zone), not answered
+      inside one. Reports are taken early in the start, before the engine and the devices start. At the start, with
+      reports waiting: on, they go to the outbox and no page opens; off by the player's answer, they are deleted and the
+      crash outbox is emptied; not answered, the next main window the player opens (at a launch by the player, the
+      start's own; at login or after an update the window stays closed, rust-helper's rule) shows the page `desk.crash` (contract/copy/en.json
+      `crash.*` and `desk.crash.*`): what the report holds, every waiting report's text behind Show the report, exactly
+      as it would go, then Send (into the outbox, the switch still not answered), Always send (the switch on, then the
+      same) and Don't send (deleted, the switch still not answered). Closed any other way, the page comes again at the
+      next start. Turning the switch off deletes waiting reports and empties the crash outbox. A round of the outbox sends
+      a report only while the switch is on or when the player's Send put it there: one kept while the switch was on
+      waits, unsent, when the switch now reads not answered (a player who moved into an opt-in region).
+    - **Kept alive:** the main loop, the LAN server, the socket and the mirror's writer run supervised; one that ends
+      in a panic restarts the app once (its report goes at the next start, the crash sweep's first act), unless the
+      start before also ended so within 60 s, which leaves the app up showing its Failed state. A page's uncaught error
+      or unhandled rejection, and the end of macOS's WebContent process (the window reloads), are logged to
+      `helper.log`, never sent; a start that fails before the window writes its error there too.
+    - **First in the start:** `run()` takes the waiting reports and starts their sending before anything else it sets
+      up, so an app that crashes in its start still sends while the switch is on.
+    - **Symbols:** release builds keep line tables (`[profile.release] debug = "line-tables-only"`, `split-debuginfo =
+      "packed"`), and `helper-release.yml` keeps each release's dSYM and PDB as workflow artifacts, so a frame's module
+      and offset can be named later.
+    - The outbox follows contract/feedback-api.yaml's rules ("The client's outbox") with its own file and limits: at
+      most `crash_outbox_max` (5) reports, each kept at most `crash_outbox_days` (30) days from its `at`; 204 deletes a
+      report, 400 and 413 drop it with a log line naming the code, anything else keeps it for the next round.
+
+    **The Worker.** The route `/api/crash` on questpump.com, the coach report's Worker (`site/report/`), checked as
+    `/api/feedback` is: 400 without reading the body when the `Content-Type` is not `application/json` or an `Origin`
+    header comes; at most `crash_body_max_bytes` (16,384) bytes read (413 past them); exactly the fields below, each in
+    its bounds, any other field refused (400); no token. Limits, per Cloudflare location: one report a minute for a
+    client address (IPv4 whole, IPv6 by its /64; a limiter key, never stored or mailed), 20 a minute for all crash
+    reports together; then 500 mails a UTC day for the report Worker's four mailing routes together, the last 100 of
+    them the crash reports' alone (since 2026-10-31). It mails each report to the support mailbox from `feedback@questpump.com` and keeps nothing
+    (Workers Logs off). The mail's subject, ASCII alone: "Crash report from the helper <version>, <kind>, <signature>,
+    <at>" with `at` as `12 Oct 2026 17:03 UTC` and `signature` the body's (a panic's file and line, a crash's faulting
+    module and offset), so a mail reader threads one crash's reports together; its text: "System: <os>", a blank line, then the report, its line ends made LF,
+    every control character but LF and TAB replaced by U+FFFD and the bidi controls U+202A-U+202E and U+2066-U+2069
+    removed.
+servers:
+  - url: https://questpump.com
+paths:
+  /api/crash:
+    post:
+      operationId: sendCrashReport
+      summary: One crash report of the desktop app, sent while the player's switch is on or because the player said so.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrashReport"
+      responses:
+        "204":
+          description: Mailed. The client deletes the report from its outbox.
+        "400":
+          description: Not JSON, an Origin header, a field missing, out of its bounds or unknown. The client drops it.
+        "413":
+          description: The body is longer than crash_body_max_bytes. The client drops it.
+        "429":
+          description: A limit is reached. The client keeps it and tries again in about 61 s.
+        "5XX":
+          description: The Worker or the mail failed. The client keeps it.
+components:
+  schemas:
+    CrashReport:
+      type: object
+      additionalProperties: false
+      required: [source, version, at, kind, os, report]
+      properties:
+        source:
+          const: helper
+          description: The desktop app; the phones' reports go through Crashlytics, never this route.
+        version:
+          type: string
+          pattern: "^[A-Za-z0-9._+-]{1,32}$"
+          description: The desktop app's version, as its About shows it (ASCII, so the mail's subject stays ASCII).
+        at:
+          type: integer
+          minimum: 1704067200
+          maximum: 4102444800
+          description: The crash's moment, unix seconds (the panic's, or the system report's time).
+        kind:
+          enum: [panic, crash]
+          description: A Rust panic the hook wrote, or a crash the system recorded.
+        os:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: The OS, its version and the architecture, as "macOS 27.0, arm64" or "Windows 11 26200, x86_64".
+        report:
+          type: string
+          minLength: 1
+          maxLength: 12000
+          description: The report's text exactly as the page showed it, at most 12,000 Unicode scalar values.
+        signature:
+          type: string
+          pattern: "^[ -~]{1,120}$"
+          description: The crash's place, ASCII, for the mail's subject (a panic's `file:line`, a crash's `module+0x1a2b3`).
+x-limits:
+  crash_report_max_chars: 12000
+  crash_body_max_bytes: 16384
+  crash_outbox_max: 5
+  crash_outbox_days: 30
+  crash_os_max_chars: 64
+  crash_at_min: 1704067200
+x-opt-in-regions:
+  # learnclash lib/core/platform/preferences/gdpr_region.dart (2026-10-12): the EU's 27 and the EEA's three others
+  # (its United Kingdom and Switzerland, with Europe/London and Europe/Zurich, left on 2026-10-13: both switches start
+  # on there; Guernsey's, Jersey's, the Isle of Man's and Gibraltar's zones stay); then the EU's outermost regions and
+  # Åland, under their own codes; then India and Canada (2026-10-12), their zones IANA tzdata 2026e's zone.tab rows
+  # for IN and CA, then the names its `backward`
+  # file links to those zones (Asia/Calcutta; Canada/*; America/Coral_Harbour, Montreal, Nipigon, Pangnirtung,
+  # Rainy_River, Thunder_Bay and Yellowknife), none of them another country's (zone1970.tab also gives America/Toronto
+  # to the Bahamas, whose devices name America/Nassau; America/Panama, America/Puerto_Rico and America/Phoenix, which
+  # parts of Canada follow, stay out); a device in one (its region's country or its time zone, or a time zone that
+  # names no place: "The opt-in regions" above) starts with the switch not answered
+  countries: [AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, HU, IE, IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES,
+    SE, IS, LI, "NO", AX, GF, GP, MQ, RE, YT, MF, IN, CA]
+  timeZones: [Europe/Vienna, Europe/Brussels, Europe/Sofia, Europe/Zagreb, Asia/Nicosia, Asia/Famagusta,
+    Europe/Prague, Europe/Copenhagen, Europe/Tallinn, Europe/Helsinki, Europe/Mariehamn, Europe/Paris, Europe/Berlin,
+    Europe/Busingen, Europe/Athens, Europe/Budapest, Europe/Dublin, Europe/Rome, Europe/Riga, Europe/Vilnius,
+    Europe/Luxembourg, Europe/Malta, Europe/Amsterdam, Europe/Warsaw, Europe/Lisbon, Atlantic/Madeira,
+    Atlantic/Azores, Europe/Bucharest, Europe/Bratislava, Europe/Ljubljana, Europe/Madrid, Africa/Ceuta,
+    Atlantic/Canary, Europe/Stockholm, Atlantic/Reykjavik, Europe/Vaduz, Europe/Oslo, Arctic/Longyearbyen,
+    Europe/Guernsey, Europe/Jersey, Europe/Isle_of_Man, Europe/Gibraltar, America/Cayenne, America/Guadeloupe, America/Martinique, Indian/Reunion, Indian/Mayotte, America/Marigot,
+    Europe/Kiev, Europe/Kyiv, Asia/Kolkata, Asia/Calcutta, America/St_Johns, America/Halifax, America/Glace_Bay,
+    America/Moncton, America/Goose_Bay, America/Blanc-Sablon, America/Toronto, America/Iqaluit, America/Atikokan,
+    America/Winnipeg, America/Resolute, America/Rankin_Inlet, America/Regina, America/Swift_Current, America/Edmonton,
+    America/Cambridge_Bay, America/Inuvik, America/Vancouver, America/Creston, America/Dawson_Creek,
+    America/Fort_Nelson, America/Whitehorse, America/Dawson, Canada/Atlantic, Canada/Central, Canada/Eastern,
+    Canada/Mountain, Canada/Newfoundland, Canada/Pacific, Canada/Saskatchewan, Canada/Yukon, America/Coral_Harbour,
+    America/Montreal, America/Nipigon, America/Pangnirtung, America/Rainy_River, America/Thunder_Bay,
+    America/Yellowknife]

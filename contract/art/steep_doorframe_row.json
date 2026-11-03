@@ -1,0 +1,43 @@
+{
+  "move": "steep_doorframe_row",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 8},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "doorframe", "f": 50, "wall": "-l"}],
+  "poses": {
+    "lean": {
+      "line": {"pivot": "toes", "at": 64, "angle": 125, "width": 11, "lift": -12, "shift": 34.0},
+      "leg_near": {"foot": [64, -23.0], "turn": 0, "lift": -12, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [64, 45.0], "turn": 0, "lift": -12, "knee_out": 0, "pole": [1, 0, 0]},
+      "chest": [0, 0, 10],
+      "head": [6, 0, -10],
+      "arm_near": {"ik": [44.0, 112.0, -8.0], "pole": [-1, -0.5, 0.3], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [12, -40, 4], "rel": "neck", "pole": [0, -0.5, 1], "hand": [0.2, -0.2, -1]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "pulled": {
+      "from": "lean",
+      "line": {"pivot": "toes", "at": 64, "angle": 100, "width": 11, "lift": -12, "shift": 34.0},
+      "chest": [0, 0, -5],
+      "head": [0, 0, 5],
+      "arm_near": {"ik": [44.0, 112.0, -8.0], "pole": [-1, 0, -0.1], "hand": [1, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "lean"},
+    {"hold": 0.3, "phase": "arm_straight"},
+    {"to": "pulled", "s": 1.0, "phase": "pull", "effort": 1.0},
+    {"hold": 0.2, "phase": "chest_to_frame", "effort": 0.9},
+    {"to": "lean", "s": 3.0, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "pulled", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "pulled", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 75},
+    {"at": "lean", "check": "height", "joint": "neck", "max": 126},
+    {"at": "pulled", "check": "angle", "joints": ["elbow_near", "shoulder_near", "hand_tip_near"], "min": 65}
+  ],
+  "note": "The near hand works, so the camera sees it: the body stands in the doorway with the jamb on its near side (the wall runs toward the camera, so the camera looks from behind), the near hand wrapped round the jamb's doorway face, the feet at its base, the free hand on the belly. The neck's height keeps the lean steep; the elbow-shoulder-hand angle keeps the elbow driven back at the top (about 30 degrees with the elbow forward)."
+}

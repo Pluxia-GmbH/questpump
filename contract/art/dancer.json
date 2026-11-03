@@ -1,0 +1,81 @@
+{
+  "move": "dancer",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 6},
+  "working": ["thigh_near", "back", "pauldron"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [2, 94.3, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"fk": [4, 4, 10]},
+      "legs": {"foot": [0, 9], "turn": 6, "knee_out": 4},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "heel_up": {
+      "from": "tall",
+      "pelvis": [2, 94.3, -1.5],
+      "arms": {"fk": [70, 5, 16]},
+      "leg_far": {"foot": [0, 9], "turn": 6, "knee_out": 4, "lift": 40},
+      "contacts": ["toe_near", "ankle_near", "toe_far"]
+    },
+    "bend": {
+      "from": "tall",
+      "pelvis": [2, 94.3, -3],
+      "chest": [-4, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [172, 6, 24]},
+      "leg_far": {"fk": [-4, 2, 140, -50]},
+      "contacts": ["toe_near", "ankle_near"]
+    },
+    "dancer": {
+      "from": "bend",
+      "pelvis": [-8, 94.3, -3],
+      "trunk": [50, 0, 0],
+      "chest": [-28, 0, 0],
+      "head": [-26, 0, 0],
+      "leg_far": {"ik": [-37, 145, 11], "pole": [-1, -0.6, 0], "toe": [-0.6, 0.3, 0]},
+      "arm_near": {"ik": [-20, 152, -4], "pole": [0.3, 1, 0.45], "hand": [-0.9, -0.45, 0]},
+      "arm_far": {"ik": [-20, 152, 17], "pole": [0.3, 1, 0.45], "hand": [-0.9, -0.45, 0]}
+    },
+    "dancer_in": {"from": "dancer", "pelvis": [-8, 94.5, -3], "chest": [-30, 0, 0]},
+    "upright": {
+      "from": "dancer",
+      "pelvis": [-4, 94.3, -3],
+      "trunk": [24, 0, 0],
+      "chest": [-32, 0, 0],
+      "head": [-12, 0, 0],
+      "leg_far": {"ik": [-34, 114, 11], "pole": [-0.7, -1, 0], "toe": [-0.7, 0.4, 0]},
+      "arm_near": {"ik": [-20, 128, -4], "pole": [0.3, 1, 0.45], "hand": [-0.9, -0.45, 0]},
+      "arm_far": {"ik": [-20, 128, 17], "pole": [0.3, 1, 0.45], "hand": [-0.9, -0.45, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "heel_up", "s": 0.4, "phase": "arms_up", "effort": 0.3, "ease": "in"},
+    {"to": "bend", "s": 0.9, "phase": "arms_up", "effort": 0.4, "ease": "out"},
+    {"to": "dancer", "s": 2.0, "phase": "lean_forward", "effort": 0.7},
+    {"to": "dancer_in", "s": 1.2, "phase": "breathe", "effort": 0.8},
+    {"to": "dancer", "s": 1.2, "phase": "breathe", "effort": 0.8},
+    {"to": "dancer_in", "s": 1.2, "phase": "breathe", "effort": 0.8},
+    {"to": "dancer", "s": 1.2, "phase": "breathe", "effort": 0.8},
+    {"to": "bend", "s": 1.6, "phase": "rise_slowly", "effort": 0.4},
+    {"to": "heel_up", "s": 0.7, "phase": "release", "effort": 0.3, "ease": "in"},
+    {"to": "tall", "s": 0.4, "phase": "release", "effort": 0.2, "ease": "out"}
+  ],
+  "key": "dancer",
+  "fault": {
+    "pose": "upright",
+    "caption": "thigh_drops",
+    "breaks": {"check": "height", "joint": "knee_far", "min": 88}
+  },
+  "targets": [
+    {"at": "dancer", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "dancer", "check": "height", "joint": "knee_far", "min": 88, "max": 108},
+    {"at": "dancer", "check": "height", "joint": "wrist_near", "min": 145},
+    {"at": "dancer", "check": "height", "joint": "wrist_far", "min": 145},
+    {"at": "dancer", "check": "height", "joint": "ankle_far", "min": 135}
+  ]
+}

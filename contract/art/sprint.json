@@ -1,0 +1,68 @@
+{
+  "move": "sprint",
+  "view": "side",
+  "camera": {"yaw": 30, "pitch": 8},
+  "working": ["thigh", "shin", "abdomen"],
+  "fast_phase": 0.45,
+  "poses": {
+    "near_up": {
+      "pelvis": [6, 95, 0],
+      "trunk": [9, 0, 0],
+      "head": [-6, 0, 0],
+      "arm_near": {"fk": [-52, 4, 84]},
+      "arm_far": {"fk": [72, 4, 102]},
+      "leg_near": {"foot": [18, 13], "turn": 4, "y": 44, "lift": 40, "knee_out": 3},
+      "leg_far": {"foot": [0, 13], "turn": 4, "lift": 30, "knee_out": 5},
+      "contacts": ["toe_far"]
+    },
+    "float_a": {
+      "from": "near_up",
+      "pelvis": [6, 98, 0],
+      "arm_near": {"fk": [6, 4, 72]},
+      "arm_far": {"fk": [10, 4, 108]},
+      "leg_near": {"foot": [12, 13], "turn": 4, "y": 6, "lift": 24, "knee_out": 3},
+      "leg_far": {"ik": [-16, 46, 13], "pole": [1, 0, 0.1], "toe": [0.25, -0.97, 0]},
+      "contacts": []
+    },
+    "far_up": {
+      "from": "near_up",
+      "arm_near": {"fk": [72, 4, 102]},
+      "arm_far": {"fk": [-52, 4, 84]},
+      "leg_near": {"foot": [0, 13], "turn": 4, "lift": 30, "knee_out": 5},
+      "leg_far": {"foot": [18, 13], "turn": 4, "y": 44, "lift": 40, "knee_out": 3},
+      "contacts": ["toe_near"]
+    },
+    "float_b": {
+      "from": "float_a",
+      "leg_near": {"ik": [-16, 46, 13], "pole": [1, 0, 0.1], "toe": [0.25, -0.97, 0]},
+      "leg_far": {"foot": [12, 13], "turn": 4, "y": 6, "lift": 24, "knee_out": 3},
+      "arm_near": {"fk": [10, 4, 108]},
+      "arm_far": {"fk": [6, 4, 72]}
+    },
+    "lean": {
+      "from": "near_up",
+      "pelvis": [7, 95, 0],
+      "trunk": [-16, 0, 0],
+      "head": [12, 0, 0],
+      "arm_near": {"fk": [-20, 4, 88]},
+      "arm_far": {"fk": [50, 4, 100]}
+    }
+  },
+  "timeline": [
+    {"pose": "near_up"},
+    {"to": "float_a", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "far_up", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "float_b", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "near_up", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "float_a", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "far_up", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "float_b", "s": 0.12, "phase": "all_out", "effort": 1},
+    {"to": "near_up", "s": 0.12, "phase": "all_out", "effort": 1}
+  ],
+  "key": "near_up",
+  "fault": {
+    "pose": "lean",
+    "caption": "leans_back",
+    "breaks": {"check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "min": 0}
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "move": "lizard_forearms",
+  "view": "side",
+  "camera": {"yaw": 6, "pitch": 34},
+  "working": ["thigh_far", "tasset_far", "thigh_near"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -150, "f1": 80}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-22, 38, 0],
+      "trunk": [76, 0, 0],
+      "head": [-18, 0, 0],
+      "arm_near": {"ik": [44, 5.3, 2], "pole": [0.4, 0.2, 1], "hand": [1, -0.04, 0]},
+      "arm_far": {"ik": [44, 5.3, 16], "pole": [0.4, 0.2, 1], "hand": [1, -0.04, 0]},
+      "leg_far": {"foot": [-124, 11], "turn": 4, "lift": 64, "knee_out": 2},
+      "leg_near": {"foot": [34, 45], "turn": 34, "knee_out": 48},
+      "contacts": ["toe_far", "toe_near", "ankle_near", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "low": {
+      "from": "lunge",
+      "pelvis": [-26, 33, 0],
+      "trunk": [84, 0, 0],
+      "chest": [2, 0, 0],
+      "head": [-22, 0, 0],
+      "arm_near": {"ik": [50, 5.3, 2], "pole": [0, -1, 0.2], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [50, 5.3, 16], "pole": [0, -1, 0.2], "hand": [1, -0.05, 0]},
+      "leg_far": {"foot": [-131, 11], "turn": 4, "lift": 66, "knee_out": 2},
+      "contacts": [
+        "toe_far",
+        "toe_near",
+        "ankle_near",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "low_in": {"from": "low", "pelvis": [-25.4, 32.4, 0]},
+    "knee_down": {"from": "low", "leg_far": {"foot": [-122, 11], "turn": 4, "lift": 56, "knee_out": 2}}
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.5, "phase": "hands_down"},
+    {"to": "low", "s": 2.4, "phase": "hips_down", "effort": 0.6},
+    {"to": "low_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "low", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "low_in", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "low", "s": 1.5, "phase": "breathe", "effort": 0.8},
+    {"to": "lunge", "s": 2.0, "phase": "rise", "effort": 0.4}
+  ],
+  "key": "low",
+  "fault": {
+    "pose": "knee_down",
+    "caption": "back_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 160}
+  },
+  "targets": [
+    {"at": "low", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 160},
+    {"at": "low", "check": "height", "joint": "knee_far", "min": 14},
+    {"at": "low", "check": "height", "joint": "pelvis", "max": 36}
+  ],
+  "note": "The back leg is the far one, toes tucked and knee straight; the front foot is the near one, a long step ahead and turned out a little, its knee opening out beside the near shoulder. Both forearms rest on the floor inside the front foot, the hips low: the lizard on books (lizard_books) a stage deeper."
+}

@@ -1,0 +1,82 @@
+{
+  "move": "double_unders",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 8},
+  "working": ["shin", "forearm"],
+  "items": [{"kind": "rope", "turns": -2, "phase": 0.1875, "r": 102}],
+  "poses": {
+    "takeoff": {
+      "pelvis": [4, 99, 0],
+      "trunk": [3, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 8, "deg": -22.5, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "legs": {"foot": [0, 9], "turn": 6, "lift": 22, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far"]
+    },
+    "air": {
+      "from": "takeoff",
+      "pelvis": [4, 121, 0],
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 8, "deg": -270.0, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "legs": {"foot": [0, 9], "turn": 6, "y": 23, "lift": 36, "knee_out": 6},
+      "contacts": []
+    },
+    "touch": {
+      "from": "takeoff",
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 8, "deg": -517.5, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      }
+    },
+    "dip": {
+      "from": "takeoff",
+      "pelvis": [4, 94.5, 0],
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 8, "deg": -630.0, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "legs": {"foot": [0, 9], "turn": 6, "lift": 14, "knee_out": 8}
+    },
+    "again": {
+      "from": "takeoff",
+      "arms": {
+        "ik": [16, -52, 40],
+        "rel": "neck",
+        "orbit": {"r": 8, "deg": -742.5, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      }
+    },
+    "tuck": {"from": "air", "pelvis": [4, 120.8, 0], "legs": {"fk": [60, 4, 100, 20]}}
+  },
+  "timeline": [
+    {"pose": "takeoff"},
+    {"to": "air", "s": 0.22, "ease": "out", "phase": "jump", "effort": 1.0},
+    {"to": "touch", "s": 0.22, "ease": "in", "phase": "two_turns", "effort": 1.0},
+    {"to": "dip", "s": 0.1, "ease": "out", "phase": "land_softly", "effort": 0.8},
+    {"to": "again", "s": 0.1, "ease": "in", "phase": "land_softly", "effort": 0.9}
+  ],
+  "key": "air",
+  "fault": {
+    "pose": "tuck",
+    "caption": "knees_tuck",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "pelvis", "axis": "u", "max": -32}
+  }
+}

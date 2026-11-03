@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- A house (the place Home, slice 51: the game's setup): a roof's peak over two walls on the floor's line, a door
+       in the middle; one stroke weight, round caps and joins, no shading, so it reads at the KindTile's 22. One
+       colour: the caller tints it (text2 in a Row's KindTile). -->
+  <path data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" d="
+    M2.5 11 L12 3.25 L21.5 11 M5.25 9 V20.5 H18.75 V9 M10 20.5 V14.75 H14 V20.5"/>
+</svg>

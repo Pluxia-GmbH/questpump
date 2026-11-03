@@ -1,0 +1,6 @@
+{
+  "move": "pancake_press",
+  "variant_of": "pancake",
+  "phases": {"breathe": 8.4},
+  "note": "The pancake pressed and sunk: its frames on a slower table, the press itself still (an isometric press shows no motion)."
+}

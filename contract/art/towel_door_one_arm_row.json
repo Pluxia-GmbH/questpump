@@ -1,0 +1,52 @@
+{
+  "move": "towel_door_one_arm_row",
+  "view": "side",
+  "camera": {"yaw": -40, "pitch": 8},
+  "working": ["upper_arm_near", "pauldron_near"],
+  "props": [{"kind": "door", "f": 92}],
+  "items": [{"kind": "doortowel", "top": [88.8, 205.0, 0.0], "ends": ["grip_near"], "loose": [88.6, 135.0, 5.0]}],
+  "poses": {
+    "low": {
+      "line": {"pivot": "toes", "at": 71, "angle": 123.47, "width": 18, "lift": -32},
+      "leg_near": {"foot": [71, 18.0], "turn": 0, "lift": -32, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [71, 18.0], "turn": 0, "lift": -32, "knee_out": 0, "pole": [1, 0, 0]},
+      "head": [6, 0, 0],
+      "arm_near": {"ik": [31.46, 155.26, 6.6], "pole": [-0.2, -0.85, 0.5], "hand": [0.75, 0.65, -0.05]},
+      "arm_far": {"ik": [4, -58, 30], "rel": "neck", "pole": [-0.5, 0, 1], "hand": [0.15, -1, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "high": {
+      "from": "low",
+      "line": {"pivot": "toes", "at": 71, "angle": 102.94, "width": 18, "lift": -32},
+      "head": [0, 0, 0],
+      "arm_near": {"ik": [60.49, 137.48, 23.0], "pole": [-0.37, -0.95, 0.07], "hand": [0.37, 0.89, -0.27]}
+    },
+    "twist": {
+      "from": "high",
+      "trunk": [0, 0, 25],
+      "line": {"pivot": "toes", "at": 76, "angle": 110.6, "width": 18, "lift": -32},
+      "leg_near": {"foot": [71, 18.0], "turn": 0, "lift": -32, "knee_out": 0, "pole": [1, 0, 0], "y": 1},
+      "arm_near": {"ik": [56.84, 137.6, 17.2], "pole": [-0.19, -0.99, 0.17], "hand": [0.42, 0.89, -0.19]}
+    }
+  },
+  "timeline": [
+    {"pose": "low"},
+    {"to": "high", "s": 1.0, "phase": "pull", "effort": 1.0, "dynamic": true},
+    {"to": "high", "s": 0.2, "phase": "pull", "effort": 0.9, "dynamic": true},
+    {"to": "low", "s": 1.2, "phase": "lower", "effort": 0.5, "dynamic": true},
+    {"to": "low", "s": 0.3, "phase": "lower", "effort": 0.4, "dynamic": true}
+  ],
+  "key": "high",
+  "fault": {
+    "pose": "twist",
+    "caption": "hips_twist",
+    "breaks": {"check": "offset", "joint": "hip_far", "from": "hip_near", "axis": "f", "min": -4, "max": 4}
+  },
+  "targets": [
+    {"at": "low", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "high", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "low", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "high", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "max": 100}
+  ],
+  "note": "A bath towel knotted at one end and laid over the top of the door: the knot on the door's far side, out of sight, holds it when the door is shut; the rest comes over the top edge into the room. The near hand holds the free end at one bottom corner, a little above it (a 140-cm towel hangs about 1 m below the edge, the lean about 68 cm of it), and the other corner hangs down the door; the free arm hangs at the far side, the hand by the thigh, feet wider than the hips. The body in front of the door's middle, where the towel comes down; its lean solved so the towel takes what it took from the knot by the top hinge (36 % of the body at the bottom, 34 % at the top), the hand coming to the front of the shoulder, as the high anchor pulls up. Every step is dynamic: the lean hangs on the towel."
+}

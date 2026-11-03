@@ -1,0 +1,62 @@
+{
+  "move": "doorframe_scap_pull",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 8},
+  "working": ["back", "pauldron"],
+  "props": [{"kind": "doorframe", "f": 50, "wall": "-l"}],
+  "poses": {
+    "released": {
+      "line": {"pivot": "toes", "at": 56, "angle": 118.34, "width": 11, "lift": 0, "shift": 26},
+      "chest": [18, 0, -18.25],
+      "head": [10, 0, 20],
+      "leg_near": {"foot": [56, -15], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "leg_far": {"foot": [56, 37], "turn": 0, "lift": 0, "knee_out": 0, "pole": [1, 0, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ],
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.3, -0.8, 0.7], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 128, 8], "pole": [0.7, 0, 1], "hand": [1, 0, 0]}
+    },
+    "squeezed": {
+      "from": "released",
+      "line": {"pivot": "toes", "at": 56, "angle": 112.6, "width": 11, "lift": 0, "shift": 26},
+      "chest": [-12, 0, -22.75],
+      "head": [-2, 0, 20]
+    },
+    "bent": {
+      "from": "squeezed",
+      "line": {"pivot": "toes", "at": 56, "angle": 108.6, "width": 11, "lift": 0, "shift": 26},
+      "arm_near": {"ik": [46, 116, -8], "pole": [-0.6, -1, 0.1], "hand": [1, 0, 0]},
+      "arm_far": {"ik": [44, 128, 8], "pole": [0.3, -1, 0.6], "hand": [1, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "released"},
+    {"hold": 0.2, "phase": "release", "effort": 0.4},
+    {"to": "squeezed", "s": 0.9, "phase": "squeeze", "effort": 1.0},
+    {"hold": 0.4, "phase": "squeeze", "effort": 0.9},
+    {"to": "released", "s": 1.0, "phase": "release", "effort": 0.5}
+  ],
+  "key": "squeezed",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "released", "check": "angle", "joints": ["ankle_near", "pelvis", "waist"], "min": 170},
+    {"at": "squeezed", "check": "angle", "joints": ["ankle_near", "pelvis", "waist"], "min": 170},
+    {"at": "released", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "released", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 165},
+    {"at": "squeezed", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "squeezed", "check": "angle", "joints": ["shoulder_far", "elbow_far", "wrist_far"], "min": 165}
+  ],
+  "note": "The doorframe row's set-up (toes at the doorway, both hands round the jamb's doorway face, one above the other, the chest turned toward the jamb) with the arms straight throughout: the chest rounds forward at the release (shoulders slide toward the frame) and lifts at the squeeze (shoulder blades back), the body rising about the heels with the hands where they grip, its lean (about 25 degrees back) solved so both elbows stay straight; about a third of the body on the hands, as at the doorframe row's bottom. The chest's turn follows its pitch so both arms reach."
+}

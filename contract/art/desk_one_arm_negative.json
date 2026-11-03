@@ -1,0 +1,55 @@
+{
+  "move": "desk_one_arm_negative",
+  "view": "side",
+  "camera": {"yaw": 28, "pitch": 14},
+  "working": ["chest", "upper_arm"],
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top_two": {
+      "line": {"pivot": "toes", "at": -40, "angle": 45.3, "width": 36, "gap": 1.2},
+      "trunk": [0, -2, 0],
+      "head": [4, 0, 0],
+      "arm_near": {"ik": [102, 77.3, 12], "pole": [-1, -0.2, 1.0], "hand": [1, -0.15, 0.15]},
+      "arm_far": {"ik": [104, 77.3, 34], "pole": [-1, -0.2, 0.6], "hand": [1, -0.15, 0.1]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"]
+    },
+    "top_one": {
+      "from": "top_two",
+      "trunk": [0, -6, 0],
+      "arm_far": {"ik": [33, 88, 19], "pole": [0, 0.4, 1], "hand": [-0.6, -0.6, 0.3]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "hand_tip_near"]
+    },
+    "bottom_one": {
+      "from": "top_one",
+      "line": {"pivot": "toes", "at": -40, "angle": 33, "width": 36, "gap": 1.2},
+      "trunk": [0, -7, 0],
+      "arm_far": {"ik": [49, 75, 19], "pole": [0, 0.4, 1], "hand": [-0.6, -0.6, 0.3]}
+    },
+    "bottom_two": {
+      "from": "top_two",
+      "line": {"pivot": "toes", "at": -40, "angle": 33, "width": 36, "gap": 1.2},
+      "trunk": [0, -3, 0]
+    },
+    "bottom_over": {
+      "from": "bottom_one",
+      "arm_far": {"ik": [98, 84, 44], "pole": [0, 0.4, 1], "hand": [1, -0.15, 0.1]}
+    }
+  },
+  "timeline": [
+    {"pose": "top_two"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "top_one", "s": 0.5, "phase": "lower_on_one", "effort": 0.6},
+    {"to": "bottom_one", "s": 3.0, "phase": "lower_on_one", "effort": 0.85},
+    {"hold": 0.15, "phase": "bottom", "effort": 0.9},
+    {"to": "bottom_over", "s": 0.3, "ease": "in", "phase": "rise_on_two", "effort": 0.6},
+    {"to": "bottom_two", "s": 0.3, "ease": "out", "phase": "rise_on_two", "effort": 0.6},
+    {"to": "top_two", "s": 1.2, "phase": "rise_on_two", "effort": 0.8}
+  ],
+  "key": "bottom_one",
+  "targets": [
+    {"at": "top_one", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "bottom_one", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "top_one", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ],
+  "note": "The free hand rests on its hip through the lowering, so the one arm on the desk reads at a glance; it comes down beside the working hand at the bottom and both push up. A low camera on the working arm's side shows the elbow bend (2026-10-04: the camera from behind and above hid it)."
+}

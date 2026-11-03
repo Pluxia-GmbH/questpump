@@ -1,0 +1,381 @@
+openapi: 3.1.1
+info:
+  title: QuestPump feedback
+  version: "1"
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    The feedback button (docs/plan.md slice 24): one "Send feedback" window, the same in three places, with one payload
+    and one route. The player types a text and, unless they untick "Add my numbers" (on by default), the counted totals
+    that tell whether the game's rules need a change go with it, listed in full on the window before Send. Nothing goes
+    until the player presses Send, so it is no telemetry (docs/tasks.md, "Legal minimum"). The watches have no window
+    (no typing on a wrist).
+
+    The files of the contract:
+
+    - this file: the route, the body, the answers, the client's outbox, the counting rules every part follows, and the
+      game's message as it crosses the pixel strip to the helper;
+    - `site/report/src/index.js` and `site/report/wrangler.toml`: the route's Worker, the coach report's
+      (contract/coach-api.yaml) with a second route;
+    - `contract/copy/en.json`: the phones' words, the keys `feedback.*` and the Menu's row `menu.feedback.row`, and
+      the desktop app's own, `desk.feedback.*` (slice 35);
+    - `contract/design/screens.json`: the phones' page, `menu.feedback`, and the desktop app's, `desk.feedback`;
+    - `contract/fixtures/feedback.json`: one message as a phone posts it;
+    - `contract/library.json`: the move ids the numbers name (`moves`, each `key`), the merged moves (`merged`), the
+      strength and hold ladders (`strengthOrder`), the game day's offset hour (`constants.day_offset_h`) and the three
+      constants below (`constants.feedback_days`, `feedback_moves_max`, `feedback_max_chars`).
+
+    **Who sends.** Each part sends its own message, with its own `source` and `version`:
+
+    - the iPhone app (`iphone`) and the Android app (`android`): a "Send feedback" row in the Menu's QuestPump group,
+      beside Safety and about, opens the page; the app counts its numbers and posts the message itself, with its
+      Firebase App Check token in the header `X-Firebase-AppCheck` when App Check gives it one, and without the header
+      when it gives none (a phone that fails its device check, a build without the Firebase config), while its coach
+      reports never go without one (coach-api.yaml);
+    - the desktop app, QuestPump on this computer (`helper`, the source's name since slice 24): "Send feedback" on its
+      Feedback page beside "Copy a report for help" (slice 35; "Copy diagnostics" until 2026-10-08, a word the content
+      lint bars); its tick, "Add my system details", adds the helper's `diagnostics` (the OS and the capture's state,
+      as This computer's status lines show them) in place of the game's numbers, never the log, the topics, the
+      engine's digest or the game folder's path the report for help copies; no token;
+    - the game (`game`): a "Send feedback" button on the Settings' General page and `/qp feedback` open the window. The
+      addon has no network, so Send hands the message to the helper over the pixel strip (below, "The game's message
+      through the helper"), and the helper posts it with `source` `game`, no token. Without the helper running at this
+      load (`ns.HelperState()` is not `on`) the window says the helper or the phone app sends feedback, or that the
+      addon's page takes it, and Send stays off. The game names no URL (the legal minimum), and its line after Send
+      says it handed the message to the helper, never that it arrived: nothing reaches a running addon.
+
+    **What a message holds, and all it holds.** The source, that part's version, the moment the player pressed Send
+    (`at`, unix seconds on the sending device's clock) and the player's text, trimmed, 1 to `feedback_max_chars` (500)
+    Unicode scalar values (Send stays off while the trimmed text is empty); with the tick on, the phone's or the game's
+    `numbers` or the helper's own window's `diagnostics`, never both. With the tick off only the source, the version,
+    `at` and the text go. No message carries an id: a message the sender kept goes with the `at` it was written at, so
+    the mail dates it, and a resend after a lost answer reads as the same message, with the same `at` and text.
+    `numbers` come only from the game, the iPhone or Android, `diagnostics` only from the helper, and the route refuses
+    any other pairing (400). Nothing about the player's identity goes: no name, character, realm, GUID, typed count,
+    health data, device id or install id; the text is whatever the player types. A part counts its numbers when the
+    window opens, shows them in full, and sends exactly what it showed: it never counts again at Send, and a message
+    waiting in the outbox goes with the numbers it was written with.
+
+    **What every window says.** The game, the helper and both phones say the same sentences (the phones' are
+    contract/copy/en.json's `feedback.*`, which the addon's locale and the helper's page repeat with their own source
+    and address): the box's placeholder "Tell us what you like, what is wrong or what you miss.", its counter
+    `120/500` and, where a screen reader reads them, the box's name "Your message" and the counter's "120 of 500
+    characters"; the tick, "Add my numbers" (the
+    helper's "Add my system details"), and under it, with the tick on, "Only the counts below go with your words, and
+    no name. Nothing is sent until you press Send.", with it off "Only your words and the version go, and no name.
+    Nothing is sent until you press Send."; then what goes, its first line "From the game, version X" ("From the
+    iPhone app", "From the Android app", the desktop app's "From QuestPump on this computer" (`desk.feedback.from`;
+    "From the helper" until 2026-10-08); never "Sent from", since nothing has gone yet), with the
+    tick on every count in full, the max sets as "Max sets on one ladder on a usual play day: X", X written 0, 3 or 2.5
+    (never 3.0 or 0.0; the wire value stays as `Numbers` has it). A message has no name or address, so nobody can
+    answer it, and every window says so: the phones and the helper "We read every message, but we cannot write back:
+    it has no name or address. If you want an answer, write to contact@questpump.com." (a mail link on the phones,
+    selectable text in the helper), the game, which names no address or URL, "... If you want an answer, write to us
+    on the addon's page.". A part whose numbers cannot be read keeps Send off while the tick is on and says "Your
+    numbers could not be read right now. Turn off Add my numbers to send just your words."; a window whose outbox
+    holds messages and shows no outcome says under Send "1 message waits to go. It goes by itself when you are
+    online." ("2 messages wait to go. They go by themselves when you are online.").
+
+    **The client's outbox.** A message is sent once: the sender deletes it from its outbox on 204. One it could not
+    send (no network, a timeout, 429, a 5xx, and any other answer but 204, 400, 401 and 413, such as the 403, 404 or
+    405 of what answers while the route is not deployed) stays in an outbox on disk, in the sender's own data folder,
+    and goes again later, oldest first, one at a time, a round stopping at the first one kept again. A phone sends at
+    each foreground of the app and every 10 minutes while the app is in front and one waits; the helper at its start,
+    after each new message, every 10 minutes while one waits, and about 61 s after a round that got a 429, or a 204
+    while more wait (the route takes one message a minute from an address without a token). One the route refuses
+    (400, 401, 413) is dropped with a log line that names the answer's code, never the text. An outbox keeps a
+    message at most `feedback_outbox_days` (30) days from its `at` and at most `feedback_outbox_max` (20) messages
+    (`x-outbox` below): a message past its days is dropped before a round sends, and a Send that would make one too
+    many drops the oldest first, each drop logged with the message's id in the outbox, never its text, so one the
+    route never takes (a route that answers 403 for good) waits a month at most. A phone that gets no App Check token
+    posts without the header, on the address limit (below). The page says Sending… while it goes, then Sent, Not sent
+    yet (kept) or refused, and says how many wait (above) while the outbox holds messages and no outcome shows.
+
+    **The Worker.** A Cloudflare Worker on the questpump.com route `/api/feedback` (`site/report/`, beside
+    `/api/coach-report`; deployed by the site's workflow; a Pages Function cannot hold the email binding). It answers
+    400 without reading the body when the request's `Content-Type` is not `application/json` (its media type, compared
+    without case, its parameters such as `charset` ignored) or when the request carries an `Origin` header: the three
+    real senders post JSON and no `Origin`, while a web page's request is a browser's, which names its page in
+    `Origin`, and its no-cors `fetch` or `sendBeacon` can send only a plain content type. It reads at most 8,192 bytes
+    of body, checks the App Check token when one is present (RS256 against Firebase's JWKS, issued for the `questpump`
+    project to one of its apps, as the coach report's; 401 when it does not verify, 503 while Firebase's keys cannot
+    be read, whatever the source), reads exactly the fields below and refuses any other, and mails the message to the
+    support mailbox from `feedback@questpump.com` (below, "The mail"), nothing else (no address, no token, no header).
+    It keeps nothing (Workers Logs off; an error line, seen only in a live `wrangler tail`, names an error, never a
+    message). The limits, all per Cloudflare location: one message a minute for an App Check token (the coach report's
+    limit counts apart); one a minute for a client address when no token comes (a message of any source without one:
+    the helper's, the game's, a phone's that App Check gave none; an IPv4 address whole, an IPv6 address by its /64,
+    its first 64 bits, since one network's devices take any address in their /64; the address is a limiter key, never
+    stored or mailed); 20 a minute for all feedback together; then the report Worker's 400 mails a UTC day for its
+    routes but the crash reports' (since 2026-10-31), past which a message waits as past a minute's limit (429). A
+    phone's message without a token is no 401: anyone can post as the helper without one on the same limit, so
+    refusing it would guard nothing (the coach report still requires its token, coach-api.yaml).
+
+    **The mail.** Its subject, in ASCII alone: "Feedback from <source> <version>, written <at>", the source as "the
+    game", "the iPhone app", "the Android app" or "the helper" and `at` in UTC as `5 Oct 2026 23:12 UTC` ("Feedback
+    from the iPhone app 0.1.0, written 5 Oct 2026 23:12 UTC"), so two messages rarely share a subject and a mail
+    reader keeps each apart. Its text: the heading "Message"; the player's text, its line ends made LF, every control
+    character but LF and TAB (U+0000-U+0008, U+000B, U+000C, U+000E-U+001F, U+007F-U+009F) replaced by U+FFFD and the
+    bidi controls U+202A-U+202E and U+2066-U+2069 removed; a blank line; "Written: 5 Oct 2026, 23:12 UTC" (`at`); then,
+    after a blank line, with numbers "Numbers (as the player saw them)" and the window's lines in its words
+    (contract/copy/en.json `feedback.numbers.*`): "Days since you started", "Unfinished moves now", "In the last 14
+    days:" and under it, indented two spaces, "Pumps finished", "Pumps banked", "Max sets on one ladder on a usual play
+    day" (0, 3 or 2.5) and "Easier picks and early stops, by move:", under which, indented four, each move's line by
+    its id ("split_squat_slow: easier pick 2, stopped early 0") or "None"; with diagnostics "System details" and its
+    "OS:" and "Capture:" lines. `at` dates the message and never refuses it inside its bounds: a wrong clock is
+    written as it came.
+
+    **The counting rules.** The game and each phone count their numbers from the rows they hold, by these rules, so the
+    addon and both phones count alike; the helper's own window counts nothing (its tick adds its diagnostics).
+
+    *Rows.* A row is one line of the addon's row grammar, `ts|char|questID|tier|slot|ladder|rung|move|kind|reps|
+    seconds|outcome|flags` (contract/fixtures/rows.json; the codes are Core.lua's `ns.Enum`, rows.json `codes`). A
+    move row is kind 1-4 (rep, hold, cardio, flow); a pump row is kind 6 (pump) or 5 (ding, an old save's level-up
+    pump, none written since 2026-09-30); a row's reason is its flags bits 0-2 (`flags % 8`), and its flag bit n is set
+    when `floor(flags / 2^n) % 2 == 1` (owed 5, easier 6, skipped 9). A performed move row is a move row whose outcome
+    is beat 1, miss 2, placement 3, censored 4, done 5, stopped 6 or lastbeat 11, never owed 8, banked 9 or paid 10.
+    No number reads a correction row (kind 7): a correction changes a count, never whether a set was done or stopped.
+
+    *The rows each part counts.* The game: its whole save, every character's rows (`QuestPumpDB`'s log, merged with the
+    mirror as at every load), the game's own rows only: an app row the mirror brings (slice 26, its source bit) is the
+    phone's to count, never the game's, so no number counts a pump twice. Its log keeps the last `ring_rows` (2,000) rows and folds older ones into its baseline,
+    and a heavy player's 14 game days can hold more rows than that, so the addon keeps these counts per game day, and
+    the earliest row's time, in what the trimmed rows fold into, as it keeps its day counts: a trim never shortens the
+    window or moves `days`. A phone: two logs, counted together and never merged into one, the game's rows it keeps
+    (`HistorySync`'s kept rows from the latest reset row on, `saveRows`, every character) and its own rows (char 0,
+    the free mode's `f-` pumps). A pump's moves are looked for in its own log only. The app's rows reach the game's
+    log through the mirror (slice 26), and the game's numbers leave them out by their source bit; the helper serves
+    them to no phone (`/v1/history`), so no row is in both of a phone's logs. A felt-unwell stop made on the phone is
+    one of its own rows, a pump row banked with reason 4, which no number counts as a pump or a move (below).
+    The demo helper's rows and history are never counted: they are not the player's.
+
+    *The window.* The last `feedback_days` (14) game days: rows whose `ts` is at or after the start of the game day 13
+    days before the current one, on the sending device's clock and time zone (a row dated ahead by a clock set back
+    counts as today's). A game day runs from 04:00 local to the next 04:00 (`library.json` `constants.day_offset_h`;
+    `ns.day` in the addon, `GameDay` in the cores).
+
+    *days.* The whole game days from the game day of the earliest row the part counts (any kind; on a phone the earliest
+    of both logs) to the current game day: 0 with no row, or when the earliest row is today's; never below 0. A save
+    starts again at `/qp reset all` (its reset row is then its earliest), and a phone that keeps the game's rows counts
+    from the player's start as the game's history shows it, which can lie before the app's own install: no part stores
+    an install date, and none goes.
+
+    *finished and banked.* In each log, rows in time order (`ts` ascending; rows of one `ts` keep their order in the
+    log). A pump is an offered pump row (outcome offered 7); its span is the rows after it up to the next offered pump
+    row of that log. Its own moves are the move rows in its span without the owed bit (5): a row with it pays an older
+    unfinished move that rode along. A pump is banked when its span holds a pump row with outcome banked (9), a reason
+    other than 4 and `reps` above 0 (Bank it put that many of its own moves off; `reps` 0 is "Bank the rest" or a pump
+    of only unfinished moves, which put none of its own off, and reason 4 is a stop for feeling unwell, which puts
+    nothing off). A pump is finished when it is not banked and at least one of its own moves is a performed move row
+    (the plan's "a finished pump is a pump with a performed move", which Stats.lua counts at its first fresh move).
+    `finished` and `banked` count the pumps whose offered row lies in the window. A pump that is neither counts in
+    neither: paused, logged out of or stopped for feeling unwell before its first move, or a catch-up pump that only
+    paid unfinished moves (the helper's, with the watch or the phone bit, whose moves all carry the owed bit); its
+    moves count in `owed` while they wait. These are the parts of the 14-day done ratio (game-design.md, "Numbers to
+    watch"), which the message does not carry: its reader takes finished against banked and still owed.
+
+    *owed.* The moves unfinished now, over the whole save, not the window: each owed (8) or banked (9) move row, less
+    each one that a paid move row (10) names by the same `ts`, `questID` and `slot`, whichever of the two comes first
+    in the log (DB.lua's fold, `ns.OwedCount`; the helper's payable queue). A skip's paid row (bit 9) clears it as any
+    paid row does. A phone counts the game's rows (the app's own rows owe nothing).
+
+    *max_sets.* A max set is a performed rep (1) or hold (2) row whose `ladder` is a strength or hold ladder
+    (`library.json` `strengthOrder`: push 1, squat 2, hinge 4, wall sit 7, pull-up 8, row 9, core 10, side 11,
+    handstand 20, L-sit 21, planche 22, power 23; Core.lua `ns.STRENGTH`), with or without the owed bit (a set that
+    pays an unfinished move is a set that day). A row counts on the ladder it names, as written, never read through
+    the split (library.json `split`, DB.lua's `ns.Translate`), so a row on a retired ladder (3 or 5, from before
+    2026-10-04) counts on none, in the game and on both phones alike: these are the record sets DB.lua's fold counts
+    per ladder and game day (`lad.days`; the cores' sets per day) but for a retired ladder's row, which the fold reads
+    on its successor and the numbers on no ladder. The window's max sets grouped by ladder and game day give each
+    ladder's play days, each valued at its number of sets; on a phone a group gathers both logs' sets of that ladder
+    and day. `max_sets` is the median of those values: sorted, the middle one, or the mean of the two middle ones when
+    their count is even (so a whole number or a half, exact at one decimal); 0 when there is none.
+
+    *moves.* Per move, over the window's performed move rows of both logs: `easier`, the rows with the easier bit (6),
+    written when the player took Swap's "Easier version" in place of the move shown (the game's New-move view at a
+    move's first appearance, and its Swap menu on a skill move or one a rung above the player's; the cores' swap
+    alike), and `stopped`, the rows with outcome stopped (6): a started timed move (cardio or flow, a counted set's
+    window too) ended before its time, its goal (a rep or hold set ends in a count, and a count under the goal is a
+    miss, never a stop). A felt-unwell stop of a running timed move is a stop like any other. An easier row names
+    the version the player took, never the move it replaced, which no row holds: the replaced move is one whose
+    `regress` chain in library.json reaches it. Each count is keyed by the move's id, library.json's `key` for the
+    row's numeric `move` (a merged move's row counts on the move that took it, `merged`; a move the part's library
+    lacks, a newer addon's, is left out). Only moves with `easier + stopped` above 0 go, sorted by `easier + stopped`,
+    the most first, then by id in byte order, the first `feedback_moves_max` (40).
+
+    **The constants:** `feedback_days` 14, `feedback_moves_max` 40 and `feedback_max_chars` 500, defined once in the
+    addon's `Constants.lua` (`ns.C`) with the plan's constants table, exported into `contract/library.json`'s
+    `constants` (tools/gen-engine.lua, `make fixtures`), which the phones read. The helper (questpump-core
+    `feedback.rs`: `MAX_CHARS`, `MOVES_MAX`) and the Worker (`site/report/src/index.js`: `FEEDBACK_DAYS`,
+    `FEEDBACK_MAX_CHARS`, `FEEDBACK_MOVES_MAX`) repeat them as literals, and `make lint` (tools/lint.lua, its
+    constants section) fails when one differs from `ns.C` or is not found by that name. The outbox's two bounds, which
+    the addon has no outbox to read, are defined once in this file's `x-outbox`, and the same lint holds the senders'
+    literals to them.
+x-outbox:
+  description: |
+    The client's outbox's bounds (above, "The client's outbox"): a message waits at most `feedback_outbox_days` days
+    from its `at`, and an outbox holds at most `feedback_outbox_max` messages, the oldest dropped first. Each sender
+    repeats them as plain numbers of days and of messages under these names, which `make lint` (tools/lint.lua, its
+    constants section) reads and fails on when one differs or is missing: the helper in questpump-core `feedback.rs`
+    (`KEEP_DAYS`, `KEEP_MAX`), Android in the phone's `FeedbackOutbox.kt` (`KEEP_DAYS`, `KEEP_MAX`), the iPhone in
+    `apple/iOS/FeedbackSender.swift` (`keepDays`, `keepMax`).
+  feedback_outbox_days: 30
+  feedback_outbox_max: 20
+servers:
+  - url: https://questpump.com
+paths:
+  /api/feedback:
+    post:
+      operationId: feedback
+      summary: A player sends feedback; the site mails it to the support mailbox
+      description: |
+        The phones send their App Check token when App Check gives them one, and post without it when it gives none;
+        the helper, and the game through it, send none. Every sender posts `Content-Type: application/json` and no
+        `Origin`. Only 400, 401 and 413 are final: the sender drops the message with a log line. Every other answer but
+        204 leaves it in the outbox, to go again later (the outbox rule above).
+      security:
+        - appCheck: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Feedback" }
+      responses:
+        "204": { description: Mailed }
+        "400":
+          description: |
+            The `Content-Type` is not `application/json` or an `Origin` header is present (both answered before the
+            body is read), or the body does not read as a Feedback, or breaks its bounds (another key, a missing or
+            out-of-bounds `at`, both extras, or an extra its source does not send: `numbers` from the helper,
+            `diagnostics` from the game, the iPhone or Android)
+        "401": { description: "An App Check token that does not verify (a message without one is no 401)" }
+        "405": { description: Not a POST }
+        "413": { description: A body larger than 8 KiB }
+        "429": { description: "More messages a minute than the route takes: this token's, this address's or all" }
+        "502": { description: The mail could not be sent }
+        "503": { description: "Firebase's keys could not be read (or a new key is fetched within a minute)" }
+components:
+  securitySchemes:
+    appCheck:
+      type: apiKey
+      in: header
+      name: X-Firebase-AppCheck
+      description: The phone app's Firebase App Check token (App Attest on iOS, Play Integrity on Android).
+  schemas:
+    Feedback:
+      type: object
+      required: [source, version, at, text]
+      additionalProperties: false
+      description: |
+        Version 1 of a message, and all it sends: these keys and no other. `numbers` only from a phone or the game with
+        "Add my numbers" ticked; `diagnostics` only from the helper's own window with its tick on; never both, and
+        neither from another source (a 400).
+      properties:
+        source: { type: string, enum: [game, iphone, android, helper] }
+        version:
+          type: string
+          pattern: "^[A-Za-z0-9._+-]{1,32}$"
+          description: |
+            The sending part's version: the addon's TOC `## Version` for `game` (`ns.version`, `dev` in a checkout),
+            the app's marketing version (CFBundleShortVersionString, versionName), the helper's CARGO_PKG_VERSION.
+        at:
+          type: integer
+          minimum: 1735689600
+          maximum: 4102444800
+          description: |
+            When the player pressed Send, unix seconds on the sending device's clock (the game's blob carries it, its
+            `ns.now()`; a kept message keeps it): the mail's subject and "Written" line, and the start of its days in
+            the outbox. Any integer from 2025-01-01 (1735689600) to 2100-01-01 (4102444800) is taken, a wrong clock's
+            too; one outside them, or no integer, is a 400.
+        text:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: The player's text, trimmed, 1 to 500 Unicode scalar values (`feedback_max_chars`).
+        numbers: { $ref: "#/components/schemas/Numbers" }
+        diagnostics: { $ref: "#/components/schemas/Diagnostics" }
+      not:
+        required: [numbers, diagnostics]
+      allOf:
+        - if: { required: [numbers] }
+          then: { properties: { source: { enum: [game, iphone, android] } } }
+        - if: { required: [diagnostics] }
+          then: { properties: { source: { const: helper } } }
+    Numbers:
+      type: object
+      required: [days, finished, banked, owed, max_sets, moves]
+      additionalProperties: false
+      description: The counted totals, by the counting rules above, exactly these keys.
+      properties:
+        days: { type: integer, minimum: 0, description: "game days since the earliest row the part counts" }
+        finished: { type: integer, minimum: 0, description: "pumps finished, offered in the last 14 game days" }
+        banked: { type: integer, minimum: 0, description: "pumps banked, offered in the last 14 game days" }
+        owed: { type: integer, minimum: 0, description: "moves unfinished now" }
+        max_sets:
+          type: number
+          minimum: 0
+          description: |
+            The median of max sets per ladder per play day over the last 14 game days, at one decimal (a median of
+            whole counts is a whole number or a half); 0 with none.
+        moves:
+          type: array
+          maxItems: 40
+          description: "the moves with an easier pick or an early stop, the most first, then by id (feedback_moves_max)"
+          items: { $ref: "#/components/schemas/MoveCounts" }
+    MoveCounts:
+      type: object
+      required: [move, easier, stopped]
+      additionalProperties: false
+      properties:
+        move: { type: string, pattern: "^[a-z0-9_]{1,48}$", description: "the move's id, library.json's key" }
+        easier: { type: integer, minimum: 0, description: "rows of it taken as Swap's easier version" }
+        stopped: { type: integer, minimum: 0, description: "rows of it stopped before their time" }
+    Diagnostics:
+      type: object
+      required: [os, capture]
+      additionalProperties: false
+      description: The helper's own window's tick, and all it adds.
+      properties:
+        os: { type: string, maxLength: 64, description: "the OS and its version, as macOS 27.0 or Windows 11 26100" }
+        capture:
+          type: string
+          maxLength: 64
+          description: |
+            The capture's state as the helper's window names it (`runtime.rs` `capture_word`): the status line's word
+            (live, no_strip, no_game, stopped), or screen_permission while the Screen Recording grant is missing (the
+            `error` line's code); each of `os` and `capture` at most 64 Unicode scalar values.
+    GameFeedback:
+      type: object
+      required: [text, version, at]
+      additionalProperties: false
+      description: |
+        **The game's message through the helper.** The game cannot reach the network, so its window hands the message
+        to the helper over the pixel strip (`wow-addon-dev` `references/pixel-strip.md`; `Bridge.lua`) as a chunked
+        blob event `feedback`, event code 11 (after `sheet`, 10; questpump-core `StripEvent`), in `Bridge.lua`'s chunk
+        framing (`B.Chunks`, the `profile` and `sheet` events' layout): cell 4 the chunk index, the chunk count and the
+        copy's serial; cells 6-13 and 15-31 the total length (uint16) and then 73 payload bytes, in every chunk, the
+        last zero-padded; the payload the raw DEFLATE of the CBOR of this map. It is painted once, in the blobs lane,
+        with its own serial (not the profile's or the sheet's), and never painted again (`strip_blob_repeat_s`
+        repaints only the profile and the sheet): a blob the helper did not read whole is lost, which is why the game
+        says it handed the message over, never that it arrived. Its contract/fixtures/rows.json frames come from `make
+        fixtures`.
+
+        The map holds exactly these keys. The helper turns it into a `Feedback` with source `game` (the text trimmed;
+        `at` as the game set it; `numbers` as the game counted them), posts each message once, keyed by the load id
+        and `at` (remembered on disk for a day, so a blob shown twice, or a helper restart in the same game session,
+        never posts it twice), keeps it in its outbox until it goes, and shows the tray note "Feedback sent" on 204. A
+        blob that does not read as this map, or whose message would break `Feedback`'s bounds, is dropped as a 400
+        would be, with a log line each time: one line per message, naming no text.
+      properties:
+        text: { type: string, description: "the window's text as typed (the helper trims it)" }
+        version: { type: string, description: "the addon's version (`ns.version`)" }
+        at:
+          type: integer
+          minimum: 1735689600
+          maximum: 4102444800
+          description: "ns.now() when Send was pressed, unix seconds: the message's `at`, in `Feedback`'s bounds"
+        numbers:
+          $ref: "#/components/schemas/Numbers"
+          description: "with the tick on: the same keys, `max_sets` a CBOR integer or float"

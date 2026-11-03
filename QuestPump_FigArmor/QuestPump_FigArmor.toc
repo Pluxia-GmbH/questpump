@@ -1,0 +1,11 @@
+## Interface: 16001, 120105
+## Title: QuestPump Figures
+## Notes: The animated move figures for QuestPump (loaded on demand).
+## IconTexture: Interface\AddOns\QuestPump\Media\Icon
+## Group: QuestPump
+## LoadOnDemand: 1
+## Dependencies: QuestPump
+## Version: @project-version@
+## X-QuestPump-Pack: 74
+
+Manifest.lua

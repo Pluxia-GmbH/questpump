@@ -1,0 +1,7 @@
+{
+  "move": "hip_thrust_sl.kettlebell",
+  "gear_of": "hip_thrust_sl",
+  "gear": "kettlebell",
+  "items": [{"kind": "kettlebell", "on": "hips"}],
+  "poses": {"down": {"arms": {"ik": [37.5, 18.5, 8.3], "rel": "pelvis", "pole": [0.3, 0, 1], "hand": [0, -1, 0]}}}
+}

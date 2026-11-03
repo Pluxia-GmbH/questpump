@@ -1,0 +1,61 @@
+{
+  "move": "pike_fold_bed",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 12},
+  "working": ["thigh", "back"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": -50, "f1": 122, "u": 45}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 59.5, 0],
+      "trunk": [-2, 0, 0],
+      "arms": {"ik": [24, 71, 19], "pole": [-0.6, 0, 1], "hand": [1, -0.3, 0]},
+      "legs": {"foot": [99.6, 11], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0]},
+      "contacts": ["pelvis", "knee_near", "knee_far", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    },
+    "fold": {
+      "from": "tall",
+      "trunk": [50, 0, 0],
+      "chest": [35, 0, 0],
+      "head": [10, 0, 0],
+      "arms": {"ik": [91, 58, 14], "pole": [0, -0.4, 1], "hand": [0.2, 0.2, -1]}
+    },
+    "fold_in": {
+      "from": "fold",
+      "trunk": [48, 0, 0],
+      "chest": [35, 0, 0],
+      "arms": {"ik": [90, 58.5, 14], "pole": [0, -0.4, 1], "hand": [0.2, 0.2, -1]}
+    },
+    "bent": {
+      "from": "fold",
+      "legs": {"foot": [91, 11], "y": 45, "turn": 0, "lift": -80, "knee_out": 0, "pole": [0, 1, 0.7]},
+      "trunk": [44, 0, 0],
+      "chest": [30, 0, 0],
+      "head": [12, 0, 0],
+      "arms": {"ik": [82, 59, 21], "pole": [0, -0.2, 1], "hand": [0.5, 0.1, -0.85]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "toe_near", "toe_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.6, "phase": "sit_tall", "effort": 0.2},
+    {"to": "fold", "s": 2.8, "phase": "fold_forward", "effort": 0.6},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold_in", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "fold", "s": 1.4, "phase": "breathe", "effort": 0.7},
+    {"to": "tall", "s": 2.4, "phase": "sit_up", "effort": 0.3}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "fold", "check": "height", "joint": "knee_near", "max": 56},
+    {"at": "fold", "check": "height", "joint": "neck", "max": 80}
+  ],
+  "note": "The pike fold on a bed: legs straight and together on the mattress, heels down and toes up; from a tall seat the hands slide down the legs into the full fold, the chest on the thighs, the face down to the shins and the hands wrapped round the feet."
+}

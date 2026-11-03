@@ -1,0 +1,11 @@
+## Interface: 16001, 120105
+## Title: QuestPump Lines
+## Notes: The quests' flavour lines for QuestPump, in English. QuestPump loads them when it needs them.
+## Author: Pluxia GmbH
+## IconTexture: Interface\AddOns\QuestPump\Media\Icon
+## Group: QuestPump
+## LoadOnDemand: 1
+## Dependencies: QuestPump
+## Version: @project-version@
+
+Lines.lua

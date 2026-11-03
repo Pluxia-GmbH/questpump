@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>QuestPump links your phone by Bluetooth, so it gets each pump with its screen locked, and reads your heart-rate strap and walking pad.</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>QuestPump reads the small row of coloured squares the QuestPump addon shows in the corner of World of Warcraft.</string>
+</dict>
+</plist>

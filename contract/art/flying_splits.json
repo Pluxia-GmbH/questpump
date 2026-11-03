@@ -1,0 +1,57 @@
+{
+  "move": "flying_splits",
+  "view": "side",
+  "camera": {"yaw": -18, "pitch": 22},
+  "working": ["upper_arm", "forearm", "abdomen", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -100, "f1": 110, "l0": -70, "l1": 40}],
+  "poses": {
+    "lunge": {
+      "pelvis": [-4, 46, 0],
+      "trunk": [96, 0, 0],
+      "chest": [4, 0, 0],
+      "head": [-30, 0, 0],
+      "arm_near": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"foot": [40, 52], "turn": 25, "lift": 0, "knee_out": 0, "pole": [0.2, 1, 0.8], "y": 1},
+      "leg_far": {"foot": [-106, 12], "turn": 0, "lift": 65, "knee_out": 0, "pole": [0, -1, 0], "y": 1},
+      "contacts": ["toe_near", "ankle_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fly": {
+      "pelvis": [12, 52, 0],
+      "trunk": [106, 0, 0],
+      "chest": [8, 0, 0],
+      "head": [-40, 0, 0],
+      "arm_near": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, -0.2], "hand": [1, -0.14, 0]},
+      "arm_far": {"ik": [32, 4.3, 22], "pole": [-1, 0.6, 0.3], "hand": [1, -0.14, 0]},
+      "leg_near": {"ik": [79, 46, 67.6], "pole": [0, 1, 0.3], "toe": [0.4, 0, 0.9]},
+      "leg_far": {"fk": [12, 3, 0, -40]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "fly_in": {"from": "fly", "pelvis": [12, 53, 0], "chest": [9.5, 0, 0], "head": [-38, 0, 0]},
+    "bent": {"from": "fly", "leg_far": {"fk": [40, 3, 60, -40]}}
+  },
+  "timeline": [
+    {"pose": "lunge"},
+    {"hold": 0.4, "phase": "lunge"},
+    {"to": "fly", "s": 1.8, "phase": "float", "effort": 0.8},
+    {"to": "fly_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly_in", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "fly", "s": 1.0, "phase": "breathe", "effort": 0.9},
+    {"to": "lunge", "s": 1.8, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "fly",
+  "fault": {
+    "pose": "bent",
+    "caption": "back_knee_bends",
+    "breaks": {"check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170}
+  },
+  "targets": [
+    {"at": "fly", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "fly", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "fly", "check": "height", "joint": "ankle_near", "min": 25},
+    {"at": "fly", "check": "height", "joint": "ankle_far", "min": 35},
+    {"at": "fly", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 85, "max": 125}
+  ]
+}

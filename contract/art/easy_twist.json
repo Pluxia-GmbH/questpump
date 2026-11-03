@@ -1,0 +1,59 @@
+{
+  "move": "easy_twist",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 34},
+  "working": ["abdomen"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -60, "f1": 90}, {"kind": "step", "f0": -22, "f1": 14, "u": 5, "l0": -22, "l1": 22}],
+  "poses": {
+    "tall": {
+      "pelvis": [0, 20.5, 0],
+      "trunk": [-4, 0, 0],
+      "leg_near": {"ik": [36, 6.5, -7], "pole": [0.2, 0.6, 1], "toe": [0.5, 0, -1]},
+      "leg_far": {"ik": [9, 6.5, 10], "pole": [0.1, 0.3, 1], "toe": [0.4, 0, -1]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "hand_tip_near"],
+      "arm_near": {"ik": [-8, 16.5, 32], "pole": [-0.6, 0, 1], "hand": [0.2, -1, 0.3]},
+      "arm_far": {"ik": [24, 36, 42], "pole": [-0.3, 0.3, 1], "hand": [0.3, -1, 0.2]}
+    },
+    "twist": {
+      "from": "tall",
+      "trunk": [2, 0, 0],
+      "chest": [0, 0, -48],
+      "head": [0, 0, -28],
+      "arm_far": {"ik": [39.5, 40.5, -26], "pole": [0.2, 1, 0.6], "hand": [0.02, -0.4, -0.92]},
+      "arm_near": {"ik": [-27, 16.5, 20], "pole": [-0.6, 0, 1], "hand": [-0.3, -1, 0.2]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far", "hand_tip_near"]
+    },
+    "reach": {
+      "from": "twist",
+      "trunk": [-1, 0, 0],
+      "chest": [0, 0, -26],
+      "head": [0, 0, -14],
+      "arm_far": {"ik": [32, 50, 8], "pole": [0, 0.6, 0.8], "hand": [0.3, -0.6, -0.6]},
+      "arm_near": {"ik": [-18, 20, 27], "pole": [-0.6, 0, 1], "hand": [-0.2, -1, 0.25]},
+      "contacts": ["pelvis", "ankle_near", "ankle_far"]
+    },
+    "twist_in": {"from": "twist", "chest": [-1, 0, -51]},
+    "slump": {"from": "twist", "trunk": [-4, 0, 0], "chest": [40, 16, -48], "head": [14, 0, -28]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.8, "phase": "sit_tall"},
+    {"to": "reach", "s": 1.3, "ease": "in", "phase": "rotate_open", "effort": 0.6},
+    {"to": "twist", "s": 1.3, "ease": "out", "phase": "rotate_open", "effort": 0.6},
+    {"to": "twist_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "twist_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "reach", "s": 1.2, "ease": "in", "phase": "return_slowly", "effort": 0.3},
+    {"to": "tall", "s": 1.2, "ease": "out", "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "slump",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [{"at": "twist", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}],
+  "note": "Sitting on a folded towel, the near shin in front of the far one: the chest turns 48 degrees toward the near side, the near hand planted on the floor behind, the far hand resting on the near knee."
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Close: an X of two crossed bars, their ends cut square; lit from the top left, a ridge runs along the rising bar,
+       so its lower face and the falling bar's lower arm are in shadow. One colour: a FramedIconButton tints it (text
+       on raised). -->
+  <path data-token="tint" fill="currentColor" d="
+    M5.74 3.26 L12 9.53 L18.26 3.26 L20.74 5.74 L14.47 12 L20.74 18.26 L18.26 20.74 L12 14.47 L5.74 20.74 L3.26 18.26
+    L9.53 12 L3.26 5.74 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M19.5 4.5 L20.74 5.74 L14.47 12 L20.74 18.26 L18.26 20.74 L12 14.47 L5.74 20.74 L4.5 19.5 Z"/>
+</svg>

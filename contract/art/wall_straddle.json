@@ -1,0 +1,51 @@
+{
+  "move": "wall_straddle",
+  "view": "side",
+  "camera": {"yaw": -70, "pitch": 45},
+  "working": ["thigh"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": 3.5, "u": 200}, {"kind": "mat", "f0": -150, "f1": 3.5, "l0": -60, "l1": 60}],
+  "poses": {
+    "up": {
+      "pelvis": [-12, 16, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [-34, 4.5, 44], "pole": [0, 1, 0.2], "hand": [0.4, -0.05, 1]},
+      "legs": {"ik": [-2.0, 103.5, 11.0], "pole": [-1, 0, 0], "toe": [-1, 0.15, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    },
+    "open": {"from": "up", "legs": {"ik": [-2.0, 60, 86.8], "pole": [-1, 0, 0], "toe": [-1, 0.15, 0.2]}},
+    "open_in": {"from": "open", "legs": {"ik": [-2.0, 57.2, 88.3], "pole": [-1, 0, 0], "toe": [-1, 0.15, 0.2]}},
+    "bent": {"from": "open", "legs": {"ik": [-2.5, 52, 73], "pole": [-1, 0.5, 0.2], "toe": [-1, 0.15, 0.2]}}
+  },
+  "timeline": [
+    {"pose": "up"},
+    {"hold": 0.6, "phase": "lie", "effort": 0.2},
+    {"to": "open", "s": 3.0, "phase": "open_out", "effort": 0.4},
+    {"to": "open_in", "s": 1.6, "phase": "breathe", "effort": 0.5},
+    {"to": "open", "s": 1.6, "phase": "breathe", "effort": 0.5},
+    {"to": "open_in", "s": 1.6, "phase": "breathe", "effort": 0.5},
+    {"to": "open", "s": 1.6, "phase": "breathe", "effort": 0.5},
+    {"to": "up", "s": 2.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "open",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 160}
+  },
+  "targets": [
+    {"at": "open", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165},
+    {"at": "open", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "l", "min": 74}
+  ],
+  "note": "Lying on the back on a mat, the seat near a wall and the legs straight up it, the heels resting on it; the legs slide open down the wall about two thirds of the way to the floor (each leg 60 degrees from straight up) and rest there, the arms by the sides."
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- The objective dash (a line not done yet, or missed, and a missed reward): a bar plate with chamfered ends, as
+       heavy as the check's arms and on the 16-unit pixel grid; lit from above, its lower lip in shadow. One colour:
+       the caller tints it by state (ink, or stop for the current line, on parchment; text, or gold for the
+       current line, on card; text3 on a missed reward). -->
+  <path data-token="tint" fill="currentColor" d="M2.75 6.5 H13.25 L14 7.25 V8.75 L13.25 9.5 H2.75 L2 8.75 V7.25 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="M2 8.5 H14 V8.75 L13.25 9.5 H2.75 L2 8.75 Z"/>
+</svg>

@@ -1,0 +1,33 @@
+{
+  "move": "dead_bug",
+  "view": "side",
+  "camera": {"yaw": -12, "pitch": 14},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -122, "f1": 84}],
+  "poses": {
+    "up": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"fk": [88, 4, 4]},
+      "legs": {"fk": [90, 4, 90, -15]},
+      "contacts": ["neck", "waist", "pelvis"]
+    },
+    "near_low": {"from": "up", "arm_near": {"fk": [166, 4, 4]}, "leg_far": {"fk": [5, 4, 0, -15]}},
+    "far_low": {"from": "up", "arm_far": {"fk": [166, 4, 4]}, "leg_near": {"fk": [5, 4, 0, -15]}}
+  },
+  "timeline": [
+    {"pose": "up"},
+    {"to": "near_low", "s": 1.5, "phase": "lower", "effort": 0.8},
+    {"hold": 0.3, "phase": "lower", "effort": 0.9},
+    {"to": "up", "s": 1.2, "phase": "back_in", "effort": 0.5},
+    {"to": "far_low", "s": 1.5, "phase": "lower", "effort": 0.8},
+    {"hold": 0.3, "phase": "lower", "effort": 0.9},
+    {"to": "up", "s": 1.2, "phase": "back_in", "effort": 0.5}
+  ],
+  "key": "near_low",
+  "rep_ends": ["back_in"],
+  "targets": [
+    {"at": "near_low", "check": "height", "joint": "waist", "max": 17},
+    {"at": "far_low", "check": "height", "joint": "waist", "max": 17}
+  ]
+}

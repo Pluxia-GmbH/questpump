@@ -1,0 +1,83 @@
+{
+  "move": "rope_alternate",
+  "view": "side",
+  "camera": {"yaw": 45, "pitch": 8},
+  "working": ["shin", "thigh"],
+  "items": [{"kind": "rope", "turns": -2, "phase": 0.5, "r": 93.5}],
+  "poses": {
+    "near_down": {
+      "pelvis": [4, 97, 0],
+      "trunk": [3, 0, 0],
+      "head": [-2, 0, 0],
+      "arms": {
+        "ik": [16, -52, 42],
+        "rel": "neck",
+        "orbit": {"r": 4, "deg": 90, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "leg_near": {"foot": [0, 8], "turn": 6, "lift": 18, "knee_out": 6},
+      "leg_far": {"foot": [8, 8], "turn": 6, "y": 20, "lift": 45, "knee_out": 4},
+      "contacts": ["toe_near"]
+    },
+    "float_a": {
+      "from": "near_down",
+      "pelvis": [4, 102, 0],
+      "arms": {
+        "ik": [16, -52, 42],
+        "rel": "neck",
+        "orbit": {"r": 4, "deg": -90, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "leg_near": {"foot": [-1, 8], "turn": 6, "y": 7, "lift": 36, "knee_out": 6},
+      "leg_far": {"foot": [2, 8], "turn": 6, "y": 8, "lift": 30, "knee_out": 5},
+      "contacts": []
+    },
+    "far_down": {
+      "from": "near_down",
+      "arms": {
+        "ik": [16, -52, 42],
+        "rel": "neck",
+        "orbit": {"r": 4, "deg": -270, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "leg_near": {"foot": [8, 8], "turn": 6, "y": 20, "lift": 45, "knee_out": 4},
+      "leg_far": {"foot": [0, 8], "turn": 6, "lift": 18, "knee_out": 6},
+      "contacts": ["toe_far"]
+    },
+    "float_b": {
+      "from": "near_down",
+      "pelvis": [4, 102, 0],
+      "arms": {
+        "ik": [16, -52, 42],
+        "rel": "neck",
+        "orbit": {"r": 4, "deg": -450, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      },
+      "leg_near": {"foot": [2, 8], "turn": 6, "y": 8, "lift": 30, "knee_out": 5},
+      "leg_far": {"foot": [-1, 8], "turn": 6, "y": 7, "lift": 36, "knee_out": 6},
+      "contacts": []
+    },
+    "near_end": {
+      "from": "near_down",
+      "arms": {
+        "ik": [16, -52, 42],
+        "rel": "neck",
+        "orbit": {"r": 4, "deg": -630, "plane": "fu"},
+        "pole": [-1, -0.4, 0.3],
+        "hand": [0.5, -0.4, 0.7]
+      }
+    }
+  },
+  "timeline": [
+    {"pose": "near_down"},
+    {"to": "float_a", "s": 0.2, "ease": "out", "phase": "light_steps", "effort": 0.7},
+    {"to": "far_down", "s": 0.2, "ease": "in", "phase": "light_steps", "effort": 0.7},
+    {"to": "float_b", "s": 0.2, "ease": "out", "phase": "light_steps", "effort": 0.7},
+    {"to": "near_end", "s": 0.2, "ease": "in", "phase": "light_steps", "effort": 0.7}
+  ],
+  "key": 0.467
+}

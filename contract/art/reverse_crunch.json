@@ -1,0 +1,50 @@
+{
+  "move": "reverse_crunch",
+  "view": "side",
+  "camera": {"yaw": -10, "pitch": 10},
+  "working": ["abdomen"],
+  "props": [{"kind": "mat", "f0": -92, "f1": 92}],
+  "poses": {
+    "table": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [0, 5.5, 32], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "legs": {"fk": [92, 4, 92, -25]},
+      "contacts": ["neck", "waist", "pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "curl": {
+      "from": "table",
+      "pelvis": [-3, 29.2, 0],
+      "trunk": [-125, 0, 0],
+      "chest": [35, 0, 0],
+      "contacts": ["neck", "waist", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "arched": {
+      "from": "table",
+      "pelvis": [0, 15.0, 0],
+      "trunk": [-68, 0, 0],
+      "chest": [-42, 0, 0],
+      "legs": {"fk": [74, 4, 135, -10]},
+      "head": [20, 0, 0],
+      "contacts": ["neck", "pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    }
+  },
+  "timeline": [
+    {"pose": "table"},
+    {"hold": 0.3, "phase": "knees_up"},
+    {"to": "curl", "s": 1.0, "phase": "curl", "effort": 0.9},
+    {"hold": 0.3, "phase": "squeeze", "effort": 1.0},
+    {"to": "table", "s": 2.0, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "curl",
+  "fault": {
+    "pose": "arched",
+    "caption": "low_back_arches",
+    "breaks": {"check": "offset", "joint": "waist", "from": "pelvis", "axis": "u", "max": 2}
+  },
+  "targets": [
+    {"at": "curl", "check": "height", "joint": "pelvis", "min": 22},
+    {"at": "curl", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 80, "max": 100},
+    {"at": "table", "check": "offset", "joint": "waist", "from": "pelvis", "axis": "u", "max": 2}
+  ]
+}

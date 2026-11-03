@@ -1,0 +1,40 @@
+{
+  "move": "fingertip_lean",
+  "view": "side",
+  "camera": {"yaw": 10, "pitch": 14},
+  "working": ["forearm", "hand"],
+  "breathe": true,
+  "props": [{"kind": "desk", "f": 100, "top": 74}],
+  "poses": {
+    "top": {
+      "line": {"pivot": "toes", "at": 40, "angle": 70, "width": 14, "lift": 0},
+      "head": [4, 0, 0],
+      "arms": {"ik": [104, 80.5, 24], "pole": [-1, 0, 0.7], "hand": [0.95, -0.32, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean": {
+      "from": "top",
+      "line": {"pivot": "toes", "at": 40, "angle": 63.8, "width": 14, "lift": 29.5},
+      "head": [8, 0, 0],
+      "contacts": ["toe_near", "toe_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "lean_in": {"from": "lean", "chest": [-2, 0, 0], "head": [5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "top"},
+    {"hold": 0.4, "phase": "fingertip_push"},
+    {"to": "lean", "s": 1.6, "phase": "lean_in", "effort": 0.5},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean_in", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "lean", "s": 1.2, "phase": "breathe", "effort": 0.6},
+    {"to": "top", "s": 1.4, "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "lean",
+  "targets": [
+    {"at": "lean", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 168},
+    {"at": "lean", "check": "height", "joint": "wrist_near", "min": 79},
+    {"at": "lean", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  ],
+  "note": "As the wrist lean, a step back from the desk, but only the fingertips and thumbs on the desk, the palms lifted in a tent, the wrists a hand's width above the top. The lean brings the shoulders over the fingertips with the arms straight as the heels lift."
+}

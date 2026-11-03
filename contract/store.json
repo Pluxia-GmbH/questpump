@@ -1,0 +1,77 @@
+{
+  "about": "What the phone apps sell (docs/plan.md slice 15; docs/tasks.md, \"Monetisation\"): Pro, one auto-renewing subscription, and the tip jar, whose tips unlock nothing; nothing paid reaches the game. The one source for tools/store/store.py, which writes apple/QuestPump.storekit, checks the ids both apps name and applies this file to App Store Connect and Google Play. Prices are USD; the money values (the prices, the trials, no weekly and no lifetime plan) are David's call 2: a month free on the yearly plan, and since 2026-10-09 a week free on the monthly plan (David approved it). Apple caps a display name at 30 characters and a description at 45, so Pro carries a shorter description for Apple; Play takes up to 200. A plan's level is its rank in Apple's subscription group (1 first), its trial an introductory free trial on Apple and the offer play_offer on its Play base plan. apple.group_reference is the group's reference name in App Store Connect (never shown; store.py finds the group by the plans' product ids, and by this name only before a plan exists). The grace periods keep a paying subscriber's Pro while the store retries a failed renewal (the apps already count it): Apple's Billing Grace Period, one setting for every subscription of the app, for all renewals in production and sandbox; Play's on each base plan. The desktop helper builds in the bundle id, the package, the Pro product ids and play.license_key to check a paired phone's Pro proof (docs/plan.md slice 35, \"Pro on the computer\"), so a change reaches the computer with the next helper release. play.license_key is the app's licensing key, a public value: the base64 of an RSA-2048 SubjectPublicKeyInfo with the exponent 65537, copied from Play Console (Monetize with Play, Monetization setup, Licensing) on 2026-10-09; without it every Play proof is refused, and store.py --check refuses any other key. apple.notifications is the production URL of the App Store Server Notifications V2, the sync Worker's (docs/plan.md slice 64), which store.py asc sets in App Store Connect. The web block (slice 64) sells the same plans and trials on questpump.com through Paddle Billing, as merchant of record: web.paddle.environment is sandbox until Pluxia's live Paddle account sells, client_token Paddle.js's client-side token on /pro, and prices each plan's Paddle price id (pro_ and the plan), each null until Pluxia's live Paddle account makes it and set only while the environment is live (a sandbox test runs from a local copy of this file, so a test card never unlocks Pro), which keeps every Get Pro hidden until then; the sync Worker (site/sync/src/facts.js) builds this file in and counts a Paddle subscription as Pro only by those prices, and only live. web.pro_token_keys holds the public P-256 JWKs (by kid) of the Pro token the sync Worker signs and every device checks offline; site/sync/scripts/pro-token-key.mjs made the first pair on 2026-10-31 (kid irwBYFPU...), and a device ignores a token whose kid its build does not list. web.pro_token holds the token's header typ and its iss and aud claims, as contract/sync-api.yaml's ProTokenHeader and ProTokenClaims define them: the Worker signs them and every device refuses a token without exactly these, so nothing else the key might sign, and no token meant for another audience, passes (2026-11-01). store.py --check refuses a malformed id, a Paddle id outside the live environment, any private key there, and a key repeated in one object (the desktop helper's reader would refuse the whole file).",
+  "locale": "en-US",
+  "apple": {
+    "bundle_id": "ai.pluxia.questpump",
+    "group_reference": "QuestPump Pro",
+    "grace": { "period": "P16D", "renewals": "ALL_RENEWALS", "sandbox": true },
+    "notifications": "https://questpump.com/api/sync/v1/pro/apple"
+  },
+  "play": { "package": "ai.pluxia.questpump", "grace": "P14D", "license_key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhTOJWfexjgnmPE91xagq1RrO5utSndLpZdFFIGKg+1jbRlWmGNtJDA+BkvzpC1OUTbzDeIZJe01cDrR0CN+qN5PEnn/VDIthv/DrVrlxPO/MGxkqe4zMkeoHzzfNYxqZpyc+HHVwHEwA8Q+fWs9XYWy1gPbNjK3zdomtkbTFAq6vMU857loQOKDprnlTwh44hqsjF9JZXetXpIS5h6DuDdopg1AT/qa3cvMLMjOSEkQCT9/EQzbqNbbhZcAB39FY/zCqih2XcV26DwiQLThdxTwv5qBotxB95ZqPgRFTfy02+ZtAyv+b5WPprMS00GFSR70y/k3VpT2ioIwewIUkeQIDAQAB" },
+  "pro": {
+    "name": "QuestPump Pro",
+    "description": "The coach, every chart and more. Nothing paid reaches the game.",
+    "apple_description": "The coach, every chart and more.",
+    "family_sharing": false,
+    "play_product": "ai.pluxia.questpump.pro",
+    "plans": [
+      {
+        "plan": "monthly",
+        "apple_product": "ai.pluxia.questpump.pro.monthly",
+        "display_name": "QuestPump Pro, monthly",
+        "period": "P1M",
+        "price": "9.99",
+        "level": 2,
+        "trial": { "period": "P1W", "play_offer": "free-trial" }
+      },
+      {
+        "plan": "yearly",
+        "apple_product": "ai.pluxia.questpump.pro.yearly",
+        "display_name": "QuestPump Pro, yearly",
+        "period": "P1Y",
+        "price": "49.99",
+        "level": 1,
+        "trial": { "period": "P1M", "play_offer": "free-trial" }
+      }
+    ]
+  },
+  "web": {
+    "paddle": {
+      "environment": "sandbox",
+      "client_token": null,
+      "prices": { "pro_monthly": null, "pro_yearly": null }
+    },
+    "pro_token": { "typ": "pro+jwt", "iss": "https://questpump.com/api/sync", "aud": "questpump-devices" },
+    "pro_token_keys": [
+      {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "_IK7WSetgxoCF2xxHydu4r28lFjv4qolE3jSOZqHHHo",
+        "y": "jjn8PiQim69PEUmRp48Fj__oTTes1dpoqxISdlJorg8",
+        "kid": "irwBYFPUPwhURCkLvpV-6IapqwkV1rcKYFUxGTG657A",
+        "alg": "ES256",
+        "use": "sig"
+      }
+    ]
+  },
+  "tips": [
+    {
+      "id": "ai.pluxia.questpump.tip.small",
+      "display_name": "Small tip",
+      "description": "A small thank-you. It unlocks nothing.",
+      "price": "1.99"
+    },
+    {
+      "id": "ai.pluxia.questpump.tip.big",
+      "display_name": "Big tip",
+      "description": "A big thank-you. It unlocks nothing.",
+      "price": "4.99"
+    },
+    {
+      "id": "ai.pluxia.questpump.tip.huge",
+      "display_name": "Huge tip",
+      "description": "A huge thank-you. It unlocks nothing.",
+      "price": "9.99"
+    }
+  ]
+}

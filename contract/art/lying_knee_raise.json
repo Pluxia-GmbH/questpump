@@ -1,0 +1,30 @@
+{
+  "move": "lying_knee_raise",
+  "view": "side",
+  "camera": {"yaw": -10, "pitch": 10},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "mat", "f0": -92, "f1": 92}],
+  "poses": {
+    "low": {
+      "pelvis": [0, 16.0, 0],
+      "trunk": [-90, 0, 0],
+      "arms": {"ik": [0, 5.5, 32], "pole": [0, 1, 0.3], "hand": [1, -0.05, 0]},
+      "legs": {"fk": [38, 4, 92, -25]},
+      "contacts": ["neck", "waist", "pelvis", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "up": {"from": "low", "legs": {"fk": [100, 4, 100, -25]}}
+  },
+  "timeline": [
+    {"pose": "low"},
+    {"hold": 0.3, "phase": "lie"},
+    {"to": "up", "s": 1.2, "phase": "knees_up", "effort": 0.8},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "low", "s": 2.0, "phase": "lower_slowly", "effort": 0.6}
+  ],
+  "key": "up",
+  "targets": [
+    {"at": "up", "check": "height", "joint": "waist", "max": 17},
+    {"at": "low", "check": "height", "joint": "waist", "max": 17},
+    {"at": "up", "check": "offset", "joint": "knee_near", "from": "hip_near", "axis": "f", "max": 4}
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "move": "towel_reach",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 12},
+  "working": ["back", "pauldron"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -125, "f1": 70}, {"kind": "roller", "f": -35, "r": 5, "len": 60}],
+  "poses": {
+    "lie": {
+      "pelvis": [0, 14.5, 0],
+      "trunk": [-69, 0, 0],
+      "chest": [-21, 0, 0],
+      "head": [-30, 0, 0],
+      "arms": {"fk": [10, 12, 8]},
+      "legs": {"foot": [40, 13], "turn": 4, "pole": [0.2, 1, 0], "y": 1},
+      "contacts": ["pelvis", "head", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "lie",
+      "arms": {"ik": [-97.5, 4.3, 20], "pole": [0, 1, 0.3], "hand": [-1, -0.05, 0]},
+      "contacts": [
+        "pelvis",
+        "head",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "reach_in": {
+      "from": "reach",
+      "trunk": [-68, 0, 0],
+      "chest": [-22, 0, 0],
+      "arms": {"ik": [-98, 4.3, 20], "pole": [0, 1, 0.3], "hand": [-1, -0.05, 0]}
+    },
+    "up": {"from": "lie", "arms": {"fk": [95, 8, 6]}}
+  },
+  "timeline": [
+    {"pose": "lie"},
+    {"hold": 0.6, "phase": "lie_on_roll", "effort": 0.2},
+    {"to": "up", "s": 1.6, "phase": "arms_up", "effort": 0.3},
+    {"to": "reach", "s": 1.8, "phase": "reach_back", "effort": 0.5},
+    {"to": "reach_in", "s": 1.8, "phase": "breathe", "effort": 0.55},
+    {"to": "reach", "s": 1.8, "phase": "breathe", "effort": 0.55},
+    {"to": "up", "s": 1.6, "phase": "arms_up", "effort": 0.4},
+    {"to": "lie", "s": 1.4, "phase": "arms_down", "effort": 0.2}
+  ],
+  "key": "reach",
+  "targets": [
+    {"at": "reach", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165},
+    {"at": "reach", "check": "height", "joint": "wrist_near", "max": 6},
+    {"at": "reach", "check": "height", "joint": "pelvis", "max": 15}
+  ],
+  "note": "On the back, knees bent and feet flat, a rolled bath towel across the back under the shoulder blades: the upper back opens over the roll, and the straight arms reach over the head until the backs of the hands rest on the floor, the ribs and the low back down."
+}

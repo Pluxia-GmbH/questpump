@@ -1,0 +1,41 @@
+{
+  "move": "hanging_knee_raise",
+  "view": "side",
+  "camera": {"yaw": 22, "pitch": 6},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "bar", "f": 8, "u": 222}],
+  "poses": {
+    "hang": {
+      "pelvis": [8, 112.4, 0],
+      "trunk": [0, 0, 0],
+      "arms": {"ik": [8, 215.6, 30], "pole": [-0.2, -1, 0.6], "hand": [0, 1, 0]},
+      "legs": {"fk": [4, 2, 8, -25]},
+      "contacts": ["wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "top": {
+      "from": "hang",
+      "pelvis": [1.7, 115.1, 0],
+      "trunk": [-15, 0, 0],
+      "chest": [15, 0, 0],
+      "legs": {"fk": [125, 3, 130, 10]}
+    },
+    "mid": {
+      "from": "hang",
+      "pelvis": [-1.7, 114.5, 0],
+      "trunk": [-7, 0, 0],
+      "chest": [7, 0, 0],
+      "legs": {"fk": [62, 3, 70, -10]}
+    }
+  },
+  "timeline": [
+    {"pose": "hang"},
+    {"hold": 0.3, "phase": "dead_hang"},
+    {"to": "mid", "s": 0.6, "phase": "knees_up", "effort": 0.9, "ease": "in"},
+    {"to": "top", "s": 0.6, "phase": "knees_up", "effort": 1.0, "ease": "out"},
+    {"hold": 0.3, "phase": "squeeze", "effort": 0.9},
+    {"to": "mid", "s": 1.0, "phase": "lower_slowly", "effort": 0.6, "ease": "in"},
+    {"to": "hang", "s": 1.0, "phase": "lower_slowly", "effort": 0.5, "ease": "out"}
+  ],
+  "key": "top",
+  "targets": [{"at": "top", "check": "height", "joint": "knee_near", "min": 135}]
+}

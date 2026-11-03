@@ -1,0 +1,44 @@
+{
+  "move": "plank_dog_flow",
+  "view": "side",
+  "camera": {"yaw": 14, "pitch": 8},
+  "working": ["pauldron", "abdomen"],
+  "props": [{"kind": "mat", "f0": -86.0, "f1": 98.0}],
+  "poses": {
+    "plank": {
+      "line": {"pivot": "toes", "at": -70, "angle": 16.3, "width": 12, "gap": 0.3, "y": 1.0},
+      "head": [4, 0, 0],
+      "arms": {"ik": [80, 4.3, 24], "pole": [-1, 0.3, 0.7], "hand": [1, -0.14, 0]},
+      "contacts": ["toe_near", "toe_far", "wrist_near", "wrist_far", "hand_tip_near", "hand_tip_far"]
+    },
+    "dog": {
+      "from": "plank",
+      "line": {"pivot": "toes", "at": -70, "angle": 40, "width": 12, "hips": -84, "lift": 35, "gap": 0.3, "y": 1.0},
+      "head": [-8, 0, 0]
+    },
+    "rounded": {
+      "from": "dog",
+      "line": {"pivot": "toes", "at": -62, "angle": 40, "width": 12, "hips": -84, "lift": 35, "gap": 0.3, "y": 1.0},
+      "chest": [34, 0, 0],
+      "head": [-55, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "plank"},
+    {"hold": 0.6, "phase": "plank", "effort": 0.6},
+    {"to": "dog", "s": 2.0, "phase": "lift_breathe_out", "effort": 0.5},
+    {"hold": 0.8, "phase": "hips_high", "effort": 0.4},
+    {"to": "plank", "s": 2.0, "phase": "plank", "effort": 0.6}
+  ],
+  "key": "dog",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "shoulder_near", "wrist_near"], "min": 165}
+  },
+  "targets": [
+    {"at": "plank", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "dog", "check": "angle", "joints": ["pelvis", "shoulder_near", "wrist_near"], "min": 165},
+    {"at": "dog", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 165}
+  ]
+}

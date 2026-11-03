@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
+
+PackageIdentifier: Pluxia.QuestPump
+PackageVersion: "@VERSION@"
+PackageLocale: en-US
+Publisher: Pluxia GmbH
+PublisherUrl: https://questpump.com/
+PrivacyUrl: https://questpump.com/privacy
+Author: Pluxia GmbH
+PackageName: QuestPump
+PackageUrl: https://questpump.com/helper
+License: MIT
+LicenseUrl: https://github.com/Pluxia-GmbH/questpump/blob/HEAD/LICENSE
+ShortDescription: Exercise pumps between games, synced with the add-on and the phone app
+Description: |-
+  QuestPump on your computer: the desktop app of QuestPump, a free add-on for World of Warcraft that asks for an
+  exercise set when you turn in a quest. It reads the small status strip the add-on shows in the corner of the game
+  window, keeps your progress in the game's AddOns folder, pairs your phone and watch over your home network, and runs
+  pumps on its own screen, at a click or after a match in another game. It never sends input to a game and never reads
+  a game's memory. Free and open source.
+Moniker: questpump
+Tags:
+- companion
+- exercise
+- fitness
+- questpump
+ManifestType: defaultLocale
+ManifestVersion: 1.12.0

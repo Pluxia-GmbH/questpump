@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Sync: a cloud of three swells over a flat underside (the player's own iCloud or Google Drive); lit from the top
+       left, the right half in shadow. One colour: the caller tints it. -->
+  <path data-token="tint" fill="currentColor" d="
+    M6.5 19 C4.29 19 2.5 17.21 2.5 15 C2.5 12.97 4.01 11.3 5.97 11.04 C6.48 7.9 9.2 5.5 12.5 5.5
+    C15.32 5.5 17.7 7.25 18.62 9.72 C20.87 10.1 22.5 12.05 22.5 14.38 C22.5 16.93 20.43 19 17.88 19 Z"/>
+  <path data-token="void" fill-opacity="0.35" d="
+    M12.5 5.5 C15.32 5.5 17.7 7.25 18.62 9.72 C20.87 10.1 22.5 12.05 22.5 14.38 C22.5 16.93 20.43 19 17.88 19 H12.5 Z"/>
+</svg>

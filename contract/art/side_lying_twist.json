@@ -1,0 +1,78 @@
+{
+  "move": "side_lying_twist",
+  "view": "side",
+  "camera": {"yaw": 18, "pitch": 52},
+  "working": ["chest", "pauldron_far"],
+  "breathe": true,
+  "props": [{"kind": "mat", "f0": -64, "f1": 58, "l0": -100, "l1": 70}],
+  "poses": {
+    "closed": {
+      "pelvis": [0, 24, 0],
+      "trunk": [0, -74, 0],
+      "chest": [8, 0, -25],
+      "head": [-5, -25, 25],
+      "arm_near": {"ik": [42, 4.3, 52], "pole": [0, 0, 1], "hand": [1, -0.05, 0]},
+      "arm_far": {
+        "ik": [13.9, 58.2, -44.0],
+        "orbit": {"r": 53.2, "deg": -57.0, "plane": "fu"},
+        "pole": [0, 0, 1],
+        "hand": [1, -0.15, 0]
+      },
+      "leg_near": {"ik": [40, 8.5, -40], "pole": [1, -0.1, 0], "toe": [1, 0, 0]},
+      "leg_far": {"ik": [40, 23, 40], "pole": [1, -0.18, 0], "toe": [1, 0, 0]},
+      "contacts": ["hip_near", "shoulder_near", "knee_near", "elbow_near", "wrist_near", "hand_tip_near"]
+    },
+    "up": {
+      "from": "closed",
+      "chest": [-22, 4, 30],
+      "head": [8, -28, 30],
+      "arm_far": {
+        "ik": [-20.6, 55.1, -40],
+        "orbit": {"r": 53.2, "deg": 95, "plane": "fu"},
+        "pole": [0, 0, 1],
+        "hand": [-0.1, 1, 0]
+      },
+      "contacts": ["hip_near", "shoulder_near", "knee_near", "elbow_near", "wrist_near", "hand_tip_near"],
+      "arm_near": {"ik": [51, 4.3, 51], "pole": [0, 0, 1], "hand": [1, -0.05, 0]}
+    },
+    "open": {
+      "from": "closed",
+      "chest": [-35, 18, 70],
+      "head": [12, -25, 25],
+      "arm_far": {
+        "ik": [-32.6, 37.0, -36],
+        "orbit": {"r": 55.0, "deg": 217.8, "plane": "fu"},
+        "pole": [0, 0, 1],
+        "hand": [-1, -0.05, 0]
+      },
+      "contacts": ["hip_near", "knee_near", "elbow_near", "wrist_near", "hand_tip_near", "wrist_far", "hand_tip_far"],
+      "arm_near": {"ik": [58, 4.3, 50], "pole": [0, 0, 1], "hand": [1, -0.05, 0]}
+    },
+    "open_in": {"from": "open", "chest": [-37, 19, 72]},
+    "lifted": {"from": "open", "leg_far": {"ik": [40, 23, 40], "pole": [1, 0.2, 0], "toe": [1, 0, 0]}}
+  },
+  "timeline": [
+    {"pose": "closed"},
+    {"hold": 0.6, "phase": "lie"},
+    {"to": "up", "s": 1.4, "ease": "in", "phase": "open_up", "effort": 0.5},
+    {"to": "open", "s": 1.6, "ease": "out", "phase": "open_up", "effort": 0.6},
+    {"to": "open_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "open", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "open_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "open", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "up", "s": 1.4, "ease": "in", "phase": "return_slowly", "effort": 0.4},
+    {"to": "closed", "s": 1.4, "ease": "out", "phase": "return_slowly", "effort": 0.3}
+  ],
+  "key": "open",
+  "fault": {
+    "pose": "lifted",
+    "caption": "knee_lifts",
+    "breaks": {"check": "offset", "joint": "knee_far", "from": "knee_near", "axis": "u", "max": 25}
+  },
+  "targets": [
+    {"at": "open", "check": "offset", "joint": "knee_far", "from": "knee_near", "axis": "u", "max": 25},
+    {"at": "open", "check": "height", "joint": "wrist_far", "max": 6},
+    {"at": "open", "check": "height", "joint": "shoulder_far", "min": 30}
+  ],
+  "note": "The open book held: lying on the near side, hips and knees bent to a right angle, the bottom hand holds the top knee down on the bottom one while the top arm opens over to the floor behind, the back of the hand resting there and the shoulder blade still off it, the chest turned up about halfway."
+}

@@ -1,0 +1,45 @@
+# The health-claim deny-list (docs/plan.md slice 4; docs/tasks.md, "Legal minimum"; docs/safety.md, row 13). One stem a
+# line; '#' starts a comment. A stem matches a text when it starts a word there, case-insensitively: "heal" matches
+# "heal", "healing" and "healthy", never "wheal". In a stem of several words each word is such a stem and the words
+# stand in a row, with spaces or hyphens between them: "burn fat" matches "burning fat" and "burns-fat", "los weight"
+# "losing weight" and "lost weight". A word is ASCII letters and digits; a curly apostrophe counts as a straight one, a
+# no-break, figure, thin or narrow no-break space as a space, a typographic hyphen or a figure, en or em dash as a
+# hyphen, and an ellipsis as three dots. tools/lint.lua runs it over Locales/enUS.lua (except the one safety text) and
+# the apps', the store's and the site's text (except the legal texts), and the quest mapper's validator over every
+# flavour line (tools/quests/validate.lua); the Pro coach filters its lines with it and with urge-list.txt (slice 9).
+# contract/fixtures/coach.json's `words` cases state the rule the Lua and the Swift matcher follow.
+
+# claims to cure, treat or prevent
+cure
+heal
+treat
+therap
+rehab
+prevent
+protect your
+disease
+diagnos
+symptom
+injur
+pain relief
+immun
+detox
+medical
+clinical
+# body measures and conditions
+blood pressure
+glucose
+sugar
+diabet
+cholesterol
+heart health
+back pain
+posture fix
+burn fat
+fat burn
+weight los
+los weight
+# body state, however the text counts it (the body map says "next record attempt from 21:40", never these)
+recover
+fatigu
+overtrain

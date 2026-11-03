@@ -1,0 +1,52 @@
+{
+  "move": "revolved_chair",
+  "view": "side",
+  "camera": {"yaw": 34, "pitch": 16},
+  "working": ["thigh", "abdomen"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.6, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "arms": {"ik": [26, -24, 8], "rel": "neck", "pole": [-0.2, -0.6, 1], "hand": [0.1, 1, -0.05]},
+      "legs": {"foot": [0, 7], "turn": 4, "knee_out": 0},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "chair": {"from": "tall", "pelvis": [-20, 66, 0], "trunk": [40, 0, 0], "chest": [-4, 0, 0], "head": [-12, 0, 0]},
+    "turn": {"from": "twist", "trunk": [42, 0, 0], "chest": [-2, 0, -70], "head": [-6, 0, -28]},
+    "twist": {
+      "from": "chair",
+      "pelvis": [-20, 66, 0],
+      "trunk": [55, 0, 0],
+      "chest": [0, 0, -90],
+      "head": [0, 0, -35],
+      "arm_far": {"ik": [34, -14, 8], "rel": "neck", "pole": [0.6, -0.6, 1], "hand": [0.1, 1, -0.05]},
+      "arm_near": {"ik": [34, -14, 8], "rel": "neck", "pole": [-0.2, 0.6, 1], "hand": [0.1, 1, -0.05]}
+    },
+    "twist_in": {"from": "twist", "pelvis": [-20, 66.5, 0], "chest": [-1, 0, -92]},
+    "round": {"from": "twist", "trunk": [47, 0, 0], "chest": [8, 24, -90], "head": [0, 28, -35]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "hands_together"},
+    {"to": "chair", "s": 1.8, "phase": "sit_back", "effort": 0.6},
+    {"to": "turn", "s": 1.2, "phase": "turn_to_knee", "effort": 0.7, "ease": "in"},
+    {"to": "twist", "s": 1.0, "phase": "turn_to_knee", "effort": 0.75, "ease": "out"},
+    {"to": "twist_in", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "twist", "s": 1.6, "phase": "breathe", "effort": 0.8},
+    {"to": "turn", "s": 0.9, "phase": "return_slowly", "effort": 0.65, "ease": "in"},
+    {"to": "chair", "s": 0.9, "phase": "return_slowly", "effort": 0.6, "ease": "out"},
+    {"to": "tall", "s": 1.8, "phase": "stand_up", "effort": 0.4}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "round",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172}
+  },
+  "targets": [
+    {"at": "twist", "check": "angle", "joints": ["knee_near", "pelvis", "knee_far"], "max": 6},
+    {"at": "twist", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "max": 130}
+  ]
+}

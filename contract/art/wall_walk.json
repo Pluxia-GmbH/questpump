@@ -1,0 +1,215 @@
+{
+  "move": "wall_walk",
+  "view": "side",
+  "camera": {"yaw": 5, "pitch": 8},
+  "working": ["back", "pauldron", "thigh"],
+  "breathe": true,
+  "props": [{"kind": "wall", "f": -88.0, "behind": true}, {"kind": "mat", "f0": -88.0, "f1": 32}],
+  "poses": {
+    "tall": {
+      "pelvis": [3, 94.2, 0],
+      "trunk": [1, 0, 0],
+      "chest": [-1, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "reach": {
+      "from": "tall",
+      "pelvis": [5, 94, 0],
+      "trunk": [-6, 0, 0],
+      "chest": [-8, 0, 0],
+      "head": [-15, 0, 0],
+      "arms": {"fk": [172, 8, 4]}
+    },
+    "wall_high": {
+      "pelvis": [4.0, 88.0, 0],
+      "trunk": [-46.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-58, 0, 0],
+      "arms": {"ik": [-84.2, 136, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "step_150": {
+      "pelvis": [6.0, 88.0, 0],
+      "trunk": [-60.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-60, 0, 0],
+      "arm_near": {"ik": [-84.2, 95, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "arm_far": {"ik": [-84.2, 136, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wall_mid": {
+      "pelvis": [8.0, 88.0, 0],
+      "trunk": [-80.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-55, 0, 0],
+      "arms": {"ik": [-84.2, 95, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "step_95": {
+      "pelvis": [5.0, 87.0, 0],
+      "trunk": [-95.0, 0, 0],
+      "chest": [-7.5, 0, 0],
+      "head": [-45, 0, 0],
+      "arm_near": {"ik": [-84.2, 45, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "arm_far": {"ik": [-84.2, 95, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wall_low": {
+      "pelvis": [2.0, 86.0, 0],
+      "trunk": [-105.0, 0, 0],
+      "chest": [-10.0, 0, 0],
+      "head": [-35, 0, 0],
+      "arms": {"ik": [-84.2, 45, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "step_45": {
+      "pelvis": [-8.0, 82.0, 0],
+      "trunk": [-125.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-25, 0, 0],
+      "arm_near": {"ik": [-72, 4.3, 20], "pole": [0.6, 0.3, 1], "hand": [1, -0.05, 0]},
+      "arm_far": {"ik": [-84.2, 45, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "lift_near": {
+      "pelvis": [-3.0, 84.0, 0],
+      "trunk": [-115.0, 0, 0],
+      "chest": [-7.5, 0, 0],
+      "head": [-30, 0, 0],
+      "arm_near": {"ik": [-79, 24, 20], "pole": [0.3, 0.3, 1], "hand": [0.5, -0.85, 0]},
+      "arm_far": {"ik": [-84.2, 45, 20], "pole": [0.6, 0.3, 1], "hand": [-0.1, -1, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_far", "hand_tip_far"]
+    },
+    "lift_far": {
+      "from": "step_45",
+      "arm_far": {"ik": [-79, 24, 28], "pole": [0.9, 0.3, 1], "hand": [0.5, -0.85, 0]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far", "wrist_near", "hand_tip_near"]
+    },
+    "wheel": {
+      "pelvis": [-8.0, 82.0, 0],
+      "trunk": [-125.0, 0, 0],
+      "chest": [-5.0, 0, 0],
+      "head": [-25, 0, 0],
+      "arms": {"ik": [-72, 4.3, 20], "pole": [0.6, 0.3, 1], "hand": [1, -0.05, 0]},
+      "legs": {"foot": [0, 13], "y": 1, "turn": 6, "knee_out": 6},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "wheel_in": {"from": "wheel", "pelvis": [-8.0, 82.6, 0], "trunk": [-126.0, 0, 0], "chest": [-7.0, 0, 0]},
+    "bent": {
+      "from": "wheel",
+      "pelvis": [-12, 80.5, 0],
+      "arms": {"ik": [-72, 4.3, 20], "pole": [-1, 0.2, 0.4], "hand": [1, -0.03, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "tall"},
+    {"to": "reach", "s": 0.8, "phase": "arms_up", "effort": 0.3},
+    {"to": "wall_high", "s": 1.1, "phase": "lean_back", "effort": 0.5},
+    {"to": "step_150", "s": 0.5, "phase": "walk_hands_down", "effort": 0.6},
+    {"to": "wall_mid", "s": 0.5, "phase": "walk_hands_down", "effort": 0.6},
+    {"to": "step_95", "s": 0.5, "phase": "walk_hands_down", "effort": 0.6},
+    {"to": "wall_low", "s": 0.5, "phase": "walk_hands_down", "effort": 0.6},
+    {"to": "lift_near", "s": 0.25, "phase": "walk_hands_down", "effort": 0.6, "ease": "in"},
+    {"to": "step_45", "s": 0.25, "phase": "walk_hands_down", "effort": 0.6, "ease": "out"},
+    {"to": "lift_far", "s": 0.3, "phase": "arms_straight", "effort": 0.6, "ease": "in"},
+    {"to": "wheel", "s": 0.3, "phase": "arms_straight", "effort": 0.6, "ease": "out"},
+    {"to": "wheel_in", "s": 0.7, "phase": "breathe", "effort": 0.8},
+    {"to": "wheel", "s": 0.7, "phase": "breathe", "effort": 0.8},
+    {"to": "lift_far", "s": 0.3, "phase": "walk_hands_up", "effort": 0.6, "ease": "in"},
+    {"to": "step_45", "s": 0.3, "phase": "walk_hands_up", "effort": 0.6, "ease": "out"},
+    {"to": "lift_near", "s": 0.25, "phase": "walk_hands_up", "effort": 0.6, "ease": "in"},
+    {"to": "wall_low", "s": 0.25, "phase": "walk_hands_up", "effort": 0.6, "ease": "out"},
+    {"to": "step_95", "s": 0.5, "phase": "walk_hands_up", "effort": 0.6},
+    {"to": "wall_mid", "s": 0.5, "phase": "walk_hands_up", "effort": 0.6},
+    {"to": "step_150", "s": 0.5, "phase": "walk_hands_up", "effort": 0.6},
+    {"to": "wall_high", "s": 0.5, "phase": "walk_hands_up", "effort": 0.6},
+    {"to": "reach", "s": 1.0, "phase": "stand_tall", "effort": 0.4},
+    {"to": "tall", "s": 0.8, "phase": "hands_down", "effort": 0.2}
+  ],
+  "key": "wheel",
+  "fault": {
+    "pose": "bent",
+    "caption": "elbows_bend",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160}
+  },
+  "targets": [
+    {"at": "wall_low", "check": "angle", "joints": ["knee_near", "pelvis", "neck"], "max": 105},
+    {"at": "wheel", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 160},
+    {"at": "wheel", "check": "height", "joint": "head", "min": 20}
+  ],
+  "note": "Standing a long step from the wall: the arms reach up and back to the wall, the hands walk down it step by step to the floor at its foot and press into the wheel, the arms straight, the head off the floor and the knees bent (the goal pose), then walk back up the wall to standing."
+}

@@ -1,0 +1,48 @@
+{
+  "move": "horse_stance_deep",
+  "view": "front",
+  "camera": {"yaw": 38, "pitch": 10},
+  "working": ["thigh"],
+  "breathe": true,
+  "poses": {
+    "tall": {
+      "pelvis": [0, 86, 0],
+      "trunk": [2, 0, 0],
+      "arms": {"ik": [50, 128, 10], "pole": [0, -1, 0.8], "hand": [1, 0, -0.3]},
+      "legs": {"foot": [0, 50], "turn": 8, "knee_out": 65},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "caved": {"from": "deep", "legs": {"foot": [0, 50], "turn": 8, "knee_out": 0}},
+    "deep": {
+      "from": "tall",
+      "pelvis": [-6, 50, 0],
+      "trunk": [12, 0, 0],
+      "arms": {"ik": [50, 92, 10], "pole": [0, -1, 0.8], "hand": [1, 0, -0.3]},
+      "legs": {"foot": [0, 50], "turn": 8, "knee_out": 60},
+      "chest": [-4, 0, 0],
+      "head": [-6, 0, 0]
+    },
+    "deep_in": {"from": "deep", "pelvis": [-6, 49.4, 0], "chest": [-5, 0, 0]}
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.5, "phase": "feet_wide", "effort": 0.2},
+    {"to": "deep", "s": 2.4, "phase": "sit_down", "effort": 0.6},
+    {"to": "deep_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "deep", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "deep_in", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "deep", "s": 1.6, "phase": "breathe", "effort": 0.75},
+    {"to": "tall", "s": 2.0, "phase": "stand_tall", "effort": 0.4}
+  ],
+  "key": "deep",
+  "fault": {
+    "pose": "caved",
+    "caption": "knee_caves",
+    "breaks": {"check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "l", "min": -6}
+  },
+  "targets": [
+    {"at": "deep", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "u", "min": -3, "max": 6},
+    {"at": "deep", "check": "offset", "joint": "knee_near", "from": "ankle_near", "axis": "l", "min": -6}
+  ],
+  "note": "Seen from behind: the feet twice shoulder-width apart and the toes ahead, the arms reaching forward at shoulder height; the body sits straight down until the thighs are level, the knees pushed out over the toes and the chest up."
+}

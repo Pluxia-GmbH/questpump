@@ -1,0 +1,80 @@
+{
+  "move": "foot_up_twist",
+  "view": "side",
+  "camera": {"yaw": 12, "pitch": 10},
+  "working": ["abdomen"],
+  "breathe": true,
+  "props": [{"kind": "bench", "f0": 36, "f1": 120, "u": 45}],
+  "poses": {
+    "stand": {
+      "pelvis": [0, 95.0, 0],
+      "trunk": [1, 0, 0],
+      "arms": {"fk": [6, 6, 10]},
+      "legs": {"foot": [0, 12], "turn": 6, "knee_out": 6},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "knee": {
+      "from": "stand",
+      "leg_near": {"foot": [12, 12], "y": 42, "turn": 6, "lift": 0, "knee_out": 4},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "lift": {
+      "from": "stand",
+      "leg_near": {"foot": [32, 12], "y": 58, "turn": 6, "lift": 0, "knee_out": 4},
+      "contacts": ["toe_far", "ankle_far"]
+    },
+    "up": {
+      "from": "stand",
+      "leg_near": {"foot": [48, 12], "y": 45, "turn": 6, "knee_out": 4},
+      "arm_near": {"ik": [-4, 92, 22], "pole": [-0.6, 0, 1], "hand": [0.6, -0.4, -0.5]},
+      "contacts": ["toe_near", "toe_far", "ankle_near", "ankle_far"],
+      "arm_far": {"ik": [-4, 92, 22], "pole": [-0.6, 0, 1], "hand": [0.6, -0.4, -0.5]}
+    },
+    "turn": {
+      "from": "up",
+      "trunk": [24, 0, 0],
+      "chest": [0, 0, -50],
+      "head": [0, 0, -20],
+      "arm_far": {"ik": [46, 118, -24], "pole": [0.3, -0.5, 1], "hand": [0.3, 0.2, -0.9]}
+    },
+    "twist": {
+      "from": "up",
+      "trunk": [45, 0, 0],
+      "chest": [0, 0, -86],
+      "head": [0, 0, -24],
+      "arm_far": {"ik": [49, 114, -38], "pole": [0.1, -1, -1.2], "hand": [0, 1, 0]},
+      "arm_near": {"ik": [-2, 104, 20], "pole": [-0.6, 0, 1], "hand": [0.6, -0.4, -0.5]}
+    },
+    "twist_in": {"from": "twist", "chest": [-1, 0, -89]},
+    "turned": {"from": "twist", "trunk": [45, 0, -16], "chest": [0, 0, -70]}
+  },
+  "timeline": [
+    {"pose": "stand"},
+    {"hold": 0.6, "phase": "stand_tall"},
+    {"to": "knee", "s": 0.6, "ease": "in", "phase": "foot_up", "effort": 0.4},
+    {"to": "lift", "s": 0.5, "ease": "linear", "phase": "foot_up", "effort": 0.4},
+    {"to": "up", "s": 0.7, "ease": "out", "phase": "foot_up", "effort": 0.4},
+    {"to": "turn", "s": 1.0, "ease": "in", "phase": "rotate_open", "effort": 0.5},
+    {"to": "twist", "s": 1.0, "ease": "out", "phase": "rotate_open", "effort": 0.6},
+    {"to": "twist_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "twist_in", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "twist", "s": 1.6, "phase": "breathe", "effort": 0.7},
+    {"to": "turn", "s": 0.8, "ease": "in", "phase": "return_slowly", "effort": 0.4},
+    {"to": "up", "s": 0.8, "ease": "out", "phase": "return_slowly", "effort": 0.4},
+    {"to": "lift", "s": 0.8, "ease": "in", "phase": "foot_down", "effort": 0.3},
+    {"to": "knee", "s": 0.5, "ease": "linear", "phase": "foot_down", "effort": 0.3},
+    {"to": "stand", "s": 0.6, "ease": "out", "phase": "foot_down", "effort": 0.3}
+  ],
+  "key": "twist",
+  "fault": {
+    "pose": "turned",
+    "caption": "hips_twist",
+    "breaks": {"check": "offset", "joint": "hip_far", "from": "hip_near", "axis": "f", "min": -4, "max": 4}
+  },
+  "targets": [
+    {"at": "twist", "check": "offset", "joint": "hip_far", "from": "hip_near", "axis": "f", "min": -4, "max": 4},
+    {"at": "twist", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170}
+  ],
+  "note": "Facing the bed, the near foot up on its edge with the knee pointing ahead and the standing leg straight: the chest leans over the raised thigh and turns about 86 degrees toward the raised knee, the back of the far upper arm hooked against its outside with the forearm up, the near hand on the hip; the hips stay level and square."
+}

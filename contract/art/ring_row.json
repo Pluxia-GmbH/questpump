@@ -1,0 +1,42 @@
+{
+  "move": "ring_row",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 10},
+  "working": ["upper_arm", "pauldron"],
+  "props": [{"kind": "rings", "f": -15.7, "u": 111.8}],
+  "poses": {
+    "low": {
+      "line": {"pivot": "toes", "at": 60, "angle": 29.5, "width": 14, "face": "up", "lift": -50},
+      "head": [4, 0, 0],
+      "arms": {"ik": [-20.8, 108.0, 22], "pole": [-1, -0.5, 0.5], "hand": [0.8, 0.6, 0]},
+      "contacts": [
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "high": {
+      "from": "low",
+      "line": {"pivot": "toes", "at": 60, "angle": 48, "width": 14, "face": "up", "lift": -50},
+      "head": [8, 0, 0],
+      "arms": {"ik": [-18.9, 106.3, 22], "pole": [-1, -0.5, 0.5], "hand": [0.5, 0.866, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "low"},
+    {"hold": 0.3, "phase": "arms_straight"},
+    {"to": "high", "s": 1.1, "phase": "chest_to_hands", "effort": 1.0},
+    {"hold": 0.2, "phase": "squeeze", "effort": 0.9},
+    {"to": "low", "s": 1.3, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "high",
+  "targets": [
+    {"at": "low", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170},
+    {"at": "high", "check": "angle", "joints": ["ankle_near", "pelvis", "neck"], "min": 170}
+  ]
+}
