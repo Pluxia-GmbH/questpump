@@ -475,9 +475,11 @@ pub enum Build {
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum Update {
 	/// Downloaded: it installs once the game and the window are closed, no pump runs and no watched game is in a match
-	/// (`runtime/updates.rs`).
+	/// (`runtime/updates.rs`); `now` while nothing but the open window holds it, so This computer's Restart to update
+	/// installs it at once.
 	Ready {
 		new: String,
+		now: bool,
 	},
 	Current,
 	Failed,
@@ -823,6 +825,8 @@ pub enum WindowAsk {
 	AllowFolder,
 	/// Add QuestPump to the game, or Update now (`runtime/addon.rs`).
 	Addon,
+	/// This computer's Restart to update: QuestPump's own update installs now (`runtime/updates.rs`).
+	Update,
 	/// Start with the computer, or not.
 	Autostart(bool),
 	/// The feedback form's Send: the text as typed, whether its diagnostics go, and where the outcome goes.

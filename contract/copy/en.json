@@ -3280,8 +3280,8 @@
    ],
    "note": "The version line when an update did not install."
   },
-  "desk.menu.computer.version.ready": {
-   "text": "{version} · {new} is ready: it installs once this window and the game are closed",
+  "desk.menu.computer.version.ready.held": {
+   "text": "{version} · {new} is ready: it installs once the game is closed",
    "args": {
     "version": "string",
     "new": "string"
@@ -3289,7 +3289,25 @@
    "screens": [
     "desk.menu.computer"
    ],
-   "note": "The version line when an update was downloaded. {new} is its version. The update waits while this window is open, the game runs, a pump runs or a watched game is in a match; the window is open whenever the line shows, so the line names the window and the game."
+   "note": "The version line when an update was downloaded and something besides this window holds it: the game runs, a pump runs or holds the window, a match's offer stands, a watched game runs or is in a match, or the addon's own update is under way; the game is the usual one, so the line names it. It installs by itself once nothing holds it and the window is closed. {version} is QuestPump's version, {new} the update's."
+  },
+  "desk.menu.computer.version.ready.now": {
+   "text": "{version} · {new} is ready",
+   "args": {
+    "version": "string",
+    "new": "string"
+   },
+   "screens": [
+    "desk.menu.computer"
+   ],
+   "note": "The version line when an update was downloaded and only this window keeps it from installing: Restart to update beside it installs it now. {version} is QuestPump's version, {new} the update's."
+  },
+  "desk.menu.computer.version.restart": {
+   "text": "Restart to update",
+   "screens": [
+    "desk.menu.computer"
+   ],
+   "note": "This computer's version row action while an update is ready and only this window keeps it from installing: QuestPump closes, installs the update and opens again on this page."
   },
   "desk.menu.computer.version.unmoved": {
    "text": "{version} (it updates itself once it runs from Applications)",

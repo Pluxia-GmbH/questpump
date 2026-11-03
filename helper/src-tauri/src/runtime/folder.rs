@@ -126,6 +126,7 @@ impl Helper {
 				// Add QuestPump to the game, waiting for this pick, goes here
 				self.addon_picked(&addons);
 				self.without_addon = Some(addons);
+				self.without_addon_picked = true;
 				self.due_by(Instant::now()); // the next mirror job shows it as the game on this computer
 			}
 			return;

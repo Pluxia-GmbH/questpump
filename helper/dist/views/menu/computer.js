@@ -9,7 +9,8 @@
 // the game folder, the move figures in this app (desk/figures.rs: bundled, kept from their download or on their way)
 // and the version;
 // the game folder with Change…; Start with this computer where the system can say; and Size, the page's size with −
-// and + (`sizeRow`). From the `menu.computer` topic (helper/src-tauri/src/ui.rs `Computer`), the `menu.phones` topic's
+// and + (`sizeRow`). The version's row offers Restart to update while an update is ready and nothing but this window
+// holds it (runtime/updates.rs). From the `menu.computer` topic (helper/src-tauri/src/ui.rs `Computer`), the `menu.phones` topic's
 // `next` and the `shell` topic's platform and size.
 
 import {call, get, intent} from "../../lib/bridge.js";
@@ -130,7 +131,8 @@ function versionLine(version) {
 	const update = version.update;
 	if (update) {
 		switch (update.state) {
-			case "ready": return t("desk.menu.computer.version.ready", {...v, new: update.new});
+			case "ready": return t(update.now ? "desk.menu.computer.version.ready.now"
+				: "desk.menu.computer.version.ready.held", {...v, new: update.new});
 			case "current": return t("desk.menu.computer.version.current", v);
 			case "failed": return t("desk.menu.computer.version.failed", v);
 			case "unreplaceable": return t("desk.menu.computer.version.unreplaceable", {...v, new: update.new});
@@ -225,7 +227,11 @@ register("desk.menu.computer", () => {
 		if (addon.trailing === "action") call("addon_install").catch(console.error);
 	});
 	const animations = status(t("desk.figures.row"));
+	// Restart to update while the topic says nothing but this window holds the update, else its line alone
 	const version = status(t("desk.menu.computer.version"));
+	version.addEventListener("click", () => {
+		if (version.trailing === "action") call("install_update").catch(console.error);
+	});
 	const folder = h("qp-row", {heading: t("desk.menu.computer.folder"), trailing: "action",
 		value: t("desk.menu.computer.folder.change"), "on:click": () => call("pick_folder").catch(console.error)});
 	const note = words("", "meta");
@@ -276,6 +282,9 @@ register("desk.menu.computer", () => {
 		pack.meta = packLine(c.pack);
 		animations.meta = animationsLine(c.animations);
 		version.meta = versionLine(c.version);
+		const updateNow = c.version.update?.state === "ready" && c.version.update.now;
+		version.trailing = updateNow ? "action" : "shown";
+		version.value = updateNow ? t("desk.menu.computer.version.restart") : null;
 		note.textContent = folderNote(c.folder_note);
 		note.hidden = !c.folder_note;
 		autostartCard.hidden = c.autostart === null;

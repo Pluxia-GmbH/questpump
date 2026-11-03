@@ -8,14 +8,17 @@
 //!   version, every file's sha256). An install is managed (`helper`) only while its three folders hold exactly the
 //!   record's files; one another updater rewrote no longer matches, and the helper lets it go (`other`, the record
 //!   dropped). A folder that is or holds a link or a `.git` (a developer's `make link` folder) is never written and
-//!   never managed. The folders are read off the loop when the followed install changes, at every verified feed, and
-//!   again right before any swap; a read that a job's start or end overtook (`epoch`) is dropped and made again, so a
-//!   look from before a swap never drops the record the swap wrote.
+//!   never managed. The folders are read off the loop when the followed install changes, at a verified feed whose
+//!   version they were not read under yet (`read_under`: the hourly feed of the same version reads nothing), and again
+//!   right before any swap; a read that a job's start or end overtook (`epoch`) is dropped and made again, so a look
+//!   from before a swap never drops the record the swap wrote.
 //! - **A first install**: the player's Add QuestPump to the game (the welcome's game row, Pump home's card, This
 //!   computer) while the game on this computer has no QuestPump; allowed while the game runs (it only adds folders),
 //!   after which the line says to start the game again until that client is gone. The install is a folder that holds
-//!   none yet, picked by its client's version: the one whose number is the feed's first interface (Forever's), else
-//!   one whose number the feed lists, else the folder the player picks (the folder picker opens).
+//!   none yet, picked by its client's version: a folder the player picked whose number the feed lists; else one whose
+//!   number is the feed's first interface (Forever's), else one whose number the feed lists, of those the running
+//!   client's, else the preferred one (`install::preferred`: Forever's live install, never its beta beside it); with
+//!   none, the folder the player picks (the folder picker opens).
 //! - **Updates**: a managed install whose version is older than the feed's is staged by itself (the zip downloaded and
 //!   unpacked beside AddOns while the game may run) and swapped in once the game is closed and no pump runs on this
 //!   computer (`addon_held`, checked again right before the swap's first rename), before any update of QuestPump
@@ -40,8 +43,9 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 
 use super::Helper;
-use crate::addon::{self, Checks, Failure, News};
+use crate::addon::{self, Failure, News};
 use crate::desk::seams::FoundGame;
+use crate::feeds::Checks;
 use crate::install;
 use crate::ui::{self, AddonLine, AddonOffer, AddonView};
 
@@ -124,6 +128,9 @@ pub(crate) struct AddonState {
 	feed: Option<Feed>,
 	records: Vec<Record>,
 	owners: HashMap<PathBuf, Owner>,
+	/// The feed's version each install's folders were last read under (`tree_read`): a verified feed of that version
+	/// reads them no more (`feed_verified`).
+	read_under: HashMap<PathBuf, String>,
 	/// The installs whose folders are being read now.
 	looking: HashSet<PathBuf>,
 	/// The install whose ownership the pairing block states now.
@@ -155,6 +162,7 @@ impl AddonState {
 			feed: None,
 			records: Vec::new(),
 			owners: HashMap::new(),
+			read_under: HashMap::new(),
 			looking: HashSet::new(),
 			stated: None,
 			job: Job::Idle,
@@ -224,8 +232,8 @@ impl Helper {
 		}
 	}
 
-	/// The feed checked now.
-	fn check_feed(&self) {
+	/// The feed checked now, unless a check succeeded lately (`feeds::Checks::now`).
+	pub(super) fn check_feed(&self) {
 		if let Some(checks) = &self.addon.checks {
 			checks.now();
 		}
@@ -255,7 +263,8 @@ impl Helper {
 	}
 
 	/// A verified feed: kept unless an older one than the one kept (a replay), its words into the pairing block, the
-	/// followed install read again, and a first install the player asked for goes on.
+	/// followed install read again unless it was read under this version (an hourly check of the same feed hashes no
+	/// folder), and a first install the player asked for goes on.
 	fn feed_verified(&mut self, feed: Feed) {
 		self.addon.feed_error = None;
 		if let Some(kept) = &self.addon.feed
@@ -286,7 +295,9 @@ impl Helper {
 			// the phone's step shows or hides with `phone_apps`
 			self.welcome_found();
 		}
-		if let Some(followed) = self.followed.clone() {
+		if let Some(followed) = self.followed.clone()
+			&& self.addon.read_under.get(&followed) != self.addon.feed.as_ref().map(|f| &f.version)
+		{
 			self.look_at(followed);
 		}
 		if self.addon.asked == Some(Asked::Add) {
@@ -317,6 +328,9 @@ impl Helper {
 				return;
 			}
 		};
+		if let Some(feed) = &self.addon.feed {
+			self.addon.read_under.insert(addons.clone(), feed.version.clone());
+		}
 		let owner = match (&tree, self.addon.record(&addons)) {
 			(Tree::Linked, _) => Owner::Linked,
 			(_, Some(record)) if record.matches(&tree) => Owner::Helper,
@@ -677,23 +691,34 @@ impl Helper {
 		}
 	}
 
-	/// Where a first install goes: of the game folders known without QuestPump (the one shown, the running client's,
-	/// the Agent's and the default folders' installs), the one whose client runs the feed's first interface, else one
-	/// whose number the feed lists.
+	/// Where a first install goes: a folder the player picked (`without_addon_picked`) whose client runs a number the
+	/// feed lists; else, of the game folders known without QuestPump (the one shown, the running client's, the Agent's
+	/// and the default folders' installs), those whose client runs the feed's first interface, else those that run
+	/// another number the feed lists; of them the running client's, else the preferred one (`install::preferred`:
+	/// Forever's live install, never its beta beside it, which runs the same interface), else the first known.
 	fn first_target(&self, interfaces: &[u32]) -> Option<PathBuf> {
+		let picked = self.without_addon.as_ref().filter(|a| {
+			self.without_addon_picked
+				&& install::is_game(a)
+				&& !install::holds_questpump(a)
+				&& install::client_interface(a).is_some_and(|n| interfaces.contains(&n))
+		});
+		if let Some(picked) = picked {
+			return Some(picked.clone());
+		}
+		let running = self.game.as_ref().map(|g| &g.addons);
 		let mut known: Vec<PathBuf> = Vec::new();
-		let shown = self.without_addon.iter().chain(self.game.as_ref().map(|g| &g.addons)).cloned();
-		for addons in shown.chain(install::games()) {
+		for addons in self.without_addon.iter().chain(running).cloned().chain(install::games()) {
 			if install::is_game(&addons) && !install::holds_questpump(&addons) && !known.contains(&addons) {
 				known.push(addons);
 			}
 		}
-		let number = |a: &PathBuf| install::client_interface(a);
-		known
-			.iter()
-			.find(|a| number(a).is_some_and(|n| interfaces.first() == Some(&n)))
-			.or_else(|| known.iter().find(|a| number(a).is_some_and(|n| interfaces.contains(&n))))
-			.cloned()
+		let runs_one_of = |numbers: &[u32]| {
+			let runs: Vec<&PathBuf> =
+				known.iter().filter(|a| install::client_interface(a).is_some_and(|n| numbers.contains(&n))).collect();
+			runs.iter().copied().find(|a| Some(*a) == running).or_else(|| install::preferred(runs))
+		};
+		runs_one_of(interfaces.get(..1).unwrap_or_default()).or_else(|| runs_one_of(interfaces)).cloned()
 	}
 
 	/// The player picked a folder without QuestPump while Add QuestPump to the game waited for one: it goes there.

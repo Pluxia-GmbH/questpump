@@ -95,7 +95,7 @@ use crate::settings::{self, Loaded, Region, Settings};
 use crate::ui::{
 	self, AddressLine, Belt, DeviceLine, Dot, Holder, Mirror, PhoneLine, Quit, Screen, Shared, Walk, WindowAsk,
 };
-use crate::{autostart, copy, dnssd, install, pairing, socket, units, update};
+use crate::{autostart, copy, dnssd, feeds, install, pairing, socket, units, update};
 
 mod addon;
 mod ble_link;
@@ -424,6 +424,7 @@ pub(crate) struct Served {
 }
 
 /// The loop's state; the desktop app's areas add their handlers as `impl Helper` blocks in `desk/`.
+#[expect(clippy::struct_excessive_bools, reason = "the loop's state: independent facts, never one state")]
 pub(crate) struct Helper {
 	pub(crate) app: AppHandle,
 	pub(crate) dir: PathBuf,
@@ -472,9 +473,12 @@ pub(crate) struct Helper {
 	/// it.
 	pub(crate) followed: Option<PathBuf>,
 	/// The game on this computer without QuestPump yet, while no install with it is known (`show_without_addon`): the
-	/// running client's, a folder the player picked, the one remembered, else the first install the Agent or the
-	/// default folders know.
+	/// running client's, a folder the player picked (`without_addon_picked`), else the preferred of the one remembered
+	/// and the installs the Agent or the default folders know (`install::preferred`, `install::discover_game`).
 	pub(crate) without_addon: Option<PathBuf>,
+	/// `without_addon` is a folder the player picked (`runtime/folder.rs` `picked`): it stays while it is a game, and a
+	/// first install goes there first (`first_target`); one found is ranked again at each look.
+	pub(crate) without_addon_picked: bool,
 	/// When the game was last looked for while it is closed (`look_for_game`, every `LOOK_FOR_GAME`).
 	pub(crate) looked_for_game: Option<Instant>,
 	/// The folder the last mirror went into.
@@ -527,7 +531,9 @@ pub(crate) struct Helper {
 	/// The folder the window shows.
 	pub(crate) shown_folder: Option<PathBuf>,
 	/// A downloaded update, installed once nothing holds it back (`runtime/updates.rs`).
-	pub(crate) update: Option<Box<update::Ready>>,
+	pub(crate) update: Option<updates::Pending>,
+	/// Wakes the update checks (`update::spawn`): the game closed.
+	pub(crate) update_checks: feeds::Checks,
 	/// A quit asked on the socket, handed to the loop's quit at the first look nothing holds it (`runtime/updates.rs`
 	/// `socket_quit_due`); `true` for a restart.
 	pub(crate) socket_quit: Option<bool>,
@@ -1659,6 +1665,7 @@ impl Helper {
 			WindowAsk::AllowNetwork => self.allow_network(),
 			WindowAsk::AllowFolder => self.allow_folder(),
 			WindowAsk::Addon => self.addon_install(),
+			WindowAsk::Update => self.update_now().await,
 			WindowAsk::Feedback { text, diagnostics, done } => self.window_feedback(&text, diagnostics, done),
 			WindowAsk::Desk(ask) => self.on_desk(ask),
 			WindowAsk::Autostart(on) => {
@@ -1706,9 +1713,9 @@ impl Helper {
 	/// start at login on the very first start, the update checks, the page's first view (with the Phones page's line
 	/// that the pairing must be scanned again when the settings did not read), and the main window at a player's launch
 	/// (`desk::launch`; never at login, after an update or after the system quit it): on This computer while a Mac
-	/// helper runs from its download (`update::unmoved`: the page asks for the move to Applications) and after the
-	/// grant card's restart, else where the page stands (the first five minutes cover it for a new player,
-	/// `desk::menu_pages::welcome`).
+	/// helper runs from its download (`update::unmoved`: the page asks for the move to Applications), after the grant
+	/// card's restart and after the update This computer's Restart to update installed, else where the page stands
+	/// (the first five minutes cover it for a new player, `desk::menu_pages::welcome`).
 	async fn start(&mut self, started: Started, updates: mpsc::UnboundedSender<update::Found>) {
 		let Started { loaded, launch, crashed, far_lost } = started;
 		// before the engine, the devices and the window (the sweep ran first in `run()`): the crash reports that wait
@@ -1764,13 +1771,17 @@ impl Helper {
 		self.start_at_login(unmoved);
 		// the counts after the stores are read and the switches answered: the finished game days go
 		self.counts_start(crashed);
-		update::spawn(self.app.clone(), updates);
+		self.update_checks = update::spawn(self.app.clone(), &self.dir, updates);
 		self.addon_start();
 		if unmoved {
 			log::info!("the helper runs from its download: the page asks to move it to Applications");
 		}
+		// the start of the update the player's Restart to update installed opens This computer, whose version line the
+		// button was on (`update::restarted`, on Windows too, whose installer starts it with `--updated`)
+		let restarted = update::restarted(&self.dir, &self.app.package_info().version.to_string());
 		// a first start shows the first five minutes over the window (`desk::menu_pages::welcome`), never the Phones page
 		let landing = match launch {
+			Launch::Background if restarted => Some(Landing::Computer),
 			Launch::Background => None,
 			Launch::Restart => Some(Landing::Computer),
 			Launch::Player if unmoved => Some(Landing::Computer),
@@ -1894,9 +1905,9 @@ impl Helper {
 	/// characters are that install's, numbered as it numbers them): the running client's when it holds QuestPump
 	/// (another flavour without it, such as retail beside the Forever install, gets no mirror and is never remembered),
 	/// else the one found or picked before while it still holds QuestPump (one deleted, moved or emptied of QuestPump is
-	/// looked for again), else a folder the player picked before QuestPump was in it, once it is, else the first install
-	/// the Battle.net Agent or the default folders know that has QuestPump (`install::discover`). A new one is remembered
-	/// and shown; while none is known, the game on this computer without QuestPump is shown instead
+	/// looked for again), else a folder the player picked before QuestPump was in it, once it is, else the preferred
+	/// install the Battle.net Agent or the default folders know that has QuestPump (`install::discover`). A new one is
+	/// remembered and shown; while none is known, the game on this computer without QuestPump is shown instead
 	/// (`show_without_addon`). Whether one is followed decides whether the Screen Recording grant is wanted
 	/// (`grant_wanted`), so a change shows the grant again.
 	fn addons(&mut self) -> Option<PathBuf> {
@@ -1922,6 +1933,7 @@ impl Helper {
 	/// The install with QuestPump the session follows from now: its numbering, remembered and shown.
 	fn follow(&mut self, found: &PathBuf) {
 		self.without_addon = None;
+		self.without_addon_picked = false;
 		if let Some(install) = install_key(found) {
 			let fx = self.session.set_install(&install);
 			self.apply(fx);
@@ -1936,15 +1948,19 @@ impl Helper {
 	}
 
 	/// While no install with QuestPump is known: the game on this computer without it (`without_addon`: the running
-	/// client's, the folder the player picked, the one remembered while its flavour folder is there, else the first
-	/// install the Agent or the default folders know), shown on This computer with its folder, which says QuestPump is
+	/// client's, an AddOns folder or not; the folder the player picked while it is a game; else the preferred of the
+	/// one remembered while it is a game and the installs the Agent or the default folders know, `install::preferred`
+	/// over `install::discover_game`, ranked again at each look, so a beta found before the live install came gives way
+	/// to it, as the first install does, `first_target`), shown on This computer with its folder, which says QuestPump is
 	/// not in it; none shows that no game folder is known. The progress is kept on this computer meanwhile.
 	fn show_without_addon(&mut self) {
 		let running = self.game.as_ref().filter(|_| self.game_addons.is_none()).map(|g| g.addons.clone());
-		let game = running
-			.or_else(|| self.without_addon.take().filter(|a| install::is_game(a)))
-			.or_else(|| self.settings.addons.clone().filter(|a| install::is_game(a)))
-			.or_else(install::discover_game);
+		let picked = self.without_addon.take().filter(|a| self.without_addon_picked && install::is_game(a));
+		self.without_addon_picked = running.is_none() && picked.is_some();
+		let game = running.or(picked).or_else(|| {
+			let remembered = self.settings.addons.clone().filter(|a| install::is_game(a));
+			install::preferred(remembered.into_iter().chain(install::discover_game()))
+		});
 		self.without_addon.clone_from(&game);
 		if game.is_some() {
 			self.addon_game_found();
@@ -2093,6 +2109,10 @@ impl Helper {
 			// the client wrote its save as it quit: rows the strip never showed (the helper started late, the capture
 			// stopped) come in here
 			self.take_in_saves(&left.addons);
+			// the game closed: what the release feeds bring may go in now
+			if self.game.is_none() {
+				self.feeds_wake();
+			}
 		}
 	}
 
@@ -2742,6 +2762,7 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		game_addons: None,
 		followed: None,
 		without_addon: None,
+		without_addon_picked: false,
 		looked_for_game: None,
 		written: None,
 		taken_in: HashSet::new(),
@@ -2761,6 +2782,7 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		access: Access::Fine,
 		shown_folder: None,
 		update: None,
+		update_checks: feeds::Checks::default(),
 		socket_quit: None,
 		elevated: elevated_tx,
 		feedback,

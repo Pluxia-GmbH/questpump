@@ -1,18 +1,22 @@
 //! Finding the game's `Interface/AddOns` folder while the game is not running (docs/companion.md, "Finding the
 //! install"; rust-helper `windows-capture-and-install.md`, "Install discovery"): the Battle.net Agent's `product.db`
-//! names every World of Warcraft install and its flavour folder; then the default install folders' `_*_` folders; the
-//! first that holds QuestPump is the one (`discover`), and while none does, the first of them at all is the game on
-//! this computer without QuestPump yet (`discover_game`). The running client's path (`game.rs`) when it holds QuestPump
-//! and the folder remembered or picked before while it holds QuestPump come first (`runtime.rs`, `Helper::addons`).
+//! names every World of Warcraft install and its flavour folder; then the default install folders' `_*_` folders; of
+//! those that hold QuestPump the preferred one is the one (`discover`), and while none does, the preferred of them at
+//! all is the game on this computer without QuestPump yet (`discover_game`; `preferred`: the client that runs the
+//! interface the addon names first, Forever's, then the newest build, so Forever's live install, never the beta beside
+//! it, which runs 16001 too, nor retail beside it). A folder counts as a game only in a real install (`is_game`: its
+//! root's `.build.info` or its own `.flavor.info`). The running client's path (`game.rs`) when it holds QuestPump and
+//! the folder remembered or picked before while it holds QuestPump come first (`runtime.rs`, `Helper::addons`).
 //! The flavour is never hard-coded: the Forever launch's folder is unknown until it ships (the beta is
 //! `wow_classic_beta` in `_classic_beta_`, read from a real install on 2026-09-30). Also what the window says about the
 //! folder: its product and version, and the move figures' pack; and, for the games on the computer, the folder the
 //! Agent names for StarCraft II or Hearthstone and, on Windows, for every other game it installed (slice 48).
 
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 
 use prost::Message as _;
-use questpump_core::mirror::toc_field;
+use questpump_core::mirror::{self, toc_field};
 
 use crate::game::is_flavour;
 
@@ -166,10 +170,14 @@ pub fn holds_questpump(addons: &Path) -> bool {
 	addons.join("QuestPump").is_dir()
 }
 
-/// Whether an AddOns folder belongs to a game that is there: its flavour folder is (the AddOns folder itself may not
-/// be yet: a new install has none until an addon is put there).
+/// Whether an AddOns folder belongs to a game that is there: its flavour folder is, in a real install (its root holds
+/// the `.build.info` every client reads, or the flavour folder its `.flavor.info`), so an app in any folder named like
+/// a flavour (`~/Applications/_Utilities_/`) is no game. The AddOns folder itself may not be there yet: a new install
+/// has none until an addon is put there.
 pub fn is_game(addons: &Path) -> bool {
-	addons.parent().and_then(Path::parent).is_some_and(Path::is_dir)
+	addons.parent().and_then(Path::parent).is_some_and(|flavour| {
+		flavour.is_dir() && (flavour.join(".flavor.info").is_file() || flavour.parent().is_some_and(is_root))
+	})
 }
 
 /// The AddOns folders of the Agent's installs, then of the roots' flavour folders, in that order.
@@ -178,16 +186,16 @@ fn installs_in(roots: &[PathBuf]) -> Vec<PathBuf> {
 }
 
 /// The game folder the mirror goes into when the game is not running and none that holds QuestPump was found or picked
-/// before: the first install the Agent or the default folders know that holds QuestPump.
+/// before: of the installs the Agent or the default folders know that hold QuestPump, the preferred one (`preferred`).
 pub fn discover() -> Option<PathBuf> {
-	installs_in(&default_roots()).into_iter().find(|a| holds_questpump(a))
+	preferred(installs_in(&default_roots()).into_iter().filter(|a| holds_questpump(a)))
 }
 
-/// The game on this computer while no install holds QuestPump yet: the AddOns folder of the first install the Agent or
-/// the default folders know whose flavour folder is there, with or without QuestPump (and with or without an AddOns
-/// folder, which a new install lacks until an addon is put there).
+/// The game on this computer while no install holds QuestPump yet: of the installs the Agent or the default folders
+/// know whose flavour folder is there, with or without QuestPump (and with or without an AddOns folder, which a new
+/// install lacks until an addon is put there), the preferred one (`preferred`).
 pub fn discover_game() -> Option<PathBuf> {
-	installs_in(&default_roots()).into_iter().find(|a| is_game(a))
+	preferred(installs_in(&default_roots()).into_iter().filter(|a| is_game(a)))
 }
 
 /// Whether a folder is an `Interface/AddOns` folder (Windows spells folders in any case).
@@ -196,21 +204,31 @@ fn is_addons(path: &Path) -> bool {
 	name(path).as_deref() == Some("addons") && path.parent().and_then(name).as_deref() == Some("interface")
 }
 
-/// The AddOns folder of a folder the player picked: the AddOns folder itself, a flavour folder or anything inside one
-/// (the game's app, its `Interface` folder), or the install's root (its flavour folder that holds QuestPump, else its
-/// first).
+/// Whether a folder is an install's root: it holds the `.build.info` every install's client reads.
+fn is_root(dir: &Path) -> bool {
+	dir.join(".build.info").is_file()
+}
+
+/// The AddOns folder of a folder the player picked: the AddOns folder itself; a folder that holds one, or a flavour
+/// folder right in an install's root, or anything inside either (the game's app, its `Interface` folder): that flavour's
+/// AddOns folder whether it is there yet or not (a new install has none until the first install of the addon makes it;
+/// a folder above an install named like a flavour, such as `D:\_Games_`, sits in no root); or the install's root: of
+/// its flavour folders (only those with an AddOns folder where it holds no `.build.info`), the one that holds
+/// QuestPump, else the preferred one (`preferred`: Forever's live install, never the beta or retail beside it).
 pub fn from_picked(path: &Path) -> Option<PathBuf> {
 	for dir in path.ancestors().take(4) {
 		if is_addons(dir) && dir.is_dir() {
 			return Some(dir.to_path_buf());
 		}
 		let addons = dir.join("Interface").join("AddOns");
-		if addons.is_dir() {
+		let flavour = dir.file_name().is_some_and(|n| is_flavour(&n.to_string_lossy()));
+		if addons.is_dir() || (flavour && dir.parent().is_some_and(is_root)) {
 			return Some(addons);
 		}
-		let inside: Vec<PathBuf> = flavours(dir).into_iter().filter(|a| a.is_dir()).collect();
-		if let Some(first) = inside.first() {
-			return inside.iter().find(|a| holds_questpump(a)).or(Some(first)).cloned();
+		let root = is_root(dir);
+		let inside: Vec<PathBuf> = flavours(dir).into_iter().filter(|a| root || a.is_dir()).collect();
+		if !inside.is_empty() {
+			return inside.iter().find(|a| holds_questpump(a)).cloned().or_else(|| preferred(inside));
 		}
 	}
 	None
@@ -290,14 +308,44 @@ pub fn label(addons: &Path) -> Option<String> {
 	Some(version.map_or_else(|| uid.clone(), |v| format!("{uid} {v}")))
 }
 
+/// The numbers of the version an install's client runs, from the root's `.build.info` (`1.60.1.70755`: major, minor,
+/// patch and build), up to the first part that is no number.
+fn client_version(addons: &Path) -> Vec<u32> {
+	let Some((_, Some(version))) = product(addons) else { return Vec::new() };
+	version.split('.').map_while(|part| part.parse().ok()).collect()
+}
+
 /// The interface number an install's client runs, from its version in `.build.info` as a TOC's `## Interface` numbers
 /// it (`1.60.1.70058` is 16001: major × 10000 + minor × 100 + patch), so Forever's folder is told apart by the
 /// number the addon names first, never by a folder or product name.
 pub fn client_interface(addons: &Path) -> Option<u32> {
-	let (_, version) = product(addons)?;
-	let mut parts = version?.split('.').map(str::parse::<u32>).collect::<Vec<_>>().into_iter();
-	let (major, minor, patch) = (parts.next()?.ok()?, parts.next()?.ok()?, parts.next()?.ok()?);
+	let [major, minor, patch, ..] = client_version(addons)[..] else { return None };
 	major.checked_mul(10_000)?.checked_add(minor.checked_mul(100)?)?.checked_add(patch)
+}
+
+/// The build an install's client runs: its version's last number in `.build.info` (`1.60.1.70755` is 70755). Every
+/// World of Warcraft product's builds count up together, so a later build has the higher number: Forever's live `wowf`
+/// at 1.60.1.70755 beside its ended beta's `wow_classic_beta` at 1.60.1.70532, both 16001 (Blizzard's version server,
+/// 2026-11-03).
+fn client_build(addons: &Path) -> Option<u32> {
+	client_version(addons).get(3).copied()
+}
+
+/// The interface the addon names first (`mirror::INTERFACE`, the mirror's TOC line the lint holds to the addon's TOC):
+/// Forever's.
+static FIRST_INTERFACE: LazyLock<Option<u32>> =
+	LazyLock::new(|| mirror::INTERFACE.split(',').next().and_then(|n| n.trim().parse().ok()));
+
+/// Of several installs (AddOns folders), the one QuestPump is made for first: whose client runs the interface the addon
+/// names first (`FIRST_INTERFACE`: Forever's, so retail beside it never wins on its build), then the newest build
+/// (`client_build`: Forever's live install over its beta beside it, both 16001), whatever their folders are called; the
+/// first given on a tie, one that names neither last.
+pub fn preferred<P: AsRef<Path>>(installs: impl IntoIterator<Item = P>) -> Option<P> {
+	installs.into_iter().min_by_key(|a| {
+		let a = a.as_ref();
+		let first = client_interface(a).is_some_and(|n| Some(n) == *FIRST_INTERFACE);
+		std::cmp::Reverse((first, client_build(a)))
+	})
 }
 
 /// Every install the Agent or the default folders know whose flavour folder is there, with QuestPump or without (a

@@ -1,12 +1,13 @@
 //! Why QuestPump started (docs/plan.md slice 35, decision 2): a player's launch from the Dock, Applications or the Start
 //! menu, and a second launch while it runs, open the main window; a start at login, after an update, after the system
 //! quit it or after a crash of a supervised part (`--login`, `--updated`, `--reopened`, `--restarted` and
-//! `--restarted-quick`, `crate::keep`) never does, nor does one whose launch event says it is a login item.
-//! Windows' Run value carries `--login` (`autostart.rs`) and the updater's relaunch `--updated` on both systems
-//! (`update.rs`). macOS starts its login item (`SMAppService.mainApp`) with no arguments: a start is a login's when the
-//! launch Apple event says so (`keyAELaunchedAsLogInItem`) or, where it does not, when the login item is on and the
-//! session's login was less than a minute ago. The restart that applies a Screen Recording grant opens the window on
-//! This computer (`--window`). While a Mac's QuestPump runs from its download (`update::unmoved`), opening it again (a
+//! `--restarted-quick`, `crate::keep`) never does, nor does one whose launch event says it is a login item; only the
+//! start after This computer's Restart to update opens This computer, by a note in the data folder
+//! (`update::restarted`). Windows' Run value carries `--login` (`autostart.rs`) and the updater's relaunch `--updated`
+//! on both systems (`update.rs`). macOS starts its login item (`SMAppService.mainApp`) with no arguments: a start is a
+//! login's when the launch Apple event says so (`keyAELaunchedAsLogInItem`) or, where it does not, when the login item
+//! is on and the session's login was less than a minute ago. The restart that applies a Screen Recording grant opens
+//! the window on This computer (`--window`). While a Mac's QuestPump runs from its download (`update::unmoved`), opening it again (a
 //! second launch, the Dock) opens This computer, whose card asks for the move to Applications, and a launch of the
 //! copy the player moved there takes over: this one quits through the loop ("Leave the pump?" first while a pump holds
 //! the window) and that one starts once it has gone, only on the path that quits (the player's Stay keeps this one

@@ -58,13 +58,12 @@ use crate::ui::{self, Animations, Shared, WindowAsk};
 /// The page's topic.
 const TOPIC: &str = "figures";
 
-/// How long a failed download waits before each next try: 1, 5 and 30 minutes, then every 6 hours, so a start
-/// before the network is up gets its films within minutes and a feed that stays away is not asked all day.
+/// How long a failed download waits before each next try, on the wall clock (`feeds::sleep`): 1, 5 and 30 minutes,
+/// then every 6 hours, so a start before the network is up gets its films within minutes and a feed that stays away is
+/// not asked all day. The download has no total bound, only the feeds' `READ_TIMEOUT` and `CONNECT_TIMEOUT`, so a slow
+/// line still brings it.
 const RETRY: [Duration; 4] =
 	[Duration::from_mins(1), Duration::from_mins(5), Duration::from_mins(30), Duration::from_hours(6)];
-/// The longest the download may take, and its connection.
-const TIMEOUT: Duration = Duration::from_mins(30);
-const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 /// The most a download may bring (the films are about 60 MB): a feed that sends more is refused.
 const MAX_BYTES: u64 = 512 << 20;
 /// What `encodeURIComponent` leaves as it is.
@@ -346,7 +345,7 @@ async fn fetch_films(app: AppHandle, kept: PathBuf, url: String, bundled: Option
 				ui::update(&app, |v| v.computer.animations = Animations::Failed { error });
 			}
 		}
-		tokio::time::sleep(RETRY[failed.min(RETRY.len() - 1)]).await;
+		crate::feeds::sleep(RETRY[failed.min(RETRY.len() - 1)]).await;
 	}
 }
 
@@ -359,8 +358,8 @@ async fn download(app: &AppHandle, kept: &Path, url: &str, table: &'static Table
 	let client = reqwest::Client::builder()
 		.user_agent(crate::feedback::USER_AGENT)
 		.tls_backend_native()
-		.timeout(TIMEOUT)
-		.connect_timeout(CONNECT_TIMEOUT)
+		.read_timeout(crate::feeds::READ_TIMEOUT)
+		.connect_timeout(crate::feeds::CONNECT_TIMEOUT)
 		.build()?;
 	let mut response = client.get(url).send().await?.error_for_status()?;
 	let total = response.content_length();

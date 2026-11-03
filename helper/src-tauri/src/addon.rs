@@ -1,18 +1,18 @@
 //! The addon from QuestPump on this computer (docs/companion.md, "The addon on this computer"; questpump-core `addon`
 //! holds the feed's rules, the zip's checks, the record and the swap): the release feed fetched off the loop on the
-//! updater's schedule (a minute after the start, then every 6 hours, `FIRST` and `EVERY`) and at once when the loop
-//! asks (`Checks::now`: a game without QuestPump found, the player's Add QuestPump to the game before a feed came),
-//! `addon.json` and `addon.json.sig` from the updater's own `helper-updater` release checked against the updater's key
-//! (`update::pubkey`), the zip's address the same release's `QuestPump-addon.zip`; then, for the install the loop
-//! picked, the zip downloaded into the flavour's `Interface/.questpump-update/` (the same volume as AddOns, outside the
-//! folder the client walks), checked against the feed's size and sha256 as it comes, and unpacked there with every
-//! file checked (`addon::unpack`). The swap and the cleaning up run off the loop too (`swap`, `settle`), each
-//! reporting back; the loop decides when (`runtime/addon.rs`).
+//! updater's schedule (`feeds`: 10 s after the start, then hourly, sooner again after a failure) and when the loop asks
+//! (`Checks::now`: the game closed, a game without QuestPump found, the player's Add QuestPump to the game before a feed
+//! came), `addon.json` and `addon.json.sig` from the updater's own `helper-updater` release checked against the
+//! updater's key (`update::pubkey`), each within `feeds::FILE_TIMEOUT`, the zip's address the same release's
+//! `QuestPump-addon.zip`; then, for the install the loop picked, the zip downloaded into the flavour's
+//! `Interface/.questpump-update/` (the same volume as AddOns, outside the folder the client walks) with no bound on the
+//! whole, only `feeds::READ_TIMEOUT` between its bytes, checked against the feed's size and sha256 as it comes, and
+//! unpacked there with every file checked (`addon::unpack`). The swap and the cleaning up run off the loop too (`swap`,
+//! `settle`), each reporting back; the loop decides when (`runtime/addon.rs`).
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
 
 use anyhow::Context as _;
 use questpump_core::addon::{self, AddonError, Feed};
@@ -20,17 +20,13 @@ use questpump_core::zip::ZipError;
 use sha2::{Digest as _, Sha256};
 use tauri::AppHandle;
 use tokio::io::AsyncWriteExt as _;
-use tokio::sync::{Notify, mpsc};
+use tokio::sync::mpsc;
 
+use crate::feeds::{self, Checks};
 use crate::update;
 
-/// The first check after the start, and the next ones: the helper's own updater's schedule.
-const FIRST: Duration = Duration::from_mins(1);
-const EVERY: Duration = Duration::from_hours(6);
-/// The longest `addon.json` or its signature may be, and the longest the zip may take to come.
+/// The longest `addon.json` or its signature may be.
 const MAX_FEED: u64 = 16 << 20;
-const TIMEOUT: Duration = Duration::from_mins(30);
-const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 /// The files on the release, beside the updater's `latest.json`; the zip keeps its name in the staging folder.
 const FEED: &str = "addon.json";
 const SIG: &str = "addon.json.sig";
@@ -74,57 +70,49 @@ impl Failure {
 	}
 }
 
-/// The feed's checks: wake one now (`now`).
-#[derive(Clone)]
-pub struct Checks(Arc<Notify>);
-
-impl Checks {
-	/// A check at once, or right after the one that runs.
-	pub fn now(&self) {
-		self.0.notify_one();
-	}
-}
-
 /// The client every addon request goes through: the helper's User-Agent, the system's TLS, GitHub's redirects to its
-/// storage followed.
+/// storage followed, the feeds' wait for the next bytes and for the connect (the small files' bound on the whole is
+/// their request's, `small`).
 fn client() -> reqwest::Result<reqwest::Client> {
 	reqwest::Client::builder()
 		.user_agent(crate::feedback::USER_AGENT)
 		.tls_backend_native()
-		.timeout(TIMEOUT)
-		.connect_timeout(CONNECT_TIMEOUT)
+		.read_timeout(feeds::READ_TIMEOUT)
+		.connect_timeout(feeds::CONNECT_TIMEOUT)
 		.build()
 }
 
-/// Starts the feed's checks; none without a feed or a key in this build (logged).
+/// Starts the feed's checks on the feeds' schedule (`feeds`; the returned `Checks` wakes them); none without a feed or a
+/// key in this build (logged).
 pub fn spawn(app: &AppHandle, news: mpsc::UnboundedSender<News>) -> Checks {
-	let checks = Checks(Arc::new(Notify::new()));
+	let checks = Checks::default();
 	let (Some(feed), Some(sig), Some(zip), Some(key)) =
 		(update::feed_file(app, FEED), update::feed_file(app, SIG), update::feed_file(app, ZIP), update::pubkey(app))
 	else {
 		log::warn!("addon: this build has no feed or no key: QuestPump cannot add or update the addon");
 		return checks;
 	};
-	let wake = checks.0.clone();
+	let wake = checks.clone();
 	tauri::async_runtime::spawn(async move {
-		let _ = tokio::time::timeout(FIRST, wake.notified()).await;
+		let mut schedule = wake.first().await;
 		loop {
 			let checked = match client() {
 				Ok(client) => fetch(&client, &feed, &sig, &zip, &key).await.map_err(|e| format!("{e:#}")),
 				Err(e) => Err(e.to_string()),
 			};
+			let ok = checked.is_ok();
 			if news.send(News::Feed(checked)).is_err() {
 				return; // the loop has gone: QuestPump quits
 			}
-			let _ = tokio::time::timeout(EVERY, wake.notified()).await;
+			schedule.next(ok).await;
 		}
 	});
 	checks
 }
 
-/// A small file of the feed, at most `MAX_FEED` bytes.
+/// A small file of the feed, at most `MAX_FEED` bytes within `feeds::FILE_TIMEOUT`.
 async fn small(client: &reqwest::Client, url: &str) -> anyhow::Result<Vec<u8>> {
-	let mut response = client.get(url).send().await?.error_for_status()?;
+	let mut response = client.get(url).timeout(feeds::FILE_TIMEOUT).send().await?.error_for_status()?;
 	let mut body = Vec::new();
 	while let Some(chunk) = response.chunk().await? {
 		body.extend_from_slice(&chunk);

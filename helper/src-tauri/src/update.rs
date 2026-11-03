@@ -1,30 +1,41 @@
 //! The helper's updates (rust-helper `tauri-shell.md`, "The updater"): `tauri-plugin-updater` reads the release feed
-//! (`plugins.updater.endpoints`, the public repository's permanent `helper-updater` release) a minute after the start
-//! and every 6 hours, downloads a newer helper and verifies its minisign signature against `plugins.updater.pubkey`
-//! (the signed version must be the feed's, `requireSignedVersion`); an empty key refuses every download. A release
-//! already downloaded is not fetched again, and no request waits more than 10 minutes. The loop installs it once the
-//! game and the main window are closed, no pump runs and no watched game is in a match (`runtime/updates.rs`). Only a
-//! published build running from its installed bundle updates itself: a development build would be replaced by a
-//! release, from `target/debug` the updater would treat that folder as the app, and a Mac helper still in its disk
-//! image cannot be replaced (`unmoved`). The new helper starts with `--updated` on both systems, so it opens no window
-//! (`desk::launch`).
+//! (`plugins.updater.endpoints`, the public repository's permanent `helper-updater` release) on the feeds' schedule
+//! (`feeds`: 10 s after the start, then hourly on the wall clock, sooner again after a failure, and when the game
+//! closes), downloads a newer helper and verifies its minisign signature against `plugins.updater.pubkey` (the signed
+//! version must be the feed's, `requireSignedVersion`); an empty key refuses every download. A Mac account that cannot
+//! replace the app downloads nothing (`replaceable`). The verified download is kept in the data folder's `updates`
+//! (`FOLDER`), never in memory, so a quit or a failed install keeps it: a release whose file is there is not fetched
+//! again (`fetch`; `Update::install` verifies the bytes again), and the files of other releases go. `latest.json` may
+//! take `feeds::FILE_TIMEOUT` as a whole; the download has no such bound, only `feeds::READ_TIMEOUT` between its bytes
+//! and `feeds::CONNECT_TIMEOUT`, so a slow line still brings it. Only a feed that did not answer is asked again on the
+//! feeds' quick retries: a failed download, signature or write waits the hourly check, and bytes refused for their
+//! signature or not written are not fetched again in this run until the feed names other bytes (`Met`). The loop
+//! installs it once the game and the main window are closed, no pump runs and no watched game is in a match, or at
+//! This computer's Restart to update (`runtime/updates.rs`). Only a published build running from its installed bundle
+//! updates itself: a development build would be replaced by a release, from `target/debug` the updater would treat that
+//! folder as the app, and a Mac helper still in its disk image cannot be replaced (`unmoved`). The new helper starts
+//! with `--updated` on both systems, so it opens no window (`desk::launch`), but This computer after the player's
+//! Restart to update (`restarted`).
 
-use std::time::Duration;
+use std::path::{Path, PathBuf};
 
+use anyhow::Context as _;
+use questpump_core::mirror;
 use tauri::AppHandle;
 
 use crate::desk::launch;
+use crate::feeds::{self, Checks};
 use crate::ui::Build;
 #[cfg(windows)]
 use tauri::utils::{config::BundleType, platform::bundle_type};
-use tauri_plugin_updater::{Update, UpdaterExt as _};
+use tauri_plugin_updater::{Update, Updater, UpdaterExt as _};
 use tokio::sync::mpsc::UnboundedSender;
 
-/// The first check, once the start's own work is done.
-const FIRST: Duration = Duration::from_mins(1);
-const EVERY: Duration = Duration::from_hours(6);
-/// The longest a check or a download may take (the plugin sets none): a stalled one ends, and the next check comes.
-const TIMEOUT: Duration = Duration::from_mins(10);
+/// The data folder's folder of the verified download, `<version>.<extension>` (`file_name`).
+const FOLDER: &str = "updates";
+/// The data folder's note that the player's Restart to update installs the version it holds: that version's start opens
+/// This computer (`restarted`).
+const RESTART: &str = "update-restart";
 
 /// A file of the updater's feed: the folder of its first endpoint (`plugins.updater.endpoints`, the public
 /// repository's permanent `helper-updater` release) with `name` in place of `latest.json` (the films' zip, the addon's
@@ -45,15 +56,21 @@ fn updater_config(app: &AppHandle) -> Option<&serde_json::Value> {
 	app.config().plugins.0.get("updater")
 }
 
-/// A downloaded update whose signature checked out.
+/// A verified update kept in the data folder: the plugin's update and its file.
 pub struct Ready {
 	update: Update,
-	bytes: Vec<u8>,
+	path: PathBuf,
 }
 
 impl Ready {
 	pub fn version(&self) -> &str {
 		&self.update.version
+	}
+
+	/// Its file is still there (`install` deletes one that no longer matches its signature; a check that finds no
+	/// newer release, or an account that cannot replace the app, deletes every one).
+	pub fn kept(&self) -> bool {
+		self.path.is_file()
 	}
 }
 
@@ -62,6 +79,8 @@ pub enum Found {
 	/// Boxed: the plugin's update carries its whole manifest.
 	Ready(Box<Ready>),
 	Current,
+	/// macOS: this version is out, and this account cannot replace the app, so nothing was downloaded.
+	Unreplaceable(String),
 	Failed(String),
 }
 
@@ -153,61 +172,243 @@ pub fn build() -> Build {
 	}
 }
 
-/// Checks for an update in the background and reports each check; a newer one found later replaces a pending one, and
-/// the one already handed over is not downloaded or reported again (the loop keeps it, or has shown why it cannot
-/// install it).
-pub fn spawn(app: AppHandle, found: UnboundedSender<Found>) {
+/// Checks for an update on the feeds' schedule (`feeds`; the returned `Checks` wakes it) and reports each check; a newer
+/// release found later replaces a pending one, and the same release found again is reported again from its file, so the
+/// loop holds it whatever became of it meanwhile.
+pub fn spawn(app: AppHandle, dir: &Path, found: UnboundedSender<Found>) -> Checks {
+	let checks = Checks::default();
 	if !installed() {
-		return;
+		return checks;
 	}
+	let (wake, folder) = (checks.clone(), dir.join(FOLDER));
 	tauri::async_runtime::spawn(async move {
-		tokio::time::sleep(FIRST).await;
-		let mut handed: Option<String> = None;
+		#[cfg(windows)]
+		{
+			let at = app.clone();
+			let _ = tokio::task::spawn_blocking(move || sweep_installers(&at)).await;
+		}
+		let mut schedule = wake.first().await;
+		let mut met = Met::default();
 		loop {
-			let news = check(&app, handed.as_deref()).await;
-			match &news {
-				Some(Found::Ready(ready)) => handed = Some(ready.version().to_owned()),
-				Some(Found::Current) => handed = None,
-				_ => {}
-			}
+			let (news, answered) = check(&app, &folder, &mut met).await;
 			if let Some(news) = news
 				&& found.send(news).is_err()
 			{
 				return; // the loop has gone: the helper quits
 			}
-			tokio::time::sleep(EVERY).await;
+			schedule.next(answered).await;
 		}
 	});
+	checks
 }
 
-/// One check; none when it found the release already handed over.
-async fn check(app: &AppHandle, handed: Option<&str>) -> Option<Found> {
-	// Windows: the installer starts the new helper with what follows its /ARGS, which runs to its next option, so the
-	// installer's own argument after the plugin's /ARGS reaches the helper (macOS relaunches it with `--updated` itself)
-	let checked = match app.updater_builder().timeout(TIMEOUT).installer_arg(launch::UPDATED).build() {
+/// A release's bytes, by its version and signature (a release published again under the same version signs other
+/// bytes).
+type Bytes = (String, String);
+
+/// The releases this run met: the one whose file it wrote or verified (`kept`), and the one whose download failed its
+/// signature or could not be written (`refused`), which is not downloaded again until the feed names other bytes.
+#[derive(Default)]
+struct Met {
+	kept: Option<Bytes>,
+	refused: Option<Bytes>,
+}
+
+/// One check, and whether the feed answered it (a failure after that, the download's, its signature's or its write's,
+/// waits the hourly check, never the quick retries): the feed read, and for a newer release its file kept in `folder`
+/// (downloaded unless it is there) and the other files there deleted; no newer release, or an account that cannot
+/// replace the app, deletes them all. No news when the feed names bytes this run refused, which was reported once.
+async fn check(app: &AppHandle, folder: &Path, met: &mut Met) -> (Option<Found>, bool) {
+	let checked = match updater(app) {
 		Ok(updater) => updater.check().await,
 		Err(e) => Err(e),
 	};
-	Some(match checked {
-		Ok(None) => Found::Current,
-		Ok(Some(update)) if handed == Some(update.version.as_str()) => return None,
-		Ok(Some(update)) => match update.download(|_, _| {}, || {}).await {
-			Ok(bytes) => Found::Ready(Box::new(Ready { update, bytes })),
-			Err(e) => Found::Failed(format!("{}: {e}", update.version)),
-		},
-		Err(e) => Found::Failed(e.to_string()),
-	})
+	let update = match checked {
+		Ok(Some(update)) => update,
+		Ok(None) => {
+			clear(folder, None).await;
+			return (Some(Found::Current), true);
+		}
+		Err(e) => return (Some(Found::Failed(e.to_string())), false),
+	};
+	if !replaceable() {
+		clear(folder, None).await;
+		return (Some(Found::Unreplaceable(update.version)), true);
+	}
+	if met.refused.as_ref() == Some(&(update.version.clone(), update.signature.clone())) {
+		return (None, true);
+	}
+	let name = file_name(&update);
+	if let Err(e) = fetch(&update, folder, &name, met).await {
+		return (Some(Found::Failed(format!("{}: {e:#}", update.version))), true);
+	}
+	let path = folder.join(name);
+	clear(folder, Some(&path)).await;
+	(Some(Found::Ready(Box::new(Ready { update, path }))), true)
 }
 
-/// Installs a downloaded update and starts the new helper. On Windows the installer takes over and ends this process
-/// inside `install` (passive, then it starts the helper again); on macOS the bundle is replaced in place and the new
-/// one is started as below.
+/// The updater: `latest.json` may take `feeds::FILE_TIMEOUT` as a whole (2.14.1 hands the builder's timeout to the check
+/// alone; the update it finds carries none to its download), and every request, the download too (`configure_client`
+/// reaches it), waits `feeds::READ_TIMEOUT` at most for its next bytes and `feeds::CONNECT_TIMEOUT` to connect.
+/// Windows: the installer starts the new helper with what follows its /ARGS, which runs to its next option, so the
+/// installer's own argument after the plugin's /ARGS reaches the helper (macOS relaunches it with `--updated` itself).
+fn updater(app: &AppHandle) -> tauri_plugin_updater::Result<Updater> {
+	app.updater_builder()
+		.timeout(feeds::FILE_TIMEOUT)
+		.configure_client(|client| client.read_timeout(feeds::READ_TIMEOUT).connect_timeout(feeds::CONNECT_TIMEOUT))
+		.installer_arg(launch::UPDATED)
+		.build()
+}
+
+/// The release's file `name` in `folder`: the one there kept when it is this release's (read and verified once a run),
+/// else downloaded, verified (`Update::download`) and written through a file of its own and a rename, so a write cut
+/// short leaves nothing under the release's name; the bytes leave memory once written. Bytes that fail their signature
+/// or cannot be written are refused for the run (`Met::refused`).
+async fn fetch(update: &Update, folder: &Path, name: &str, met: &mut Met) -> anyhow::Result<()> {
+	let this = (update.version.clone(), update.signature.clone());
+	let path = folder.join(name);
+	if met.kept.as_ref() == Some(&this) && path.is_file() {
+		return Ok(());
+	}
+	met.kept = None;
+	let release = update.clone();
+	let there =
+		tokio::task::spawn_blocking(move || std::fs::read(&path).is_ok_and(|b| release.verify(&b).is_ok())).await?;
+	if there {
+		log::info!("update: {} kept from an earlier download", update.version);
+	} else {
+		log::info!("update: {} downloading", update.version);
+		let bytes = update.download(|_, _| {}, || {}).await.inspect_err(|e| {
+			if refused_signature(e) {
+				refuse(met, &this);
+			}
+		})?;
+		let (folder, name) = (folder.to_path_buf(), name.to_owned());
+		let written = tokio::task::spawn_blocking(move || {
+			std::fs::create_dir_all(&folder)?;
+			mirror::write_atomic(&folder, &name, &bytes)
+		})
+		.await?;
+		written.inspect_err(|_| refuse(met, &this))?;
+		log::info!("update: {} downloaded", update.version);
+	}
+	met.kept = Some(this);
+	Ok(())
+}
+
+/// A download's failure that the same bytes would fail again: its signature (`requireSignedVersion` included).
+fn refused_signature(e: &tauri_plugin_updater::Error) -> bool {
+	use tauri_plugin_updater::Error;
+	matches!(
+		e,
+		Error::Minisign(_)
+			| Error::Base64(_)
+			| Error::SignatureUtf8(_)
+			| Error::MissingSignedVersion
+			| Error::SignedVersionMismatch { .. }
+	)
+}
+
+/// These bytes are not downloaded again in this run (logged once: later checks that name them report nothing).
+fn refuse(met: &mut Met, bytes: &Bytes) {
+	log::warn!("update: {} refused: not downloaded again until the feed names other bytes", bytes.0);
+	met.refused = Some(bytes.clone());
+}
+
+/// The release's file name, `<version>.<the download's extension>` (`gz` for the Mac's `.app.tar.gz`, `exe` for
+/// Windows' installer; `bin` when its address names none); the plugin writes the version as semver, so it names no
+/// folder.
+fn file_name(update: &Update) -> String {
+	let extension = Path::new(update.download_url.path())
+		.extension()
+		.and_then(|e| e.to_str())
+		.filter(|e| !e.is_empty() && e.chars().all(|c| c.is_ascii_alphanumeric()))
+		.unwrap_or("bin");
+	format!("{}.{extension}", update.version)
+}
+
+/// Every file in `folder` deleted but `keep`: the files of other releases, and a write a quit cut short.
+async fn clear(folder: &Path, keep: Option<&Path>) {
+	let (folder, keep) = (folder.to_path_buf(), keep.map(Path::to_path_buf));
+	let _ = tokio::task::spawn_blocking(move || {
+		let Ok(entries) = std::fs::read_dir(&folder) else { return };
+		for entry in entries.flatten() {
+			let path = entry.path();
+			if keep.as_ref() != Some(&path)
+				&& entry.file_type().is_ok_and(|t| t.is_file())
+				&& let Err(e) = std::fs::remove_file(&path)
+			{
+				log::warn!("update: {}: {e}", path.display());
+			}
+		}
+	})
+	.await;
+}
+
+/// Installs a kept update from its file and starts the new helper, brought forward when the player asked for it
+/// (`front`: This computer's Restart to update), else in the background. On Windows the installer takes over and ends
+/// this process inside `install` (passive, then it starts the helper again); on macOS the bundle is replaced in place
+/// and the new one is started as below. A file that no longer matches its signature is deleted, so the next check
+/// downloads the release again.
 ///
 /// # Errors
-/// The update could not be installed, or the new helper could not be started.
-pub fn install(app: &AppHandle, ready: &Ready) -> anyhow::Result<()> {
-	ready.update.install(&ready.bytes)?;
-	relaunch(app)
+/// The file did not read, the update could not be installed, or the new helper could not be started.
+pub fn install(app: &AppHandle, ready: &Ready, front: bool) -> anyhow::Result<()> {
+	let bytes = std::fs::read(&ready.path).with_context(|| ready.path.display().to_string())?;
+	if let Err(e) = ready.update.install(&bytes) {
+		if matches!(e, tauri_plugin_updater::Error::Minisign(_)) {
+			let _ = std::fs::remove_file(&ready.path);
+		}
+		return Err(e.into());
+	}
+	relaunch(app, front)
+}
+
+/// Notes in the data folder `dir`, right before the install, that the player's Restart to update installs `version`:
+/// that version's start opens This computer (`restarted`), on Windows too, whose installer starts it with the fixed
+/// `--updated`.
+pub fn note_restart(dir: &Path, version: &str) {
+	if let Err(e) = mirror::write_atomic(dir, RESTART, version.as_bytes()) {
+		log::warn!("update: {RESTART}: {e}");
+	}
+}
+
+/// The note goes again: the install it was for failed.
+pub fn drop_restart(dir: &Path) {
+	let _ = std::fs::remove_file(dir.join(RESTART));
+}
+
+/// At the start: the note in the data folder `dir` says the player's Restart to update installed the version that runs
+/// (`running`), so the window opens on This computer. The note goes either way, so no later start opens it.
+pub fn restarted(dir: &Path, running: &str) -> bool {
+	let path = dir.join(RESTART);
+	let Ok(version) = std::fs::read_to_string(&path) else { return false };
+	if let Err(e) = std::fs::remove_file(&path) {
+		log::warn!("update: {RESTART}: {e}");
+	}
+	version == running
+}
+
+/// Windows: the folders the plugin's installs left in the temporary folder, `<productName>-<version>-updater-<random>`
+/// with the installer in it (2.14.1 `make_temp_dir` keeps it, and the installer ends this process before anything could
+/// remove it), deleted at the start but the running version's, whose installer may still be closing.
+#[cfg(windows)]
+fn sweep_installers(app: &AppHandle) {
+	let info = app.package_info();
+	let (prefix, running) = (format!("{}-", info.name), info.version.to_string());
+	let Ok(entries) = std::fs::read_dir(std::env::temp_dir()) else { return };
+	for entry in entries.flatten() {
+		let name = entry.file_name();
+		let version = name.to_str().and_then(|n| n.strip_prefix(&prefix)).and_then(|n| n.rsplit_once("-updater-"));
+		if version.is_none_or(|(v, _)| v == running) || !entry.file_type().is_ok_and(|t| t.is_dir()) {
+			continue;
+		}
+		let path = entry.path();
+		match std::fs::remove_dir_all(&path) {
+			Ok(()) => log::info!("update: {} deleted", path.display()),
+			Err(e) => log::warn!("update: {}: {e}", path.display()),
+		}
+	}
 }
 
 /// This computer's "Restart QuestPump" on the Screen Recording card (macOS applies a grant only to a process started
@@ -229,9 +430,14 @@ pub fn restart(_app: &AppHandle) -> anyhow::Result<()> {
 	anyhow::bail!("only the macOS helper restarts itself")
 }
 
-/// The new bundle started once this process has gone (`start_updated`), and this process exits.
+/// The new bundle started once this process has gone, and this process exits: in the background with no window
+/// (`start_updated`), or, when the player asked for the update (`front`), as the grant card's restart starts it, brought
+/// forward, its start opening This computer (`restarted`).
 #[cfg(target_os = "macos")]
-fn relaunch(app: &AppHandle) -> anyhow::Result<()> {
+fn relaunch(app: &AppHandle, front: bool) -> anyhow::Result<()> {
+	if front {
+		return start_again(app, &[], &["--args", launch::UPDATED]);
+	}
 	start_updated()?;
 	app.exit(0);
 	Ok(())
@@ -336,6 +542,6 @@ pub fn start_moved(_bundle: &std::path::Path) -> anyhow::Result<()> {
 /// Windows' installer ended this process inside `install`; it never gets here.
 #[cfg(not(target_os = "macos"))]
 #[expect(clippy::unnecessary_wraps, reason = "the same signature as the macOS relaunch")]
-fn relaunch(_app: &AppHandle) -> anyhow::Result<()> {
+fn relaunch(_app: &AppHandle, _front: bool) -> anyhow::Result<()> {
 	Ok(())
 }

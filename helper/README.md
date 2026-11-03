@@ -230,15 +230,23 @@ removes it and the games' files and keeps the data folder, so a reinstall keeps 
 
 ## Updates and support
 
-The helper checks for an update a minute after it starts and every 6 hours, over HTTPS against `latest.json` on the
-`helper-updater` release of Pluxia-GmbH/questpump. It downloads a new version, checks its minisign signature against
-the public key built into the helper (the signature covers the version number too), and installs it only while World
-of Warcraft and the main window are closed, no pump runs and no game you turned on is in a match, so nobody loses a
-session; the version line on This computer says when an update waits. The new version starts with `--updated` and
-opens no window.
+The helper checks for an update 10 seconds after it starts and then every hour by the clock (a Mac that slept past
+the hour checks within a minute of waking), sooner again while `latest.json` does not answer (30 seconds, then 1, 2,
+5, 10 and 15 minutes, then every 30 minutes until it does) and when the game closes, over HTTPS against `latest.json`
+on the `helper-updater` release of Pluxia-GmbH/questpump; the add-on's feed follows the same schedule. It downloads a
+new version (no limit on the whole download, only a minute without data ends it), checks its minisign signature
+against the public key built into the helper (the signature covers the version number too) and keeps it in the data
+folder's `updates` folder, so a quit or a restart does not download it again. A download that fails waits the next
+hourly check, and one whose signature fails, or that cannot be written, is not downloaded again until the helper
+restarts or the feed names another release. It installs it only while World of Warcraft and
+the main window are closed, no pump runs and no game you turned on is in a match, so nobody loses a session; while
+only the main window keeps it waiting, This computer's version line offers "Restart to update", which installs it at
+once and opens the new version on This computer. An install that fails is tried again 10 minutes later, then every
+hour. Otherwise the new version starts with `--updated` and opens no window.
 On Windows the installer shows a progress bar and starts the new helper; on macOS the helper replaces its app and
 starts again. The helper never asks for an administrator to update itself: where your Mac account cannot replace the
-app (another account installed it), the window says to download the new version from questpump.com/helper.
+app (another account installed it), it downloads nothing and the window says to download the new version from
+questpump.com/helper.
 
 For a bug report, "Copy a report for help" in the Menu's QuestPump group puts QuestPump's version, your system, the
 engine's digest and its last fold, what the pages show (never the pairing code or a path that names your account) and

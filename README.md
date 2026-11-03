@@ -34,26 +34,29 @@ You type your count, and nobody checks it. It's your record.
 
 QuestPump on your computer and the phone app are free and strongly recommended. Basically a must.
 
-- **QuestPump for Mac and Windows** installs the add-on and keeps it up to date. It keeps a copy of your progress, pairs
-  your phone with a QR code in its own window, and runs pumps on your screen when the game is closed. It never presses
-  a key, never reads the game's memory and never sends input into the game. Get it at questpump.com.
-- **The phone and watch app**, for iPhone and Apple Watch or Android and Wear OS, counts down each pump on your phone or
-  your wrist.
+- **QuestPump for Mac and Windows** adds the add-on to the game and keeps both up to date. It keeps a copy of your
+  progress and runs pumps on your screen when the game is closed. It never presses a key, never reads the game's memory
+  and never sends input into the game. Get it at questpump.com.
+- **The phone and watch app**, for iPhone and Apple Watch or Android and Wear OS, comes later. It counts down each pump
+  on your phone or your wrist.
 
-With a watch, or a Bluetooth heart rate strap on your computer, each pump gets a heart-rate check mark.
+With a Bluetooth heart-rate strap on your computer, each pump gets a heart-rate check mark. Once the phone app is out,
+a watch gives the check mark too.
 
-At your first login the add-on shows a setup screen with both steps. Install QuestPump on your computer, then scan the
-QR code it shows with your phone. Press Check again, and each step gets its tick.
+At your first login the add-on shows a setup screen. Until the phone app is out, it asks only for QuestPump on your
+computer. Install it and open it, then press Check again, and the step gets its tick.
 
-You can play without them. The add-on alone runs every pump, with records, XP and the sheet. The two apps add the
-countdown on your phone or wrist, the check marks, catch-up pumps on the phone, and on Forever a copy of your progress
-(below). Type /qp setup to see the setup screen again.
+You can play without it. The add-on alone runs every pump, with records, XP and the sheet. QuestPump on your computer
+adds a copy of your progress, the check mark with a strap, and pumps on your screen when the game is closed. The phone
+app will add the countdown on your phone or wrist and catch-up pumps on the phone. Type /qp setup to see the setup
+screen again.
 
 ## Saving your progress on Forever
 
-The Forever client writes an add-on's saved data but never reads it back (forum thread 2354798). QuestPump on your
-computer keeps a copy, and the add-on reads it at each login. Without it, the add-on's export and import keep your
-progress by hand.
+QuestPump on your computer keeps a copy of your progress in the game's add-on folder. At each login the add-on reads
+that copy when it is newer than the game's own save. So your progress comes back even if the game skips loading an
+add-on's save, as the Forever beta did for a time (forum thread 2354798). Without QuestPump on your computer,
+/qp export gives you a string of your progress, and /qp import brings it back.
 
 ## Your gear
 

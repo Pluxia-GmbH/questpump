@@ -274,6 +274,13 @@ pub fn addon_install(state: State<'_, Shared>) {
 	state.ask(WindowAsk::Addon);
 }
 
+/// This computer's Restart to update.
+#[tauri::command]
+#[expect(clippy::needless_pass_by_value, reason = "Tauri hands a command its state by value")]
+pub fn install_update(state: State<'_, Shared>) {
+	state.ask(WindowAsk::Update);
+}
+
 /// This computer's Open Applications (macOS): the Finder shows the folder to drag QuestPump into.
 #[tauri::command]
 pub fn open_applications() {

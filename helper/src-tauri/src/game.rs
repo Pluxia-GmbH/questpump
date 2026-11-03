@@ -65,13 +65,15 @@ pub fn is_client_name(name: &str) -> bool {
 	head && tail
 }
 
-/// The client the helper follows, one rule on both systems: of several, one whose folder holds QuestPump (no strip
-/// shows in another, and it gets no mirror), then the one followed now while it runs (leaving it would end its
-/// session, and its logout rule would owe the moves still open in it), then the one started last. The capture reads
-/// the chosen process's window, so the strip and the mirror come from the same client. A choice among several is
-/// logged when it changes.
+/// The client the helper follows, one rule on both systems: every client whose flavour folder is there counts, with an
+/// AddOns folder or without (a new install has none until an addon is put there, and its running client is the game on
+/// this computer that Add QuestPump to the game prefers: `runtime/addon.rs` `first_target`); of several, one whose
+/// folder holds QuestPump (no strip shows in another, and it gets no mirror: `Helper::game_addons`), then the one
+/// followed now while it runs (leaving it would end its session, and its logout rule would owe the moves still open in
+/// it), then the one started last. The capture reads the chosen process's window, so the strip and the mirror come
+/// from the same client. A choice among several is logged when it changes.
 pub fn running(followed: Option<&Game>, snap: &Snapshot) -> Option<Game> {
-	let clients: Vec<Client> = clients(snap).into_iter().filter(|c| c.game.addons.is_dir()).collect();
+	let clients: Vec<Client> = clients(snap).into_iter().filter(|c| install::is_game(&c.game.addons)).collect();
 	let chosen = clients
 		.iter()
 		.max_by_key(|c| (install::holds_questpump(&c.game.addons), followed == Some(&c.game), c.started))?

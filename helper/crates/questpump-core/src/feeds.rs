@@ -357,20 +357,26 @@ pub mod pathofexile {
 }
 
 /// Warframe's `EE.log` (`%LOCALAPPDATA%\Warframe\EE.log`, written anew at each launch; Digital Extremes: "If you use
-/// external software in conjunction with Warframe, then you do so at your own risk"; the mission trackers read the
-/// same lines): a mission's start (`ThemedSquadOverlay.lua: Mission name:` or `MissionIntro.lua: MissionName:`) arms,
-/// and its end, whichever comes first (`EndOfMatch.lua: GiveMissionRewards. success=true`, `EndOfMatch.lua: Mission
-/// Failed`, `TopMenu.lua: Abort`, or the ship's layout generated again, `/Lotus/Levels/Proc/PlayerShip generating
-/// layout`), completes it: a checkpoint, missions being minutes long (`checkpoint`, as Path of Exile's). Every line is
-/// looked at only for those tokens, among the script lines (`Script [Info]:`) and the ship's layout line.
+/// external software in conjunction with Warframe, then you do so at your own risk"; the mission trackers read the same
+/// lines): a mission's rewards given (`EndOfMatch.lua: GiveMissionRewards. success=true`) complete it whatever came
+/// before, since a squad's member who did not host it writes no start; a mission's level launched by its host
+/// (`Lobby::Host_StartMatch: launching level for <node>`, a node whose name ends in `_HUB` being a town, never a
+/// mission) or its intro (`MissionIntro.lua: MissionName:`) arms, and a failed or left mission (`EndOfMatch.lua:
+/// Mission Failed`, `TopMenu.lua: Abort`, or the ship's level loaded again, `/Lotus/Levels/Proc/PlayerShip`) completes
+/// an armed one: a checkpoint, missions being minutes long (`checkpoint`, as Path of Exile's). A player's log of
+/// 2026-10-24 (build 2026.10.22) launched every mission by `Host_StartMatch` and wrote `Mission name:` only before
+/// Cetus, a town. Every line is looked at only for those tokens, among the script lines (`Script [Info]:`) and the
+/// ship's level lines.
 pub mod warframe {
 	use super::{Fed, Lines};
 
 	const SCRIPT: &str = "Script [Info]: ";
-	const STARTS: [&str; 2] = ["ThemedSquadOverlay.lua: Mission name:", "MissionIntro.lua: MissionName:"];
-	const ENDS: [&str; 3] =
-		["EndOfMatch.lua: GiveMissionRewards. success=true", "EndOfMatch.lua: Mission Failed", "TopMenu.lua: Abort"];
-	const SHIP: &str = "/Lotus/Levels/Proc/PlayerShip generating layout";
+	const REWARDS: &str = "EndOfMatch.lua: GiveMissionRewards. success=true";
+	const LAUNCH: &str = "Lobby::Host_StartMatch: launching level for ";
+	const INTRO: &str = "MissionIntro.lua: MissionName:";
+	const TOWN: &str = "_HUB";
+	const LEFT: [&str; 2] = ["EndOfMatch.lua: Mission Failed", "TopMenu.lua: Abort"];
+	const SHIP: [&str; 2] = ["Level=/Lotus/Levels/Proc/PlayerShip", "/Lotus/Levels/Proc/PlayerShip generating layout"];
 
 	/// Whether a mission started and has not ended.
 	#[derive(Debug, Default)]
@@ -381,12 +387,19 @@ pub mod warframe {
 	impl Lines for Missions {
 		fn push(&mut self, line: &str) -> Option<Fed> {
 			let script = line.split_once(SCRIPT).map(|(_, rest)| rest);
-			if script.is_some_and(|s| STARTS.iter().any(|t| s.starts_with(t))) {
+			if script.is_some_and(|s| s.contains(REWARDS)) {
+				self.in_mission = false;
+				return Some(Fed::Completed);
+			}
+			let launched =
+				script.and_then(|s| s.split_once(LAUNCH)).map(|(_, node)| node.split(' ').next().unwrap_or(""));
+			if launched.is_some_and(|node| !node.ends_with(TOWN)) || script.is_some_and(|s| s.starts_with(INTRO)) {
 				self.in_mission = true;
 				return None;
 			}
-			let ended = script.is_some_and(|s| ENDS.iter().any(|t| s.contains(t))) || line.contains(SHIP);
-			(ended && std::mem::take(&mut self.in_mission)).then_some(Fed::Completed)
+			let left =
+				script.is_some_and(|s| LEFT.iter().any(|t| s.contains(t))) || SHIP.iter().any(|t| line.contains(t));
+			(left && std::mem::take(&mut self.in_mission)).then_some(Fed::Completed)
 		}
 	}
 }
@@ -416,15 +429,20 @@ pub mod tarkov {
 	}
 }
 
-/// Deadlock's console log (`<library>\steamapps\common\Deadlock\game\citadel\console.log`, written only with the
-/// launch option `-condebug`, which the player adds in Steam): a lobby made for a match (`Lobby <lobby> for Match
-/// <match> created`) and then `OnGameStateChanged: GameInProgress (7)` arm a match; `OnGameStateChanged: PostGame (8)`
-/// after that lobby, or the lobby destroyed (`Lobby … for Match … destroyed`), ends it. A local bot match (`Local bot
-/// match: Init.`) makes no lobby and so arms nothing, and a game state changing with no lobby (a broadcast watched) is
-/// passed over; `[Server]` lines (a server run on this computer) and network messages
+/// Deadlock's console log (`<library>\steamapps\common\Deadlock\game\citadel\console.log`, written only with the launch
+/// option `-condebug`, which the player adds in Steam): a lobby made for a match (`Lobby <lobby> for Match <match>
+/// created`) and then the game state `GameInProgress` (`OnGameStateChanged: GameInProgress (7)`) arm a match; a
+/// `PostGame` state (`PostGame`, `PostGame_PlayOfTheGame`) or `Abandoned` after that lobby, or the lobby destroyed
+/// (`Lobby … for Match … destroyed`), ends it. The states are read by name, never by the number beside it (the client's
+/// `EGameState` names, as deadlock-mod-manager's `log_parser.rs` reads them). A local bot match (`Local bot match:
+/// Init.`) makes no lobby and so arms nothing, and a game state changing with no lobby (the hideout, a broadcast
+/// watched) is passed over; `[Server]` lines (a server run on this computer) and network messages
 /// (`NETWORK_DISCONNECT_LOOPDEACTIVATE` among them) end nothing. The lobby's and the match's ids are never kept.
 pub mod deadlock {
 	use super::{Fed, Lines};
+
+	/// The game state's line, the state's name after it.
+	const STATE: &str = "OnGameStateChanged: ";
 
 	/// Whether a match's lobby stands.
 	#[derive(Debug, Default)]
@@ -449,9 +467,11 @@ pub mod deadlock {
 			if !self.open {
 				return None;
 			}
-			if line.contains("OnGameStateChanged: GameInProgress (7)") {
+			let (_, state) = line.split_once(STATE)?;
+			let name = state.split(' ').next().unwrap_or("");
+			if name == "GameInProgress" {
 				Some(Fed::Playing)
-			} else if line.contains("OnGameStateChanged: PostGame (8)") {
+			} else if name.starts_with("PostGame") || name == "Abandoned" {
 				Some(Fed::Ended)
 			} else {
 				None
@@ -831,7 +851,8 @@ pub mod siege {
 /// Rapha, 2026-10-28: a match whose length its feed does not tell counts the game's time open since its last end). Slay
 /// the Spire 2's run history (`spire`) and since 2026-10-29 Halo: The Master Chief Collection's multiplayer carnage
 /// reports, Brawlhalla's replays, rFactor 2's and Le Mans Ultimate's results, osu!'s replays, Stardew Valley's saves and
-/// Warcraft III's replays (the desktop app's `saves.rs`).
+/// Warcraft III's replays (the desktop app's `saves.rs`), and PUBG: BATTLEGROUNDS' match folders by their creation time
+/// (`pubg.rs`, 2026-11-03).
 #[derive(Debug, Default)]
 pub struct Newer {
 	/// The newest file's modified time seen (unix ms), and whether the first look set it.
@@ -850,49 +871,6 @@ impl Newer {
 		let newer = newest.filter(|n| self.newest.is_none_or(|before| *n > before))?;
 		self.newest = Some(newer);
 		Some(Fed::Completed)
-	}
-}
-
-/// PUBG: BATTLEGROUNDS' replays (`%LOCALAPPDATA%\TslGame\Saved\Demos\`, a folder each match the game records, its
-/// `PUBG.replayinfo` written as the match ends; github.com/hoangvu12/Hako's `pubg/watch.rs` and github.com/Segergren/
-/// Segra's `PubgIntegration.cs` watch the same; whether replays are recorded by default is unverified): never opened,
-/// only the newest folder's creation time and whether that file is in it, from the listings. A folder newer than any at
-/// the first look arms a match (an armed one before it ends first), and its `PUBG.replayinfo` appearing ends it.
-pub mod pubg {
-	use super::Fed;
-
-	/// The file a match's folder gets at its end.
-	pub const INFO: &str = "PUBG.replayinfo";
-
-	/// The match folders as the looks saw them.
-	#[derive(Debug, Default)]
-	pub struct Matches {
-		looked: bool,
-		/// The newest match folder's creation time (unix ms).
-		newest: Option<i64>,
-		armed: bool,
-	}
-
-	impl Matches {
-		/// A look: the newest match folder's creation time, and whether its end file is there.
-		pub fn push(&mut self, folder: Option<i64>, done: bool) -> Vec<Fed> {
-			let mut words = Vec::new();
-			if !std::mem::replace(&mut self.looked, true) {
-				self.newest = folder;
-				return words;
-			}
-			if folder > self.newest {
-				self.newest = folder;
-				if std::mem::replace(&mut self.armed, true) {
-					words.push(Fed::Ended);
-				}
-				words.push(Fed::Playing);
-			}
-			if done && std::mem::take(&mut self.armed) {
-				words.push(Fed::Ended);
-			}
-			words
-		}
 	}
 }
 

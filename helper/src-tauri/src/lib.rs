@@ -19,6 +19,7 @@ mod desk;
 mod dnssd;
 mod elevate;
 mod feedback;
+mod feeds;
 mod game;
 mod games;
 mod install;
@@ -159,6 +160,7 @@ pub fn run() {
 			desk::commands::allow_network,
 			desk::commands::allow_folder,
 			desk::commands::addon_install,
+			desk::commands::install_update,
 			desk::commands::set_autostart,
 			desk::commands::open_applications,
 			desk::commands::diagnostics,
