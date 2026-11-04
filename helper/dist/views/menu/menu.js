@@ -89,11 +89,13 @@ register(MENU, () => {
 	const acknowledgements = open("desk.menu.acknowledgements", t("menu.acknowledgements.row"), "reward_title");
 	const pro = open("desk.menu.pro", t("pro.title"), "helm");
 	// the switch moves when the topic brings Rust's answer (Toggle's contract), never before
-	const crash = h("qp-row", {heading: t("menu.crash"), meta: t("menu.crash.note"), trailing: "toggle"});
+	const crash = h("qp-row", {heading: t("menu.crash"), meta: t("menu.crash.note"), glyph: "mark_report",
+		trailing: "toggle"});
 	crash.addEventListener("qp-change", (e) => intent("crash.switch", {on: e.detail}).catch(console.error));
-	const usage = h("qp-row", {heading: t("menu.usage"), meta: t("menu.usage.note"), trailing: "toggle"});
+	const usage = h("qp-row", {heading: t("menu.usage"), meta: t("menu.usage.note"), glyph: "action_log",
+		trailing: "toggle"});
 	usage.addEventListener("qp-change", (e) => intent("usage.switch", {on: e.detail}).catch(console.error));
-	const diagnostics = h("qp-row", {heading: t("desk.feedback.diagnostics"), trailing: "action"});
+	const diagnostics = h("qp-row", {heading: t("desk.feedback.diagnostics"), glyph: "mark_list", trailing: "action"});
 	let reset = null;
 	diagnostics.addEventListener("click", () => copyReport().then((key) => {
 		diagnostics.meta = t(key);

@@ -18,11 +18,11 @@
 //! computer's source, only while no World of Warcraft client with QuestPump runs, which asks them itself (one that
 //! starts ends the catch-up at once, its moves left owed, as the game's own pump ends one); its felt-unwell stop is
 //! written all the same, and so it is when a reset or the lock refuses its moves. Since slice 58 a match's pump banks
-//! like a quest's: Bank it puts its own moves left in the game's owed queue (`Session::bank`) and ends it as End the
+//! like a quest's: Bank all puts its own moves left in the game's owed queue (`Session::bank`) and ends it as End the
 //! pump here does, and the system's quit banks them too (`pump_quit`). Since slice 61 it carries the unfinished moves
 //! this computer may pay as a quest's pump in the game carries them: composed with the queue (`Unfinished`), its
 //! riders come after its own moves (an own all-out window last where no owed window rides), each judged and paid as a
-//! catch-up's move (the rider mark, `Run::rider`) under an id of their own at every end, Bank it banks its own moves
+//! catch-up's move (the rider mark, `Run::rider`) under an id of their own at every end, Bank all banks its own moves
 //! alone, and Bank the rest on a rider ends it as done with its Result, the rest left unfinished. Since 2026-10-12
 //! (David: it "did not ask me how many I could do") a catch-up asks the count of a rep move, a hold or a counted set
 //! (an owed window of a countable form) as an app pump does, each dosed on the engine as
@@ -98,8 +98,8 @@
 //! `pump.count.couldnot`, `pump.swap {take: another|easier|backup|back}` (the swap row and its window, on any move the
 //! engine gives options), `pump.pain {joints}` (the Ready view's Pain),
 //! `pump.skip` (a rider's Ready view's Skip: a catch-up's since 2026-10-09, a match pump's rider since slice 61),
-//! `pump.bank` (Bank it on a match pump's Ready view while a move of its own is left, Bank the rest on a catch-up's and
-//! once only a match pump's riders are left, slices 58 and 61: `Helper::pump_bank`),
+//! `pump.bank` (Bank all on a match pump's Ready view while a move of its own is left, Bank the rest on a catch-up's
+//! and once only a match pump's riders are left, slices 58 and 61: `Helper::pump_bank`),
 //! `pump.unwell`, `pump.end` (End the pump here, on a rider the "···"'s Bank the rest),
 //! `pump.leave {then: close|quit}` and `pump.stay` ("Leave the pump?"'s
 //! answers), `pump.fullscreen {on}` (Big view's own toggle), `pump.land {still?}` (the Result's reveal at its end),
@@ -902,6 +902,13 @@ impl Run {
 		self.dosed(m) && m.target.is_none() && m.record.is_none() && (m.kind == kind::REP || m.kind == kind::HOLD)
 	}
 
+	/// A first max set (Progress.lua `ns.FirstMaxSet`, `PlannedMove::first_max`), as the game's short rule reads it: a
+	/// rep move or a hold the engine dosed as a placement, or as a max set with no record. Never `max_set` alone: that
+	/// also holds for a move with a record whose form changed since (`ns.Goal`), which banks when short as any set does.
+	fn first_max_set(&self, m: &PlannedMove) -> bool {
+		self.dosed(m) && m.first_max && (m.kind == kind::REP || m.kind == kind::HOLD)
+	}
+
 	/// Back is on every stage after Start, until the count is saved (a rider's count or pace, or a kept steady
 	/// move's end, while the engine checks or judges it; a hold's while its pour runs, its row unwritten, slice 65).
 	fn can_back(&self) -> bool {
@@ -1045,7 +1052,7 @@ pub(crate) enum Gate {
 	Engine,
 }
 
-/// The Ready view's way to put its moves off (slice 58, the game's bar, `Panel.lua` `renderBar`): Bank it on a match's
+/// The Ready view's way to put its moves off (slice 58, the game's bar, `Panel.lua` `renderBar`): Bank all on a match's
 /// pump while a move of its own is left, Bank the rest once only its riders are left (slice 61, `Lc.OnlyRidersLeft`),
 /// and Bank the rest on every catch-up.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -1081,6 +1088,12 @@ fn unix_s(ms: i64) -> i64 {
 fn short_count(m: &PlannedMove, value: i64) -> bool {
 	let c = facts().constants();
 	value > 0 && value < if m.kind == kind::HOLD && !m.counted { c.min_seconds } else { c.min_reps }
+}
+
+/// The id a short move's bank goes under (`Helper::pump_short`, contract/companion-api.yaml `WristEvent`'s `bank`):
+/// `Session::bank` writes once an id, and the pump's own stays free for its Bank all, its quit and its make way.
+fn short_id(pump: &str, slot: usize) -> String {
+	format!("{pump}~s{slot}")
 }
 
 /// A timed move's result (`PlannedMove.result`): its seconds up to the planned ones, stopped short when it ended before
@@ -1132,6 +1145,7 @@ fn timed_move(slot: usize, m: &CatchMove) -> PlannedMove {
 		form_load: None,
 		top: None,
 		placing: None,
+		first_max: false,
 		counted: false,
 		pace: false,
 		keep: None,
@@ -2494,17 +2508,19 @@ impl Helper {
 	}
 
 	/// A side ended, by Done or at its limit: a side move's first side switches, counted in again from now; any other
-	/// side ends the move, a timed move or a hold Done under `min_seconds` banked without a word (`pump_short`), a
-	/// timed one Done under the ask's share of its seconds asking first whether it was done whole.
+	/// side ends the move, a timed move or a hold Done under `min_seconds` banked without a word (`pump_short`) but a
+	/// hold's first max set, which goes on to its count (`Run::first_max_set`, the game's `Lc.Done`), a timed one Done
+	/// under the ask's share of its seconds asking first whether it was done whole.
 	fn pump_end_side(&mut self, start: i64, elapsed: f64, end: i64) {
 		let c = facts().constants();
 		let Some(run) = self.pumps.run.as_mut() else { return };
 		// the move's kind and planned seconds: a move of reps is judged by its count, a timed move that ran its time
 		// never short
-		let planned = run.shown().map(|m| (m.kind, m.seconds));
+		let planned = run.shown().map(|m| (m.kind, m.seconds, run.first_max_set(m)));
 		let short = |seconds: i64| {
-			planned
-				.is_some_and(|(k, plan)| k != kind::REP && seconds < c.min_seconds && plan.is_none_or(|p| seconds < p))
+			planned.is_some_and(|(k, plan, first)| {
+				k != kind::REP && !first && seconds < c.min_seconds && plan.is_none_or(|p| seconds < p)
+			})
 		};
 		let Some(side) = run.side.as_mut() else { return };
 		match side.end(elapsed, c.timed_ask_share) {
@@ -2606,8 +2622,9 @@ impl Helper {
 		};
 		// a hold's Done saves the stopwatch's seconds with no count step (slice 65): the engine's check of them first,
 		// whose "Is that right?" shows on the count step (Change it opens it with them), then "Could you have held
-		// longer?" where it asks, then the pour; under the ask's share the count step comes from 0
-		if m.kind == kind::HOLD && run.count_from > 0 {
+		// longer?" where it asks, then the pour; under the ask's share the count step comes from 0, and from them on a
+		// first max set under `min_seconds` (`pump_end_side`), which asks its count
+		if m.kind == kind::HOLD && run.count_from > 0 && !short_count(&m, run.count_from) {
 			let typed = Typed { value: run.count_from, load: None, answer: answer::YES };
 			let max_set = run.max_set(&m);
 			if let Entered::Check(typed) = run.count.enter(typed, max_set, false) {
@@ -2658,6 +2675,10 @@ impl Helper {
 			return Err("this move takes no weight".to_owned());
 		}
 		if short_count(&m, typed.value) {
+			// a first max set is never banked: it saves as "Could not do one" (the game's `Lc.Enter`)
+			if run.first_max_set(&m) {
+				return self.pump_could_not();
+			}
 			self.pump_short();
 			return Ok(());
 		}
@@ -3417,9 +3438,9 @@ impl Helper {
 
 	/// A move ended too short to count (`min_reps`, `min_seconds`: `short_count`, `pump_end_side`; Rapha, 2026-11-03,
 	/// the game's `Lc.ShortBank`): banked without a word or a row of its own. A match pump's own move goes in the game's
-	/// owed queue as Bank all puts it there (`Run::bank`, `pump_write_bank`), a rider stays the unfinished move it is,
-	/// a move of a pump the player started owes nothing; its run is forgotten (`ran`), so no Result and no payment
-	/// counts it, and the next move shows (after the last the pump ends).
+	/// owed queue as Bank all puts it there (`Run::bank`, `pump_write_bank`), under an id of its own (`short_id`), a
+	/// rider stays the unfinished move it is, a move of a pump the player started owes nothing; its run is forgotten
+	/// (`ran`), so no Result and no payment counts it, and the next move shows (after the last the pump ends).
 	fn pump_short(&mut self) {
 		let Some(run) = self.pumps.run.as_mut() else { return };
 		let Some(slot) = run.shown().map(|m| m.slot) else { return };
@@ -3433,6 +3454,7 @@ impl Helper {
 		let banks = run.what.app() && run.offer.is_some() && !run.rider(slot);
 		if let Some((mut bank, slots)) = banks.then(|| run.bank()) {
 			bank.moves = bank.moves.into_iter().zip(slots).filter(|&(_, s)| s == slot).map(|(m, _)| m).collect();
+			bank.id = short_id(&bank.id, slot);
 			self.pump_write_bank(&bank);
 		}
 		self.pump_advance(false);
@@ -3489,7 +3511,7 @@ impl Helper {
 		}
 	}
 
-	/// The Ready view's way to put the moves off (slice 58; the game's Bank it and Bank the rest): on a match's pump
+	/// The Ready view's way to put the moves off (slice 58; the game's Bank all and Bank the rest): on a match's pump
 	/// (`Run::offer`, a match offer's or the test offer's, whatever the player picked from its Start a pump window) Bank
 	/// it while a move of its own without a result is left from the one on Ready on (its own all-out window after its
 	/// riders keeps it), Bank the rest once only its riders are left (slice 61, the game's `Lc.OnlyRidersLeft`); on
@@ -3508,8 +3530,8 @@ impl Helper {
 		Some(if run.only_riders_left() { Bank::Rest } else { Bank::It })
 	}
 
-	/// Bank it or Bank the rest (`pump.bank`, slice 58; the game's `Lc.Bank`, one click, no confirm): Bank it puts every
-	/// move of a match pump's own not done yet, from the one on Ready on, in the game's owed queue as a banked row
+	/// Bank all or Bank the rest (`pump.bank`, slice 58; the game's `Lc.Bank`, one click, no confirm): Bank all puts
+	/// every move of a match pump's own not done yet, from the one on Ready on, in the game's owed queue, a banked row
 	/// (`Run::bank`, `pump_write_bank`), then the pump ends as End the pump here ends it (`pump_stop`: the moves done
 	/// count and its riders done are paid, with none done it leaves the screen, its offer stays taken), also where the
 	/// store refuses the rows; a match pump's Bank the rest, on a rider, ends it as done, its Result with its riders

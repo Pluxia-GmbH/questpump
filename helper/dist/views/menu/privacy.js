@@ -18,8 +18,10 @@ import {page, watch, words} from "../page.js";
 
 register("desk.privacy", () => {
 	const view = page({heading: t("privacy.title")});
-	const usage = h("qp-row", {heading: t("menu.usage"), meta: t("menu.usage.note"), trailing: "toggle"});
-	const crash = h("qp-row", {heading: t("menu.crash"), meta: t("menu.crash.note"), trailing: "toggle"});
+	const usage = h("qp-row", {heading: t("menu.usage"), meta: t("menu.usage.note"), glyph: "action_log",
+		trailing: "toggle"});
+	const crash = h("qp-row", {heading: t("menu.crash"), meta: t("menu.crash.note"), glyph: "mark_report",
+		trailing: "toggle"});
 	const link = h("qp-row", {heading: t("privacy.link"), glyph: "mark_lock", trailing: "external",
 		"on:click": () => intent("about.open", {page: "telemetry"}).catch(console.error)});
 	const optIn = Boolean(get("usage")?.opt_in);

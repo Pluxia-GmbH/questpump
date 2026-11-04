@@ -1010,7 +1010,7 @@ impl Helper {
 		None
 	}
 
-	/// A device's Bank it on a match pump (`WristEvent::bank`, docs/plan.md slice 58): the game's
+	/// A device's Bank all on a match pump (`WristEvent::bank`, docs/plan.md slice 58): the game's
 	/// banked rows (`Session::bank`; one sent again is written once), written while a client with QuestPump runs too:
 	/// its moves are in no queue the game asks, and reach it at its next load through the mirror as every row here does.
 	fn device_bank(&mut self, bank: &BankPump, t: &Now) {
@@ -1248,7 +1248,7 @@ impl Helper {
 
 	/// The pairing's step on the Phones page, This computer and the welcome's Game row (the `menu.phones` topic's
 	/// `next`): while a phone is paired, or while the running game's load ran without QuestPump here (its setup screen
-	/// and, on the Forever beta, its saved progress wait for one), and none when nothing is left; published only when
+	/// and, on a client that does not read its save back, its saved progress wait for one), and none when nothing is left; published only when
 	/// it changes.
 	fn show_next(&mut self, step: Step) {
 		let paired = self.settings.pairing.phone.is_some();

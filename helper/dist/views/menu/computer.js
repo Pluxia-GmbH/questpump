@@ -216,27 +216,27 @@ register("desk.menu.computer", () => {
 	const cfa = words("", "body");
 	const access = stepCard(t("desk.menu.computer.access.title"), acl, cfa);
 
-	const status = (heading) => h("qp-row", {heading, trailing: "shown"});
-	const game = status(t("desk.menu.computer.game"));
-	const reading = status(t("desk.menu.computer.screen"));
-	const mirror = status(t("desk.menu.computer.mirror"));
-	const pack = status(t("desk.menu.computer.pack"));
+	const status = (heading, glyph) => h("qp-row", {heading, glyph, trailing: "shown"});
+	const game = status(t("desk.menu.computer.game"), "action_games");
+	const reading = status(t("desk.menu.computer.screen"), "device_computer");
+	const mirror = status(t("desk.menu.computer.mirror"), "action_log");
+	const pack = status(t("desk.menu.computer.pack"), "action_character");
 	// Add QuestPump to the game or Update now while the topic offers one, else its line alone
-	const addon = h("qp-row", {heading: t("desk.addon.row"), trailing: "shown"});
+	const addon = h("qp-row", {heading: t("desk.addon.row"), glyph: "action_pump", trailing: "shown"});
 	addon.addEventListener("click", () => {
 		if (addon.trailing === "action") call("addon_install").catch(console.error);
 	});
-	const animations = status(t("desk.figures.row"));
+	const animations = status(t("desk.figures.row"), "mark_play");
 	// Restart to update while the topic says nothing but this window holds the update, else its line alone
-	const version = status(t("desk.menu.computer.version"));
+	const version = status(t("desk.menu.computer.version"), "mark_report");
 	version.addEventListener("click", () => {
 		if (version.trailing === "action") call("install_update").catch(console.error);
 	});
-	const folder = h("qp-row", {heading: t("desk.menu.computer.folder"), trailing: "action",
+	const folder = h("qp-row", {heading: t("desk.menu.computer.folder"), glyph: "mark_list", trailing: "action",
 		value: t("desk.menu.computer.folder.change"), "on:click": () => call("pick_folder").catch(console.error)});
 	const note = words("", "meta");
 	// the switch moves when the topic says the system took the change (Toggle's contract), never before
-	const autostart = h("qp-row", {heading: t("desk.menu.computer.autostart"), trailing: "toggle",
+	const autostart = h("qp-row", {heading: t("desk.menu.computer.autostart"), glyph: "mark_clock", trailing: "toggle",
 		"on:qp-change": (e) => call("set_autostart", {on: e.detail}).catch(console.error)});
 	const autostartCard = h("qp-card", {rows: true}, autostart);
 	const size = sizeRow();

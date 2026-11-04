@@ -749,7 +749,7 @@ end
 -- the fault pair where the pack has one (slice 22: until then only a max set opened it, so no pose ever did). An
 -- all-out window keeps its Ready view: its form is among the pump's last efforts, with nothing to study first.
 local function firstAppearance(slot)
-	return slot.placing == true or (slot.maxSet == true and ns.Record(ns.state, slot.move) == nil)
+	return ns.FirstMaxSet(ns.state, slot)
 		or ((slot.kind == K.flow or slot.kind == K.cardio) and not slot.allout and not ns.state.seen[slot.move])
 end
 
@@ -2939,7 +2939,8 @@ end
 
 -- The count's words while it is entered: the live preview ("23 reps: +40 XP, new record", "16 reps with 11 kg: +40
 -- XP, new record"; none before a number, a counted set's before a clean count above 0 ("Not counted" until 2026-10-23),
--- nor on the practice move, which stores nothing), or the "Really?" row in its place, Record hidden while it asks so
+-- on the practice move, which stores nothing, or under the minimum, which earns nothing: ns.ShortCount), or the
+-- "Really?" row in its place, Record hidden while it asks so
 -- no red pushes either answer and greyed until a number is in.
 local function previewWords(v, p, slot)
 	local n, load = Panel.InputValue(), Panel.LoadValue()
@@ -2949,12 +2950,12 @@ local function previewWords(v, p, slot)
 	if asking then return end
 	if slot.counted then
 		local best = ns.Record(ns.state, slot.move)
-		v.preview:SetText((not n or n <= 0) and ""
+		v.preview:SetText((not n or n <= 0 or ns.ShortCount(slot, n)) and ""
 			or (not best or n > best) and ns.Plural("ui.result.cleanNew", n):format(n)
 			or ns.Plural("ui.result.cleanUnder", n):format(n, best))
 		return
 	end
-	if not n or slot.practice then
+	if not n or slot.practice or ns.ShortCount(slot, n) then
 		v.preview:SetText("")
 		return
 	end
@@ -4091,8 +4092,9 @@ SU.PHONE = "pushup"
 -- it was never set up, and under them the remedy for a state that has one; the details in its tooltip; gold edged once
 -- done), what they give as four chips (the long words in their tooltip), and the bar's Check again and Play without.
 -- The cards and the chips are no buttons: nothing on them answers a click (2026-10-15). While the setup asks for no
--- phone (Setup.AsksPhone: the phone apps are not in the stores yet) the page is the helper's alone: its card centred,
--- the title and the chips' words in the singular, and only the chips the helper gives (SU.RenderCompanions).
+-- phone (Setup.AsksPhone: no helper yet, or the phone apps are not in the stores) the page is the helper's alone: its
+-- card centred, the title and the chips' words in the singular, and only the chips the helper gives
+-- (SU.RenderCompanions).
 function SU.Companions(s)
 	local v = Kit.Page(s, L["ui.setup.welcome"])
 	local w = Kit.Grid(2, TL.TEXT)
@@ -4142,12 +4144,12 @@ function SU.Companions(s)
 	return v
 end
 
--- The chips' words and pictures: on a client that has not read its save back the kept progress first, elsewhere the
--- streak on days without the game; then the countdown on the wrist, the heart-rate check marks and the phone's
--- catch-up (David, 2026-10-09: what wins the player first). Each picture is a flat atlas of Style.atlas (Kit.ChipArt),
--- left out where the client lacks it, but the streak's, which falls back to QuestPump's own mark. `phone`: a chip only
--- the phone app gives, left out while the setup asks for no phone (the helper's own pumps keep the streak, and a strap
--- on it gives the check marks).
+-- The chips' words and pictures: on a client that showed it does not read its save back the kept progress first,
+-- elsewhere the streak on days without the game; then the countdown on the wrist, the heart-rate check marks and the
+-- phone's catch-up (David, 2026-10-09: what wins the player first). Each picture is a flat atlas of Style.atlas
+-- (Kit.ChipArt), left out where the client lacks it, but the streak's, which falls back to QuestPump's own mark.
+-- `phone`: a chip only the phone app gives, left out while the setup asks for no phone (the helper's own pumps keep the
+-- streak, and a strap on it gives the check marks).
 SU.CHIPS = { { "kept", "kept" }, { "wrist", "clock", phone = true }, { "heart", "heart" },
 	{ "catchup", "phoneQuest", phone = true } }
 SU.STREAK_CHIP = { "streak", "streak" }
@@ -4162,10 +4164,10 @@ end
 -- How each companion's step stands (Setup.Steps, ns.HelperState, ns.PhoneQuiet): its mark, its state's word in green
 -- or red, and the remedy under it where the state has one (the helper stopped, blind, turned off or out of date; the
 -- phone quiet since a date); both done: no Play without, no Check again, and Next on. Play without names what the
--- player goes without: the saved progress on a client that has not read its save back while no helper runs, the
--- helper on a page that asks for it alone, the phone while the helper runs, else both. The cards and the chips shown
--- are centred in the content's width (all of it with every one). Returns whether the way on is Next and the content's
--- bottom.
+-- player goes without: the saved progress on a client that showed it does not read its save back while no helper
+-- runs, the helper on a page that asks for it alone, the phone while the helper runs, else both. The cards and the
+-- chips shown are centred in the content's width (all of it with every one). Returns whether the way on is Next and
+-- the content's bottom.
 function SU.RenderCompanions(s, v)
 	local one = not Setup.AsksPhone()
 	v.title:SetText(L[one and "ui.setup.welcome.one" or "ui.setup.welcome"])
@@ -4204,10 +4206,10 @@ function SU.RenderCompanions(s, v)
 	y = y + cardH + 18
 	Kit.At(v.withHead, v, y)
 	y = y + 28
-	local beta, chipH = Setup.SaveUnread(), 88
+	local unread, chipH = Setup.SaveUnread(), 88
 	local chips = {}
 	for i, tile in ipairs(v.chips) do
-		local gives = (i == 1 and not beta) and SU.STREAK_CHIP or SU.CHIPS[i]
+		local gives = (i == 1 and not unread) and SU.STREAK_CHIP or SU.CHIPS[i]
 		local shown = not (one and gives.phone)
 		tile:SetShown(shown)
 		if shown then
@@ -4225,8 +4227,8 @@ function SU.RenderCompanions(s, v)
 	-- with the helper running its copy keeps the progress and a strap on it adds the check marks (neither needs the
 	-- screen): playing without the phone gives up neither
 	local helper = Setup.HelperRuns()
-	s.foot:Label(s.without, L[beta and not helper and "ui.setup.without.forever" or one and "ui.setup.without.one"
-		or helper and "ui.setup.without.helper" or "ui.setup.without"])
+	s.foot:Label(s.without, L[unread and not helper and "ui.setup.without.forever"
+		or one and "ui.setup.without.one" or helper and "ui.setup.without.helper" or "ui.setup.without"])
 	s.without:SetShown(open)
 	s.check:SetShown(open)
 	return not open, y + chipH

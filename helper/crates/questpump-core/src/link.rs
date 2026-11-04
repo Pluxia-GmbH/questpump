@@ -314,8 +314,8 @@ pub enum Step {
 	/// The running game's setup window asks for its Check again, on screen or held back by a fight, a pump or a
 	/// cinematic.
 	CheckAgain,
-	/// The running game does not read its own save back (the Forever beta) and loaded without the helper: one
-	/// `/reload` brings its saved progress back.
+	/// The running game showed at a `/reload` that it does not read its own save back, and loaded without the helper:
+	/// one `/reload` brings its saved progress back.
 	Reload,
 	/// macOS's Screen Recording grant is missing (`sight` is `no_grant`).
 	Grant,
@@ -448,7 +448,7 @@ pub enum EventType {
 	PumpDone,
 	/// The player's one-click Skip of an unfinished move on the device (since 2026-10-09): `WristEvent::skip`.
 	Skip,
-	/// The player's Bank it on a match pump's Ready view (docs/plan.md slice 58): `WristEvent::bank`.
+	/// The player's Bank all on a match pump's Ready view (docs/plan.md slice 58): `WristEvent::bank`.
 	Bank,
 	/// A newer app's event this helper does not know: taken and ignored, so the sync still confirms it.
 	#[serde(other)]

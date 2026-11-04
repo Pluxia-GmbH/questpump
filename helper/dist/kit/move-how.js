@@ -47,7 +47,7 @@ export function howAndTips({setup = null, how = [], tips = [], action = null}) {
 
 /** The move's stop line; none without one. */
 export function stopLine(stop) {
-	return stop ? h("p", {class: "qp-type-body", text: stop}) : null;
+	return stop ? h("p", {class: "qp-type-body qp-move-stop", text: stop}) : null;
 }
 
 /** A pose's goal pose under the check (its own mark's sentence); none without one. */

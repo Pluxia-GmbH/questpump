@@ -174,7 +174,7 @@ register("desk.menu.phones", () => {
 	let showCode = false;
 	const another = h("qp-quiet-button", {label: t("desk.menu.phones.another")});
 	// the Bluetooth link's switch moves when the topic brings its state (Toggle's contract), never before
-	const ble = h("qp-row", {heading: t("desk.menu.phones.ble.title"), trailing: "toggle"});
+	const ble = h("qp-row", {heading: t("desk.menu.phones.ble.title"), glyph: "mark_link", trailing: "toggle"});
 	ble.addEventListener("qp-change", (e) => call("set_ble_link", {on: e.detail}).catch(console.error));
 
 	view.body.append(code.firewall, heading, paired, unread, quiet, next, h("qp-card", {rows: true}, ble),

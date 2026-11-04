@@ -152,8 +152,8 @@ pub struct SetupWord {
 	pub check_shown: bool,
 	/// This load saw QuestPump on this computer running, by its sign of life (bit 6).
 	pub helper_seen: bool,
-	/// This client does not read its own save back (the Forever beta), so its saved progress comes only from the
-	/// mirror (bit 7).
+	/// This client showed at a `/reload` that it does not read its own save back, so its saved progress comes only from
+	/// the mirror (bit 7).
 	pub save_unread: bool,
 }
 

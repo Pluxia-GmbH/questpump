@@ -52,7 +52,8 @@ register("desk.menu.email", () => {
 	const enterRestore = () => push("desk.menu.restore", {enter: true});
 	const openRestore = () => push("desk.menu.restore");
 	/** Restore code's row: in the linked view's card, and in a card of its own in the not-linked view. */
-	const restoreRow = () => h("qp-row", {heading: t("menu.restore.title"), "on:click": openRestore});
+	const restoreRow = () => h("qp-row", {heading: t("menu.restore.title"), glyph: "mark_lock",
+		"on:click": openRestore});
 
 	// not linked, or a new address
 	const signin = h("qp-section-label", {label: t("menu.email.signin.title")});
@@ -96,14 +97,17 @@ register("desk.menu.email", () => {
 
 	// linked
 	const shown = h("qp-row", {glyph: "mark_check", trailing: "shown"});
-	const signOut = h("qp-row", {heading: t("menu.email.signout"), trailing: "action", "data-focus-key": "signout",
+	const signOut = h("qp-row", {heading: t("menu.email.signout"), glyph: "mark_close", trailing: "action",
+		"data-focus-key": "signout",
 		"on:click": () => confirmWindow(t("menu.email.signout.title", {device: computer}), t("menu.email.signout.body"),
 			t("menu.email.signout"), () => intent("email.signout").catch(console.error))});
-	const removeEmail = h("qp-row", {heading: t("menu.email.remove"), trailing: "action", "data-focus-key": "remove",
+	const removeEmail = h("qp-row", {heading: t("menu.email.remove"), glyph: "mark_dash", trailing: "action",
+		"data-focus-key": "remove",
 		"on:click": () => confirmWindow(t("menu.email.remove.title", {address: shown.heading}), null,
 			t("menu.sync.remove"), () => intent("email.remove").catch(console.error))});
 	const linked = part(h("qp-card", {rows: true}, shown,
-		h("qp-row", {heading: t("menu.email.change"), trailing: "action", "data-focus-key": "change:linked",
+		h("qp-row", {heading: t("menu.email.change"), glyph: "mark_share", trailing: "action",
+			"data-focus-key": "change:linked",
 			"on:click": () => intent("email.change").catch(console.error)}),
 		restoreRow(), signOut, removeEmail));
 
@@ -128,7 +132,7 @@ register("desk.menu.email", () => {
 	// in an account: a Sign out, Remove email or Delete account the server did not answer, then Delete account
 	const outLine = resultLine();
 	const remove = h("qp-card", {rows: true, hidden: true}, h("qp-row", {heading: t("menu.email.delete"),
-		trailing: "action", destructive: true, "data-focus-key": "delete",
+		glyph: "mark_close", trailing: "action", destructive: true, "data-focus-key": "delete",
 		"on:click": () => confirmWindow(t("menu.email.delete.title"), t("menu.email.delete.body"),
 			t("menu.email.delete"), () => intent("email.delete").catch(console.error))}));
 	const said = h("p", {class: "qp-type-body qp-quiet-line", hidden: true});

@@ -46,11 +46,12 @@ class QpOutputPicker extends KitElement {
 		const shape = JSON.stringify([page.looked, page.outputs.map((o) => [o.id, o.name])]);
 		if (shape !== this.shape) {
 			this.shape = shape;
-			this.system = h("qp-row", {heading: t("desk.sound.system"), trailing: "checked",
+			this.system = h("qp-row", {heading: t("desk.sound.system"), glyph: "device_computer", trailing: "checked",
 				"on:click": () => this.pick(null, "")});
 			this.choices = page.outputs.map((output) => [output.id, h("qp-row", {heading: output.name,
-				trailing: "checked", "on:click": () => this.pick(output.id, output.name)})]);
-			const looking = page.looked ? null : h("qp-row", {heading: t("desk.sound.looking"), trailing: "shown"});
+				glyph: "rating_expertise", trailing: "checked", "on:click": () => this.pick(output.id, output.name)})]);
+			const looking = page.looked ? null : h("qp-row", {heading: t("desk.sound.looking"),
+				glyph: "rating_expertise", trailing: "shown"});
 			this.rows.replaceChildren(...[this.system, looking, ...this.choices.map(([, row]) => row)].filter(Boolean));
 		}
 		const now = page.outputs.find((o) => o.default);

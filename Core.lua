@@ -483,9 +483,9 @@ SlashCmdList.QUESTPUMP = function(msg)
 	if not ok then ns.Report(err) end
 end
 
--- The help names the helper and the phone app as strongly recommended companions, never with a URL, a price or a
--- store (docs/tasks.md, "Legal minimum"), then a line a group ("Play: /qp pump · /qp try · ..."); /qp help <command>
--- prints that command's whole line.
+-- The help names the companions the setup asks for (Setup.AsksPhone) as strongly recommended, never with a URL, a
+-- price or a store (docs/tasks.md, "Legal minimum"), then a line a group ("Play: /qp pump · /qp try · ..."); /qp help
+-- <command> prints that command's whole line.
 ns.AddCommand("help", function(arg)
 	local name = strtrim(arg or ""):lower()
 	if name ~= "" then
@@ -493,7 +493,7 @@ ns.AddCommand("help", function(arg)
 		if not line then return ns.Print("chat.unknown", name) end
 		return print(line)
 	end
-	ns.Print("cmd.help.companions")
+	ns.Print(ns.Setup.AsksPhone() and "cmd.help.companions" or "cmd.help.companions.one")
 	for _, group in ipairs((ns.HelpGroups())) do
 		if #group.usages > 0 then
 			print(L["cmd.help.line"]:format(L[group.key], table.concat(group.usages, " · ")))

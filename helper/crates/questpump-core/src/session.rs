@@ -581,15 +581,16 @@ impl CatchupRan {
 	}
 }
 
-/// A match pump's Bank it on a phone, a watch or the desktop app (docs/plan.md slice 58; David,
+/// A match pump's Bank all on a phone, a watch or the desktop app (docs/plan.md slice 58; David,
 /// 2026-10-26: "I miss the bank (and bank the rest) button after I played a round?"): the moves of its own not done yet
-/// go to the game's owed queue as the game's Bank it puts a quest's there (`Session::bank`).
+/// go to the game's owed queue as the game's Bank all puts a quest's there (`Session::bank`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BankPump {
 	/// The phone, the watch or the computer, whose flag bit its rows carry (never the game's or the app's).
 	pub source: Source,
 	/// The pump's own id (`f-<uuid>` from a phone, `w-<uuid>` from a watch, `d-<uuid>` from the desktop app), which
-	/// its rows keep, so a bank sent again is written once.
+	/// its rows keep, so a bank sent again is written once; a short move's, banked alone as it ends, `<pump id>~s<slot>`
+	/// (`min_reps`, `min_seconds`), so the pump's own stays free for its Bank all.
 	pub id: String,
 	/// The pump's start (its offered row's time), unix seconds on the helper's clock: the rows' time.
 	pub start: u32,
@@ -2932,8 +2933,8 @@ impl Session {
 		(Ok(rows), fx)
 	}
 
-	/// A match pump's Bank it, or the desktop's quit during one (docs/plan.md slice 58), as the game's `Lc.Bank` owes a
-	/// quest's moves (Events.lua `oweSlot` with outcome banked): for each move banked one game owed row with outcome
+	/// A match pump's Bank all, or the desktop's quit during one (docs/plan.md slice 58), as the game's `Lc.Bank` owes
+	/// a quest's moves (Events.lua `oweSlot` with outcome banked): for each move banked one game owed row with outcome
 	/// banked, the device's bit and no app bit (so every fold takes it into the owed queue and the game day's banked
 	/// count, and DB.lua's start of the game moves for none: `applyRow`), no character (0, placed in every install's
 	/// mirror), quest 0, dated the pump's start, its slot the move's place among the banked moves made unique in the

@@ -48,6 +48,10 @@ L["cmd.help.help"] = "/qp help [command]: the commands, or what one does"
 L["cmd.help.companions"] = "QuestPump on this computer and the phone app are strongly recommended companions: they "
 	.. "keep your progress saved and bring your pumps to your phone and wrist. Find QuestPump for this computer on the "
 	.. "addon's page; /qp setup shows how."
+-- while the setup asks for the helper alone (Setup.AsksPhone)
+L["cmd.help.companions.one"] = "QuestPump on this computer is a strongly recommended companion: it keeps your progress "
+	.. "saved and lets you do pumps away from the game. Find QuestPump for this computer on the addon's page; /qp setup "
+	.. "shows how."
 -- /qp help's lines, a group each ("Play: /qp pump · /qp try"), by what a player does (Core.lua HELP_GROUPS)
 L["cmd.help.line"] = "%s: %s"
 L["cmd.help.group.play"] = "Play"
@@ -241,10 +245,10 @@ L["status.hud.stale.tip"] = "The phone app gets your progress from it."
 L["status.hud.stale.click"] = "Click once it runs: check again"
 L["status.hud.lost"] = "Progress lasts this session only"
 L["status.hud.lost.click"] = "Click: copy it out"
-L["status.hud.lost.title"] = "Saving on this beta"
+L["status.hud.lost.title"] = "Saving your progress"
 -- the companions' nudges (Setup.Nudge, the unfinished line's and the lost save's tooltips), until that one is set up
-L["status.nudge.save"] = "QuestPump on this computer keeps your progress on this beta and brings it back at every "
-	.. "load. Find it on the addon's page."
+L["status.nudge.save"] = "QuestPump on this computer keeps your progress and brings it back at every load. Find it "
+	.. "on the addon's page."
 L["status.nudge.owed"] = "You can do your banked moves in the QuestPump app on your phone."
 L["status.nudge.streak"] = "On days without the game, a pump in the QuestPump app on your phone keeps your streak "
 	.. "going."
@@ -252,8 +256,6 @@ L["status.nudge.streak"] = "On days without the game, a pump in the QuestPump ap
 -- who puts it in: QuestPump on this computer when the game closes, or the player some other way; no address, no store
 L["status.update.ready"] = "QuestPump %s is ready. It installs when you close the game."
 L["status.update.out"] = "QuestPump %s is out. QuestPump on this computer can install it."
-L["status.hud.check"] = "Check saving"
-L["status.hud.check.click"] = "Click: reload once to check"
 
 -- The status strip (Bridge.lua): /qp bridge and /qp ping
 L["cmd.bridge.help"] = "/qp bridge: check the small status strip in the top-left corner"
@@ -771,11 +773,12 @@ L["ui.setup.step2.state.quiet"] = "Not heard from lately"
 -- the phone's card's tooltip once it is paired
 L["ui.setup.step2.done"] = "Pumps from the game come to your phone while you play."
 L["ui.setup.step2.quiet"] = "It last connected on %s. Open the app, or pair it again."
--- what they give (David, 2026-10-09: the saved progress first on the beta, the phone's pumps and streak elsewhere):
+-- what they give (David, 2026-10-09: the saved progress first on a client that does not read its save back, the
+-- phone's pumps and streak elsewhere):
 -- four chips, the whole of it in their tooltip
 L["ui.setup.with"] = "With them"
 L["ui.setup.with.one"] = "With it"
-L["ui.setup.chip.kept"] = "Keeps your progress on this beta"
+L["ui.setup.chip.kept"] = "Keeps your progress"
 L["ui.setup.chip.streak"] = "Your streak on days without the game"
 L["ui.setup.chip.wrist"] = "Countdown on your wrist"
 L["ui.setup.chip.heart"] = "Heart-rate check marks"
@@ -783,20 +786,20 @@ L["ui.setup.chip.catchup"] = "Catch up from the phone"
 L["ui.setup.gives"] = "With them you can do pumps and banked moves on your phone, away from the game. A pump "
 	.. "there keeps your streak going on days without the game, and a daily reminder asks you back. Your sheet shows "
 	.. "on your phone, the countdown comes to your wrist, and your pumps get heart-rate check marks."
-L["ui.setup.gives.forever"] = "They keep your progress saved on this beta, which does not load it back by itself. "
+L["ui.setup.gives.forever"] = "They keep your progress saved when the game does not load it back. "
 	.. "With them you can also do pumps on your phone, keep your streak going on days without the game, count down on "
 	.. "your wrist and get heart-rate check marks."
 L["ui.setup.gives.one"] = "With it you can do pumps and banked moves on this computer, away from the game. A pump "
 	.. "there keeps your streak going on days without the game, and with a heart-rate strap your pumps get heart-rate "
 	.. "check marks."
-L["ui.setup.gives.one.forever"] = "It keeps your progress saved on this beta, which does not load it back by itself. "
+L["ui.setup.gives.one.forever"] = "It keeps your progress saved when the game does not load it back. "
 	.. "With it you can also do pumps on this computer, away from the game, keep your streak going on days without the "
 	.. "game and get heart-rate check marks with a heart-rate strap."
 L["ui.setup.check"] = "Check again"
 L["ui.setup.check.tip"] = "Reloads the interface, as /reload does, and ticks off what is set up."
--- the way out of the companions' page, named by what the player goes without: both; on a client that has not read its
--- save back while no helper runs, the saved progress (the legal minimum's beta consequence); with the helper running,
--- the phone; on the helper's page alone (Setup.AsksPhone), the helper
+-- the way out of the companions' page, named by what the player goes without: both; on a client that showed it does
+-- not read its save back (Setup.SaveUnread) while no helper runs, the saved progress (the legal minimum's consequence);
+-- with the helper running, the phone; on the helper's page alone (Setup.AsksPhone), the helper
 L["ui.setup.without"] = "Play without them"
 L["ui.setup.without.forever"] = "Play without saving"
 L["ui.setup.without.helper"] = "Play without the phone"
@@ -10787,8 +10790,9 @@ L["xp.reason.vault"] = "A weekly vault goal"
 -- the settings
 L["settings.name"] = "QuestPump"
 L["settings.general"] = "General"
--- the General page (2026-10-16): its sections, a greyed row's reason, the Companions row's click and its beta line
--- (red beside the cross: a state not done) with its tooltip, and a select's click (the Data page's selects' too)
+-- the General page (2026-10-16): its sections, a greyed row's reason, the Companions row's click and its line on a
+-- save the game did not load (red beside the cross: a state not done) with its tooltip, and a select's click (the Data
+-- page's selects' too)
 L["settings.section.pumps"] = "Pumps"
 L["settings.section.sound"] = "Voice and sound"
 L["settings.section.screen"] = "On the screen"
@@ -10796,8 +10800,8 @@ L["settings.pause.offAll"] = "Off on every character: nothing to pause."
 L["settings.needsVoice"] = "Needs Voice on."
 L["settings.companions.click"] = "Click: open the setup"
 L["settings.click.choose"] = "Click: choose"
-L["settings.beta"] = "Your progress may not be saved in this beta."
-L["settings.beta.tip"] = "The beta does not read its save back yet. Export on the Data page keeps a copy."
+L["settings.beta"] = "Your progress may not be saved."
+L["settings.beta.tip"] = "The game did not load your saved data. Export on the Data page keeps a copy."
 L["settings.enabled"] = "On for every character"
 L["settings.enabled.tip"] = "Off on every character: turn-ins cost nothing and QuestPump sleeps. A pump you ask for "
 	.. "still runs."
@@ -11450,10 +11454,10 @@ L["ui.reset.move"] = "Clear your %s record? Your next set of it is a max set aga
 	.. "your XP and your ladders stay."
 L["ui.reset.ladder"] = "Start your %s ladder over? Its moves' records and its unlocked steps go, and you go back to "
 	.. "its start. Your next set places you again. Your pumps, your XP and your other ladders stay."
-L["status.reset.beta"] = "This beta client loads your progress from QuestPump on this computer at /reload: keep it "
-	.. "running, or the reset is undone."
-L["status.restore.beta"] = "This beta client loads your progress from QuestPump on this computer at /reload, and its "
-	.. "copy has no backup: the restored save lasts only until you type /reload."
+L["status.reset.beta"] = "The game loads your progress from QuestPump on this computer at /reload: keep it running, "
+	.. "or the reset is undone."
+L["status.restore.beta"] = "The game loads your progress from QuestPump on this computer at /reload, and its copy has "
+	.. "no backup: the restored save lasts only until you type /reload."
 -- a /qp reset all is the player's, everywhere (slice 26): the popup and the chat line say it reaches the app and the
 -- other game installs, and that a restore brings back only this game's save (DB.lua ns.RestoreBackup)
 L["status.reset.everywhere"] = "QuestPump on this computer passes the reset on, so the app and your other game "
@@ -11463,12 +11467,12 @@ L["status.restore.here"] = "Only this game's save comes back: QuestPump on this 
 -- a record cleared or a ladder started over while the helper runs (Settings.lua): the clear row is the account's
 L["status.clear.everywhere"] = "QuestPump on this computer passes it on, so the app and your other game installs do "
 	.. "the same."
-L["status.clear.beta"] = "This beta client loads your progress from QuestPump on this computer at /reload: start it "
-	.. "before then, or this is undone."
--- a count corrected in the game (slice 44, Correct a count's window over Save): on a beta client that loads no save
--- the correction row outlasts /reload only through the helper's copy
-L["status.correct.beta"] = "This beta client loads your progress from QuestPump on this computer at /reload: start it "
-	.. "before then, or this correction is undone."
+L["status.clear.beta"] = "The game loads your progress from QuestPump on this computer at /reload: start it before "
+	.. "then, or this is undone."
+-- a count corrected in the game (slice 44, Correct a count's window over Save): on a client that showed it loads no
+-- save the correction row outlasts /reload only through the helper's copy
+L["status.correct.beta"] = "The game loads your progress from QuestPump on this computer at /reload: start it before "
+	.. "then, or this correction is undone."
 -- Correct a count's window (slice 44, 2026-10-18; Settings.lua Settings_.CorrectWindow: the phones' and the desktop
 -- app's correct.window in the game's words). Its head (the move's name); the list's label and the line in its place
 -- with no set (correct_days, both plural); the line over the clear where the record's own set is not listed; a set's
@@ -11596,21 +11600,20 @@ L["ui.feedback.goes"] = "What goes"
 -- at the top while Send is off, by ns.HelperState (the setup screen's step for each, with /reload for Check again):
 -- never set up, not running at this load, running blind, the mirror folder turned off or out of date
 L["status.feedback.none"] = "The game sends feedback through it. Download it from the addon's page, open it, then "
-	.. "type /reload. Or send your feedback from the phone app or on the addon's page."
-L["status.feedback.off"] = "Send is off until it runs. Open it, then type /reload. Or send your feedback from the "
-	.. "phone app or on the addon's page."
+	.. "type /reload. Or send your feedback on the addon's page."
+L["status.feedback.off"] = "Send is off until it runs. Open it, then type /reload. Or send your feedback on the "
+	.. "addon's page."
 L["status.feedback.blind"] = "Send is off until it can see the game. In its window, press Allow screen reading, turn "
-	.. "it on, restart it, then type /reload. Or send your feedback from the phone app or on the addon's page."
+	.. "it on, restart it, then type /reload. Or send your feedback on the addon's page."
 L["status.feedback.stopped"] = "Send is off until it can read the game. Open its window, then type /reload. Or send "
-	.. "your feedback from the phone app or on the addon's page."
+	.. "your feedback on the addon's page."
 -- Send's tooltip, and its red reason while QuestPump on this computer does not run at this load
 L["status.feedback.sendTip"] = "Hands your words to QuestPump on this computer, which sends them."
 L["status.feedback.sendOff"] = "Send needs QuestPump on this computer running."
 L["status.feedback.disabled"] = "Send is off: QuestPump Mirror is turned off in the AddOns list. Turn it on there, "
-	.. "then type /reload. Or send your feedback from the phone app or on the addon's page."
+	.. "then type /reload. Or send your feedback on the addon's page."
 L["status.feedback.outdated"] = "Send is off: QuestPump Mirror is out of date for this game version. Open QuestPump "
-	.. "on this computer so it updates it, then type /reload. Or send your feedback from the phone app or on the "
-	.. "addon's page."
+	.. "on this computer so it updates it, then type /reload. Or send your feedback on the addon's page."
 -- beside Send after it is pressed, while the message is still going onto the strip, and once it is on it (also in
 -- chat): handed to the helper, never "sent", since nothing reaches a running addon
 L["status.feedback.pending"] = "Passing your feedback to QuestPump on this computer. Wait a few seconds before you "

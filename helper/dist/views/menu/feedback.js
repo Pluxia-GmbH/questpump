@@ -57,7 +57,8 @@ register("desk.feedback", () => {
 	const count = h("p", {class: "qp-type-meta qp-count", "aria-hidden": "true"});
 	const countWords = h("span", {class: "qp-unseen", id: COUNT_ID});
 	const countSaid = h("span", {class: "qp-unseen", role: "status"});
-	const tick = h("qp-row", {heading: t("desk.feedback.tick"), trailing: "toggle", checked: true});
+	const tick = h("qp-row", {heading: t("desk.feedback.tick"), glyph: "action_log", trailing: "toggle",
+		checked: true});
 	const what = words("", "meta");
 	const from = words("", "body");
 	const os = h("code");

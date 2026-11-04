@@ -533,7 +533,7 @@ impl Helper {
 	}
 
 	/// The game's newest row's time (unix seconds; the catch-ups' rows among them) and the character of the newest row
-	/// that names one (an alias's as the character it stands for), 0 where none does: a match pump's Bank it and its
+	/// that names one (an alias's as the character it stands for), 0 where none does: a match pump's Bank all and its
 	/// catch-up write character 0 (`Session::bank`), whose rows the game still folds at its next load. None before the
 	/// game or a catch-up wrote one.
 	fn newest_game_row(&self) -> Option<(i64, u8)> {

@@ -238,3 +238,27 @@ qp-card.qp-rest > qp-art {
 	height: 100%;
 	background: var(--qp-surface-steps-bar-done);
 }
+
+/* a forced palette paints over these marks' backgrounds and drops their edges: a slot an outline, one held filled with
+ * its glyph in Canvas, the milestone's bar as the XP bar */
+@media (forced-colors: active) {
+	.qp-streak-slot {
+		outline: var(--qp-layout-hairline) solid GrayText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-streak-slot.qp-streak-held {
+		background: CanvasText;
+		outline-color: CanvasText;
+		color: Canvas;
+	}
+
+	.qp-streak-bar {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid CanvasText;
+	}
+
+	.qp-streak-bar > i {
+		background: Highlight;
+	}
+}

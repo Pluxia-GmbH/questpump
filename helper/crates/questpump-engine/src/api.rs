@@ -310,8 +310,9 @@ pub enum Check {
 /// never a goal since slice 42) and the goal's kind (Progress.lua `ns.SlotGoal`'s; none on a max set), on a form goal
 /// the player's form its Ready line names (`form`, `ns.Form`'s count; with a weight planned on a move with a weighted
 /// record, a goal read in strength, `ns.LoadForm`'s reps at its weight `form_load`), a first max set's top, a
-/// placement's record, whether a steady move asks "Did you keep that pace to the end?" (`pace`, slice 42), the full
-/// move's seconds Keep going runs it on to (`keep`, slice 52), whether it is a Long Haul (`haul`, slice 55), whether it is a match pump's warm move, dosed easy (`warm`, slice 48's double-check: a cardio move at the stand-up's easy
+/// placement's record, whether it is a first max set (`first_max`, Progress.lua `ns.FirstMaxSet`: a count under the
+/// minimum saves as "Could not do one", never a bank), whether a steady move asks "Did you keep that pace to the end?"
+/// (`pace`, slice 42), the full move's seconds Keep going runs it on to (`keep`, slice 52), whether it is a Long Haul (`haul`, slice 55), whether it is a match pump's warm move, dosed easy (`warm`, slice 48's double-check: a cardio move at the stand-up's easy
 /// cadence, `cadence.standup`, a rep move at the repeat share of its form), a pose's mark and, where it asks "How close
 /// to the goal pose?" once it ran its whole time, the least answer that counts the day (`ask`: 3 Good, 4 Perfect; what
 /// it counts toward its Ready view reads, [`Toward`]); on a loaded move (Progress.lua `ns.Loaded`) its weight: the one
@@ -352,6 +353,8 @@ pub struct PlannedMove {
 	pub top: Option<i64>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub placing: Option<i64>,
+	#[serde(default, skip_serializing_if = "is_false")]
+	pub first_max: bool,
 	#[serde(default)]
 	pub counted: bool,
 	#[serde(default)]

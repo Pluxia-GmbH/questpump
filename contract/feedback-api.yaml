@@ -41,7 +41,7 @@ info:
     - the game (`game`): a "Send feedback" button on the Settings' General page and `/qp feedback` open the window. The
       addon has no network, so Send hands the message to the helper over the pixel strip (below, "The game's message
       through the helper"), and the helper posts it with `source` `game`, no token. Without the helper running at this
-      load (`ns.HelperState()` is not `on`) the window says the helper or the phone app sends feedback, or that the
+      load (`ns.HelperState()` is not `on`) the window says the helper sends feedback, or that the
       addon's page takes it, and Send stays off. The game names no URL (the legal minimum), and its line after Send
       says it handed the message to the helper, never that it arrived: nothing reaches a running addon.
 
@@ -165,7 +165,7 @@ info:
     log). A pump is an offered pump row (outcome offered 7); its span is the rows after it up to the next offered pump
     row of that log. Its own moves are the move rows in its span without the owed bit (5): a row with it pays an older
     unfinished move that rode along. A pump is banked when its span holds a pump row with outcome banked (9), a reason
-    other than 4 and `reps` above 0 (Bank it put that many of its own moves off; `reps` 0 is "Bank the rest" or a pump
+    other than 4 and `reps` above 0 (Bank all put that many of its own moves off; `reps` 0 is "Bank the rest" or a pump
     of only unfinished moves, which put none of its own off, and reason 4 is a stop for feeling unwell, which puts
     nothing off). A pump is finished when it is not banked and at least one of its own moves is a performed move row
     (the plan's "a finished pump is a pump with a performed move", which Stats.lua counts at its first fresh move).

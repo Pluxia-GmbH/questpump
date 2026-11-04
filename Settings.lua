@@ -623,7 +623,7 @@ end
 -- What reaches beyond this game, said before a row of the account's is written (a record cleared or a ladder started
 -- over under its popup, a count corrected over its Save): the words of key `everywhere` while the helper runs, which
 -- passes the row on to the app and the other game installs (a confirmation's consequence; none for a count corrected,
--- which asks nothing: `everywhere` nil); on a beta client that loads no save the words of `beta`, since the row
+-- which asks nothing: `everywhere` nil); on a client that showed it loads no save the words of `beta`, since the row
 -- outlasts /reload only through the helper's copy; else none.
 local function reachNote(everywhere, beta)
 	if ns.HelperState() == "on" then return everywhere and L[everywhere] end
@@ -648,8 +648,8 @@ function Settings_.ConfirmReset(what, id)
 	elseif what == "restore" and ns.meta and ns.meta.resetAt then
 		notes[1] = L["status.restore.here"]
 	end
-	-- on a beta client that loads no save, the helper's copy is the save: a reset outlasts /reload only while it runs,
-	-- and a restore not at all (that copy holds no backup, and the helper dropped the rows from before the reset)
+	-- on a client that showed it loads no save, the helper's copy is the save: a reset outlasts /reload only while it
+	-- runs, and a restore not at all (that copy holds no backup, and the helper dropped the rows from before the reset)
 	local beta = ns.Setup.SaveUnread() and type(QuestPumpMirror) == "table"
 	if what ~= "char" and beta then
 		notes[#notes + 1] = what == "all" and L["status.reset.beta"] or L["status.restore.beta"]
@@ -1547,9 +1547,9 @@ local function newPage(title, action)
 	return Kit.Canvas(title, { action = action, scroll = true })
 end
 
--- Whether this beta may lose the player's progress: a Forever client that has not shown it reads its save back
--- (Setup.SaveUnread) and whose save the helper's mirror did not restore at this load; the General page's Companions
--- row and the HUD's status line both say it from here.
+-- Whether this client may lose the player's progress: it showed it does not read its save back (Setup.SaveUnread) and
+-- the helper's mirror did not restore the save at this load; the General page's Companions row and the HUD's status
+-- line both say it from here.
 function Settings_.BetaUnsaved()
 	return ns.Setup.SaveUnread() and not (ns.meta and ns.meta.restoredFrom == "mirror")
 end

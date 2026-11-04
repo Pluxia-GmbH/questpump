@@ -88,7 +88,7 @@ pub enum PumpEnd {
 	/// as done).
 	#[default]
 	Done,
-	/// Bank it, Bank the rest before a move ran, or the moves gone owed: they come back in a later pump.
+	/// Bank all, Bank the rest before a move ran, or the moves gone owed: they come back in a later pump.
 	Banked,
 	/// The pump's Pause ended it.
 	Paused,

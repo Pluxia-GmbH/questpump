@@ -962,8 +962,8 @@ components:
             `no_grant`; else from the strip's setup word (cell 2's flags, bits 4-7, `contract/fixtures/rows.json`):
             `check_again` while the running game's setup window asks for its Check again (on screen, or held back
             by a fight, a pump or a cinematic, since it comes back with the window); `reload` while the running
-            game does not read its own save back (the Forever beta) and its load ran without the helper, so one
-            /reload brings its saved progress back; `none` otherwise, also with no game running (the game reads the
+            game showed at a /reload that it does not read its own save back and its load ran without the helper,
+            so one /reload brings its saved progress back; `none` otherwise, also with no game running (the game reads the
             pairing at its next start by itself, and its pumps reach the phones through the helper with no reload);
             `either` while the helper cannot tell (a game running whose strip has carried no setup word since the
             pairing: an addon older than 2026-10-13, or no square read yet). Absent from an older helper; a device
@@ -1274,18 +1274,20 @@ components:
         no move row and no pump row, so it earns nothing and costs nothing, as the game's Skip; none while a World of
         Warcraft client with QuestPump runs (`game_asks`), which asks the move itself (`game_held` names the skip).
         A `bank` (since slice 58; David, 2026-10-26: "I miss the bank (and bank the rest) button after I played a
-        round?") is the player's Bank it on the Ready view of a pump a match sized (one a `match_end` or the phone's
+        round?") is the player's Bank all on the Ready view of a pump a match sized (one a `match_end` or the phone's
         own game link opened, whatever its pick then took, and the phone's Good game! pump), under that pump's own id,
         `start_at` its start, with its `tier` and one of `moves` per move of its own not done yet, in the pump's order,
         each with its `kind`, `ladder`, `rung`, `seconds` (a timed move's, else 0) and `allout`: the helper writes,
         dated `start_at`'s unix seconds, one game owed row each with outcome banked (9), the device's bit and no app
         bit, quest 0, the tier, a slot made unique in the owed queue (the addon's `oweSlot`), `reps` 1 on an all-out
-        window and the move's seconds, as the game's Bank it writes a quest's, once a pump id, so the moves show on
+        window and the move's seconds, as the game's Bank all writes a quest's, once a pump id, so the moves show on
         every unfinished list and ride the next pump, the game's quest pump and, since slice 61, the next match pump
         after its own moves (from slice 58 until then the device's catch-up after a match pump), whose riders are never
-        among `moves` and stay owed; none after a reset since `start_at` or inside the felt-unwell lock. It writes them
-        even while a World of Warcraft client with QuestPump runs (`game_asks`): that client asks no bank and reads the
-        rows at its next load through the mirror, so `game_held` never names a bank.
+        among `moves` and stay owed; none after a reset since `start_at` or inside the felt-unwell lock. A move of its
+        own ended too short to count (`min_reps`, `min_seconds`) banks alone as it ends, under `<pump id>~s<slot>`
+        (`slot` the move's, from 0), so the pump's own id stays free for its Bank all. It writes them even while a
+        World of Warcraft client with QuestPump runs (`game_asks`): that client asks no bank and reads the rows at its
+        next load through the mirror, so `game_held` never names a bank.
         The helper takes an event of a type it does not know and ignores it (a newer app), and takes an event
         sent again (the same pump, type, slot and start, its response lost) once.
       properties:
@@ -1578,7 +1580,7 @@ components:
             skipped none: the moves stay owed, and the device says the game asks them. While it holds, the phones and
             the watches offer no catch-up and no Skip and say "The game asks your pumps while it runs." in its place, as
             the desktop app does, and a phone ends a catch-up under way at once, its moves still owed; a match pump's
-            Bank it still shows, since a `bank` is written all the same (slice 58). Since slice 61 a match pump composed
+            Bank all still shows, since a `bank` is written all the same (slice 58). Since slice 61 a match pump composed
             meanwhile carries no riders, and one under way drops the riders not done, its own moves going on (on a
             rider's Ready view or past it, it ends as a catch-up ends then).
             Since 2026-10-13 it also keeps a phone following the game: the Android phone holds its link while it is
@@ -1654,7 +1656,7 @@ components:
           of a pump has its own `countdown` (a side move two, one a side), and a Start again after a cancel is a new
           one, on its first side.
         - `pump_done`: the game's pump ended; a device ends its view of it, by `ended` (slice 29): `done` shows the
-          pump's result; `banked` (Bank it, Bank the rest before a move of it was done, its moves gone owed: they
+          pump's result; `banked` (Bank all, Bank the rest before a move of it was done, its moves gone owed: they
           come back in a later pump), `paused` (the pump's Pause), `unwell` ("I feel unwell") and `skipped` (it
           ended before a move ran, an instance or a mixed party dropped a stand-up pump before it started, or a reset
           ended it with the save that held it: nothing of it comes back) show a calm card and no result.
@@ -2319,7 +2321,7 @@ components:
         write and read alike; any other value refuses the link), marks a pump a match sized: a computer match's offer's
         (its `match_end`, the test offer's too) and the Good game! sheet's (beside `matches`), which the iPhone and
         Android write on every Start on my watch of one. The watch's Ready view of such a pump, and of a linked game's
-        offer, which banks by its `link` alone, shows Bank it while the watch links the desktop app; a watch before it
+        offer, which banks by its `link` alone, shows Bank all while the watch links the desktop app; a watch before it
         reads the ask without it.
       properties:
         kind: { type: string }

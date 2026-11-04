@@ -49,12 +49,17 @@ export function stepsUp(row) {
 	return row.steps.filter((s) => s.rung && s.move).reverse();
 }
 
-/** A ladder's steps as one meter: a segment a step that holds a move, from its first up, the steps the player has (on
- * the row's rung or under it) in their tier's colour, the rest the track, so the colour turns where the tier does.
- * Decoration: the row reads its step. */
+/** Whether the player has a step: on the row's rung or under it. */
+function stepHeld(row, step) {
+	return step.rung <= row.rung;
+}
+
+/** A ladder's steps as one meter: a segment a step that holds a move, from its first up, the steps the player has in
+ * their tier's colour, the rest the track, so the colour turns where the tier does. Decoration: the row reads its step.
+ */
 function stepMeter(row) {
 	return h("span", {class: "qp-step-meter", "aria-hidden": "true"}, ...stepsUp(row).map((s) => {
-		const tone = s.rung <= row.rung ? qualityName(s.quality) : null;
+		const tone = stepHeld(row, s) ? qualityName(s.quality) : null;
 		return tone ? styled(h("i", {"data-on": ""}), {"--qp-tone": `var(--qp-quality-${tone})`}) : h("i");
 	}));
 }
@@ -77,17 +82,20 @@ function ladderRow(w, book, row, openCard) {
 			h("span", {class: "qp-ladder-chevron", "aria-hidden": "true"})));
 	}
 	const value = ladderValue(row, words);
-	const top = stepsUp(row).at(-1);
+	// the row counts as its meter does: the steps that hold a move, never the steps' own numbers
+	const steps = stepsUp(row);
+	const step = steps.filter((s) => stepHeld(row, s)).length;
 	return h("qp-card-row", {class: "qp-ladder-row"},
 		h("button", {type: "button", class: "qp-ladder-body", "data-focus-key": `ladder:${row.ladder}`,
 			"on:click": () => push(LADDER, {ladder: row.ladder})},
-			tile(w, row.move, {size: 60, quality: row.quality, name, word: qualityWord(w, row.quality), step: row.step}),
+			tile(w, row.move, {size: 60, quality: row.quality, name, word: qualityWord(w, row.quality), step}),
 			h("div", {class: "qp-ladder-words"},
 				h("span", {class: "qp-type-caps", text: words.name}),
 				h("span", {class: "qp-type-body-strong", text: name}),
 				h("div", {class: "qp-quality-line"}, h("qp-quality-word", {quality: row.quality,
 					word: qualityWord(w, row.quality)}),
-				top ? h("span", {class: "qp-type-meta", text: t("kit.pips.label", {step: row.step, total: top.step})}) : ""),
+				steps.length ? h("span", {class: "qp-type-meta",
+					text: t("kit.pips.label", {step, total: steps.length})}) : ""),
 				stepMeter(row)),
 			value ? valueCell(value) : words.dose === "cardio" ? h("span", {class: "qp-ladder-chevron", "aria-hidden": "true"}) : null));
 }

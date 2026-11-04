@@ -236,3 +236,11 @@ button.qp-ladder-line .qp-end-nav {
 	padding: var(--qp-layout-space2) var(--qp-layout-space6);
 	font: inherit;
 }
+
+/* a forced palette drops the weeks' shades: each square keeps its edge, and its count says the rest */
+@media (forced-colors: active) {
+	.qp-week-step {
+		outline: var(--qp-layout-hairline) solid GrayText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+}

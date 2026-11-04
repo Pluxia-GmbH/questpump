@@ -68,14 +68,14 @@ function lines(kind, line) {
 
 register("desk.menu.devices", () => {
 	const view = page({heading: t("desk.menu.devices.title")});
-	const toggle = (heading, command) => {
+	const toggle = (heading, glyph, command) => {
 		// the switch moves when the topic brings the device's state (Toggle's contract), never before
-		const row = h("qp-row", {heading, trailing: "toggle"});
+		const row = h("qp-row", {heading, glyph, trailing: "toggle"});
 		row.addEventListener("qp-change", (e) => call(command, {on: e.detail}).catch(console.error));
 		return row;
 	};
-	const strap = toggle(t("desk.menu.devices.strap"), "set_strap");
-	const pad = toggle(t("desk.menu.devices.pad"), "set_pad");
+	const strap = toggle(t("desk.menu.devices.strap"), "mark_heart", "set_strap");
+	const pad = toggle(t("desk.menu.devices.pad"), "stat_agility", "set_pad");
 	view.body.append(h("qp-card", {rows: true}, strap, pad));
 	watch(view, "menu.devices", (d) => {
 		strap.checked = d.strap.on;

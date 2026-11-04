@@ -245,7 +245,7 @@ ns.Ladders = {
 			needs = { { any = { { ladder = LAD.pullup, step = 8, count = 8 },
 				{ ladder = LAD.row, step = 8, move = 313, count = 8 }, { ladder = LAD.row, step = 8, move = 652, count = 8 },
 				{ ladder = LAD.row, step = 8, move = 655, count = 8 } } }, { ladder = LAD.push, step = 6 } } },
-		{ lo = 3, hi = 20, step = 11 }, { lo = 3, hi = 15, step = 12 }, { lo = 2, hi = 6, step = 13 } } },
+		{ lo = 3, hi = 20, step = 11 }, { lo = 3, hi = 15, step = 12 }, { lo = 2, hi = 7, step = 13 } } },
 	-- The stretching and yoga families (slice 21): one rung a colour, its anchor standing where the pose allows (a
 	-- setup with floor moves off, the default until 2026-10-04, starts every family too), the floor and space poses at
 	-- the rungs above or as variants beside them; every pose of a family in one block of the day plan (`block`,
@@ -3126,6 +3126,21 @@ function ns.Validate(state, slot, value, load)
 	if value > (best >= r.from and r.high or r.low) * best then return "really" end
 	if value > 0 and value < C.bad_day * best then return "low" end
 	return nil
+end
+
+-- Whether a count entered is too short to count (min_reps, min_seconds): 1 or 2 reps, a counted set's too, or a hold
+-- under 7 s; 0 is no count.
+function ns.ShortCount(slot, value)
+	return value > 0 and value < (slot.kind == K.hold and C.min_seconds or C.min_reps)
+end
+
+-- A first max set: a placement (the Trial's or a break's) or a max set of a move with no record yet. Its Ready view is
+-- a first appearance (Panel.lua), and nothing there is short: a count under min_reps or min_seconds saves as "Could
+-- not do one" (Events.lua Lc.Enter) and a hold's Done under min_seconds goes on to its count (Lc.Done), where a bank
+-- would ask the same set at every pump, the ladder unplaced and the queue growing (2026-11-03; the desktop app reads
+-- it as `PlannedMove.firstMax`).
+function ns.FirstMaxSet(state, slot)
+	return slot.placing == true or (slot.maxSet == true and ns.Record(state, slot.move) == nil)
 end
 
 -- "Could not do one" (a hold: "Could not hold it"), the stored 0 of a strength or hold move, recorded at once: with a

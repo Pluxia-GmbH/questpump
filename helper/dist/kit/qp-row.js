@@ -10,8 +10,8 @@
 // `expander` (a chevron turned down while `expanded`). `extra` stands a node of its own before the end (Pump home's
 // embers marks, slice 55). `segment` stands a control of its own at the row's end, a chevron behind a hairline at the
 // row's height, which a screen reader hears by these words and whose click fires qp-segment, never the row's click (the
-// pump's swap row, "More ways to swap", 2026-10-26). `destructive` draws its words in stop, `disabled` in text3, inert,
-// its segment too.
+// pump's swap row, "More ways to swap", 2026-10-26). `destructive` draws its words and its glyph in stop, `disabled` in
+// text3, inert, its segment too.
 
 import {KitElement, define, emit, h} from "./element.js";
 

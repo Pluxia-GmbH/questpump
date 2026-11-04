@@ -138,16 +138,18 @@ register("games", () => {
 	const yoursLabel = h("qp-section-label", {label: t("games.yours")});
 
 	const pace = paceRows();
-	const open = h("qp-row", {heading: t("desk.offers.open"), trailing: "toggle",
+	const open = h("qp-row", {heading: t("desk.offers.open"), glyph: "action_pump", trailing: "toggle",
 		"on:qp-change": (e) => intent("games.open_on_close", {on: e.detail}).catch(console.error)});
-	const pauseRow = h("qp-row", {heading: t("desk.offers.pause"), trailing: "value", "on:click": () => pause.open()});
-	const test = h("qp-row", {heading: t("games.test"), trailing: "action",
+	const pauseRow = h("qp-row", {heading: t("desk.offers.pause"), glyph: "mark_pause", trailing: "value",
+		"on:click": () => pause.open()});
+	const test = h("qp-row", {heading: t("games.test"), glyph: "mark_arrow", trailing: "action",
 		"on:click": () => intent("games.test").catch(console.error)});
 
-	const notice = h("qp-row", {heading: t("games.notice"), trailing: "toggle",
+	const notice = h("qp-row", {heading: t("games.notice"), glyph: "action_games", trailing: "toggle",
 		"on:qp-change": (e) => intent("games.notice", {on: e.detail}).catch(console.error)});
-	const moreRow = h("qp-row", {heading: t("games.more"), trailing: "nav", hidden: true, "on:click": () => more.open()});
-	const hiddenRow = h("qp-row", {heading: t("games.hidden"), trailing: "value", hidden: true,
+	const moreRow = h("qp-row", {heading: t("games.more"), glyph: "mark_list", trailing: "nav", hidden: true,
+		"on:click": () => more.open()});
+	const hiddenRow = h("qp-row", {heading: t("games.hidden"), glyph: "mark_dash", trailing: "value", hidden: true,
 		"on:click": () => hidden.open()});
 	const riot = words(t("about.riot"), "meta");
 	riot.hidden = true;

@@ -94,7 +94,8 @@ const kindGlyph = (kind) => kind === "desktop" || kind === "web" ? "device_compu
 
 /** The Sync card: the switch with its state line, then Devices with Link a device, then the footer. */
 function syncCard() {
-	const toggle = h("qp-row", {heading: t("menu.sync.toggle"), trailing: "toggle", "data-focus-key": "sync"});
+	const toggle = h("qp-row", {heading: t("menu.sync.toggle"), glyph: "mark_cloud", trailing: "toggle",
+		"data-focus-key": "sync"});
 	toggle.addEventListener("qp-change", (e) => intent("sync.switch", {on: e.detail}).catch(console.error));
 	const link = h("qp-row", {heading: t("menu.sync.linkdevice"), glyph: "mark_link", "data-focus-key": "linkdevice",
 		"on:click": () => push("desk.menu.linkdevice")});

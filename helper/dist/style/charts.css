@@ -142,3 +142,10 @@ qp-card.qp-charts {
 	width: var(--qp-surface-chart-swatch);
 	height: var(--qp-surface-chart-swatch);
 }
+
+/* a chart's lines and bars keep their colours under a forced palette, and its legend's swatches with them */
+@media (forced-colors: active) {
+	.qp-swatch {
+		forced-color-adjust: none;
+	}
+}

@@ -4241,7 +4241,7 @@
     "desk.menu.computer",
     "desk.welcome"
    ],
-   "note": "While the strip says the running game loaded without QuestPump on the computer and does not read its own save back (the Forever beta): one /reload brings its saved progress back (step reload, 2026-10-13). /reload is the game's chat command."
+   "note": "While the strip says the running game loaded without QuestPump on the computer and showed at a /reload that it does not read its own save back: one /reload brings its saved progress back (step reload, 2026-10-13). /reload is the game's chat command."
   },
   "desk.menu.phones.pair": {
    "text": "Pair your phone",
@@ -23222,7 +23222,7 @@
    "screens": [
     "setup.pairing"
    ],
-   "note": "Under Paired with the computer while the helper's step is reload: a game that does not read its own save back (the Forever beta) loaded before QuestPump on the computer ran, so one /reload brings its saved progress back. /reload is the game's chat command: keep it as typed."
+   "note": "Under Paired with the computer while the helper's step is reload: a game that showed at a /reload that it does not read its own save back loaded before QuestPump on the computer ran, so one /reload brings its saved progress back. /reload is the game's chat command: keep it as typed."
   },
   "setup.pairing.progress": {
    "text": "Pairing with {computer}…",

@@ -210,6 +210,13 @@ qp-action-bar nav {
 	}
 }
 
+/* a forced palette paints over the backgrounds these two marks are: the chosen tab's marker and the owed step's dot */
+@media (forced-colors: active) {
+	.qp-tab::before, .qp-tab-dot {
+		background: Highlight;
+	}
+}
+
 /* Pages' pieces ---------------------------------------------------------------------------------------------------- */
 
 .qp-words-block {

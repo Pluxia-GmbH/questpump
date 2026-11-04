@@ -166,7 +166,7 @@ register("desk.menu.does", () => {
 	const drops = words(t("desk.menu.does.drops"), "body");
 	// how it notices a game, from this system's own sources (slice 48), while Notice games I play is on
 	const detect = words(t(windows ? "desk.menu.does.detect.windows" : "desk.menu.does.detect"), "body");
-	const shown = (heading, path) => h("qp-row", {heading, meta: path, trailing: "shown"});
+	const shown = (heading, path) => h("qp-row", {heading, meta: path, glyph: "mark_list", trailing: "shown"});
 	view.body.append(
 		h("qp-section-label", {label: t("desk.menu.does.watches")}),
 		h("qp-card", {class: "qp-stack-small"}, words(t("desk.menu.does.game"), "body"), games, heard.client.line,

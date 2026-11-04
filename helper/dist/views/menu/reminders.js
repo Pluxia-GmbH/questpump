@@ -71,7 +71,7 @@ function quietWindow() {
  * topic's `cap` and `cap_max`. */
 function capWindow() {
 	const el = h("qp-window", {heading: t("reminders.cap"), primary: t("common.done")});
-	const stepper = h("qp-stepper", {least: 1, "unit-one": t("reminders.cap.reminder"),
+	const stepper = h("qp-stepper", {least: 1, label: t("reminders.cap"), "unit-one": t("reminders.cap.reminder"),
 		"unit-other": t("reminders.cap.reminders"), "on:qp-change": (e) => {
 			stepper.value = e.detail;
 		}});
@@ -114,14 +114,16 @@ register("desk.reminders", () => {
 		box.el.open();
 	};
 	const toggle = (type) => (e) => intent(type, {on: e.detail}).catch(console.error);
-	const streak = h("qp-row", {heading: t("reminders.streak"), trailing: "toggle",
+	const streak = h("qp-row", {heading: t("reminders.streak"), glyph: "action_pump", trailing: "toggle",
 		"on:qp-change": toggle("reminders.streak")});
-	const time = h("qp-row", {heading: t("reminders.time"), trailing: "value", hidden: true,
+	const time = h("qp-row", {heading: t("reminders.time"), glyph: "mark_clock", trailing: "value", hidden: true,
 		"on:click": opener(boxes.time)});
-	const sitting = h("qp-row", {heading: t("reminders.sitting"), trailing: "toggle",
+	const sitting = h("qp-row", {heading: t("reminders.sitting"), glyph: "stat_agility", trailing: "toggle",
 		"on:qp-change": toggle("reminders.sitting")});
-	const quiet = h("qp-row", {heading: t("reminders.quiet"), trailing: "value", "on:click": opener(boxes.quiet)});
-	const cap = h("qp-row", {heading: t("reminders.cap"), trailing: "value", "on:click": opener(boxes.cap)});
+	const quiet = h("qp-row", {heading: t("reminders.quiet"), glyph: "mark_pause", trailing: "value",
+		"on:click": opener(boxes.quiet)});
+	const cap = h("qp-row", {heading: t("reminders.cap"), glyph: "action_log", trailing: "value",
+		"on:click": opener(boxes.cap)});
 	view.body.append(h("qp-card", {rows: true}, streak, time), h("qp-card", {rows: true}, sitting),
 		h("qp-card", {rows: true}, quiet, cap), ...Object.values(boxes).map((box) => box.el));
 	watch(view, "menu.reminders", (r) => {

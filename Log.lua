@@ -127,7 +127,7 @@ local function setupState()
 		return ("paired (helper %s, phone %s)"):format(tostring(pairing.helper), tostring(pairing.phone))
 	end
 	local where = ns.Lifecycle.TrialBegun() and "playing without the companions" or "at the setup screen"
-	-- the helper's feed says the phone apps are not in the stores yet: the setup asks for the helper alone
+	-- the setup asks for the helper alone (Setup.AsksPhone)
 	return ns.Setup.AsksPhone() and where or where .. ", no phone asked"
 end
 
@@ -237,9 +237,12 @@ ns.On("State", function(p, how)
 		for _, outcome in pairs(p.results) do
 			if outcome == O.banked then banked = banked + 1 else done = done + 1 end
 		end
-		-- a skipped move left the pump's list (Lc.Skip, which logs each as it goes): counted on its own
+		-- a skipped move and one ended too short left the pump's list (Lc.Skip, Lc.ShortBank, which log each as it goes):
+		-- counted on their own, the short one banked, a short rider unfinished as it was
+		local short, riders = p.shortBanked or 0, p.shortRiders or 0
 		ns.Log("I", "pump %d ended (%s): %d done, %d banked, %d skipped, %d unfinished of %d", p.id,
-			tostring(how or "done"), done, banked, p.skipped or 0, #p.moves - done - banked, #p.moves + (p.skipped or 0))
+			tostring(how or "done"), done, banked + short, p.skipped or 0, #p.moves - done - banked + riders,
+			#p.moves + (p.skipped or 0) + short + riders)
 	end
 	seen[p] = p.state
 end)

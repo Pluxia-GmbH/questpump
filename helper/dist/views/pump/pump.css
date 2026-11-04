@@ -5,7 +5,8 @@
  * move's figure whole and taking the height, with the move's name, the TimerRing (its dial) and the words around it
  * (2026-10-23), the words at 5 % of the shorter side, in text on the night ground (well past 7:1), nothing else in the
  * middle; sized by the window (vh, vw), so the zoom never changes the proportions. The head and the foot keep their
- * desk size. */
+ * desk size. On a short window the figure gives up its height first (the count's, Ready's and "A short window"
+ * below). */
 
 qp-page.qp-pump {
 	position: relative;
@@ -99,10 +100,76 @@ qp-page.qp-pump {
 	gap: var(--qp-layout-space4) var(--qp-layout-space8);
 }
 
-/* the count's figure gives up its room to the words and the stepper (the phones' pose, at most 152) */
+/* the asks' figure gives up its room to the words (the phones' pose, at most 152) */
 .qp-pump-figure {
 	width: min(calc(var(--qp-layout-space4) * 38), 22vh);
 	margin-inline: auto;
+}
+
+/* The count: the column the body's own height and the figure the one part that shrinks, its square the smaller of the
+   room's width and height, so the figure gives up its height before the number the player saves leaves the first view
+   (2026-11-03's QA: at the 480 x 600 window the number stood under the foot with Save in focus); a room too low to show
+   a figure leaves it out, from `desktop.pumpCountFigureFrom` (a container query reads no custom property: 340px). Past
+   that the number gives way, down to half numLarge, in what the question, the record and the unit leave it */
+.qp-pump-count {
+	--qp-count-number: max(calc(var(--qp-type-num-large-size) / 2),
+		calc((100cqh - var(--qp-layout-space8) - var(--qp-type-heading-size) * var(--qp-type-heading-line-height)
+		- var(--qp-type-subtitle-size) * var(--qp-type-subtitle-line-height) - var(--qp-layout-space16) * 2
+		- var(--qp-type-caps-size) * var(--qp-type-caps-line-height)) / var(--qp-type-num-count-line-height)));
+}
+
+.qp-pump-count .qp-pump-body {
+	container: qp-count / size;
+}
+
+.qp-pump-count .qp-pump-column {
+	height: 100%;
+}
+
+/* "Is that right?" keeps its whole height: its own clip (for its corners) would let it shrink in the column, its line cut
+ * off with nothing left to scroll; the figure gives way instead */
+.qp-pump-count .qp-pump-column > qp-card {
+	flex-shrink: 0;
+}
+
+.qp-pump-count .qp-pump-figure {
+	flex: 0 1 min(calc(var(--qp-layout-space4) * 38), 22vh);
+	width: 100%;
+	min-height: 0;
+	container-type: size;
+}
+
+.qp-pump-count .qp-figure-square {
+	width: min(100cqw, 100cqh);
+}
+
+/* the figure's Play mark (Reduce Motion) keeps to the square, which stands centred in a host as wide as the column */
+.qp-pump-count .qp-figure-mark {
+	right: calc(50% - min(50cqw, 50cqh));
+}
+
+/* a figure squeezed under its mark has nothing to play: the mark would stand over the head */
+@container (height < 48px) {
+	.qp-pump-count .qp-figure-mark {
+		display: none;
+	}
+}
+
+.qp-pump-count .qp-type-num-count {
+	font-size: min(var(--qp-type-num-count-size), var(--qp-count-number));
+}
+
+@container qp-count (height < 340px) {
+	.qp-pump-count .qp-pump-figure {
+		display: none;
+	}
+}
+
+/* a room lower than the question over the number (`desktop.pumpCountNumberFirstUnder`: 120px): the number first */
+@container qp-count (height < 120px) {
+	.qp-pump-count qp-stepper, .qp-pump-count .qp-pump-boxes {
+		order: -1;
+	}
 }
 
 /* a loaded move's count: the reps and the weight box side by side on one line at any width, never one under the other
@@ -128,19 +195,27 @@ qp-page.qp-pump {
 }
 
 .qp-pump-boxes .qp-type-num-count {
-	font-size: min(var(--qp-type-num-count-size), 14cqi);
+	font-size: min(var(--qp-type-num-count-size), 14cqi, var(--qp-count-number, 100vh));
 }
 
 /* Ready (2026-10-24, surface.PumpReady): the move up next in full. On a narrow window the figure on top,
-   figureHeightFraction of the body's height between the head and the pinned foot and at least figureLeast, the words
-   under it in the one column, the body scrolling; from besideFrom wide (below) the figure beside them */
+   figureHeightFraction of the body's height between the head and the pinned foot and at least figureLeast where that
+   leaves the words `desktop.pumpWordsLeast`, the words under it in the one column, the body scrolling; a body under
+   `desktop.pumpFigureFrom` (a container query reads no custom property: 200px) leaves the figure out, so at the page's
+   largest sizes the words share the first view with the foot; from besideFrom wide (below) the figure beside them */
 .qp-ready .qp-pump-body {
-	container-type: size;
+	container: qp-ready / size;
 }
 
 .qp-ready-figure {
-	height: max(var(--qp-surface-pump-ready-figure-least),
-		calc(var(--qp-surface-pump-ready-figure-height-fraction) * 100cqh));
+	height: max(calc(var(--qp-surface-pump-ready-figure-height-fraction) * 100cqh),
+		min(var(--qp-surface-pump-ready-figure-least), calc(100cqh - var(--qp-desktop-pump-words-least))));
+}
+
+@container qp-ready (height < 200px) {
+	.qp-ready .qp-ready-figure {
+		display: none;
+	}
 }
 
 .qp-ready-words {
@@ -239,6 +314,85 @@ qp-page.qp-pump {
 	}
 }
 
+/* A short window (under `desktop.pumpFootRowUnder`; a media query reads no custom property: 420px), as the page's large
+   sizes make one: the foot's parts in a row where their words fit, on at most 45 % of the window, what passes that
+   scrolling inside the foot under its primary, so the stage's own room never falls to nothing; on Ready the name with
+   its quality on one line, the goal in numMedium and the stop line straight under it */
+@media (max-height: 419.98px) {
+	.qp-pump-foot {
+		flex-flow: row wrap;
+		align-items: center;
+		max-height: 45vh;
+		padding-block-end: var(--qp-layout-space8);
+		overflow-y: auto;
+	}
+
+	.qp-pump-foot:empty {
+		padding-block: 0 var(--qp-layout-space8);
+	}
+
+	.qp-pump-foot > * {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.qp-pump-foot > qp-primary-button {
+		flex-basis: 40%;
+	}
+
+	.qp-pump-foot > p {
+		flex-basis: 100%;
+	}
+
+	.qp-pump-foot .qp-quiet {
+		padding-inline: var(--qp-layout-space8);
+	}
+
+	.qp-pump-column {
+		padding-bottom: var(--qp-layout-space8);
+	}
+
+	.qp-ready-words > * {
+		order: 1;
+	}
+
+	.qp-ready-words > .qp-ready-name, .qp-ready-words > .qp-ready-goal, .qp-ready-words > .qp-move-stop {
+		order: 0;
+	}
+
+	.qp-ready-name {
+		flex-flow: row wrap;
+		align-items: baseline;
+		column-gap: var(--qp-layout-space12);
+	}
+
+	.qp-ready-goal .qp-type-num-large {
+		font-size: var(--qp-type-num-medium-size);
+	}
+}
+
+/* the narrowest windows (a 480-px one at the largest sizes, under 240 CSS px): the head's gaps and the count's keys give
+   way, so the "···" and the Stepper stay inside the window */
+@media (max-width: 239.98px) {
+	.qp-pump-head {
+		gap: var(--qp-layout-space4);
+		padding-inline: var(--qp-layout-space8);
+	}
+
+	.qp-pump-head .qp-quiet {
+		padding-inline: var(--qp-layout-space4);
+	}
+
+	.qp-pump-count .qp-stepper-row {
+		gap: var(--qp-layout-space4);
+	}
+
+	.qp-pump-count .qp-step-key {
+		width: var(--qp-layout-round-button);
+		height: var(--qp-layout-round-button);
+	}
+}
+
 /* The end ---------------------------------------------------------------------------------------------------------- */
 
 .qp-pump-gain {
@@ -286,10 +440,19 @@ qp-card.qp-pump-calm {
 	/* the body's own height, so the stage below gives up its height before the line leaves the first view */
 	height: 100%;
 	max-width: none;
-	justify-content: center;
 	align-items: center;
 	text-align: center;
 	gap: 2vh;
+}
+
+/* centred by auto margins, which an over-tall column drops: it then starts at the name and scrolls down from it, where
+   `justify-content: center` would push its top above the scroll's origin, out of reach */
+.qp-big .qp-pump-column > :first-child {
+	margin-block-start: auto;
+}
+
+.qp-big .qp-pump-column > :last-child {
+	margin-block-end: auto;
 }
 
 .qp-big-name {

@@ -931,9 +931,11 @@ function Lc.HeldCount(p, slot)
 end
 
 -- Whether a hold's Done saves its stopwatch's seconds with no count step (slice 65, Rapha, 2026-11-03): a hold of a
--- pump (never /qp try's, which stores nothing) whose stopwatch ran its share (Lc.HeldCount).
+-- pump (never /qp try's, which stores nothing) whose stopwatch ran its share (Lc.HeldCount) and min_seconds (a first
+-- max set under them, which Lc.Done never banks, asks its count).
 local function savesSeconds(p, slot)
-	return slot.kind == K.hold and not slot.practice and p.kind ~= "practice" and Lc.HeldCount(p, slot) ~= nil
+	return slot.kind == K.hold and not slot.practice and p.kind ~= "practice" and p.elapsed >= C.min_seconds
+		and Lc.HeldCount(p, slot) ~= nil
 end
 
 -- Done (the button, Enter, or Escape while a move runs); timeUp when a timed move ran its full time. A side move's
@@ -967,9 +969,10 @@ function Lc.Done(timeUp)
 	p.view = "result"
 	local timed = slot.kind == K.cardio or slot.kind == K.flow
 	-- a timed move or a hold ended under min_seconds (a hold's weaker side, a timed move's two sides summed) counts
-	-- nothing: banked without a word (Lc.ShortBank), never in /qp try, which stores nothing
+	-- nothing: banked without a word (Lc.ShortBank), never in /qp try, which stores nothing; a hold's first max set goes
+	-- on to its count, whose Back undoes a Done pressed by mistake (ns.FirstMaxSet, savesSeconds)
 	if not timeUp and slot.kind ~= K.rep and p.kind ~= "practice" and not slot.practice
-		and p.elapsed < C.min_seconds then
+		and p.elapsed < C.min_seconds and not (slot.kind == K.hold and ns.FirstMaxSet(ns.state, slot)) then
 		return Lc.ShortBank()
 	end
 	-- past the plan after Keep going (slice 52): the seconds done, saved at once, Yes, easily at the full move and Yes,
@@ -1029,9 +1032,12 @@ function Lc.Enter(value, load)
 		ns.Emit("State", p)
 		return
 	end
-	-- 1 or 2 reps, or a hold under min_seconds, count nothing: banked without a word (Lc.ShortBank); 0 stays "Could not
-	-- do one"
-	if value > 0 and value < (slot.kind == K.hold and C.min_seconds or C.min_reps) then return Lc.ShortBank() end
+	-- 1 or 2 reps, or a hold under min_seconds, count nothing: banked without a word (Lc.ShortBank), a first max set's
+	-- saved as "Could not do one" (ns.FirstMaxSet); 0 stays "Could not do one"
+	if ns.ShortCount(slot, value) then
+		if ns.FirstMaxSet(ns.state, slot) then return Lc.CouldNot() end
+		return Lc.ShortBank()
+	end
 	local check = ns.Validate(ns.state, slot, value, load)
 	if check == "max" then return "max" end
 	local confirmed = check ~= nil and p.really == value and p.reallyLoad == load
@@ -1123,7 +1129,7 @@ function Lc.Counted(value, answer)
 	if not slot.counted then return end
 	value = (value or 0) > 0 and value or nil
 	-- a count of 1 or 2 counts nothing: banked without a word (Lc.ShortBank)
-	if value and value < C.min_reps and p.kind ~= "practice" then return Lc.ShortBank() end
+	if value and ns.ShortCount(slot, value) and p.kind ~= "practice" then return Lc.ShortBank() end
 	local check = value and ns.Validate(ns.state, slot, value)
 	if check == "max" then return "max" end
 	local confirmed = check == "really" and p.really == value
@@ -1312,7 +1318,9 @@ function Lc.Bank()
 	local p = Lc.pump
 	if not p or p.state ~= "open" or p.kind == "demand" or p.kind == "practice" then return end
 	local rest = next(p.results) ~= nil and Lc.OnlyRidersLeft(p) -- "Bank the rest": the banner pays what was done
-	local banked = 0
+	-- its own moves ended too short went owed before this (Lc.ShortBank); Bank the rest's row stays at 0: the pump was
+	-- done, as one that ends on its short move is
+	local banked = rest and 0 or p.shortBanked or 0
 	for i = p.index, #p.moves do
 		if not p.results[i] then
 			oweSlot(p, i, p.moves[i], O.banked)
@@ -1377,14 +1385,19 @@ end
 -- 2026-11-03: "an excercise is considered as banked if they end it (silent bank it)"): banked without a word or a
 -- record, as Bank all banks a move (oweSlot: a rider stays the owed row it is, a move the player asked for with nothing
 -- owed owes nothing). It leaves the pump as a Skip's slot does and the next move shows; after the last the pump ends,
--- done when a move of it was recorded, else as Bank all ends one, with its own banked row.
+-- done when a move of it was recorded, else as Bank all ends one, with its own banked row. The pump's tallies count it
+-- (`shortBanked`, `shortRiders`: Lc.Bank, Log.lua), since it left the list.
 function Lc.ShortBank()
 	local p = Lc.pump
 	local i, slot = p.index, p.moves[p.index]
 	ns.Log("I", "pump %d: %s ended too short to count, banked", p.id, ns.Library[slot.move].key)
 	local tier = maxTier(p)
 	oweSlot(p, i, slot, O.banked)
-	if not slot.owed then p.shortBanked = (p.shortBanked or 0) + 1 end
+	if slot.owed then
+		p.shortRiders = (p.shortRiders or 0) + 1
+	else
+		p.shortBanked = (p.shortBanked or 0) + 1
+	end
 	toReady(p)
 	p.started = true -- a recompose would bring the banked move back beside its owed row
 	table.remove(p.moves, i)
@@ -1754,13 +1767,14 @@ end
 
 -- Setup ----------------------------------------------------------------------------------------------------------
 
--- Whether the setup asks for the phone app: not while the helper read in its signed feed that the phone apps are not
--- in the stores yet (the pairing block's phone_apps false) and no phone is paired (a tester's paired phone keeps its
--- card), so a helper that reads the game is the whole setup then; with no word (no helper, an older one, a feed it
--- could not read) and once the stores have them, as before.
+-- Whether the setup asks for the phone app. A phone pairs only through the helper's code and no store offers the apps
+-- yet, so not with no pairing block (no helper ever ran here) and not while the helper's signed feed says the apps are
+-- not in the stores (the block's phone_apps false): a helper that reads the game is the whole setup then. A paired
+-- phone keeps its card (a tester's); a block with no word (an older helper, a feed it could not read) or the feed's
+-- yes asks for it.
 function Setup.AsksPhone()
 	local p = ns.Pairing()
-	return not (p and p.phone_apps == false) or ns.IsPaired()
+	return ns.IsPaired() or (p ~= nil and p.phone_apps ~= false)
 end
 
 -- Each companion's step as this load found it: the helper reads the game, and a phone is paired and has reached the
@@ -1776,10 +1790,12 @@ function Setup.HelperRuns()
 	return RUNS[ns.HelperState()] == true
 end
 
--- A client that has not read its own save back (the Forever beta, AGENTS.md's beta bugs, until a load proves the
--- client's own read: meta.readBackSeen, DB.lua): its progress outlasts a load only through the helper's copy.
+-- A client that showed it does not read its own save back (AGENTS.md's beta bugs): a /reload found nothing loaded
+-- (ns.svBroken, DB.lua), so its progress outlasts a load only through the helper's copy. A login that loads nothing
+-- proves nothing, since a first install does that too. On Forever alone: retail reads its save, and a first load
+-- through a UI reload reads the same as the bug (DB.lua).
 function Setup.SaveUnread()
-	return ns.IS_FOREVER and not (ns.meta and ns.meta.readBackSeen)
+	return ns.IS_FOREVER and ns.svBroken == true
 end
 
 -- The setup window's first page, the companions': until both steps are done (a paired player whose helper is not

@@ -134,7 +134,7 @@ struct PumpView {
 
 /// The quiet ways a stage offers beside its primary: Back once a move started (`Run::can_back`), on a rider's Ready
 /// view Skip for its move (`pump.skip`: a catch-up's since 2026-10-09, a match pump's rider since slice 61), and on a
-/// match pump's or a catch-up's Ready view its way to put the moves off (`pump.bank`, slice 58: `it`, Bank it, or
+/// match pump's or a catch-up's Ready view its way to put the moves off (`pump.bank`, slice 58: `it`, Bank all, or
 /// `rest`, Bank the rest; `Helper::pump_bank_way`). `rest`: only riders are left of a catch-up or a match pump
 /// (`Run::only_riders_left`, slice 61), so the "···"'s end reads Bank the rest and Leave speaks of the unfinished moves.
 #[derive(Serialize, PartialEq)]

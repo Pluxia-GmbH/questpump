@@ -143,7 +143,7 @@ function swapRow(pump, topic, ctx) {
  * line while the pump rests the arms for an aim game (slice 48's double-check: `arms`, the game's name), the move's
  * rewards' pills, its stop line (none on a timed move without one), How with the read-aloud button at its heading's
  * end and Tips, and on its first appearance the right-versus-wrong pair; then Start, under it the game's bar: on a
- * match's pump Bank it on every move of its own, on a catch-up Bank the rest, then the game's Skip, each quiet (slice
+ * match's pump Bank all on every move of its own, on a catch-up Bank the rest, then the game's Skip, each quiet (slice
  * 58); while felt unwell locks pumps (a lock that came while the pump waited), the rest's line and Close. */
 export function ready(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
@@ -173,8 +173,8 @@ export function ready(pump, topic, ctx) {
 	} else {
 		primary = button("qp-primary-button", t("pump.ready.start"), () => heard(intent("pump.ready.start")),
 			{state: pump.busy ? "busy" : "normal"});
-		// a match's pump banks like a quest's, and a catch-up's moves left stay unfinished (slice 58): the game's Bank it,
-		// or Bank the rest, one click (Rust's `bank`), before Skip as the game's bar puts it
+		// a match's pump banks like a quest's, and a catch-up's moves left stay unfinished (slice 58): the game's Bank
+		// all, or Bank the rest, one click (Rust's `bank`), before Skip as the game's bar puts it
 		if (pump.bank) {
 			foot.push(button("qp-quiet-button", t(pump.bank === "it" ? "pump.ready.bank" : "pump.ready.bank.rest"),
 				() => heard(intent("pump.bank"))));
@@ -639,7 +639,7 @@ function weightBox(c) {
 	if (!c.kg) return null;
 	const words = t(c.kg.each ? "pump.count.kg.each" : "pump.count.kg");
 	const box = h("qp-stepper", {decimal: true, value: c.kg.from, first: c.kg.first, most: c.kg.most,
-		stride: c.kg.step, "unit-one": words, "unit-other": words});
+		stride: c.kg.step, "unit-one": words, "unit-other": words, label: words});
 	box.sizes = c.kg.sizes;
 	return box;
 }
@@ -743,8 +743,9 @@ export function counting(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
 	const c = pump.count;
 	const figure = h("qp-figure-stage", {move: figureName(m), class: "qp-pump-figure"});
+	const ask = question(c);
 	const stepper = h("qp-stepper", {value: c.from, least: 0, most: c.most, unit: c.hold ? "seconds" : "reps",
-		record: c.chip});
+		record: c.chip, label: ask});
 	const weight = weightBox(c);
 	const boxes = weight ? h("div", {class: "qp-pump-boxes"}, stepper, weight) : stepper;
 	const kept = weight ? h("p", {class: "qp-type-subtitle qp-pump-centre"}) : null;
@@ -753,7 +754,7 @@ export function counting(pump, topic, ctx) {
 	const asked = check ? h("qp-card", {}, h("p", {class: "qp-type-body", text: check.line})) : null;
 	const record = c.kg?.top ? lifted(c.kg.top.load, c.kg.top.reps, c.kg.each)
 		: c.record != null ? amount(c.record, c.hold) : null;
-	const body = [figure, h("h1", {class: "qp-type-heading qp-pump-centre", text: question(c)}),
+	const body = [figure, h("h1", {class: "qp-type-heading qp-pump-centre", text: ask}),
 		record != null ? h("p", {class: "qp-type-subtitle qp-pump-centre", text: t("kit.record.yours", {record})})
 			: null,
 		boxes, kept, most, asked].filter(Boolean);
@@ -809,6 +810,7 @@ export function counting(pump, topic, ctx) {
 		return true;
 	};
 	const {el} = frame({head: steps(pump, ctx), body, foot});
+	el.classList.add("qp-pump-count");
 	return {
 		el,
 		primary: () => (asking ? yes : save),
@@ -834,11 +836,11 @@ export function counting(pump, topic, ctx) {
 				fresh = false;
 				return true;
 			}
-			fresh = false;
 			if (e.key === "Backspace") stepper.erase();
 			else if (e.key === "ArrowUp" || e.key === "ArrowRight") stepper.step(1);
 			else if (e.key === "ArrowDown" || e.key === "ArrowLeft") stepper.step(-1);
 			else return false;
+			fresh = false;
 			return true;
 		},
 	};

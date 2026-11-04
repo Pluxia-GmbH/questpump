@@ -18,17 +18,17 @@ const SETTLE_MS = 150;
 
 register("desk.menu.sound", () => {
 	const view = page({heading: t("desk.sound.title")});
-	const toggle = (heading, type) => {
+	const toggle = (heading, glyph, type) => {
 		// the switch moves when the topic brings Rust's answer (Toggle's contract), never before
-		const row = h("qp-row", {heading, trailing: "toggle"});
+		const row = h("qp-row", {heading, glyph, trailing: "toggle"});
 		row.addEventListener("qp-change", (e) => intent(type, {on: e.detail}).catch(console.error));
 		return row;
 	};
-	const sounds = toggle(t("menu.sounds"), "sound.on");
-	const voice = toggle(t("desk.sound.voice"), "sound.voice");
-	const callouts = toggle(t("desk.sound.callouts"), "sound.callouts");
-	const count = toggle(t("menu.repcount"), "sound.count");
-	const offers = toggle(t("desk.sound.offers"), "sound.voice_offers");
+	const sounds = toggle(t("menu.sounds"), "rating_expertise", "sound.on");
+	const voice = toggle(t("desk.sound.voice"), "action_character", "sound.voice");
+	const callouts = toggle(t("desk.sound.callouts"), "reward_record", "sound.callouts");
+	const count = toggle(t("menu.repcount"), "mark_play", "sound.count");
+	const offers = toggle(t("desk.sound.offers"), "action_games", "sound.voice_offers");
 	/** A level's Slider: it moves at once and the level goes at once; the topic's answer confirms it, and an answer
 	 * sent before it (another switch's, a level's earlier step) is held back until one carries the level set, so the
 	 * knob never steps back where WebKit gives a dragged range no focus. */

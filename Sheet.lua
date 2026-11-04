@@ -1763,26 +1763,18 @@ function HUD.Lines()
 	-- the pact and the duel, the party's moves today, the Join line, a finished pump to cheer, the guild's digest
 	-- (Social.lua)
 	for _, item in ipairs(ns.Social.HudLines()) do out[#out + 1] = item end
-	-- a click once the helper runs is the reload that reads its copy (as the Check saving line below; 2026-10-13)
+	-- a click once the helper runs is the reload that reads its copy (2026-10-13)
 	if ns.HelperStale() then
 		out[#out + 1] = { text = L["status.hud.stale"], action = C_UI.Reload,
 			tooltip = ns.Kit.Tip(L["status.hud.stale.title"], L["status.hud.stale.tip"],
 				{ hint = L["status.hud.stale.click"] }) }
 	end
-	-- the beta's save: nothing once the helper's copy restored it (as the General settings page), else the loss or the
-	-- reload that checks it
-	local restored = ns.meta and ns.meta.restoredFrom == "mirror"
-	if ns.svBroken then
-		-- the manual way to keep a session without the helper: the export string; the tooltip names the helper, which
-		-- keeps it, while it does not run at this load
-		if not restored then
-			out[#out + 1] = { text = L["status.hud.lost"], action = function() ns.Settings.OpenIO(true) end,
-				tooltip = ns.Kit.Tip(L["status.hud.lost.title"], not ns.Setup.HelperRuns() and L["status.nudge.save"] or nil,
-					{ hint = L["status.hud.lost.click"] }) }
-		end
-	elseif ns.meta and ns.Settings.BetaUnsaved() then
-		out[#out + 1] = { text = L["status.hud.check"], action = C_UI.Reload,
-			tooltip = ns.Kit.Tip(L["status.hud.lost.title"], nil, { hint = L["status.hud.check.click"] }) }
+	-- a save the game did not load back and the helper's copy did not restore: the manual way to keep a session without
+	-- the helper, the export string; the tooltip names the helper, which keeps it, while it does not run at this load
+	if ns.Settings.BetaUnsaved() then
+		out[#out + 1] = { text = L["status.hud.lost"], action = function() ns.Settings.OpenIO(true) end,
+			tooltip = ns.Kit.Tip(L["status.hud.lost.title"], not ns.Setup.HelperRuns() and L["status.nudge.save"] or nil,
+				{ hint = L["status.hud.lost.click"] }) }
 	end
 	return out
 end

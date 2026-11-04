@@ -232,7 +232,7 @@ ns.C = {
 	-- a move ended under min_reps reps (a counted set's count too) or min_seconds seconds (a hold's, or a timed move's
 	-- clock at Done) counts nothing: it is banked without a word (Events.lua Lc.ShortBank; the apps' own pumps read both
 	-- from contract/library.json; Rapha, 2026-11-03: "so we dont have records e.g. saying 1 s or 1 rep ... only count
-	-- from 3 reps and 7 seconds as valid")
+	-- from 3 reps and 7 seconds as valid"), but a first max set is never banked (ns.FirstMaxSet)
 	min_reps = 3, min_seconds = 7,
 	-- an ask after a move (the whole move's, the goal pose's, the pace's, the hold's, a counted set's answers) takes no
 	-- digit and no click this long after it shows, so the key or the click that ended the move never answers it

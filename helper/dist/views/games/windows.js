@@ -178,16 +178,16 @@ export function gameWindow(port, nearOf) {
 	let key = null;
 	let shown = null; // the game as the window last drew it
 	let topic = null;
-	const offer = h("qp-row", {trailing: "toggle",
+	const offer = h("qp-row", {glyph: "action_pump", trailing: "toggle",
 		"on:qp-change": (e) => intent("games.set", {key, on: e.detail}).catch(console.error)});
-	const grant = h("qp-row", {heading: t("games.grant"), trailing: "action", hidden: true,
+	const grant = h("qp-row", {heading: t("games.grant"), glyph: "mark_lock", trailing: "action", hidden: true,
 		"on:click": () => intent("games.grant", {key}).catch(console.error)});
-	const portRow = h("qp-row", {heading: t("games.port"), trailing: "value", hidden: true,
+	const portRow = h("qp-row", {heading: t("games.port"), glyph: "mark_link", trailing: "value", hidden: true,
 		"on:click": () => shown && port.open(shown, topic)});
-	const aim = h("qp-row", {heading: t("games.aim"), trailing: "toggle", hidden: true,
+	const aim = h("qp-row", {heading: t("games.aim"), glyph: "mark_rest", trailing: "toggle", hidden: true,
 		"on:qp-change": (e) => intent("games.aim", {key, on: e.detail}).catch(console.error)});
 	// Not a game for a found game, Remove for an added one: either takes the game off the tab and closes the window
-	const awayRow = h("qp-row", {trailing: "action", "on:click": () => {
+	const awayRow = h("qp-row", {glyph: "mark_close", trailing: "action", "on:click": () => {
 		if (!shown) return;
 		const gone = key;
 		const near = nearOf(gone);
@@ -261,8 +261,8 @@ export function pickerWindow(more) {
 	const named = h("qp-card", {rows: true});
 	const list = h("qp-card", {rows: true});
 	const none = words(t("games.pick.none"), "meta");
-	const moreRow = h("qp-row", {heading: t("games.more"), meta: t("games.pick.more"), trailing: "nav",
-		"on:click": () => {
+	const moreRow = h("qp-row", {heading: t("games.more"), meta: t("games.pick.more"), glyph: "mark_list",
+		trailing: "nav", "on:click": () => {
 			el.addEventListener("qp-closed", () => more.open(), {once: true});
 			el.close();
 		}});
@@ -277,13 +277,13 @@ export function pickerWindow(more) {
 		if (picks === drawn) return;
 		drawn = picks;
 		named.replaceChildren(...games.map((game) => h("qp-row", {heading: gameName(game), value: t("games.tile.on"),
-			trailing: "action", "on:click": () => {
+			glyph: "action_games", trailing: "action", "on:click": () => {
 				intent("games.set", {key: game.key, on: true}).catch(console.error);
 				el.close();
 			}})));
 		named.hidden = !games.length;
 		list.replaceChildren(...(topic.picks ?? []).map((pick) => h("qp-row", {heading: pick.name, meta: pick.image,
-			trailing: "action", "on:click": () => {
+			glyph: "action_games", trailing: "action", "on:click": () => {
 				intent("games.add", {key: pick.key}).catch(console.error);
 				el.close();
 			}})));
@@ -318,7 +318,7 @@ export function moreWindow(tileOf) {
 			let row = rows.get(game.key);
 			if (!row) {
 				const key = game.key;
-				row = h("qp-row", {trailing: "toggle",
+				row = h("qp-row", {glyph: "action_games", trailing: "toggle",
 					"on:qp-change": (e) => intent("games.set", {key, on: e.detail}).catch(console.error)});
 				rows.set(key, row);
 			}
@@ -359,7 +359,8 @@ export function hiddenWindow(tileOf) {
 			let row = rows.get(game.key);
 			if (!row) {
 				const key = game.key;
-				row = h("qp-row", {value: t("games.hidden.restore"), trailing: "action", "on:click": () => restore(key, row)});
+				row = h("qp-row", {value: t("games.hidden.restore"), glyph: "action_games", trailing: "action",
+					"on:click": () => restore(key, row)});
 				rows.set(key, row);
 			}
 			row.heading = game.name;
@@ -391,13 +392,13 @@ export function pauseWindow() {
 		intent("games.pause", {kind}).catch(console.error);
 		el.close();
 	};
-	const row = (kind) => h("qp-row", {trailing: "action", "on:click": () => pick(kind)});
+	const row = (kind, glyph = "mark_pause") => h("qp-row", {glyph, trailing: "action", "on:click": () => pick(kind)});
 	const hour = row("hour");
 	const four = row("four_hours");
 	const night = row("night");
 	const game = row("game");
 	const resumed = row("resumed");
-	const resume = row("none");
+	const resume = row("none", "mark_play");
 	const resumeCard = h("qp-card", {rows: true}, resume);
 	el.content.append(state, h("qp-card", {rows: true}, hour, four, night, game, resumed), resumeCard);
 	const draw = (topic) => {

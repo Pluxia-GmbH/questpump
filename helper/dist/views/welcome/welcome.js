@@ -287,8 +287,8 @@ function ask(type, args) {
  * through the Phones page's pairing code over the welcome; no phone row while the phone apps are not in the stores yet
  * (the topic's `phones`). */
 function foundCard() {
-	const game = h("qp-row", {heading: t("desk.menu.computer.game")});
-	const phone = h("qp-row", {heading: t("desk.menu.phones.phone")});
+	const game = h("qp-row", {heading: t("desk.menu.computer.game"), glyph: "action_games"});
+	const phone = h("qp-row", {heading: t("desk.menu.phones.phone"), glyph: "device_phone"});
 	const note = words("", "meta");
 	game.addEventListener("click", () => {
 		if (game.trailing !== "action") return;

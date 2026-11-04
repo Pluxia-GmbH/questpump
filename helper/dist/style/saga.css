@@ -1274,3 +1274,35 @@ dialog.qp-best-in .qp-best-bar {
 		transform: scaleX(0.4);
 	}
 }
+
+/* a forced palette paints over the marks drawn by a background: the kinds' parts filled and parted by an outline (each
+ * still named at its start), the ticks in Highlight, a day's bar filled (rest GrayText, a ringed day Highlight), the
+ * rules and the level's bar as the XP bar; the body map's swatches keep the map's own colours, as its paths do */
+@media (forced-colors: active) {
+	.qp-kind-strength, .qp-kind-cardio, .qp-kind-mobility, .qp-kind-yoga {
+		background: CanvasText;
+		outline: var(--qp-layout-hairline) solid Canvas;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-kind-tick, .qp-kind-tick-mark, .qp-week-bar.qp-ringed, .qp-saga-level-bar i {
+		background: Highlight;
+	}
+
+	.qp-week-bar, .qp-saga-rule, .qp-chapter-rule, .qp-saga-what .qp-saga-quality::before {
+		background: CanvasText;
+	}
+
+	.qp-week-bar.qp-rest {
+		background: GrayText;
+	}
+
+	.qp-saga-level-bar {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid CanvasText;
+	}
+
+	.qp-swatch-most, .qp-swatch-some {
+		forced-color-adjust: none;
+	}
+}

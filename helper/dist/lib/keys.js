@@ -14,7 +14,9 @@
 // find on the page, history) and a keyboard's browser keys do nothing, and nor does its context menu outside a text
 // box. No single-letter shortcut. On macOS the page sees a key with Cmd before the app menu does (WebKit's WebViewImpl
 // performKeyEquivalent: a key the page takes, its default prevented, never reaches the menu), so a key and its menu
-// item act once.
+// item act once. The web view scrolls only what holds the focus, and a pump's or a window's primary stands in a foot
+// outside the rows it closes: the arrows, PageUp, PageDown, Home and End move the region in front from there, so the
+// keyboard reads a pump's Result to its last row.
 
 import {intent} from "./bridge.js";
 import {topWindow} from "./focus.js";
@@ -31,6 +33,22 @@ export function guardMs() {
 let current = null; // the view the keys go to
 let mountedAt = 0;
 let frame = null; // the main window's frame (the card's page has none): Cmd/Ctrl+1 to 5's `tab`, Cmd/Ctrl+F's `find`
+let taken = null; // the key the view took at its press, whose repeats do nothing else
+
+/** The web view's own steps: an arrow's in CSS px (Chromium's kPixelsPerLineStep), a page's as a share of the region
+ * (its kMinFractionToStepWhenPaging). */
+const LINE_STEP = 40;
+const PAGE_SHARE = 0.875;
+
+/** How far each scrolling key moves a region, in CSS px. */
+const SCROLL_KEYS = {
+	ArrowDown: () => LINE_STEP,
+	ArrowUp: () => -LINE_STEP,
+	PageDown: (area) => area.clientHeight * PAGE_SHARE,
+	PageUp: (area) => -area.clientHeight * PAGE_SHARE,
+	End: (area) => area.scrollHeight,
+	Home: (area) => -area.scrollHeight,
+};
 
 /** A view (or a window's content) took the screen: keys go to it, and its first half second takes no Enter or Space. */
 export function mounted(view) {
@@ -89,6 +107,23 @@ function stop(e) {
 	e.stopPropagation();
 }
 
+/** The first region under `front` that scrolls now: a pump's body, Ready's words beside its figure, a window's body. */
+function scrollRegion(front) {
+	return [front, ...front.querySelectorAll("*")].find((el) => el.scrollHeight > el.clientHeight
+		&& ["auto", "scroll"].includes(getComputedStyle(el).overflowY)) ?? null;
+}
+
+/** A scrolling key nothing took moves the region in front, unless the focus stands in it (the web view's own then). */
+function onScrollKey(e) {
+	const step = SCROLL_KEYS[e.key];
+	if (!step || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || typing(e.target)) return;
+	const front = topWindow() ?? current?.el;
+	const area = front ? scrollRegion(front) : null;
+	if (!area || area.contains(e.target)) return;
+	e.preventDefault();
+	area.scrollBy({top: step(area)});
+}
+
 function onKeyDown(e) {
 	if (e.isComposing) return;
 	if (zoom(e) || browserKey(e)) {
@@ -124,8 +159,9 @@ function onKeyDown(e) {
 			return;
 		}
 	}
-	// a view's own keys take no repeat: a held digit types one digit
-	if (!over && !e.repeat && current?.onKey?.(e)) stop(e);
+	// a view's own keys take no repeat: a held digit types one digit, a held arrow on the count moves nothing else
+	if (!e.repeat) taken = !over && current?.onKey?.(e) ? e.key : null;
+	if (taken === e.key) stop(e);
 }
 
 function onKeyUp(e) {
@@ -136,6 +172,7 @@ function onKeyUp(e) {
 /** Starts listening, before any other listener sees a key. */
 export function startKeys() {
 	window.addEventListener("keydown", onKeyDown, true);
+	window.addEventListener("keydown", onScrollKey);
 	window.addEventListener("keyup", onKeyUp, true);
 	window.addEventListener("contextmenu", (e) => {
 		if (!typing(e.target)) e.preventDefault();

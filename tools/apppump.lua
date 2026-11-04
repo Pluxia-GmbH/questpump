@@ -2568,9 +2568,10 @@ return function(ns, opts)
 	-- (a counted set's best clean count, never a goal; none on a max set) and the goal's kind (ns.SlotGoal's: record,
 	-- form, repeat or heavier), on a form goal the player's form its Ready line names (`form`, ns.Form's; with a weight
 	-- planned on a move with a weighted record, a goal read in strength, ns.LoadForm's reps at its weight `formLoad`,
-	-- as Panel.lua recordLine), a first max set's top, a placement's record, whether a steady move asks "Did you keep
-	-- that pace to the end?" (`pace`, slice 42), the full move's seconds Keep going runs it on to (`keep`, slice 52),
-	-- whether it is a Long Haul
+	-- as Panel.lua recordLine), a first max set's top, a placement's record, whether it is a first max set (`firstMax`,
+	-- ns.FirstMaxSet: a count under the minimum saves as "Could not do one", never a bank), whether a steady move asks
+	-- "Did you keep that pace to the end?" (`pace`, slice 42), the full move's seconds Keep going runs it on to (`keep`,
+	-- slice 52), whether it is a Long Haul
 	-- (`haul`, slice 55), whether it is a match pump's warm move, dosed easy (`warm`, slice 48's
 	-- double-check: a cardio move at the stand-up's easy cadence, a rep or hold move at the repeat share of its form),
 	-- a pose's mark and, where it asks "How close to the goal pose?" once it ran its whole time, the least answer that
@@ -2608,7 +2609,8 @@ return function(ns, opts)
 			build = allout and not counted and C.allout_build_s or nil, side = m.side == true,
 			record = (s.target ~= nil or counted) and ns.Record(E_.state, s.move) or nil,
 			top = s.maxSet and s.hi or nil, placing = s.placing and ns.Record(E_.state, s.move) or nil,
-			counted = counted, pace = s.pace == true, keep = s.keep, haul = s.haul == true,
+			firstMax = ns.FirstMaxSet(E_.state, s), counted = counted, pace = s.pace == true, keep = s.keep,
+			haul = s.haul == true,
 			warm = s.warm == true, mark = s.mark == true, ask = s.ask,
 			load = s.load, loadUp = s.loadUp == true, loadFrom = s.loadFrom, loadTop = loaded and ns.LoadTop(s.move) or nil,
 			loadEach = ns.Loaded(s.move) == "each",

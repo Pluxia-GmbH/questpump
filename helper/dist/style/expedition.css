@@ -144,3 +144,27 @@
 .qp-day-chip[aria-pressed="true"]:hover {
 	background: var(--qp-color-gold-hi);
 }
+
+/* a forced palette paints over the grip's lines and drops the icons' and chips' edges: each an outline, the chosen one
+ * on the system's selection, unforced so that no backplate covers its letter */
+@media (forced-colors: active) {
+	.qp-place-grip i {
+		background: CanvasText;
+	}
+
+	.qp-place-icon:not(:focus-visible), .qp-day-chip:not(:focus-visible) {
+		outline: var(--qp-layout-hairline) solid GrayText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-place-icon[aria-pressed="true"], .qp-day-chip[aria-pressed="true"], .qp-day-chip[aria-pressed="true"]:hover {
+		forced-color-adjust: none;
+		background: Highlight;
+		box-shadow: none;
+		color: HighlightText;
+	}
+
+	.qp-place-icon[aria-pressed="true"]:focus-visible, .qp-day-chip[aria-pressed="true"]:focus-visible {
+		outline-color: CanvasText;
+	}
+}

@@ -172,7 +172,7 @@ The download page is <https://questpump.com/helper>: a disk image for Macs with 
 (macOS 14 or later) and an installer for 64-bit Windows 10 (22H2) or 11. Or with a package manager:
 
 ```bash
-winget install --exact --id Pluxia.QuestPump          # Windows
+winget install --exact --id Pluxia.QuestPump          # Windows, once it is in winget-pkgs
 brew install --cask pluxia-gmbh/tap/questpump        # macOS
 ```
 
@@ -478,4 +478,5 @@ What the releases need, set up once in Pluxia-GmbH/questpump (each marked set or
   folder with `winget validate --manifest <folder>` (and `winget install --manifest <folder>` after
   `winget settings --enable LocalManifestFiles`), then open a pull request that adds the three files under
   `manifests/p/Pluxia/QuestPump/<version>/` in microsoft/winget-pkgs (or `wingetcreate submit <folder>`), and
-  sign Microsoft's CLA when its bot asks. Set `WINGET_TOKEN` once it is merged.
+  sign Microsoft's CLA when its bot asks. Once it is merged, set `WINGET_TOKEN` and turn on `WINGET` in
+  `site/src/launch.ts`, which shows the winget line on `/helper` and `/start`.

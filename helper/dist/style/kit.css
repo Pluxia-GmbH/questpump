@@ -527,7 +527,7 @@ qp-quiet-button.qp-destructive .qp-quiet:not(:disabled) {
 	text-align: end;
 }
 
-qp-row.qp-destructive .qp-row-title {
+qp-row.qp-destructive .qp-row-title, qp-row.qp-destructive .qp-row-glyph {
 	color: var(--qp-color-stop);
 }
 
@@ -3386,5 +3386,158 @@ qp-step-reveal {
 @media (prefers-reduced-motion: reduce) {
 	.qp-reveal-rays {
 		animation: none;
+	}
+}
+
+/* Forced palettes -------------------------------------------------------------------------------------------------- */
+
+/* Windows' high contrast and every forced palette paint over a background colour and drop a shadow, and with them every
+ * mark drawn by one: each takes the system's colours and keeps its state by its shape, an empty mark an outline, a done
+ * or lit one filled in CanvasText, the one in play and a chosen control in Highlight */
+@media (forced-colors: active) {
+	/* the "···": two of its dots are the first's shadows, which only an unforced mark keeps */
+	.qp-dots {
+		forced-color-adjust: none;
+		color: ButtonText;
+	}
+
+	.qp-busy i, .qp-game-add::before, .qp-game-add::after {
+		background: ButtonText;
+	}
+
+	/* a switch: off an outline with its knob in CanvasText, on filled, one that takes no press in GrayText */
+	.qp-switch:not(:focus-visible), .qp-switch-look {
+		outline: var(--qp-layout-hairline) solid CanvasText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-knob {
+		background: CanvasText;
+	}
+
+	.qp-switch[aria-checked="true"], [aria-checked="true"] .qp-switch-look {
+		background: Highlight;
+	}
+
+	.qp-switch[aria-checked="true"] .qp-knob, [aria-checked="true"] .qp-switch-look .qp-knob {
+		background: HighlightText;
+	}
+
+	.qp-switch:disabled, :disabled .qp-switch-look {
+		background: Canvas;
+		outline-color: GrayText;
+	}
+
+	.qp-switch:disabled .qp-knob, :disabled .qp-switch-look .qp-knob {
+		background: GrayText;
+	}
+
+	/* a chip an outline; a chosen chip or segment a wider one in Highlight, never a fill, whose words the page's
+	 * backplate would hide */
+	.qp-choice::before {
+		outline: var(--qp-layout-hairline) solid GrayText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-choice[aria-pressed="true"]::before, .qp-segment[aria-selected="true"]:not(:focus-visible) {
+		outline: var(--qp-layout-space2) solid Highlight;
+		outline-offset: calc(-1 * var(--qp-layout-space2));
+	}
+
+	/* a status dot: off a ring, on filled, reaching in Highlight */
+	.qp-chip-dot {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid GrayText;
+	}
+
+	.qp-chip[data-state="ok"] .qp-chip-dot, .qp-chip[data-state="stopped"] .qp-chip-dot, .qp-game-live {
+		background: CanvasText;
+		outline-color: CanvasText;
+	}
+
+	.qp-chip[data-state="reaching"] .qp-chip-dot, .qp-game-dot {
+		background: Highlight;
+		outline-color: Highlight;
+	}
+
+	.qp-gem {
+		background: CanvasText;
+	}
+
+	/* a pump's moves, a step's days, an expedition's stages: to come an outline, done filled, the one in play in
+	 * Highlight */
+	qp-step-pips i, qp-day-pips i, qp-steps-bar i, .qp-expedition-segments i {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid GrayText;
+	}
+
+	qp-step-pips i.qp-lit, qp-day-pips i.qp-lit, qp-steps-bar i.qp-done, qp-steps-bar i.qp-rider.qp-done,
+	.qp-expedition-segments i.qp-done {
+		background: CanvasText;
+		outline-color: CanvasText;
+	}
+
+	qp-steps-bar i.qp-now, qp-steps-bar i.qp-rider.qp-now, .qp-expedition-segments i.qp-now {
+		background: Highlight;
+		outline-color: Highlight;
+	}
+
+	/* a level's bars: the track an outline, the fill Highlight, what rest adds GrayText */
+	.qp-xp-track, .qp-vault-track {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid CanvasText;
+	}
+
+	.qp-xp-fill, .qp-vault-fill, .qp-hold-fill, .qp-hold-spill, .qp-hold-post[data-hit] {
+		background: Highlight;
+	}
+
+	.qp-xp-rested {
+		background: GrayText;
+	}
+
+	.qp-hold-track {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid GrayText;
+	}
+
+	.qp-hold-post {
+		background: CanvasText;
+	}
+
+	/* TimerRing's dial */
+	.qp-ring-track {
+		stroke: GrayText;
+	}
+
+	.qp-ring-arc {
+		stroke: Highlight;
+		filter: none;
+	}
+
+	/* WeekDots: a day to come bare, a day an outline, a day done filled with its mark in Canvas */
+	.qp-dot {
+		background: Canvas;
+		outline: var(--qp-layout-hairline) solid GrayText;
+		outline-offset: calc(-1 * var(--qp-layout-hairline));
+	}
+
+	.qp-dot.qp-future {
+		outline: none;
+	}
+
+	.qp-dot.qp-done, .qp-dot[data-step="1"], .qp-dot[data-step="2"], .qp-dot[data-step="3"] {
+		background: CanvasText;
+		color: Canvas;
+	}
+
+	.qp-dot.qp-today {
+		outline: var(--qp-layout-space2) solid Highlight;
+		outline-offset: var(--qp-layout-space2);
+	}
+
+	/* a window keeps its edge over the page */
+	.qp-window {
+		outline: var(--qp-layout-hairline) solid CanvasText;
 	}
 }

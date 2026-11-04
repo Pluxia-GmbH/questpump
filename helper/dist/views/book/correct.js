@@ -155,16 +155,16 @@ export function openCorrectWindow(w, move, clear) {
 		}
 		const shape = shapeOf(w, set);
 		const most = shape.counted ? limits.counted : shape.hold ? limits.seconds : limits.reps;
-		const stepper = h("qp-stepper", {value, least: 0, most: most.most, unit: shape.hold ? "seconds" : "reps",
-			none: shape.counted ? t("pump.count.none") : null});
-		const box = shape.loaded ? h("qp-stepper", {decimal: true, value: load, first: set.load ?? limits.kgStep,
-			most: limits.kgMost, stride: limits.kgStep,
-			"unit-one": t(shape.each ? "pump.count.kg.each" : "pump.count.kg"),
-			"unit-other": t(shape.each ? "pump.count.kg.each" : "pump.count.kg")}) : null;
-		const kept = box ? h("p", {class: "qp-type-subtitle qp-pump-centre"}) : null;
-		const max = h("p", {class: "qp-type-meta qp-pump-centre", text: most.line});
 		const count = {question: shape.hold ? (shape.side ? "hold_side" : "hold") : shape.side ? "reps_side" : "reps",
 			name};
+		const ask = question(count);
+		const stepper = h("qp-stepper", {value, least: 0, most: most.most, unit: shape.hold ? "seconds" : "reps",
+			none: shape.counted ? t("pump.count.none") : null, label: ask});
+		const unit = t(shape.each ? "pump.count.kg.each" : "pump.count.kg");
+		const box = shape.loaded ? h("qp-stepper", {decimal: true, value: load, first: set.load ?? limits.kgStep,
+			most: limits.kgMost, stride: limits.kgStep, "unit-one": unit, "unit-other": unit, label: unit}) : null;
+		const kept = box ? h("p", {class: "qp-type-subtitle qp-pump-centre"}) : null;
+		const max = h("p", {class: "qp-type-meta qp-pump-centre", text: most.line});
 		const show = () => {
 			max.hidden = (stepper.value ?? 0) < most.most;
 			if (kept) {
@@ -188,7 +188,7 @@ export function openCorrectWindow(w, move, clear) {
 		keys(stepper, box);
 		control = stepper.control;
 		show();
-		parts.push(h("p", {class: "qp-type-heading qp-pump-centre", text: question(count)}),
+		parts.push(h("p", {class: "qp-type-heading qp-pump-centre", text: ask}),
 			box ? h("div", {class: "qp-pump-boxes"}, stepper, box) : stepper, kept, max);
 		// a count corrected to 0 reads as typing 0 does, done without a count (slice 44's review), never Could not do one
 		if (!shape.counted && set.value !== 0) {

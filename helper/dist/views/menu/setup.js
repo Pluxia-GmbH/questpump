@@ -59,13 +59,13 @@ function gearOpens(key, s, vocab) {
 	return open ? opensWords(open, vocab, "menu.free.gear.opens", "menu.free.gear.opens.plain") : null;
 }
 
-/** The equipment groups' words, by the sheet's group key: literal keys, so the copy lint sees each read. */
+/** The equipment groups' words and glyphs, by the sheet's group key: literal keys, so the copy lint sees each read. */
 const GROUPS = {
-	home: () => t("places.gear.group.home"),
-	bars: () => t("places.gear.group.bars"),
-	weights: () => t("places.gear.group.weights"),
-	cardio: () => t("places.gear.group.cardio"),
-	core: () => t("places.gear.group.core"),
+	home: {words: () => t("places.gear.group.home"), glyph: "place_home"},
+	bars: {words: () => t("places.gear.group.bars"), glyph: "place_bars"},
+	weights: {words: () => t("places.gear.group.weights"), glyph: "place_dumbbell"},
+	cardio: {words: () => t("places.gear.group.cardio"), glyph: "stat_stamina"},
+	core: {words: () => t("places.gear.group.core"), glyph: "stat_strength"},
 };
 
 /** The equipment in its groups (2026-11-03; the sheet's words' `gear_groups`, Library.lua `ns.GearGroups`), Your
@@ -77,7 +77,8 @@ export function gearGroups(w, chip) {
 	const groups = w.gear_groups.map((group) => {
 		const chips = group.gear.map((key) => byKey.get(key)).filter(Boolean).map(chip);
 		const box = h("div", {class: "qp-chips"}, ...chips);
-		const head = h("qp-row", {heading: GROUPS[group.key]?.() ?? "", trailing: "expander"});
+		const kind = GROUPS[group.key];
+		const head = h("qp-row", {heading: kind?.words() ?? "", glyph: kind?.glyph, trailing: "expander"});
 		const open = (on) => {
 			head.expanded = on;
 			box.hidden = !on;
