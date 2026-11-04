@@ -235,16 +235,33 @@ jobs:
       # the Xcode that builds the installed app on David's Mac; actool, codesign and notarytool all follow DEVELOPER_DIR.
       # The bundler runs `actool` from PATH with the CLI's own stdin, which tauri-action leaves closed, and Xcode 27.2's
       # actool then fails on any .icon ("Bad file descriptor ... Failed to create a catalog from the Icon Studio
-      # document", rehearsal 41729242334, 2026-11-03): the shim ahead on PATH gives it /dev/null instead
-      - name: Xcode 27.2, and actool with a stdin
+      # document", rehearsal 41729242334, 2026-11-03): the shim ahead on PATH gives it /dev/null instead.
+      # The bundler's script runs `hdiutil create` from PATH too, and macOS's XProtect can hold the new image meanwhile:
+      # "create failed - Resource busy" or "No such file or directory" took 2 of 8 Mac builds, each after notarisation
+      # (rehearsals 41734549784, 41753812933, 2026-11-03 and 04). runner-images#7522's maintainer says to retry, so the
+      # second shim tries `create` four times, says so on the run's summary and leaves every other verb alone
+      - name: Xcode 27.2, actool with a stdin, hdiutil create with retries
         if: runner.os == 'macOS'
         run: |
           echo "DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer" >> "$GITHUB_ENV"
-          mkdir -p "$RUNNER_TEMP/actool"
-          printf '#!/bin/sh\nexec xcrun actool "$@" < /dev/null\n' > "$RUNNER_TEMP/actool/actool"
-          chmod +x "$RUNNER_TEMP/actool/actool"
-          echo "$RUNNER_TEMP/actool" >> "$GITHUB_PATH"
-          DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer "$RUNNER_TEMP/actool/actool" --version \
+          shims="$RUNNER_TEMP/shims"
+          mkdir -p "$shims"
+          printf '#!/bin/sh\nexec xcrun actool "$@" < /dev/null\n' > "$shims/actool"
+          cat > "$shims/hdiutil" <<'SHIM'
+          #!/bin/sh
+          [ "$1" = create ] || exec /usr/bin/hdiutil "$@"
+          shift
+          for wait in 15 45 90 0; do
+            /usr/bin/hdiutil create -ov "$@" && exit 0
+            status=$?
+            [ "$wait" = 0 ] && exit "$status"
+            echo "hdiutil create failed ($status): again in $wait s" | tee -a "$GITHUB_STEP_SUMMARY" >&2
+            sleep "$wait"
+          done
+          SHIM
+          chmod +x "$shims/actool" "$shims/hdiutil"
+          echo "$shims" >> "$GITHUB_PATH"
+          DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer "$shims/actool" --version \
             --output-format human-readable-text <&-
       - name: The Tauri CLI, pinned to the tauri crate's version
         run: npm install -g @tauri-apps/cli@2.12.4

@@ -387,8 +387,9 @@ tag. Both tags may sit on the same commit.
    tag equals both versions, the updater's public key and feed are set, every secret and variable below is set, Google
    Play's licensing key is in `contract/store.json`, `cargo deny`), `draft` (a draft release for the tag), `build`
    (macOS Apple silicon and Intel, both on the arm64 `xcode-27` runner with Xcode 27.2, since the `macos-26` image's
-   Xcode 26 cannot compile `icons/AppIcon.icon`, and `actool` through a shim that gives it a stdin, which the CLI under
-   tauri-action leaves closed; Developer ID signed and notarised; Windows x64
+   Xcode 26 cannot compile `icons/AppIcon.icon`, `actool` through a shim that gives it a stdin, which the CLI under
+   tauri-action leaves closed, and `hdiutil create` through a shim that retries it, since XProtect can hold a new disk
+   image; Developer ID signed and notarised; Windows x64
    on `windows-2025`, NSIS, signed through Artifact Signing; the updater files and `latest.json`; each build's symbols,
    the release profile's line tables split out of the program, a dSYM on macOS and a PDB on Windows, kept as the run's
    artifact `symbols-<version>-<target>` for 90 days, the longest a public repository keeps one, so a crash report's
