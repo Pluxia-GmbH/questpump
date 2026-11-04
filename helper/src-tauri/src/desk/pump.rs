@@ -774,7 +774,11 @@ impl Run {
 
 	/// Its first move waits on its Ready view with nothing done and no engine call under way.
 	fn untouched(&self) -> bool {
-		self.stage == Stage::Ready && self.ran.is_empty() && self.recorded.is_empty() && self.busy == 0
+		self.stage == Stage::Ready
+			&& self.current == 0
+			&& self.ran.is_empty()
+			&& self.recorded.is_empty()
+			&& self.busy == 0
 	}
 
 	/// Nothing runs in it and nothing is asked: a Ready view not started (its first move's, one between moves, a
@@ -3688,12 +3692,12 @@ impl Helper {
 	}
 
 	/// The Ready view's Pain (on every Ready view of an app pump, a match pump's riders' too): the joints the player
-	/// named flagged, their rows kept whatever is on screen when the engine answers; before any move is recorded the
-	/// pump is composed again, after one the rest keeps what the flags allow (a rider the flags refuse leaves it to wait,
-	/// slice 61); a pump with no move left from the one shown on ends.
+	/// named flagged, their rows kept whatever is on screen when the engine answers; before any move ended the pump is
+	/// composed again, after one, a move banked too short among them (`pump_short`), the rest keeps what the flags allow
+	/// (a rider the flags refuse leaves it to wait, slice 61); a pump with no move left from the one shown on ends.
 	fn pump_pain(&mut self, joints: Vec<u8>) -> Result<(), String> {
 		let run = self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready && r.what.app()).ok_or("no Pain now")?;
-		let (from, recorded) = (run.shown().map_or(0, |m| m.slot), !run.recorded.is_empty());
+		let (from, recorded) = (run.shown().map_or(0, |m| m.slot), run.current > 0);
 		if joints.is_empty() {
 			self.pump_publish();
 			return Ok(());

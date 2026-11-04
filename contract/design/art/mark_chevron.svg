@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- The way on (a watch row that opens a page): two equal strokes meeting at a right angle, pointing at the trailing
+       edge, the look of the phones' row chevron on the wrist. One colour: the caller tints it (a dim tone). -->
+  <path data-stroke-token="tint" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="square" d="
+    M5.5 2.5 L11 8 L5.5 13.5"/>
+</svg>

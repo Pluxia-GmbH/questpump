@@ -2363,7 +2363,7 @@ return function(ns, opts)
 	end
 
 	-- After the Ready view's Pain flagged a joint (its pain rows written already), the move at `from` next: composed
-	-- again while no move was `recorded` yet, else the rest from `from` on kept where the new flags allow it and the
+	-- again while no move has ended (`recorded`), else the rest from `from` on kept where the new flags allow it and the
 	-- step jacks where they refuse it (ns.PainRest): the player saw those moves. A slot whose move the flag changed
 	-- takes Swap again. A match pump's rest stays under its arms rest (slice 48): each move kept passed it, and the step
 	-- jacks pass every filter. A rider the new flag refuses leaves the pump to wait in the queue (slice 61), the moves

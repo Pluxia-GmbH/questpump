@@ -1,7 +1,7 @@
 {
  "about": "The Acknowledgements page's one source for both apps (docs/ui.md, \"The licence ledger and Acknowledgements\"), written by tools/ledger.py from contract/design/ledger.json (the fonts) and contract/design/sound/sounds.json (the packs a shipped sound comes from); never edit by hand. Each asset's `credit` is its manifest's credit line, which the page shows under it. Each `licence` names its display name in the copy (menu.acknowledgements.licence.*) and its text behind Licence text: a key of `licences`, which holds only a licence's own verbatim text (the OFL's, the shipped apple/iOS/Fonts/OFL.txt's, its lines joined into paragraphs for a phone's width), or for CC0-1.0 the copy's menu.acknowledgements.licence.cc0.text, Pluxia's plain words. `sources` holds each source's sha256 (its first 16 hex digits); tools/ledger.py --check fails when one has moved.",
  "sources": {
-  "contract/design/ledger.json": "23c619013f3ac4c6",
+  "contract/design/ledger.json": "4684fb4fa86da6c2",
   "contract/design/sound/sounds.json": "b1d797eff4d874c2",
   "apple/iOS/Fonts/OFL.txt": "bd3eb706b9ac2e12"
  },

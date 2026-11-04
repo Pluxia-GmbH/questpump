@@ -804,7 +804,8 @@ local function toReady(p)
 	p.runStart, p.paused, p.pausedAt, p.elapsed, p.limit, p.side, p.sides = nil, nil, nil, nil, nil, nil, nil
 	p.pending, p.really, p.reallyLoad, p.reallyCheck, p.asking, p.marking = nil, nil, nil, nil, nil, nil
 	p.pacing, p.reallyAnswer, p.keep, p.longerAsk, p.pours, p.pour = nil, nil, nil, nil, nil, nil
-	p.started = next(p.results) ~= nil
+	-- a move banked too short ended too: a recompose would bring it back beside its owed row
+	p.started = next(p.results) ~= nil or p.shortBanked ~= nil or p.shortRiders ~= nil
 end
 
 -- Back to the Ready view: the Back button, Escape in the countdown.
@@ -1399,7 +1400,6 @@ function Lc.ShortBank()
 		p.shortBanked = (p.shortBanked or 0) + 1
 	end
 	toReady(p)
-	p.started = true -- a recompose would bring the banked move back beside its owed row
 	table.remove(p.moves, i)
 	if i <= #p.moves then
 		readyGoal(p)

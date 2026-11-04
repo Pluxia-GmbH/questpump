@@ -10489,6 +10489,7 @@
    ],
    "platforms": [
     "android",
+    "ios",
     "macos",
     "windows"
    ],
@@ -14580,10 +14581,9 @@
   "menu.helper.none": {
    "text": "Not paired",
    "screens": [
-    "menu.settings",
     "menu.helper"
    ],
-   "note": "The Helper row's value in the Menu, and the status chip on the helper's page: no helper paired."
+   "note": "The status chip on the helper's page: no helper paired."
   },
   "menu.helper.rescan": {
    "text": "Scan a new code",

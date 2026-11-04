@@ -1586,6 +1586,7 @@ Each piece ships as code, never as a file: `tools/art.py` writes it into `apple/
 | `contract/design/art/link_stream.svg` | 2026-10-07 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `f2d3e54483979c2ae7bb69176a34a58080367372fe9872db2232ceb6858813ad` |
 | `contract/design/art/mark_arrow.svg` | 2026-10-03 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `db441bcfc8db439f4a8cf465337be8576832078f564efccc4034965fba37f5ee` |
 | `contract/design/art/mark_check.svg` | 2026-10-03 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `98e61077a7c5296b3f2945d4cd69f2ba847a9d6955fcf2c6f107317f498a3e93` |
+| `contract/design/art/mark_chevron.svg` | 2026-11-03 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `2f8945fc659fd5a90d26ab048fd863f996a0837d77dffc472227f883fb1da611` |
 | `contract/design/art/mark_clock.svg` | 2026-10-07 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `0b0b46690af32c1dbada0fbf92c2425818e2fb6aeba1fce24654da54d0a851ec` |
 | `contract/design/art/mark_close.svg` | 2026-10-03 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `f15f5151110d8b5442c6adc457fff67911bf1beca188634a368c78d447855eba` |
 | `contract/design/art/mark_cloud.svg` | 2026-10-06 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `e9e523df6b03e63da0eda11c26aae8b6f05b3fad5657c0eff158a2851e20d1bb` |
