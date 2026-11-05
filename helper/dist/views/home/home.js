@@ -13,8 +13,8 @@
 // the streak page since slice 51), under Up next (2026-11-03) the embers row (slice 55: Cardio moves today 2 of 3 with
 // the cardio step's move's tile and three marks, the phones' pump.tab's, starting that move at once, the step's card
 // where Rust refuses the start; until 2026-11-03 it opened the card) and the step-up closest to done of all the ladders
-// (2026-11-02: the `book` topic's `closest`, desk/book.rs, drawn as the Book's Up next draws it and opening the
-// ladder's page in the Book at that step; none while nothing climbs), none while pumps rest, then one card (the rest
+// (2026-11-02: the `book` topic's `closest`, desk/book.rs, its key line over the ring's share, book.js `nextRow`,
+// opening the ladder's page in the Book at that step; none while nothing climbs), none while pumps rest, then one card (the rest
 // after feeling unwell, the banked moves (2026-11-03: their first three with their tiles, the whole card opening the
 // window of every one with its Skip), or today's chapter, the Saga's own day, laid out as the
 // phones' (board A-Home): Today's chapter with the chevron, its moves with the chapter's tag and its word over Moves
@@ -343,7 +343,7 @@ register("pump", () => {
 	const embersRow = h("qp-row", {trailing: "nav", "on:click": startCardio});
 	embersRow.extra = embersPips;
 	const embers = h("qp-card", {rows: true, hidden: true}, embersRow);
-	// the step-up closest to done (the Book's Up next row, `book.closest`)
+	// the step-up closest to done (`book.closest`, book.js `nextRow`)
 	const closest = h("div", {hidden: true});
 	const upNext = h("div", {class: "qp-stack-small", hidden: true},
 		h("qp-section-label", {label: t("ladders.next")}), embers, closest);

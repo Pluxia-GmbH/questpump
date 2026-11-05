@@ -3,11 +3,12 @@
 // and instants; the stage a change brings takes the keys and the focus (its primary), with the keys' half-second guard
 // again, Enter (and Space where the game's presses it) pressing its primary also where a click left the focus on no
 // control (`pressPrimary`), and a window a stage opened closes as the stage moves on. Big view (the countdown, a
-// running move, the timed ask) has the window's own full screen beside the steps, its toggle showing the window as it
-// is now (`shell`'s `fullscreen_now`) and sent through the pump (`pump.fullscreen`), so the pump's end leaves a full
-// screen it put on.
-// The move's one figure plays from its Ready view through the countdown and the run (Big view's PumpStage), one for
-// every stage of a move (a set of reps' loop phased to its go from the countdown on), stopped once no stage holds it.
+// running move, the timed ask, the count on its dial, a hold's longer ask, the pour) has the window's own full screen
+// beside the steps, its toggle showing the window as it is now (`shell`'s `fullscreen_now`) and sent through the pump
+// (`pump.fullscreen`), so the pump's end leaves a full screen it put on.
+// The move's one figure plays from its Ready view through the countdown, the run and its count (Big view's PumpStage),
+// one for every stage of a move (a set of reps' loop phased to its go from the countdown on), stopped once no stage
+// holds it.
 // While the window has lost the focus mid-pump (the `shell` topic's `focused`, Rust's), a veil says to click to control
 // the pump, since the keys would reach the game; the clock and the voice run on under it.
 
@@ -16,10 +17,10 @@ import {t} from "../../lib/copy.js";
 import {MoveFigure} from "../../lib/figure.js";
 import {focusView, pressesNothing} from "../../lib/focus.js";
 import {mounted} from "../../lib/keys.js";
-import {cover, register, uncover, whenStarted} from "../../lib/router.js";
+import {cover, isFront, register, toCover, uncover, whenStarted} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {asking, countdown, counting, done, longer, marking, pacing, ready, resting, running, saved} from "./stages.js";
-import {leave, more, move, pain, swap} from "./windows.js";
+import {leave, more, move, pauseMenu, swap} from "./windows.js";
 
 const STAGES = {ready, countdown, running, asking, counting, longer, saved, marking, pacing, done, rest: resting};
 // copy-lint: not shown (the cover's view id)
@@ -41,12 +42,12 @@ function pressPrimary(stage, e) {
 }
 
 /** What makes a stage new: everything Rust sent of the pump but its busy state, the read-aloud button's state, the
- * countdown's digit, whether its reveal landed and a hold's pour as it goes on (its landing, its rewards, its Back),
+ * countdown's digit, whether its reveal landed and a move's pour as it goes on (its landing, its rewards, its Back),
  * which the stage on screen takes as it stands (so the countdown's Back and read-aloud button keep the focus through
  * its digits, and the pour plays on through its write). */
 function keyOf(topic) {
 	const pump = topic.pump;
-	// a hold's saved stage is one pour from its plan to Next: its own row's write changes the moves under it, its
+	// a move's saved stage is one pour from its plan to Next: its own row's write changes the moves under it, its
 	// earned summary, landing and Back follow through `update`
 	if (pump.stage === "saved") {
 		return JSON.stringify({pump: {id: pump.id, stage: pump.stage, current: pump.current, at: pump.saved?.at},
@@ -81,15 +82,15 @@ register(COVER, () => {
 	const ctx = {
 		/** The move's one figure, which Ready and Big view hold from Ready through the run (qp-figure-stage `hold`). */
 		figure,
-		/** Opens a stage's window: the "···", Swap's options, How to do it, the joints that hurt, leaving the
-		 * pump. */
-		open(kind) {
+		/** Opens a stage's window: the "···", Swap's options, How to do it, Pause's menu from its button `from`,
+		 * leaving the pump. */
+		open(kind, from) {
 			win?.close?.();
 			const pump = topic.pump;
-			if (kind === "more") win = more(pump, topic, ctx.open);
+			if (kind === "more") win = more(pump, ctx.open);
 			else if (kind === "swap") win = swap(pump);
 			else if (kind === "move") win = move(pump);
-			else if (kind === "pain") win = pain(topic);
+			else if (kind === "pause") win = pauseMenu(topic, from);
 			else win = leave(pump, null);
 		},
 		/** Big view's full-screen toggle: the window's own as it is now, the choice remembered (`pump.fullscreen`). */
@@ -134,6 +135,8 @@ register(COVER, () => {
 		key = now;
 		win?.close?.();
 		win = null;
+		// Your setup over the pump stands only over its Ready view
+		if (topic.pump.stage !== "ready") toCover();
 		fullscreens.clear();
 		stage = STAGES[topic.pump.stage](topic.pump, topic, ctx);
 		if (!stage.el.contains(figure.el)) figure.stop();
@@ -145,7 +148,9 @@ register(COVER, () => {
 		veiled();
 		cancelAnimationFrame(raf);
 		draw();
-		if (page.isConnected) {
+		// the keys and the focus only while the pump is in front: not before its cover placed it, nor under Your setup
+		// its Settings opened over it (lib/router.js `over`), which keeps them
+		if (isFront(view)) {
 			mounted(view);
 			focusView(view);
 		}

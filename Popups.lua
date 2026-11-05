@@ -210,14 +210,22 @@ function Menu.Open(owner, generator)
 			if not (Menu.owner and Menu.owner:IsVisible()) then Menu.Close() end
 		end)
 	end
+	Menu.isOpen = true
+	ns.Emit("Menu")
 end
 
 function Menu.Close()
 	T.cancel("owner")
-	local owner = Menu.owner
-	Menu.owner = nil
+	local owner, was = Menu.owner, Menu.isOpen
+	Menu.owner, Menu.isOpen = nil, nil
 	for i = #Menu.levels, 1, -1 do Menu.levels[i]:Hide() end
 	if owner and owner.OnMenuClosed then owner.OnMenuClosed() end
+	if was then ns.Emit("Menu") end
+end
+
+-- Whether a menu stands open, every way of closing it going through Menu.Close (the first level's OnHide).
+function Menu.Shown()
+	return Menu.isOpen == true
 end
 
 -- A left or right click anywhere off the menu closes it, as Blizzard's close (Menu.lua's GLOBAL_MOUSE_DOWN); the click

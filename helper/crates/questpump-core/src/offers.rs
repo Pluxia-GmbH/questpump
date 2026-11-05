@@ -76,6 +76,9 @@ pub struct Tunables {
 	/// minutes of a match one size step takes (`match_step_min`).
 	pub sat_min: i64,
 	pub step_min: i64,
+	/// The minutes under which a match's pump composes at Light, one move at every size (`match_short_min`, 2026-11-04:
+	/// tools/apppump.lua `A.matchPace`), so its card asks no size (`Tunables::short`).
+	pub short_min: i64,
 	/// The reminders' own a game day by default, and the most a player sets (`remind_cap`, `remind_cap_max`).
 	pub cap: u32,
 	pub cap_max: u32,
@@ -100,6 +103,7 @@ static TUNABLES: LazyLock<Option<Tunables>> = LazyLock::new(|| {
 		away_s: c.match_away_s,
 		sat_min: c.match_sat_min,
 		step_min: c.match_step_min,
+		short_min: c.match_short_min,
 		cap: c.remind_cap,
 		cap_max: c.remind_cap_max,
 		quiet: (c.remind_quiet_from_min, c.remind_quiet_to_min),
@@ -122,6 +126,13 @@ impl Tunables {
 	#[must_use]
 	pub fn warm(&self, sat_s: i64) -> bool {
 		i64::from(sitting::minutes(sat_s)) >= self.sat_min
+	}
+
+	/// Whether a match of `minutes` is a short one, whose pump composes at Light, one move at every size
+	/// (`match_short_min`; the engine's `A.matchPace` decides the pump, this the size question).
+	#[must_use]
+	pub fn short(&self, minutes: u16) -> bool {
+		i64::from(minutes) < self.short_min
 	}
 }
 

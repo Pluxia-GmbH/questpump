@@ -511,8 +511,8 @@ L["ui.result.holdHintWeak"] = "How many seconds on your weaker side?"
 L["ui.result.intro"] = "%s · %s"
 -- a counted set's Result (slice 42, 2026-10-16): its question as the title (slice 53's "All out and clean?"; "Did
 -- your form hold to the end?" until 2026-10-23), the window in its intro, the optional count's label and its words
--- with no number, the live preview of a count against the best clean count, and the three answers (keys 1-3, each in
--- ui.result.markChoice's "%d. %s"), none pushed
+-- with no number, the live preview of a count against the best clean count, and the three answers (a click each, the
+-- digits typing the count on the dial since slice 66), none pushed
 L["ui.result.formAsk"] = "All out and clean?"
 L["ui.result.window"] = "%d s all out"
 L["ui.result.cleanLabel"] = "Clean reps"
@@ -593,10 +593,10 @@ L["ui.result.finish"] = "Finish"
 -- the last move's way out of a pump started from the Talents tab, which returns to the tree (the apps'
 -- pump.done.back.tree)
 L["ui.result.backTree"] = "Back to your tree"
--- a hold's seconds pour (slice 65; the apps' pump.saved.*): the way on, live from the pour's start; the hold bar's
--- label (the ladder and the move's step) and its posts (m:ss); the record chip on the dial and the move row's tag with
--- the record it passed; the day at the top it counted; the step-up reveal's caption; the unlock row's step and colour
--- (its stat and XP rows: ui.rewards.stat and ui.rewards.gain)
+-- every move's pour (slices 65 and 66; the apps' pump.saved.*): the way on, live from the pour's start; the count bar's
+-- label (the ladder and the move's step) and its posts in the move's unit (reps as a number, seconds as m:ss); the
+-- record chip on the dial and the move row's tag with the record it passed; the day at the top it counted; the step-up
+-- reveal's caption; the unlock row's step and colour (its stat and XP rows: ui.rewards.stat and ui.rewards.gain)
 L["ui.pour.next"] = "Next: %s"
 L["ui.pour.step"] = "%s · step %d"
 L["ui.pour.goal"] = "goal %s"
@@ -608,8 +608,13 @@ L["ui.pour.topDay"] = "Day %d of %d at the top, toward step %d"
 L["ui.pour.unlocked"] = "Step %d unlocked"
 L["ui.pour.unlockStep"] = "step %d · %s"
 L["ui.result.max"] = "Max %d: count one set"
--- the weight box beside the rep box on a move done with a weight, its - and + in the spinner modes, and after the set
--- the next fresh set's weight and goal (ns.NextLoad)
+-- under the count's dial while + stands at its most (slice 66, the apps' pump.count.cap and pump.count.cap.goal): that
+-- most and what the app counted, or the number a set of reps has to beat where that set it, in the move's unit
+-- (Panel.lua Pour.drawCount, Events.lua Lc.CountMost)
+L["ui.count.cap"] = "Up to %s: 50%% more than the %s counted"
+L["ui.count.cap.goal"] = "Up to %s: 50%% more than the %s to beat"
+-- the weight box under the count's dial on a move done with a weight with its - and + (the dial's own too), and after
+-- the set the next fresh set's weight and goal (ns.NextLoad)
 L["ui.result.kg"] = "kg"
 L["ui.result.kgEach"] = "kg each"
 L["ui.result.kgDown"] = "-"
@@ -11205,7 +11210,8 @@ L["settings.deathTax"] = "Death tax"
 L["settings.deathTax.tip"] = "Each time your character dies, one banked move is added. It comes with your next "
 	.. "pump."
 L["settings.inputMode"] = "Count input"
-L["settings.inputMode.tip"] = "How you enter a count after a set."
+L["settings.inputMode.tip"] = "Mouse only leaves the keys to the game while you count. The others pick the box or "
+	.. "the spinner where you correct a count."
 L["settings.input.auto"] = "Automatic (the spinner with a gamepad)"
 L["settings.input.type"] = "Type the number"
 L["settings.input.spinner"] = "Spinner"

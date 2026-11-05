@@ -793,9 +793,9 @@ end
 -- clear is; allowed while a pump is open, whose moves of that move with no result yet are dosed again (Lc.Corrected),
 -- and the pump stays hidden while the window shows, as under the export window (Events.lua MENU_WINDOWS: under the dim
 -- its box would take the card's keys). The game's Escape closes it (UISpecialFrames), and so does a fight.
-local BOX_W, BOX_H = 120, 60 -- the count step's rep box (Panel.lua)
--- the weight box at the template's own font and size (Panel.lua buildLoad: the rep box's font crashed the client in
--- it), and how far left of the centre the count's input stands beside it: the rep box, the spinner
+local BOX_W, BOX_H = 120, 60 -- the rep box
+-- the weight box at the template's own font and size (the rep box's font crashed the client in it), and how far left
+-- of the centre the count's input stands beside it: the rep box, the spinner
 local KG_W, KG_H, KG_SHIFT_BOX, KG_SHIFT_SPIN = 50, 20, 70, 96
 
 -- Set `set`'s entry on the window's list of move `id` now (DB.lua ns.IsSet, the fold's set identity), nil once it
@@ -853,8 +853,7 @@ local function overLimit(f, value, load)
 end
 
 -- The count's input on its holder: centred, or on a loaded set left of the centre with the weight box beside it
--- (beside the rep box, or between - and + beside the spinner), as the count step places it (Panel.lua placeInputs);
--- placeKg places the weight box and its label.
+-- (beside the rep box, or between - and + beside the spinner); placeKg places the weight box and its label.
 local function placeKg(f, boxes)
 	local kg = f.kg
 	for _, part in ipairs({ kg, kg.label, kg.down, kg.up }) do part:ClearAllPoints() end

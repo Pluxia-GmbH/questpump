@@ -329,6 +329,23 @@ pub(crate) enum Outcome {
 	Record { typed: Typed, confirmed: bool },
 }
 
+/// What set a count's most, which the line under the dial names.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum CapBy {
+	/// What the app counted (`pump.count.cap`'s {counted}).
+	Counted(i64),
+	/// The number a set of reps has to beat, past what the app counted (`pump.count.cap.goal`'s {goal}).
+	Goal(i64),
+}
+
+/// The most a count takes short of one set's most, and what set it: none where the floor of what counts did, which no
+/// line names.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) struct Cap {
+	pub(super) most: i64,
+	pub(super) by: Option<CapBy>,
+}
+
 impl CountStep {
 	/// Save takes `n`: never 0 on a max set, whose 0 is "Could not do one".
 	pub(super) fn saves(n: i64, max_set: bool) -> bool {
@@ -403,6 +420,28 @@ impl CountStep {
 			Some(aim) if real(held) < ask_share * real(aim) => 0,
 			_ => held,
 		}
+	}
+
+	/// The most a count takes where the app counted the move (slice 66, Rapha, 2026-11-04: "dont allow it to do more than
+	/// 50% more of what the app counted"; David, 2026-11-04, of a fast honest set the figure counts short: "you fix and
+	/// decide on the best"): the higher of `counted` (a set of reps' reps the figure ended by Done, a hold's stopwatch, the
+	/// weaker side's on a side move) and `beat` (a set of reps' number to beat, `Run::count_cap`) times 1 + `over`
+	/// (`count_over_share`), rounded down, and never under `least` (`min_reps`, a hold's `min_seconds`), so a count the app
+	/// caught short of what counts at all can still be saved as one that does, where that stays under one set's `most`;
+	/// none where the app counted nothing (a counted set, no rep count, an empty stopwatch) or one set's most binds first,
+	/// which keeps today's bounds. The line names what set it only where the share passes that floor. Never a lower bound.
+	pub(super) fn cap(counted: Option<i64>, beat: Option<i64>, most: i64, over: f64, least: i64) -> Option<Cap> {
+		let counted = counted.filter(|&n| n > 0)?;
+		let share = Self::share(beat.map_or(counted, |n| n.max(counted)), over);
+		let by = beat.filter(|&n| n > counted).map_or(CapBy::Counted(counted), CapBy::Goal);
+		let cap = share.max(least);
+		(cap < most).then_some(Cap { most: cap, by: (share > least).then_some(by) })
+	}
+
+	/// `from` times 1 + `over`, rounded down: the half again [`Self::cap`] allows before its floor.
+	#[expect(clippy::cast_possible_truncation, reason = "a count of one set, far inside i64")]
+	fn share(from: i64, over: f64) -> i64 {
+		(real(from) * (1.0 + over)).floor() as i64
 	}
 }
 

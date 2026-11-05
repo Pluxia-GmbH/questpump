@@ -50,8 +50,8 @@ local LIST_LINES = 6 -- a long pump's list (every unfinished move rides along) s
 local DOTS_MOST = 8 -- the Ready view's step dots beside where the move stands, for a pump of at most this many moves
 local OUTCOME = {} -- outcome code → name, for the locale keys
 for name, code in pairs(O) do OUTCOME[code] = name end
--- a counted set's answers to "All out and clean?" by their rows' and keys' order (slice 53): Yes, to the end (0),
--- Form slipped, Not all out (ns.Enum.answer)
+-- a counted set's answers to "All out and clean?" by their rows' order (slice 53): Yes, to the end (0), Form slipped,
+-- Not all out (ns.Enum.answer)
 local FORM_ANSWERS = { 0, E.answer.slipped, E.answer.notAllOut }
 -- the answers to "How close to the goal pose?" by their key: each digit is its answer's code (ns.Enum.mark), 1 Not yet
 -- to 4 Perfect, so a stray 1 is the lowest answer (2026-10-31); the rows list them from Perfect down (markKeys)
@@ -178,8 +178,10 @@ local function keepingTop(fn, ...)
 	if p then p.keepTop = nil end -- a click that drew nothing keeps nothing
 end
 
--- The rep input: the typed box by default, the spinner (+/- buttons) with a gamepad or when chosen, and the mouse-only
--- mode (the spinner, and the panel never captures the keyboard). The mode is a profile setting from slice 3.
+-- The count's input mode (a profile setting from slice 3): the typed box by default, the spinner (+/- buttons) with a
+-- gamepad or when chosen, and the mouse-only mode, in which the panel never captures the keyboard. The pump's count is
+-- on its dial in every mode (slice 66: its - and + and the wheel, the keys while the panel takes them); Correct a
+-- count's box keeps the mode (Settings.lua).
 function Panel.InputMode()
 	local mode = ns.profile and ns.profile.inputMode or "auto"
 	if mode == "auto" then return C_GamePad.IsEnabled() and "spinner" or "type" end
@@ -196,14 +198,9 @@ function Panel.Streamer()
 	return ns.profile ~= nil and ns.profile.layout == "streamer"
 end
 
--- The number in the active input, or nil while nothing is entered.
+-- The count on the dial (Panel.SetCount), or nil while nothing is entered.
 function Panel.InputValue()
-	if typed() then
-		if not F.box or F.box:GetText() == "" then return nil end
-		return F.box:GetNumber()
-	end
-	local v = F.spin and F.spin:GetValue() or 0
-	return v > 0 and v or nil
+	return F.count
 end
 
 -- The weight box's weight in tenths of a kg, or nil: no loaded move, an empty box or 0 (the set counts reps alone).
@@ -212,28 +209,26 @@ function Panel.LoadValue()
 	return ns.Sheet.ParseKg(F.kg:GetText())
 end
 
-local function boxEmpty()
+local function countEmpty()
 	return Panel.InputValue() == nil
 end
 
--- Lets go of the keyboard: the rep box and the weight box.
+-- Lets go of the keyboard: the weight box.
 local function letGo()
-	if F.box then F.box:ClearFocus() end
 	if F.kg then F.kg:ClearFocus() end
 end
 
--- The rep box's keys while it has no focus (the player pressed Escape in it): a digit or Backspace goes into it, and
--- into a box still holding the number it started at (a hold's stopwatch, the voice's rep count) a digit replaces it
--- and Backspace clears it, as typing does in the focused box, whose focus highlights its text.
+-- The count's keys (Panel.TypeCount): a digit goes onto the dial's number, and onto the number it started at (a hold's
+-- stopwatch, the voice's rep count) replaces it, and Backspace takes its last digit off, or clears that number whole.
 local DIGIT = { BACKSPACE = false }
 for d = 0, 9 do
 	DIGIT[tostring(d)], DIGIT["NUMPAD" .. d] = tostring(d), tostring(d)
 end
 
 -- Whether the ask the Result view shows (the whole move's, the goal pose's, the pace's, the hold's, a counted set's
--- answers) has stood C.answer_settle_s since it showed (renderResult's v.askAt; David, 2026-10-31: "I had stretches
--- that now are marked done in the desktop app even so I never said I did them perfect etc"): its digits and its clicks
--- answer only then, so the key or the click that ended the move never answers what came in its place.
+-- answers, the count) has stood C.answer_settle_s since it showed (renderResult's v.askAt; David, 2026-10-31: "I
+-- had stretches that now are marked done in the desktop app even so I never said I did them perfect etc"): its digits
+-- and its clicks answer only then, so the key or the click that ended the move never answers what came in its place.
 local function answerSettled()
 	local v = F.views.result
 	return v ~= nil and v.askAt ~= nil and GetTime() - v.askAt >= C.answer_settle_s
@@ -246,24 +241,29 @@ local function settledAnswer(answer)
 	end
 end
 
--- True while the Result view waits for the count in the typed box.
-local function countingTyped(p)
-	return p.state == "result" and p.view == "result" and not p.committed and typed() and F.box ~= nil
-		and F.box:IsShown()
+-- True while the Result view's dial takes the count (slice 66): a set of reps', a hold's or a counted set's, until
+-- Save or an answer saves it.
+local function counting(p)
+	local v = F.views.result
+	return p ~= nil and p.state == "result" and p.view == "result" and not p.committed and p.pour == nil and v ~= nil
+		and (v.state == "count" or v.state == "form")
 end
+
+-- The arrows on the count's dial (slice 66): Up and Right as its +, Down and Left as its - (David, 2026-11-04, QA-9).
+local DIAL_STEP = { UP = 1, RIGHT = 1, DOWN = -1, LEFT = -1 }
 
 -- True when the key is swallowed. Movement keys and Space always (Space starts a Ready view's move, on a side move's
 -- first side switches sides and while Keep going shows keeps going, slice 52; it never ends a move); Escape only past
 -- an open pump's views (on every
 -- move's Ready view, and "I feel unwell" beside it, it opens the game menu: Escape never banks,
--- and the player can always log out); Enter while a move runs, the count waits in the box or the result waits for a
+-- and the player can always log out); Enter while a move runs, the count waits on the dial or the result waits for a
 -- click, and while "Did you do the whole move?" asks, where it does nothing (the answer takes a click, never the key
 -- that just ended the move); while "How close to the goal pose?" asks, a digit 1-4 answers it with the answer of that
 -- code (1 Not yet to 4 Perfect), while "Did you keep that pace to the end?" or "Could you have held longer?" asks a
--- digit 1-3 (Enter does nothing there); a counted set's empty box let go of the keyboard takes 1 for Yes, to the end,
--- 2 for Form slipped and 3 for Not all out (slice 53); an answer's digit is swallowed and answers nothing before its
--- ask has settled (answerSettled); while the count waits and the box has let go of the keyboard, a digit or Backspace
--- goes into it and Escape gives it the keyboard back; everything else goes on to the game, chat included.
+-- digit 1-3 (Enter does nothing there); an answer's digit is swallowed and answers nothing before its ask has settled
+-- (answerSettled); while the count waits on the dial (slice 66) the digits and Backspace type it and the arrows step
+-- it, ahead of the movement bindings that hold the arrows by default; everything else goes on to the game, chat
+-- included.
 function Panel.HandleKey(key)
 	local p = Lc.pump
 	if not p then return false end
@@ -275,6 +275,15 @@ function Panel.HandleKey(key)
 		elseif Lc.KeepShows() then
 			Lc.KeepGoing() -- the bar's secondary key; Enter stays Done (slice 52)
 		end
+		return true
+	end
+	local dial = counting(p)
+	if dial and DIGIT[key] ~= nil then
+		Panel.TypeCount(key)
+		return true
+	end
+	if dial and DIAL_STEP[key] then
+		Panel.StepCount(DIAL_STEP[key])
 		return true
 	end
 	if Panel.IsMovement(key) then return true end
@@ -306,24 +315,13 @@ function Panel.HandleKey(key)
 		end
 		if key == "ENTER" or key == "NUMPADENTER" then return true end
 	end
-	local counting = countingTyped(p)
-	-- a counted set's three answers (slice 42's two; Not all out since slice 53): with the box empty and let go of the
-	-- keyboard (Escape in it), 1 is Yes, to the end, 2 Form slipped and 3 Not all out, as their rows number them; a box
-	-- that holds a count takes the digits as any count
-	if counting and Lc.Slot().counted and boxEmpty() and not p.really then
-		local d = tonumber(DIGIT[key] or "")
-		if d and FORM_ANSWERS[d] then
-			if answerSettled() then Panel.Counted(FORM_ANSWERS[d]) end
-			return true
-		end
-	end
 	if key == "ENTER" or key == "NUMPADENTER" then
 		if p.state == "running" then
 			Lc.Done()
 			return true
 		end
 		if p.state == "result" and p.asking then return true end
-		-- a hold's pour: Next from its start (its row saved first, Lc.Next), once it has settled (answerSettled)
+		-- a pour: Next from its start (its row saved first, Lc.Next), once it has settled (answerSettled)
 		if p.state == "result" and p.pour then
 			if answerSettled() then Lc.Next() end
 			return true
@@ -332,35 +330,26 @@ function Panel.HandleKey(key)
 			Lc.Next()
 			return true
 		end
-		if counting and not boxEmpty() then
-			-- "Is that right?" (p.really) can show on the press that ended a hold (slice 65): its Enter waits too
-			if p.really and not answerSettled() then return true end
-			Panel.RecordInput()
+		if dial then
+			-- Save with a count (a counted set's: the "Is that right?" row's Yes alone), never before the dial has
+			-- settled: the press that ended the move, pressed twice, saves nothing unread (Panel.RecordInput); an empty
+			-- dial's Enter is the panel's too, or it opens the chat, which then takes the digits
+			if p.really or not countEmpty() then Panel.RecordInput() end
 			return true
 		end
 		return false
 	end
-	if counting and DIGIT[key] ~= nil and Panel.FocusBox(true) then
-		F.box:HighlightText(0, 0) -- the focus highlights the whole text (InputBoxTemplate's): this key and the next add on
-		if F.box.prefilled then -- the number it started at, untouched: a digit replaces it and Backspace clears it
-			F.box.prefilled = false
-			F.box:SetText(DIGIT[key] or "")
-		elseif DIGIT[key] then
-			F.box:Insert(DIGIT[key])
-		else
-			F.box:SetText(F.box:GetText():sub(1, -2))
-		end
-		return true
-	end
 	if key == "ESCAPE" then
 		if p.state == "open" or not p.started then return false end
-		-- the Escape that ended the hold, pressed twice, never takes its pour back before it has settled (slice 65)
+		-- an Escape right behind the Save never takes the pour back before it has settled (slice 65)
 		if p.state == "result" and p.pour and not answerSettled() then return true end
-		if counting and not boxEmpty() then
-			Panel.FocusBox(true)
+		if dial and p.really then
+			Panel.ChangeCount() -- Change it
 			return true
 		end
-		Lc.Escape(boxEmpty())
+		-- the Escape that ended the move, pressed twice, never saves an empty dial as done without a count
+		if dial and not answerSettled() then return true end
+		Lc.Escape(countEmpty())
 		return true
 	end
 	return false
@@ -1146,7 +1135,8 @@ local function answerButton(row, label, onClick)
 end
 
 -- The answers that show on `row`, centred on it 10 apart, each as wide as its words + 40 and at least the tier's grey
--- button; answers whether any shows.
+-- button, or one over the other, each centred, where they do not fit the row's width side by side (the count's column
+-- beside the figure); the row takes their height. Answers whether any shows.
 local function centreButtons(row, buttons)
 	local shown, w = {}, -10
 	for _, b in ipairs(buttons) do
@@ -1156,11 +1146,17 @@ local function centreButtons(row, buttons)
 			w = w + b:GetWidth() + 10
 		end
 	end
+	local stacked = w > row:GetWidth()
+	row:SetHeight(stacked and #shown * (ANSWER_H + 6) - 6 or ANSWER_H)
 	local x = -w / 2
-	for _, b in ipairs(shown) do
+	for i, b in ipairs(shown) do
 		b:ClearAllPoints()
-		b:SetPoint("LEFT", row, "CENTER", x, 0)
-		x = x + b:GetWidth() + 10
+		if stacked then
+			b:SetPoint("TOP", row, "TOP", 0, -(i - 1) * (ANSWER_H + 6))
+		else
+			b:SetPoint("LEFT", row, "CENTER", x, 0)
+			x = x + b:GetWidth() + 10
+		end
 	end
 	return #shown > 0
 end
@@ -1642,21 +1638,16 @@ local function buildRunning()
 end
 
 -- The weight box (2026-10-09; David: "Let people put their exact weight (kgs) and how many reps they made"): on a
--- loaded move (ns.Loaded) beside the rep box, the kg the set was done with, pre-filled with the planned weight.
--- A plain EditBox, since the rep box's SetNumeric takes no decimal point: digits and one "." or "," with one decimal
--- (cleanKg), three whole digits at most (ns.Validate's "max" asks past load_max_kg); Tab moves between the two boxes
--- (InputBoxTemplate's EditBox_OnTabPressed reads nextEditBox: placeInputs), Enter records from either and Escape does
--- what it does in the rep box. The spinner and the mouse-only modes add - and + round it (Panel.StepLoad), grey.
--- It keeps the template's own font at KG_W x KG_H in every input mode, and a move without a weight only hides it:
--- with the rep box's Game60Font (and its 100 x 60) the box crashed the client at the Result view in a native stack
--- overflow that ended in a font load, on the render that first set that font (2026-10-10, Crash_44953: the first
--- weighted Result view) and on the first Result view after the font moved to its build (2026-10-12, Crash_39971: a
--- move without a weight); every Result view before them, the box on its template font, ran.
+-- loaded move (ns.Loaded) under the count's dial, the kg the set was done with, pre-filled with the planned weight,
+-- between - and + (Panel.StepLoad), grey, as the dial's count is between its own (slice 66). A plain EditBox, which a
+-- click gives the keyboard: digits and one "." or "," with one decimal (cleanKg), three whole digits at most
+-- (ns.Validate's "max" asks past load_max_kg); Enter saves the count from it and Escape lets it go (Change it on the
+-- "Really?" row). It keeps the template's own font at KG_W x KG_H in every input mode, and a move without a weight
+-- only hides it: with the old rep box's Game60Font (and its 100 x 60) the box crashed the client at the Result view in
+-- a native stack overflow that ended in a font load, on the render that first set that font (2026-10-10, Crash_44953:
+-- the first weighted Result view) and on the first Result view after the font moved to its build (2026-10-12,
+-- Crash_39971: a move without a weight); every Result view before them, the box on its template font, ran.
 local KG_W, KG_H = 50, 20
--- how far left of the centre the count's input stands beside a weight box: the rep box, the spinner
-local KG_SHIFT_BOX, KG_SHIFT_SPIN = 70, 96
--- the rep box's size, and how far under the box's top the spinner stands (its holder's height in either mode)
-local BOX_W, BOX_H, SPIN_Y = 120, 60, 16
 
 -- What a weight box keeps of a typed text: digits and the first "." or ",", one digit after it and three before.
 local function cleanKg(s)
@@ -1670,12 +1661,10 @@ local function buildLoad(parent)
 	kg:SetAutoFocus(false)
 	kg:SetMaxLetters(5)
 	kg:SetJustifyH("CENTER")
+	kg:SetSize(KG_W, KG_H)
 	kg:SetScript("OnEnterPressed", function(self)
-		if boxEmpty() then -- Enter never records an empty count: the rep box takes the keyboard for it
-			if typed() then Panel.FocusBox(true, true) end
-			return
-		end
-		if Panel.RecordInput() then self:ClearFocus() end
+		-- Enter never saves an empty count: the box lets the keyboard go to the dial
+		if countEmpty() or Panel.RecordInput() then self:ClearFocus() end
 	end)
 	kg:SetScript("OnEscapePressed", function(self)
 		local p = Lc.pump
@@ -1685,7 +1674,8 @@ local function buildLoad(parent)
 	kg:SetScript("OnTextChanged", function(self, userInput)
 		local s = self:GetText()
 		if userInput and cleanKg(s) ~= s then return self:SetText(cleanKg(s)) end -- the SetText comes back here
-		Panel.Preview()
+		-- redrawn through the count, which a heavier weight can leave over its most (Lc.CountMost's record at it)
+		Panel.SetCount(F.count, F.countFresh)
 	end)
 	kg.label = text(parent, "large", "LEFT")
 	kg.down = Kit.Secondary(parent, L["ui.result.kgDown"], 26, function() Panel.StepLoad(-1) end)
@@ -1693,7 +1683,7 @@ local function buildLoad(parent)
 	F.kg = kg
 end
 
--- The - and + of the spinner modes, the weight box's one rule on every surface (ns.LoadStep).
+-- The weight's - and +, the weight box's one rule on every surface (ns.LoadStep).
 function Panel.StepLoad(dir)
 	local slot = Lc.Slot()
 	if not (slot and F.kg:IsShown()) then return end
@@ -1702,62 +1692,48 @@ function Panel.StepLoad(dir)
 	F.kg:SetText(ns.Sheet.Kg(load)) -- its OnTextChanged redraws the preview
 end
 
--- The count's input on its holder: centred, or on a loaded move left of the centre with the weight box beside it
--- (beside the rep box, or between - and + beside the spinner), placed and sized before it shows.
-local function placeInputs(v, slot, loaded)
-	local kg, boxes = F.kg, typed()
-	local shift = loaded and (boxes and KG_SHIFT_BOX or KG_SHIFT_SPIN) or 0
-	F.box:ClearAllPoints()
-	F.box:SetPoint("TOP", v.inputs, "TOP", -shift, 0)
-	F.spin:ClearAllPoints()
-	F.spin:SetPoint("TOP", v.inputs, "TOP", -shift, -SPIN_Y)
-	if loaded then
-		kg.label:SetText(L[ns.Loaded(slot.move) == "each" and "ui.result.kgEach" or "ui.result.kg"])
-		for _, part in ipairs({ kg, kg.label, kg.down, kg.up }) do part:ClearAllPoints() end
-		if boxes then
-			kg:SetPoint("LEFT", F.box, "RIGHT", 16, 0)
-			kg.label:SetPoint("LEFT", kg, "RIGHT", 6, 0)
-		else
-			kg.down:SetPoint("LEFT", F.spin.IncrementButton, "RIGHT", 24, 0)
-			kg:SetPoint("LEFT", kg.down, "RIGHT", 10, 0)
-			kg.up:SetPoint("LEFT", kg, "RIGHT", 4, 0)
-			kg.label:SetPoint("LEFT", kg.up, "RIGHT", 6, 0)
-		end
-		kg:SetSize(KG_W, KG_H)
-	end
-	kg:SetShown(loaded)
-	kg.label:SetShown(loaded)
-	kg.down:SetShown(loaded and not boxes)
-	kg.up:SetShown(loaded and not boxes)
-	local pair = loaded and boxes -- Tab and Shift-Tab between the two boxes
-	F.box.nextEditBox, F.box.previousEditBox = pair and kg or nil, pair and kg or nil
-	kg.nextEditBox, kg.previousEditBox = pair and F.box or nil, pair and F.box or nil
+-- The weight's row on its holder (v.load) on a loaded move, centred: -, the box 10 after it (the template's border
+-- reaches left of its rect), + 4 after it and its unit 6 after that; placed before it shows.
+local function placeLoad(v, slot, loaded)
+	local kg = F.kg
+	for _, part in ipairs({ kg, kg.label, kg.down, kg.up }) do part:SetShown(loaded) end
+	if not loaded then return end
+	kg.label:SetText(L[ns.Loaded(slot.move) == "each" and "ui.result.kgEach" or "ui.result.kg"])
+	for _, part in ipairs({ kg, kg.label, kg.down, kg.up }) do part:ClearAllPoints() end
+	local w = kg.down:GetWidth() + 10 + KG_W + 4 + kg.up:GetWidth() + 6 + kg.label:GetStringWidth()
+	kg.down:SetPoint("LEFT", v.load, "CENTER", -w / 2, 0)
+	kg:SetPoint("LEFT", kg.down, "RIGHT", 10, 0)
+	kg.up:SetPoint("LEFT", kg, "RIGHT", 4, 0)
+	kg.label:SetPoint("LEFT", kg.up, "RIGHT", 6, 0)
 end
 
--- The Result view, one view in six states (renderResult): the count, its question as the title ("How many did you
--- do?"), the move and its goal under it, the box (or the spinner) centred with the preview under it and the other two
--- answers under that, grey; "Is that right?" in the preview's place with its two answers once, Record hidden while it
--- asks; a counted set's form (slice 42; slice 53's "All out and clean?", the optional count under its label and its
--- preview, Yes, to the end, Form slipped and Not all out as equal rows and the note under them); "Did you do the
--- whole move?", "How close to the goal pose?" and "Did you keep that pace to the end?" (slice 42) with their answers
--- as rows, no red;
--- and the recorded set, told once: the outcome, the day or the check it brought, what the set earned as rows, the
--- character on a win, and the way on.
--- A hold's seconds pour (slice 65) ----------------------------------------------------------------------------------
+-- The Result view, one view in seven states (renderResult): the count on the dial (slice 66), its question as the
+-- title ("How many did you do?"), the move and its goal under it, the dial where the Running view's stood with the
+-- count in its clock's place, - and + at its sides and under it the line at its most, the preview, the weight and the
+-- other two answers, grey; "Is that right?" in the preview's place with its two answers once, Record hidden while it
+-- asks; a counted set's form (slice 42; slice 53's "All out and clean?", the optional clean count on the dial under its
+-- label, Yes, to the end, Form slipped and Not all out as equal rows); "Did you do the whole move?", "How close to the
+-- goal pose?" and "Did you keep that pace to the end?" (slice 42) with their answers as rows, no red; the pour of what
+-- was saved (below); and a set that saved no count, told once: the outcome, the day or the check it brought, what the
+-- set earned as rows, the character on a win, and the way on.
+-- Every move's pour (slices 65 and 66) -------------------------------------------------------------------------------
 
--- The pour (Lc.Save's p.pour), the Result view's state for a hold whose Done saved its stopwatch's seconds: the move's
--- figure dimmed in the right column; the dial in the left with the clock, its ring holding the hold's share of its
--- goal and emptying as one grain a second flies from its tip into that second's place on the hold bar across the
--- card under them (the step's range from 0 to its top over POUR.track of the track in the step's colour, a spill past
--- the top, posts at the goal, at the record before this hold and at the top); the clock counting each second that
--- lands, the gold record chip once it passes the best, the track's flash and sparks at the top. The hold's row is
--- written as the pour lands (Lc.Land: its last grain, a click on the stage, Next); a step it opened then plays its
--- reveal over the figure's screen (the ladder's tiles, the light to the next step, its lock springing, its burst, the
--- new move rising with its step, name and colour), which folds into the move's rows in the dial's place while the bar
--- rolls over to the next step's. Built once on the result view (buildPour), drawn by renderPour.
+-- The pour (Lc.Save's p.pour), the Result view's state for every move that saved a count (slice 65's hold; slice 66,
+-- Rapha, 2026-11-04: "so the collect animation for all moves (counts reps, seconds etc)?"): the move's figure dimmed
+-- in the right column; the dial in the left with the count, its ring holding the count's share of its goal (of the
+-- record without one) and emptying as one grain a unit (a rep, a second) flies from its tip into that unit's place on
+-- the count bar across the card under them: on a set of reps or a hold the step's range from 0 to its top over
+-- POUR.track of the track in the step's colour, a spill past the top, posts at the goal, at the record before this set
+-- and at the top; on a counted set its best's post alone, on a timed move (cardio, a flow, a pose) its goal's alone.
+-- The count on the dial counts each unit that lands, the gold record chip once it passes the best, the track's flash
+-- and sparks at the top. The move's row is written as the pour lands (Lc.Land: its last grain, a click on the stage,
+-- Next); a step it opened then plays its reveal over the figure's screen (the ladder's tiles, the light to the next
+-- step, its lock springing, its burst, the new move rising with its step, name and colour), which folds into the
+-- move's rows in the dial's place while the bar rolls over to the next step's. Built once on the result view
+-- (buildPour), drawn by renderPour; the count step before it sets its count on the same dial (Pour.drawCount).
 local POUR = {
 	track = 0.86, barH = 62, trackY = 22, trackH = 12, postW = 2, postH = 26, spillGap = 4, barGap = 16, barRoll = 20,
-	-- a grain a second, `most` grains at most (each then stands for a few seconds); its sag under its straight line
+	-- a grain a unit, `most` grains at most (each then stands for a few units); its sag under its straight line
 	grainW = 3, grainH = 12, sag = 30, most = 120,
 	tiles = 5, tile = 32, tileGap = 8, hero = 64, lock = 16, sparks = 24, rowStep = 0.32, rowIn = 0.3, rowFrom = 48,
 }
@@ -1766,6 +1742,29 @@ POUR.words = { goal = "ui.pour.goal", best = "ui.pour.best", top = "ui.pour.top"
 POUR.gold = { NORMAL_FONT_COLOR:GetRGB() }
 -- the pour's functions, in a table of their own: the file's main chunk is near Lua 5.1's 200 locals
 local Pour = {}
+
+-- A count of `slot`'s in its unit (slice 66): seconds as m:ss for a hold and for what saved a timed move's seconds
+-- (`timed`: Lc.Save's p.pour.timed, a counted set stopped early's too), else a number (a set of reps' reps, a counted
+-- set's clean count, which the dial takes).
+function Pour.format(slot, n, timed)
+	if timed or slot.kind == K.hold then return clock(n) end
+	return tostring(n)
+end
+
+-- The goal the count bar and the dial's ring hold a count against: a timed move's planned seconds (`timed` as
+-- Pour.format's), else the slot's goal (none on a max set or a counted set: ns.SlotGoal).
+function Pour.goal(slot, timed)
+	if timed then return slot.seconds end
+	return (ns.SlotGoal(slot))
+end
+
+-- The share of the dial's ring a count `n` fills: of its goal, of the record (`best`) without one, else the whole ring
+-- once it has a count; never more than the whole.
+function Pour.share(slot, n, best, timed)
+	local mark = Pour.goal(slot, timed) or best
+	if mark and mark > 0 then return math.min(1, n / mark) end
+	return n > 0 and 1 or 0
+end
 
 -- An entrance of `region` (its own group): hidden for `delay` s, then over `dur` s from alpha 0, (dx, dy) away and
 -- `scale` of its size to its place, where it stays; ag.hold is the wait, whose length a caller may change.
@@ -1810,9 +1809,10 @@ function Pour.grow(ag, target, from, to, duration, order)
 	return a
 end
 
--- The hold bar (the apps' HoldBar), `w` wide: its label over the track, the fill in the step's colour, the spill past
--- its top, the flash its top gives, and the three posts with their words (the best's above, the others' under).
-function Pour.buildHoldBar(parent, w)
+-- The count bar (the apps' CountBar; the hold bar until slice 66), `w` wide: its label over the track, the fill in the
+-- step's colour, the spill past its top, the flash its top gives, and the three posts with their words (the best's
+-- above, the others' under).
+function Pour.buildCountBar(parent, w)
 	local b = CreateFrame("Frame", nil, parent)
 	b:SetSize(w, POUR.barH)
 	b.trackW = math.floor(w * POUR.track)
@@ -1851,14 +1851,14 @@ function Pour.buildHoldBar(parent, w)
 	return b
 end
 
--- The bar filled to `n` seconds: the fill to the top, the spill past it (as far as the bar reaches), each post gold
--- once passed (the best's once beaten).
+-- The bar filled to a count of `n`: the fill to its range's end, the spill past it (as far as the bar reaches), each
+-- post gold once passed (the best's once beaten).
 function Pour.fillBar(b, n)
-	local top = b.spec.top
-	local w = (b.trackW - 2) * math.min(n, top) / top
+	local range = b.spec.range
+	local w = (b.trackW - 2) * math.min(n, range) / range
 	b.fill:SetShown(w >= 1)
 	b.fill:SetWidth(math.max(1, w))
-	local over = math.min(math.max(0, n - top) * b.trackW / top, b:GetWidth() - b.trackW - POUR.spillGap)
+	local over = math.min(math.max(0, n - range) * b.trackW / range, b:GetWidth() - b.trackW - POUR.spillGap)
 	b.spill:SetShown(over >= 1)
 	b.spill:SetWidth(math.max(1, over))
 	for key, post in pairs(b.posts) do
@@ -1869,8 +1869,10 @@ function Pour.fillBar(b, n)
 	end
 end
 
--- The bar for a step: `spec` { label, q (its colour), goal, best, top, lit (the next step's bar after a step-up: its
--- edge and label in its colour) }; a post shows inside the range alone, the best's only under the top. Empty.
+-- The bar for a step: `spec` { label, q (its colour), goal, best, top (the posts, each nil without one), range (the
+-- count the track spans: the step's top, else what the bar shows), slot (the posts' unit: Pour.format), lit (the next
+-- step's bar after a step-up: its edge and label in its colour) }; a post shows inside the range alone, the best's
+-- only under the top. Empty.
 function Pour.setBar(b, spec)
 	b.spec = spec
 	Kit.SetCaps(b.label, spec.label)
@@ -1882,24 +1884,25 @@ function Pour.setBar(b, spec)
 	b.label:SetTextColor(words[1], words[2], words[3])
 	for key, post in pairs(b.posts) do
 		local value = spec[key]
-		local shown = value ~= nil and value > 0 and value <= spec.top and (key ~= "best" or value < spec.top)
+		local shown = value ~= nil and value > 0 and value <= spec.range
+			and (key ~= "best" or spec.top == nil or value < spec.top)
 		post:SetShown(shown)
 		post.words:SetShown(shown)
 		if shown then
 			post:ClearAllPoints()
-			post:SetPoint("CENTER", b.track, "LEFT", b.trackW * value / spec.top, 0)
-			Kit.SetCaps(post.words, L[POUR.words[key]]:format(clock(value)))
+			post:SetPoint("CENTER", b.track, "LEFT", b.trackW * value / spec.range, 0)
+			Kit.SetCaps(post.words, L[POUR.words[key]]:format(Pour.format(spec.slot, value, spec.timed)))
 		end
 	end
 	Pour.fillBar(b, 0)
 end
 
--- Where second `n` lands on the bar, from the track's left: its own place in the step's range, else in the spill.
-function Pour.secondX(b, n)
-	local top = b.spec.top
-	local slot = b.trackW / top
-	if n <= top then return (n - 0.5) * slot end
-	return math.min(b.trackW + POUR.spillGap + (n - top - 0.5) * slot, b:GetWidth() - 1)
+-- Where unit `n` lands on the bar, from the track's left: its own place in the range, else in the spill.
+function Pour.unitX(b, n)
+	local range = b.spec.range
+	local slot = b.trackW / range
+	if n <= range then return (n - 0.5) * slot end
+	return math.min(b.trackW + POUR.spillGap + (n - range - 0.5) * slot, b:GetWidth() - 1)
 end
 
 -- The reveal's ladder: a tile a step (the sheet's slot, smaller, on a holder so it can pop in place), its padlock,
@@ -2077,8 +2080,10 @@ function Pour.buildReveal(pv)
 	pv.heroFly:SetScript("OnFinished", function() Pour.landHero(pv) end)
 end
 
--- The move's rows (the dial's place once the pour landed): the move with its time, its record and its day at the top;
--- the step it opened; the stats it raised; its XP. Each comes in from the right in turn (row.enter).
+-- The move's rows (the dial's place once the pour landed): the move with its count, its record and its day at the
+-- top; the step it opened; the stats it raised; its XP. Each comes in from the right in turn (row.enter), and after
+-- them the lines the saved set brought, which a set saved with no count tells on its own view (slice 66: a loaded
+-- move's next weight, nextLoadLine; a cardio day, a pose's stretch checks, afterLines).
 function Pour.buildPourRows(pv)
 	local list = Kit.List(pv, LEFT_W, LEFT_W)
 	list:Hide()
@@ -2090,11 +2095,15 @@ function Pour.buildPourRows(pv)
 	for i = 1, 3 do pv.statRows[i] = Kit.Row(list, { icon24 = Style.statIcon.strength, name = "" }) end
 	pv.xpRow = Kit.Row(list, { icon24 = Style.xpIcon, name = "" })
 	for _, row in ipairs(list.rows) do row.enter = Pour.entrance(row, 0, POUR.rowIn, POUR.rowFrom) end
+	pv.after = Kit.Text(pv, "bodyWhite", "CENTER", nil, LEFT_W)
+	pv.after:Hide()
+	pv.after.enter = Pour.entrance(pv.after, 0, POUR.rowIn, POUR.rowFrom)
 end
 
 -- The pour's frames on the result view `v` (v.pour), over its columns and the figure: the dial with its clock and the
--- record chip, the two hold bars (this step's and, after a step-up, the next one's rolling in), the rows, the reveal
--- and its figure, a layer for the grains and sparks over all of it, and the stage's click (skipPour).
+-- record chip (the count step's dial too, Pour.drawCount), the two count bars (this step's and, after a step-up, the
+-- next one's rolling in), the rows, the reveal and its figure, a layer for the grains and sparks over all of it, and
+-- the stage's click (skipPour).
 function Pour.buildPour(v)
 	local pv = CreateFrame("Frame", nil, v)
 	pv:SetAllPoints()
@@ -2104,7 +2113,7 @@ function Pour.buildPour(v)
 	buildDial(pv, pv)
 	pv.chip = Kit.Badge(pv, "gold", L["ui.pour.record"])
 	pv.chip:SetPoint("TOP", pv.clock, "BOTTOM", 0, -8)
-	pv.bars = { Pour.buildHoldBar(pv, TM.TEXT), Pour.buildHoldBar(pv, TM.TEXT) }
+	pv.bars = { Pour.buildCountBar(pv, TM.TEXT), Pour.buildCountBar(pv, TM.TEXT) }
 	local old, new = pv.bars[1], pv.bars[2]
 	old.leave = old:CreateAnimationGroup()
 	local up = old.leave:CreateAnimation("Translation")
@@ -2148,11 +2157,12 @@ function Pour.buildPour(v)
 		for _, ag in ipairs({ h.lockAnim, h.flashAnim, h.pop, h.shockAnim }) do pv.anims[#pv.anims + 1] = ag end
 	end
 	for _, row in ipairs(pv.rows.rows) do pv.anims[#pv.anims + 1] = row.enter end
+	pv.anims[#pv.anims + 1] = pv.after.enter
 	for _, s in ipairs(pv.sparks) do pv.anims[#pv.anims + 1] = s.anim end
 end
 
 -- A grain of the pour (made at its first use): a gold sliver on the layer that waits its start, flies to the middle
--- of its path, sagging, and on into its second's place, dimming as it lands (landGrain).
+-- of its path, sagging, and on into its unit's place, dimming as it lands (landGrain).
 function Pour.grain(pv, i)
 	local g = pv.grains[i]
 	if g then return g end
@@ -2178,61 +2188,42 @@ end
 
 local WHOLE_W = Kit.TIER.S.TEXT -- the whole move's two answers, centred: the dialog's width
 
+local COUNT_STEP_W = 28 -- the dial's - and +, beside its ring
+
 local function buildResult()
 	local v = view("result")
 	local col = v.left
-	-- the count: the rep box (auto-focus off: a plain EditBox grabs the keyboard whenever it shows; focused on
-	-- purpose), which may start at a number (renderResult: a hold's stopwatch, the voice's rep count) the first digit
-	-- typed replaces: the template's focus highlights the whole text (InputBoxScriptTemplate's EditBox_HighlightText),
-	-- and while the box has no focus Panel.HandleKey replaces it (`prefilled`)
-	v.inputs = CreateFrame("Frame", nil, col)
-	v.inputs:SetSize(TM.TEXT, BOX_H)
-	local box = CreateFrame("EditBox", nil, col, "InputBoxTemplate") -- unnamed: the template keys its parts (parentKey)
-	box:SetNumeric(true)
-	box:SetMaxLetters(3)
-	box:SetAutoFocus(false)
-	box:SetFontObject(Style.font.repBox or GameFontNormal)
-	box:SetJustifyH("CENTER")
-	box:SetSize(BOX_W, BOX_H)
-	box.prefilled = false -- true while it holds the number it started at, which the player has not changed
-	box:SetScript("OnEnterPressed", function(self)
-		if self:GetText() == "" then return end -- Enter never records an empty box
-		if Panel.RecordInput() then self:ClearFocus() end
-	end)
-	box:SetScript("OnEscapePressed", function(self)
-		local p = Lc.pump
-		if p and p.really then return Panel.ChangeCount() end -- Escape on the "Really?" row is Change it
-		self:ClearFocus()
-	end)
-	box:SetScript("OnTextChanged", function(self, userInput)
-		if userInput then self.prefilled = false end
-		Panel.Preview()
-	end)
-	F.box = box
-	-- the spinner: the template's own +/- buttons with hold-to-repeat (Blizzard's InputBoxTemplates); its OnTextChanged
-	-- keeps the value, so the preview hooks it
-	local spin = CreateFrame("EditBox", nil, col, "NumericInputSpinnerTemplate")
-	spin:SetAutoFocus(false)
-	spin:SetMinMaxValues(0, C.max_seconds)
-	spin:HookScript("OnTextChanged", function() Panel.Preview() end)
-	spin:SetScript("OnEnterPressed", function(self)
-		self:ClearFocus()
-		Panel.RecordInput()
-	end)
-	F.spin = spin
+	-- the count on the dial (slice 66; Rapha, 2026-11-04: "maybe just in the circle adjust the times and reps etc.
+	-- instead of new screen (its bad ux anyways) then it collect?"): the pour's dial (Pour.buildPour), in its room at
+	-- the column's top where the Running view's stood, the count in its clock's place, - and + at its sides and the
+	-- wheel over it (Panel.StepCount), the digits, Backspace and the arrows through the panel's key frame
+	-- (Panel.HandleKey); under it the line that says why + stopped while the count stands at its most (Lc.CountMost)
+	Pour.buildPour(v)
+	local spot = v.pour.spot
+	v.dialRoom = CreateFrame("Frame", nil, col)
+	v.dialRoom:SetSize(spot:GetWidth(), spot:GetHeight())
+	v.less = Kit.Secondary(col, L["ui.result.kgDown"], COUNT_STEP_W, function() Panel.StepCount(-1) end)
+	v.less:SetPoint("RIGHT", v.dialRoom, "LEFT", -4, 0)
+	v.more = Kit.Secondary(col, L["ui.result.kgUp"], COUNT_STEP_W, function() Panel.StepCount(1) end)
+	v.more:SetPoint("LEFT", v.dialRoom, "RIGHT", 4, 0)
+	spot:EnableMouseWheel(true)
+	spot:SetScript("OnMouseWheel", function(_, delta) Panel.StepCount(delta > 0 and 1 or -1) end)
+	v.cap = Kit.Text(col, "bodyWhite", "CENTER", saga.note, LEFT_W)
+	-- the weight's row on a loaded move (placeLoad)
+	v.load = CreateFrame("Frame", nil, col)
+	v.load:SetSize(LEFT_W, Kit.BUTTON_H)
 	buildLoad(col)
-	-- the live preview under it once a number is in ("23 reps: +40 XP, new record")
-	v.preview = text(col, "bodyWhite", "CENTER", TM.TEXT)
+	-- the live preview under the dial once a number is in ("23 reps: +40 XP, new record")
+	v.preview = text(col, "bodyWhite", "CENTER", LEFT_W)
 	-- a counted set's form (slice 42, 2026-10-16; David: "The count in a time is not accurate enough and individual"):
-	-- the optional count's label over the box, the answers to "All out and clean?" (slice 53: Yes, to the end, Form
-	-- slipped and Not all out) as equal rows of one centred list (keys 1-3 while the box holds nothing and has let go of
-	-- the keyboard, Panel.HandleKey), none red nor pushed, a click on any once they have settled (answerSettled) saving
-	-- the set with the count the box holds (Panel.Counted)
-	v.cleanLabel = Kit.Text(col, "bodyWhite", "CENTER", saga.note, TM.TEXT)
+	-- the optional clean count's label under the dial, the answers to "All out and clean?" (slice 53: Yes, to the end,
+	-- Form slipped and Not all out) as equal rows of one list, none red nor pushed, a click on any once they have
+	-- settled (answerSettled) saving the set with the count the dial holds (Panel.Counted); the digits type the count
+	v.cleanLabel = Kit.Text(col, "bodyWhite", "CENTER", saga.note, LEFT_W)
 	v.cleanLabel:SetText(L["ui.result.cleanLabel"])
-	v.forms = Kit.List(col, WHOLE_W, WHOLE_W)
+	v.forms = Kit.List(col, LEFT_W, LEFT_W)
 	for i, key in ipairs({ "ui.result.cleanEnd", "ui.result.slipped", "ui.result.notAllOut" }) do
-		local row = answerRowOf(v.forms, L["ui.result.markChoice"]:format(i, L[key]), settledAnswer(function()
+		local row = answerRowOf(v.forms, L[key], settledAnswer(function()
 			Panel.Counted(FORM_ANSWERS[i])
 		end), { chevron = true })
 		row.chevron:Hide()
@@ -2241,16 +2232,16 @@ local function buildResult()
 	end
 	-- the other two answers to the count, grey and in the body (they answer the question; the bar's left holds the way
 	-- back alone): done without a count, could not do one
-	v.answers = answerRow(col, TM.TEXT)
-	v.empty = answerButton(v.answers, L["ui.result.empty"], function() Lc.EmptyDone() end)
-	v.couldNot = answerButton(v.answers, L["ui.result.couldNot"], function() Lc.CouldNot() end)
+	v.answers = answerRow(col, LEFT_W)
+	v.empty = answerButton(v.answers, L["ui.result.empty"], settledAnswer(function() Lc.EmptyDone() end))
+	v.couldNot = answerButton(v.answers, L["ui.result.couldNot"], settledAnswer(function() Lc.CouldNot() end))
 	-- "Really?": a count far above the record (or a first max set far above the rung's top) or far below it (ns.Validate)
 	-- asks once, in the preview's place with its two answers (David, 2026-10-03: asked to type it again, "Instead just
 	-- have a confirm popup"): Yes records it as typed, marked confirmed, and Enter does the same; Change it, or Escape,
 	-- empties the box. No "Beat it" button fills the goal in (David, 2026-10-03: "remove beat it button. Record is
 	-- enough").
-	v.really = text(col, "bodyWhite", "CENTER", TM.TEXT)
-	v.reallyRow = answerRow(col, TM.TEXT)
+	v.really = text(col, "bodyWhite", "CENTER", LEFT_W)
+	v.reallyRow = answerRow(col, LEFT_W)
 	v.reallyYes = answerButton(v.reallyRow, "", settledAnswer(function() Panel.RecordInput() end))
 	v.reallyChange = answerButton(v.reallyRow, L["ui.result.reallyChange"], function() Panel.ChangeCount() end)
 	-- "Did you do the whole move?" (Lc.Whole; David, 2026-10-05: "If its an extreme number like 5s when 45s cooldown
@@ -2373,7 +2364,6 @@ local function buildResult()
 			Lc.Next()
 		end
 	end), function() return v.next:GetText() end, nil, keyHint("key.enter"))
-	Pour.buildPour(v)
 end
 
 -- The Pause menu's "I feel unwell" (Lc.UnwellAsk), in the care tone (no red, no gold, no celebration): its title, then
@@ -2833,26 +2823,53 @@ local function updateRunning()
 	if goalMet(slot, elapsed) ~= v.goalMet or Lc.KeepShows() ~= v.keep:IsShown() then Panel.Render() end
 end
 
--- A set of reps whose count ran (Speech.RepCount) starts its box at the reps the count had reached when Done was
--- pressed (David, 2026-10-13: "prefill the rep count after done press"), on the run's own clock: a side move's
--- p.elapsed is its shorter side's run, whose count is the weaker side's. With no rep counted it starts empty.
-local function repPrefill(p, slot)
-	local plan = ns.Speech.RepCount(slot)
-	local reps = plan and ns.Speech.RepsBy(plan, p.elapsed or 0) or 0
-	return reps > 0 and reps or nil
+-- The count on the dial (slice 66): `n` (nil: none) held between 0 and the most the move takes (Lc.CountMost: half
+-- again what the app counted, on a set of reps or the number it has to beat where that is higher, and at least a set's
+-- least, else one set's most; a typed number above it becomes it), `fresh` while it is the number the count started
+-- at, untouched (a digit then replaces it); drawn on the dial with its preview. Nothing while the dial takes no count.
+function Panel.SetCount(n, fresh)
+	local p, slot = Lc.pump, Lc.Slot()
+	if not (counting(p) and slot) then return end
+	if n then n = math.max(0, math.min(n, (Lc.CountMost(p, slot, Panel.LoadValue())))) end
+	F.count, F.countFresh = n, fresh == true
+	Panel.Preview()
 end
 
--- Records the active input's number, with the weight box's weight on a loaded move; false when there is none or it is
--- over one set or past the heaviest weight the box takes (the preview says so). A counted set records by its two
--- answers (Panel.Counted): here only the "Really?" row's Yes keeps its count with the answer that asked it.
+-- A digit or Backspace on the dial (Panel.HandleKey's DIGIT): the digit after the count's, or in place of the number
+-- the count started at; Backspace takes the last digit off, or that number whole.
+function Panel.TypeCount(key)
+	local d, n = tonumber(DIGIT[key] or ""), F.count
+	if F.countFresh or not n then
+		n = d
+	elseif d then
+		n = n * 10 + d
+	else
+		n = n >= 10 and math.floor(n / 10) or nil
+	end
+	Panel.SetCount(n)
+end
+
+-- The dial's - and + (its buttons, the arrows, the wheel): one rep or one second; + from no count is 1, - leaves no
+-- count as it is.
+function Panel.StepCount(dir)
+	local n = F.count
+	if not n and dir < 0 then return end
+	Panel.SetCount((n or 0) + dir)
+end
+
+-- Records the dial's count, with the weight box's weight on a loaded move; false when there is none, the dial has not
+-- settled (it may hold a hold's stopwatch or the voice's reps, and the press that ended the move, pressed twice, never
+-- saves it unread) or it is past the heaviest weight the box takes (the preview says so). A counted set records by its
+-- three answers (Panel.Counted): here only the "Really?" row's Yes keeps its count with the answer that asked it.
 function Panel.RecordInput()
 	local value, slot = Panel.InputValue(), Lc.Slot()
-	if slot and slot.counted then
+	if not slot or not answerSettled() then return false end
+	if slot.counted then
 		local p = Lc.pump
 		if not (p and p.really) then return false end
 		return Panel.Counted(p.reallyAnswer)
 	end
-	if not value or not slot then return false end
+	if not value then return false end
 	local answer = Lc.Enter(value, Panel.LoadValue())
 	if answer == "max" then
 		F.views.result.preview:SetText(value > ns.CountMax(slot) and L["ui.result.max"]:format(ns.CountMax(slot))
@@ -2863,8 +2880,8 @@ function Panel.RecordInput()
 end
 
 -- A counted set's answer (slice 42; its code since slice 53, `code`: 0 Yes, to the end, E.answer.slipped or
--- E.answer.notAllOut), with the count the box holds: Lc.Counted records it; false where it is over one set (the preview
--- says so) or "Is that right?" asks first.
+-- E.answer.notAllOut), with the count the dial holds: Lc.Counted records it; false where it is over one set (the
+-- preview says so) or "Is that right?" asks first.
 function Panel.Counted(code)
 	local answer = Lc.Counted(Panel.InputValue(), code)
 	if answer == "max" then
@@ -2874,8 +2891,8 @@ function Panel.Counted(code)
 	return answer ~= "really"
 end
 
--- "Change it" on the "Really?" row: the count goes, the box takes the keyboard for the right one; or, when it asked
--- about the weight (ns.Validate's "heavy", kept by Lc.Enter), the weight box takes the planned weight back.
+-- "Change it" on the "Really?" row: the count goes from the dial for the right one; or, when it asked about the
+-- weight (ns.Validate's "heavy", kept by Lc.Enter), the weight box takes the planned weight back.
 function Panel.ChangeCount()
 	local slot, p = Lc.Slot(), Lc.pump
 	local heavy = p ~= nil and p.reallyCheck == "heavy"
@@ -2883,17 +2900,8 @@ function Panel.ChangeCount()
 	if slot and heavy and slot.load then
 		F.kg:SetText(ns.Sheet.Kg(slot.load))
 		if typed() then F.kg:SetFocus() end
-	elseif p and p.pours then
-		-- a hold whose Done saved its seconds (slice 65): the count step opens with them, to change
-		if typed() then
-			F.box.prefilled = true
-			Panel.FocusBox(true)
-		end
-	elseif typed() then
-		F.box:SetText("")
-		Panel.FocusBox()
 	else
-		F.spin:SetValue(0)
+		Panel.SetCount(nil)
 	end
 end
 
@@ -3043,19 +3051,18 @@ local function layResult(v)
 	local top = Kit.Top(v)
 	local state = v.state
 	if state == "pour" then return v.pourBottom end
-	if state == "count" then
-		local really = v.really:IsShown()
-		local answers = not really and centreButtons(v.answers, { v.empty, v.couldNot })
+	if state == "count" or state == "form" then
+		-- the dial at the column's top, where the Running view's stood and the pour's stands (Pour.placePour), then in
+		-- order what the count step holds under it
+		local really, form = v.really:IsShown(), state == "form"
+		local answers = not form and not really and centreButtons(v.answers, { v.empty, v.couldNot })
 		centreButtons(v.reallyRow, { v.reallyYes, v.reallyChange })
-		return Kit.Stack(v.left, top, { { v.inputs, 0 },
-			{ v.preview, 12, show = not really and v.preview:GetText() ~= "" }, { v.really, 12, show = really },
-			{ v.reallyRow, 8, show = really }, { v.answers, 16, show = answers } })
-	elseif state == "form" then
-		local really = v.really:IsShown()
-		centreButtons(v.reallyRow, { v.reallyYes, v.reallyChange })
-		return Kit.Stack(v.left, top, { { v.cleanLabel, 0 }, { v.inputs, 6 }, { v.preview, 12, show = not really },
-			{ v.really, 12, show = really }, { v.reallyRow, 8, show = really },
-			{ v.forms, 16, x = (TM.TEXT - WHOLE_W) / 2, show = not really } })
+		return math.max(top + v.sideH, Kit.Stack(v.left, top, {
+			{ v.dialRoom, 0, x = (LEFT_W - v.dialRoom:GetWidth()) / 2 }, { v.cleanLabel, 4, show = form },
+			{ v.cap, 6, show = v.cap:GetText() ~= "" },
+			{ v.preview, 10, show = not really and v.preview:GetText() ~= "" }, { v.really, 10, show = really },
+			{ v.reallyRow, 8, show = really }, { v.load, 12, show = F.kg:IsShown() },
+			{ v.forms, 16, show = form and not really }, { v.answers, 16, show = answers } }))
 	elseif state == "whole" then
 		return Kit.Stack(v.left, top, { { v.whole, 0, x = (TM.TEXT - WHOLE_W) / 2 } })
 	elseif state == "mark" then
@@ -3072,32 +3079,50 @@ local function layResult(v)
 		{ v.rewardList, 14, show = rows } }))
 end
 
--- The live preview while the count is typed (the boxes' text changes): its words, and the view laid out again, since
--- the "Really?" row takes the preview's place.
+-- The count's words while it is set (the dial's count and the weight box change): the dial drawn at it, its preview,
+-- and the view laid out again, since the "Really?" row takes the preview's place and the cap's line comes and goes.
 function Panel.Preview()
-	local v, slot = F.views.result, Lc.Slot()
+	local v, p, slot = F.views.result, Lc.pump, Lc.Slot()
 	if not (slot and v and (v.state == "count" or v.state == "form")) then return end
-	previewWords(v, Lc.pump, slot)
+	Pour.drawCount(v, p, slot)
+	previewWords(v, p, slot)
 	if v:IsShown() then fitCard(v, layResult(v)) end
-end
-
--- Focuses the rep box unless another box has the keyboard (chat or any other: never stolen); true when it did. The
--- weight box counts as the count's own: left alone (true: the player types there, and the view's focus retry stops),
--- unless `fromKg` asks to move on from it (its Enter with no count typed).
-function Panel.FocusBox(keepText, fromKg)
-	if not F.box or InCombatLockdown() then return false end
-	local other = GetCurrentKeyBoardFocus()
-	if other == F.kg and not fromKg then return true end
-	if other and other ~= F.box and other ~= F.kg then return false end
-	if not keepText then F.box:SetText("") end
-	F.box:SetFocus()
-	return true
 end
 
 -- The pour (buildPour) -----------------------------------------------------------------------------------------------
 
--- The second grain `i` of the run lands on: each its own second, or with more seconds than POUR.most grains its share.
-function Pour.second(run, i)
+-- The count's dial while the count step asks (slice 66): the pour's own over the column's room for it (v.dialRoom),
+-- the pour's other parts hidden; the count in its clock's place in the move's unit (Pour.format; grey while it has
+-- none), the ring held still at its share (Pour.share: a Cooldown paused there, whose unreversed swipe draws the part
+-- still to run, so at 1 - the share; CooldownFrame_SetDisplayAsPercentage), - stopping at 0 and + at the most the move
+-- takes (Lc.CountMost), and under it, while the count stands at the most what the app counted or the number to beat
+-- set, the line that says why (Rapha asked for the reason).
+function Pour.drawCount(v, p, slot)
+	local pv, n = v.pour, F.count
+	for _, part in ipairs({ pv.bars[1], pv.bars[2], pv.rows, pv.after, pv.reveal, pv.hero.frame, pv.chip, pv.hit }) do
+		part:Hide()
+	end
+	pv.spot:Show()
+	pv.clock:Show()
+	pv.spot:ClearAllPoints()
+	pv.spot:SetPoint("CENTER", v.dialRoom)
+	pv.clock:SetText(Pour.format(slot, n or 0))
+	local c = n and WHITE or saga.note
+	pv.clock:SetTextColor(c[1], c[2], c[3])
+	pv.dial:SetShown(pv.dialArt)
+	pv.ring:Show() -- a cooldown hides itself when it runs out
+	local load = Panel.LoadValue()
+	CooldownFrame_SetDisplayAsPercentage(pv.ring, 1 - Pour.share(slot, n or 0, Lc.BestAt(slot, load)))
+	local most, counted, beat = Lc.CountMost(p, slot, load)
+	v.less:SetEnabled(n ~= nil and n > 0)
+	v.more:SetEnabled(n == nil or n < most)
+	local line = counted and L["ui.count.cap"]:format(Pour.format(slot, most), Pour.format(slot, counted))
+		or beat and L["ui.count.cap.goal"]:format(Pour.format(slot, most), Pour.format(slot, beat))
+	v.cap:SetText(n == most and line or "")
+end
+
+-- The unit grain `i` of the run lands on: each its own, or with more units than POUR.most grains its share.
+function Pour.unit(run, i)
 	return math.floor(i * run.held / run.grains + 0.5)
 end
 
@@ -3107,9 +3132,9 @@ function Pour.crossed(prev, n, value)
 end
 
 -- The move's one jingle (`key`, Style's), once a move: the record's as the pour passes the best under the top, the
--- top's (the world-quest chime) when the hold reached it, the step-up's at its reveal (Sheet.UnlockSound), else the
+-- top's (the world-quest chime) when the count reached it, the step-up's at its reveal (Sheet.UnlockSound), else the
 -- small chime as the rows come in. A record and a top only show what the saved row brings once it has landed, so a
--- hold that reaches its top keeps its jingle to the landing, where a step it opened takes it.
+-- set that reaches its top keeps its jingle to the landing, where a step it opened takes it.
 function Pour.jingle(run, key)
 	if run.jingled then return end
 	run.jingled = true
@@ -3192,10 +3217,13 @@ function Pour.fillRows(pv, p, slot)
 	local row = pv.moveRow
 	Kit.SetIcon(row.icons[1], slot.move)
 	row.name:SetText(moveName(slot))
-	row.value:SetText(clock(run.held))
+	row.value:SetText(Pour.format(slot, run.held, run.timed))
 	local record = run.beat and run.best ~= nil
 	row.lead:SetShown(record)
-	local line = join(record and L["ui.pour.was"]:format(clock(run.best)) or "", Pour.topDayLine(p, slot, ev) or "", "  ")
+	-- the record it beat as the outcome line names it: a loaded move's weighted one with its weight (recordText)
+	local was = record and (last.load and last.topLoad and recordText(slot, run.best, last.load, last)
+		or Pour.format(slot, run.best, run.timed))
+	local line = join(was and L["ui.pour.was"]:format(was) or "", Pour.topDayLine(p, slot, ev) or "", "  ")
 	row.line:SetText(line)
 	row.line:SetShown(line ~= "")
 	local up = pv.unlockRow
@@ -3227,6 +3255,7 @@ function Pour.fillRows(pv, p, slot)
 	pv.xpRow:SetShown((last.xp or 0) > 0)
 	pv.xpRow.name:SetText(L["ui.rewards.gain"]:format(last.xp or 0))
 	Kit.LayList(pv.rows)
+	pv.after:SetText(join(nextLoadLine(p, slot), afterLines(p, slot), "\n"))
 	pv.rowsFor = run.key
 end
 
@@ -3235,13 +3264,18 @@ end
 -- height the dial's, the screen's or the rows', whichever is tallest, so the card keeps its height as they come.
 function Pour.placePour(v, pv)
 	local top = Kit.Top(v)
-	local rowsH = pv.rowsFor == pv.run.key and pv.rows:GetHeight() or 0
+	local rowsH = 0
+	if pv.rowsFor == pv.run.key then
+		rowsH = pv.rows:GetHeight() + (pv.after:GetText() ~= "" and 10 + pv.after:GetStringHeight() or 0)
+	end
 	local h = math.max(pv.spot:GetHeight(), SCREEN_H, rowsH)
 	pv.top, pv.h = top, h
 	pv.spot:ClearAllPoints()
 	pv.spot:SetPoint("CENTER", pv, "TOPLEFT", TM.IN + LEFT_W / 2, -(top + h / 2))
 	pv.rows:ClearAllPoints()
 	pv.rows:SetPoint("TOPLEFT", pv, "TOPLEFT", TM.IN, -(top + (h - rowsH) / 2))
+	pv.after:ClearAllPoints()
+	pv.after:SetPoint("TOP", pv.rows, "BOTTOM", 0, -10)
 	for _, b in ipairs(pv.bars) do
 		b:ClearAllPoints()
 		b:SetPoint("TOPLEFT", pv, "TOPLEFT", TM.IN, -(top + h + POUR.barGap))
@@ -3262,37 +3296,42 @@ function Pour.showRecord(pv)
 	pv.clock:SetTextColor(POUR.gold[1], POUR.gold[2], POUR.gold[3])
 end
 
--- The pour as it stands once landed: the clock at the hold's seconds, the bar filled to them, the chip on a record.
+-- The pour as it stands once landed: the dial at the count, the bar filled to it, the chip on a record.
 function Pour.landBar(pv)
 	local run = pv.run
 	Pour.stopGrains(pv)
 	pv.ring:Clear()
-	pv.clock:SetText(clock(run.held))
+	pv.clock:SetText(Pour.format(run.slot, run.held, run.timed))
 	Pour.fillBar(pv.bars[1], run.held)
 	if run.beat and run.best then Pour.showRecord(pv) end
 end
 
--- A run of the pour for the move on the view (`key`: the pump, the move and its go): this step's bar, from the move's
--- own window on its ladder (its top; the goal and the record before this hold as posts), the clock at 0 and nothing
--- else in, and the jingle it plans (`jingle`'s rule).
+-- A run of the pour for the move on the view (`key`: the pump, the move and its go): its bar, from what the move's
+-- kind shows (slice 66): a set of reps' or a hold's step on its ladder (its own window's top, the count a day at the
+-- top needs; the goal and the record before this set as posts), a counted set's best alone, a timed move's goal alone
+-- (it keeps no record); the dial at 0 and nothing else in, and the jingle it plans (`jingle`'s rule).
 function Pour.newRun(pv, p, slot, key)
 	Pour.stopPour()
 	local m = ns.Library[slot.move]
-	local held, best, goal = p.pour.value, p.pour.best, ns.SlotGoal(slot)
-	local hi
-	if m.ladder and m.rung then hi = select(2, ns.Window(m.ladder, m.rung, slot.move)) end
-	local top = hi or math.max(held, goal or 0, best or 0, 1)
+	local held, best, timed = p.pour.value, p.pour.best, p.pour.timed
+	local goal = Pour.goal(slot, timed)
+	local top
+	if slot.kind == K.rep or slot.kind == K.hold then
+		if m.ladder and m.rung then top = select(2, ns.Window(m.ladder, m.rung, slot.move)) end
+		top = top or math.max(held, goal or 0, best or 0, 1)
+	end
 	local q = m.ladder and m.rung and ns.Quality(m.ladder, m.rung) or ns.MoveQuality(slot.move) or E.quality.starter
-	local run = { key = key, held = held, best = best, beat = p.pour.beat, grains = math.min(held, POUR.most), n = 0,
-		tickAt = 0, f0 = goal and goal > 0 and math.min(1, held / goal) or 1 }
-	run.jingle = held >= top and "top" or run.beat and best and "record" or "done"
+	local run = { key = key, slot = slot, timed = timed, held = held, best = best, beat = p.pour.beat,
+		grains = math.min(held, POUR.most), n = 0, tickAt = 0, f0 = Pour.share(slot, held, best, timed) }
+	run.jingle = top and held >= top and "top" or run.beat and best and "record" or "done"
 	pv.run = run
 	Pour.setBar(pv.bars[1], { label = m.ladder and m.rung and Pour.barLabel(m.ladder, m.rung) or "", q = q, goal = goal,
-		best = best, top = top })
+		best = best, top = top, range = top or math.max(held, goal or 0, best or 0, 1), slot = slot, timed = timed })
 	pv.bars[1]:SetAlpha(1)
 	pv.bars[1]:Show()
 	pv.bars[2]:Hide()
 	pv.rows:Hide()
+	pv.after:Hide()
 	pv.reveal:Hide()
 	pv.hero.frame:Hide()
 	pv.unlockRow.icons[1]:Show()
@@ -3300,27 +3339,28 @@ function Pour.newRun(pv, p, slot, key)
 	pv.clock:Show()
 	pv.chip:Hide()
 	pv.clock:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB())
-	pv.clock:SetText(clock(0))
+	pv.clock:SetText(Pour.format(slot, 0, timed))
 	pv.dial:SetShown(pv.dialArt)
 	return run
 end
 
--- The pour from its start: the ring at the hold's share of its goal, emptying on the cooldown as the grains leave its
--- tip, each grain i of n leaving pour_hold_s + span * ((i - 1) / n) ^ 0.62 s in (closer as they go, span the
--- shorter of pour_s and pour_base_s + pour_step_s a grain) and flying pour_fly_s from where the ring's end stands then
--- to its second's place; a hold of no seconds lands at once.
+-- The pour from its start: the ring at the count's share (Pour.share, where the count step's dial held it), emptying
+-- on the cooldown as the grains leave its tip, each grain i of n leaving pour_hold_s + span * ((i - 1) / n) ^ 0.62 s in
+-- (closer as they go, span the shorter of pour_s and pour_base_s + pour_step_s a grain) and flying pour_fly_s from
+-- where the ring's end stands then to its unit's place; a count of nothing lands at once.
 function Pour.startPour(pv)
 	local run = pv.run
 	run.phase, run.n, run.tickAt = "pour", 0, 0
 	pv.chip:Hide()
 	pv.clock:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB())
-	pv.clock:SetText(clock(0))
+	pv.clock:SetText(Pour.format(run.slot, 0, run.timed))
 	Pour.fillBar(pv.bars[1], 0)
 	local n = run.grains
 	if n <= 0 then return T.after("pourStage", 0, function() Lc.Land() end) end
 	local hold, fly = C.pour_hold_s, C.pour_fly_s
 	local span = math.min(C.pour_s, C.pour_base_s + C.pour_step_s * n)
 	local total = hold + span
+	pv.ring:Resume() -- the count step held it still (Pour.drawCount)
 	pv.ring:SetCooldown(GetTime() - (1 - run.f0) * total / run.f0, total / run.f0)
 	local cx, cy = TM.IN + LEFT_W / 2, -(pv.top + pv.h / 2)
 	local r = pv.spot:GetWidth() / 2 * RING.tip
@@ -3331,7 +3371,7 @@ function Pour.startPour(pv)
 		-- the ring's end then: the unreversed swipe's edge, clockwise from 12 o'clock past the part run
 		local phi = (1 - run.f0 * (1 - start / total)) * 2 * math.pi
 		local sx, sy = cx + r * math.sin(phi), cy + r * math.cos(phi)
-		local tx = TM.IN + Pour.secondX(b, Pour.second(run, i))
+		local tx = TM.IN + Pour.unitX(b, Pour.unit(run, i))
 		local mx, my = (sx + tx) / 2, (sy + ty) / 2 - POUR.sag
 		local g = Pour.grain(pv, i)
 		g.n = i
@@ -3349,15 +3389,15 @@ function Pour.startPour(pv)
 	end
 end
 
--- A grain landed: the clock at its second, the bar filled to it, the posts it passed lit, the record chip once past
--- the best, the top's flash and sparks; its sound (a passed post's double, the top's triple, the record's jingle in
--- the best's place, else a tick, none closer than pour_tick_gap_s to the last); the last grain lands the pour.
+-- A grain landed: the dial at its unit, the bar filled to it, the posts it passed lit, the record chip once past the
+-- best, the top's flash and sparks; its sound (a passed post's double, the top's triple, the record's jingle in the
+-- best's place, else a tick, none closer than pour_tick_gap_s to the last); the last grain lands the pour.
 function Pour.landGrain(pv, i)
 	local run, p = pv.run, Lc.pump
 	if not run or run.phase ~= "pour" or not p or not p.pour or p.committed then return end
-	local prev, n = run.n, Pour.second(run, i)
+	local prev, n = run.n, Pour.unit(run, i)
 	run.n = n
-	pv.clock:SetText(clock(n))
+	pv.clock:SetText(Pour.format(run.slot, n, run.timed))
 	local b = pv.bars[1]
 	Pour.fillBar(b, n)
 	local sound
@@ -3408,6 +3448,16 @@ function Pour.showRows(pv, still, waitTile)
 			shown = shown + 1
 		end
 	end
+	pv.after.enter:Stop()
+	pv.after:SetShown(pv.after:GetText() ~= "")
+	pv.after:SetAlpha(still and 1 or 0)
+	if pv.after:IsShown() then
+		if not still then
+			pv.after.enter.hold:SetDuration(shown * POUR.rowStep)
+			pv.after.enter:Play()
+		end
+		shown = shown + 1
+	end
 	pv.unlockRow.icons[1]:SetShown(not waitTile)
 	if still then pv.hit:Hide() end
 	if not still then
@@ -3415,19 +3465,25 @@ function Pour.showRows(pv, still, waitTile)
 			if pv.run == run and run.phase == "rows" then
 				run.phase = "done"
 				pv.hit:Hide()
+				Lc.GoOn()
 			end
 		end)
+	else
+		Lc.GoOn()
 	end
 	if not run.ev then Pour.jingle(run, "win") end
 end
 
--- The bar rolls over to the next step's after a step-up (its label and colour, and its top: the new move's first set
--- is a max set, with no goal and no record yet): this one up and out, the next one up from under it.
+-- The bar rolls over to the next step's after a step-up (its label and colour, and on a bar with a top the next
+-- step's: the new move's first set is a max set, with no goal and no record yet): this one up and out, the next one
+-- up from under it.
 function Pour.rollBar(pv, still)
 	local ev, old, new = pv.run.ev, pv.bars[1], pv.bars[2]
 	local id = ev.move or ns.Anchor(ev.ladder, ev.rung)
-	local hi = id and select(2, ns.Window(ev.ladder, ev.rung, id))
-	Pour.setBar(new, { label = Pour.barLabel(ev.ladder, ev.rung), q = ev.quality, top = hi or old.spec.top, lit = true })
+	-- a step's top on a bar that shows one (a set of reps', a hold's); a counted set's and a timed move's keep their span
+	local top = old.spec.top and (id and select(2, ns.Window(ev.ladder, ev.rung, id)) or old.spec.range)
+	Pour.setBar(new, { label = Pour.barLabel(ev.ladder, ev.rung), q = ev.quality, top = top,
+		range = top or old.spec.range, slot = old.spec.slot, timed = old.spec.timed, lit = true })
 	new:Show()
 	if still then
 		old:Hide()
@@ -3598,7 +3654,7 @@ function Pour.nextStage(pv)
 	Pour.showRows(pv, false, false)
 end
 
--- The pour landed (its row saved, Lc.Land): the bar and clock at the hold's seconds, the rows made ready, the top's
+-- The pour landed (its row saved, Lc.Land): the bar and dial at the count, the rows made ready, the top's
 -- jingle (or a skipped pour's record) where no step-up takes it, and 0.38 s on its reveal (0.3 s its rows; at once
 -- after a click).
 function Pour.landed(pv, p, slot)
@@ -3648,20 +3704,23 @@ function Pour.renderPour(v, p, slot)
 		if p.committed then Pour.endState(pv, p, slot) else Pour.startPour(pv) end
 	elseif run.phase == "pour" and p.committed then
 		Pour.landed(pv, p, slot)
+	elseif run.phase == "done" and p.committed then
+		Lc.GoOn() -- again once a fight, a hold or a menu left the view, whole from there
 	end
 	Pour.placePour(v, pv)
 end
 
--- The Result view (play SPEC 6-10; boards result and goalpose): the count, "Is that right?", a counted set's form
--- (slice 42), the whole move, the goal pose, the pace (slice 42), whether a hold could have gone longer (slice 52), or
--- the recorded set (buildResult). Answers the content's bottom.
+-- The Result view (play SPEC 6-10; boards result and goalpose): the count on the dial (slice 66), "Is that right?", a
+-- counted set's form (slice 42), the whole move, the goal pose, the pace (slice 42), whether a hold could have gone
+-- longer (slice 52), the pour (slices 65 and 66) or a set saved with no count (buildResult). Answers the content's
+-- bottom.
 local function renderResult(p, slot)
 	local v = F.views.result
 	local asking = p.asking == true and not p.committed
 	local marking = p.marking == true and not p.committed
 	local pacing = p.pacing == true and not p.committed
 	local longer = p.longerAsk == true and not p.committed
-	local pouring = p.pour ~= nil -- a hold's seconds pour, saved or about to be (slice 65)
+	local pouring = p.pour ~= nil -- the move's count pours, saved or about to be (slices 65 and 66)
 	local typing = not p.committed and not pouring and not asking and not marking and not pacing and not longer
 		and (not timedKind(slot) or slot.counted == true)
 	local form = typing and slot.counted == true -- a counted set's optional count and its three answers
@@ -3671,8 +3730,8 @@ local function renderResult(p, slot)
 	-- the moment an ask showed, from which its answers settle (answerSettled): stamped as the view comes into it for
 	-- the move's run on (its go, so a run again after Back asks anew) and again as "Is that right?" comes or goes in it
 	-- (p.really: a counted set's answers stand where its row stood), kept while it redraws in it (the count typed, a
-	-- check read)
-	local shown = (v.state ~= "count" or p.really ~= nil) and v.state ~= "done"
+	-- check read); the count is an ask too, its Save waiting as answers do (Panel.RecordInput)
+	local shown = v.state ~= "done"
 		and (p.id .. ":" .. p.index .. ":" .. (p.goAt or 0) .. ":" .. v.state .. (p.really and ":really" or "")) or nil
 	if shown ~= v.askShown then v.askShown, v.askAt = shown, shown and GetTime() or nil end
 	v.sideH = 0
@@ -3705,13 +3764,12 @@ local function renderResult(p, slot)
 		-- the set under the goal it was judged against: once recorded, p.last's, since the set may be the record now
 		setHead(v, name, goalLine(slot, p.last))
 	end
-	F.box:SetShown(typing and typed())
-	F.spin:SetShown(typing and not typed())
-	v.inputs:SetShown(typing)
-	-- the weight box beside the count on a loaded move (practice stores nothing, so it takes none)
+	-- the count on its dial with its - and +, the weight under it on a loaded move (practice stores nothing, so it
+	-- takes none)
+	for _, part in ipairs({ v.dialRoom, v.less, v.more, v.cap }) do part:SetShown(typing) end
 	local loaded = typing and not slot.practice and ns.Loaded(slot.move) ~= nil
-	placeInputs(v, slot, loaded)
-	v.inputs:SetHeight(typed() and BOX_H or SPIN_Y + F.spin:GetHeight())
+	placeLoad(v, slot, loaded)
+	v.load:SetShown(loaded)
 	for _, part in ipairs({ v.preview, v.really, v.reallyRow }) do part:SetShown(typing) end
 	v.answers:SetShown(typing and not form)
 	for _, part in ipairs({ v.cleanLabel, v.forms }) do part:SetShown(form) end
@@ -3746,9 +3804,14 @@ local function renderResult(p, slot)
 	-- hold's key pose, held still with no caption, beside the pace ask and the hold ask; the character beside a won set;
 	-- else none, and the column takes the card's middle
 	local win = done and react(p)
-	v.pour:SetShown(pouring)
+	v.pour:SetShown(pouring or typing)
+	if done and p.last then Lc.GoOn() end -- a set saved with no pour, again once the view is the player's (renderPour)
 	if pouring then
 		Pour.renderPour(v, p, slot)
+	elseif typing then
+		-- the Running view's figure stays beside the dial (slice 66: the count is set where the move ran)
+		placeColumn(v, false, LEFT_W)
+		v.sideH = sideFigure(v, p, slot, "loop")
 	elseif marking then
 		placeColumn(v, false, LEFT_W)
 		v.sideH = sideFigure(v, p, slot, "key")
@@ -3768,34 +3831,15 @@ local function renderResult(p, slot)
 		hideSide()
 	end
 	if typing then
-		-- a fresh input once per move: a hold's stopwatch or the voice's count of its reps, else empty; the planned weight
+		-- a fresh count once per move, at what the app counted (Lc.CountedBy: a hold's stopwatch, the voice's count of
+		-- its reps), never past one set's most (a hold held past max_seconds), else none; the planned weight
 		if p.inputFor ~= p.index then
 			p.inputFor = p.index
 			if loaded then F.kg:SetText(slot.load and ns.Sheet.Kg(slot.load) or "") end -- hidden: read by nothing
-			-- a hold's stopwatch (Lc.HeldCount: none under timed_ask_share of its goal, typed then)
-			local prefill = (slot.kind == K.hold and Lc.HeldCount or repPrefill)(p, slot)
-			if typed() then
-				F.box:SetText(prefill and tostring(prefill) or "")
-				F.box.prefilled = prefill ~= nil
-			else
-				F.spin:SetMinMaxValues(0, ns.CountMax(slot))
-				F.spin:SetValue(prefill or 0)
-			end
+			local counted = Lc.CountedBy(p, slot)
+			F.count, F.countFresh = counted and math.min(counted, ns.CountMax(slot)), true
 		end
-		-- the focus again whenever the view comes back (after a popup, the game menu or combat), what was typed kept
-		if not p.focused and typed() then
-			p.focused = Panel.FocusBox(true)
-			-- another box has the keyboard (chat): tried again while the view waits, since closing it sends no event
-			if not p.focused and not T.active("focus") then
-				T.every("focus", 0.25, function()
-					if Lc.pump ~= p or p.state ~= "result" or p.focused or not F.box:IsVisible() then
-						return T.cancel("focus")
-					end
-					p.focused = Panel.FocusBox(true)
-					if p.focused then T.cancel("focus") end
-				end)
-			end
-		end
+		Pour.drawCount(v, p, slot)
 		previewWords(v, p, slot)
 	else
 		letGo()
@@ -3837,9 +3881,9 @@ local function sounds(p, slot)
 		Panel.lastWhole, Panel.goalChimed = nil, nil
 	elseif p.state == "result" and previous == p.id .. ":" .. p.index .. ":" .. (p.side or 0) .. ":running"
 		and timedKind(slot) and not p.asking
-		and (p.last and p.last.outcome == O.done or (slot.counted or p.marking) and not p.committed) then
-		Style.Play("go") -- the end of a timed move that ran its time (a counted set's: its count is asked next; a pose's:
-		-- how close the player got)
+		and ((p.last or p.pending or {}).outcome == O.done or (slot.counted or p.marking) and not p.committed) then
+		Style.Play("go") -- the end of a timed move that ran its time (saved, or pouring with its pending result; a
+		-- counted set's: its count is asked next; a pose's: how close the player got)
 	end
 end
 
@@ -3875,7 +3919,6 @@ local function hideDim()
 	Kit.ShowGlow(F.views.ready.glow, false)
 	F.views.running.goAnim:Stop() -- a go the menu or a popup cut short: the run comes back on its clock
 	letGo()
-	if Lc.pump then Lc.pump.focused = nil end -- focus the rep box again when the view returns
 	F.dim:Hide()
 end
 
@@ -3977,8 +4020,7 @@ function Panel.Render()
 	if not InCombatLockdown() then F.keys:SetPropagateKeyboardInput(true) end
 	if p.state ~= "countdown" then cancelDigits() end
 	if p.state ~= "result" then
-		p.focused = nil
-		letGo() -- Back from the result view: the hidden boxes let go of the keyboard, so Space starts again
+		letGo() -- Back from the result view: the hidden weight box lets go of the keyboard, so Space starts again
 	end
 	sounds(p, slot)
 	F.moveCard:Hide()
@@ -4607,6 +4649,11 @@ end
 
 ns.On("State", Panel.Render)
 ns.On("Hold", Panel.Render)
+-- QuestPump's own menu gone from over a saved set: its draw runs the set's hold again (Lc.GoOn)
+ns.On("Menu", function()
+	local p = Lc.pump
+	if p and p.state == "result" and p.committed and Lc.Visible() and not ns.Menu.Shown() then Panel.Render() end
+end)
 -- the voice began or ended a line, or a guide began, paused or ended (Speech.lua): the guide's buttons show pause or
 -- play with their words, also while the UI is hidden (Alt+Z hides it with no render after), and an open tooltip follows
 ns.On("Voice", function()

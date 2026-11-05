@@ -20,7 +20,7 @@
 
 import {intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
-import {find, push, register} from "../../lib/router.js";
+import {covered, find, push, register} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {focusGlyph, focusWindow} from "../hero/focus.js";
 import {page, watch, words} from "../page.js";
@@ -135,7 +135,7 @@ export function gearChip(g, tooltip, press, effect = () => null) {
 
 register("desk.menu.setup", ({focus: wanted = null}) => {
 	const view = page({heading: t("menu.setup")});
-	const pumpOn = h("qp-card", {hidden: true}, words(t("menu.free.pumpon"), "body"));
+	const pumpOn = h("qp-card", {hidden: true}, words(t("menu.setup.pumpon"), "body"));
 	const focus = h("qp-row", {heading: t("menu.free.focus"), trailing: "value"});
 	const focusCard = h("qp-card", {rows: true, hidden: true}, focus);
 	// the place in use, opening the places window
@@ -288,9 +288,11 @@ register("desk.menu.moves", () => {
 	// the rows the page shows: those it opened with and every one added while it stands, a group's by its key
 	const groups = new Map();
 	const moves = new Map();
-	const book = h("qp-row", {heading: t("bar.book"), glyph: "action_book", trailing: "nav", "on:click": find});
-	view.body.append(h("qp-section-label", {label: t("menu.moves.out")}), list, none,
-		h("qp-card", {rows: true}, book));
+	// the Book's row while it can open (none over a pump, whose cover holds the tabs: its Settings opens this page)
+	const book = covered() ? null
+		: h("qp-card", {rows: true},
+			h("qp-row", {heading: t("bar.book"), glyph: "action_book", trailing: "nav", "on:click": find}));
+	view.body.append(...[h("qp-section-label", {label: t("menu.moves.out")}), list, none, book].filter(Boolean));
 	watch(view, "menu.setup", (s) => {
 		for (const g of s.moves.groups) {
 			if (groups.has(g.key)) continue;

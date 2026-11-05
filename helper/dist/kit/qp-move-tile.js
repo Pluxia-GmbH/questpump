@@ -1,7 +1,10 @@
 // MoveTile: a move's key pose (`move`: a library move's key, or a pump move's `figureName`; its square of the move's
 // bundled still, lib/figure.js `tileStill`, as the phones' MoveTile(move:) finds it; else the move glyph, the pump's,
-// as theirs and the figure show for a move the build has no figure of) on the dark well in a 1.5-px edge of its
-// quality's tone (`quality`) with a faint glow; `untrained` (no quality) the lineStrong edge and the pose at 75 %;
+// as theirs and the figure show for a move the build has no figure of) on the dark well in an edge of its quality's
+// tone (`quality`) with its tier's aura (surface.QualityAura, kit.css: the halo, the edge's light, Legendary's embers,
+// Artifact's sparks), whose loops run only while `moving` (where the tile is the thing looked at: the player's step on
+// a ladder's track, a step reveal, an unlock toast) and otherwise hold their frozen phase; `untrained` (no quality) the
+// lineStrong edge and the pose at 75 %;
 // `off` (switched off for pumps) the pose at 40 % with a small Off mark on its top corner; `favourite` a star on its
 // other top corner; `mastered` (slice 42, a step mastered) a small gold seal with a check inside the tile at its
 // bottom-trailing corner, at every size; `topped` (slice 42, a step card's group tile at its top once) a small check on
@@ -54,6 +57,7 @@ class QpMoveTile extends KitElement {
 		const name = qualityName(this.quality);
 		if (name) this.style.setProperty("--qp-tone", `var(--qp-quality-${name})`);
 		else this.style.removeProperty("--qp-tone");
+		this.aura(face === "pose" ? name : null);
 		this.dataset.size = this.size ?? "56";
 		this.toggleAttribute("data-untrained", !name);
 		this.toggleAttribute("data-ahead", face === "ahead");
@@ -95,9 +99,32 @@ class QpMoveTile extends KitElement {
 			this.control.removeAttribute("role");
 		}
 	}
+
+	/** The quality's aura round the well (`name`, the quality's; none for no quality or a face but the pose): its halo
+	 * behind, its edge and its embers or sparks over it. A tile that starts to move takes the page's time as its
+	 * loops' clock (--qp-aura-now), so it stands at the phase every moving tile of its tier has. */
+	aura(name) {
+		if (!name) {
+			delete this.dataset.q;
+			this.removeAttribute("data-aura-on");
+			for (const el of [this.haloEl, this.edgeEl, this.fxEl]) el?.remove();
+			return;
+		}
+		this.dataset.q = name;
+		this.haloEl ??= h("i", {class: "qp-aura-halo", "aria-hidden": "true"});
+		this.edgeEl ??= h("i", {class: "qp-aura-edge", "aria-hidden": "true"});
+		this.fxEl ??= h("i", {class: "qp-aura-fx", "aria-hidden": "true"}, h("b"), h("b"), h("b"), h("b"));
+		this.control.before(this.haloEl);
+		this.control.after(this.edgeEl, this.fxEl);
+		const moves = Boolean(this.moving);
+		if (moves && !this.hasAttribute("data-aura-on")) {
+			this.style.setProperty("--qp-aura-now", `${Math.round(performance.now())}ms`);
+		}
+		this.toggleAttribute("data-aura-on", moves);
+	}
 }
 
 define("qp-move-tile", QpMoveTile, {
 	move: String, quality: Number, size: String, face: String, off: Boolean, favourite: Boolean, name: String,
-	word: String, step: Number, action: Boolean, mastered: Boolean, topped: Boolean,
+	word: String, step: Number, action: Boolean, mastered: Boolean, topped: Boolean, moving: Boolean,
 });

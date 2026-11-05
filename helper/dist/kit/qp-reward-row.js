@@ -18,7 +18,7 @@
 // record glyph and the record it passed, its own lines in meta, and each step it counts toward with its words and its
 // days as pips, {words, have, need, brought}, whose last pip lights as the row arrives where this pump `brought` it;
 // said quietly with no shine and no tag), cardio {have, need} (Cardio today with its pips) and stats {stats} (the stats
-// raised, one chip each), since slice 65 xp {xp} (the XP one hold's save earned, on its pour), the quiet ones in
+// raised, one chip each), since slice 65 xp {xp} (the XP one move's save earned, on its pour), the quiet ones in
 // meta; `move` is {name, key, quality}, its tile the key's pose. An unlock's `way` (2026-10-09): "climb",
 // "opened" (an orange or gold step its climb only opened: "Opened: …" said quietly in
 // meta, its ladder and step under it with no QualityWord, since a later set earns the colour; 2026-10-22) or "earned"

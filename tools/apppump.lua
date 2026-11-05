@@ -71,6 +71,15 @@ return function(ns, opts)
 		return profile
 	end
 
+	-- The pace a pump with `match`'s facts composes at: Light, one move at every size, when the match's own minutes are
+	-- under match_short_min (2026-11-04, Rapha: "2 min to 5 be 1 move pump"), else Moves per match; nil (the pump's
+	-- Balanced) for a pump no match sizes. The phones' AppPump.pace is its twin.
+	function A.matchPace(profile, match)
+		if not match then return nil end
+		if match.minutes and match.minutes < C.match_short_min then return "light" end
+		return profile.matchPace
+	end
+
 	-- The profile as the phones encode it (EngineProfile): favourites only where it marks some, the title only when
 	-- one is chosen and the match pace only when it is not Balanced.
 	function A.profileJSON(profile)
@@ -329,7 +338,8 @@ return function(ns, opts)
 	-- allout, rung }, slice 36) the one move the player started from a step's card or a move's window. With `match` (a
 	-- pump after a game's match, slices 48 and 57, docs/computer-games.md §3 and §5: { minutes, warm, arms }, warm and
 	-- arms present only when true) it is sized at the match pace (Moves per match, profile.matchPace) instead of
-	-- Balanced, its cardio moves share the match's minutes as their active minutes, with `warm` (the sitting clock held
+	-- Balanced, or at Light, one move, when its minutes are under match_short_min (A.matchPace; 2026-11-04), its
+	-- cardio moves share the match's minutes as their active minutes, with `warm` (the sitting clock held
 	-- match_sat_min as the offer was made) it opens on a warm move (Engine.lua warmPick), and with `arms` it keeps the
 	-- arms rest (ns.ArmsRest, no all-out window, an owed one neither). With `queue` (slice 61: the game's owed rows by
 	-- their keys, ns.OwedKey, as the game's state holds its queue, which the app's fold leaves out) it is composed on a
@@ -343,7 +353,7 @@ return function(ns, opts)
 		local minutes = match and match.minutes
 		local state = queue and setmetatable({ owed = queue }, { __index = self.state }) or self.state
 		return ns.Compose({ kind = "quest", quests = { quest(tier, family, minutes) }, owed = owed, state = state,
-			profile = self.profile, now = at, app = true, chosen = chosen, pace = match and self.profile.matchPace or nil,
+			profile = self.profile, now = at, app = true, chosen = chosen, pace = A.matchPace(self.profile, match),
 			warm = match ~= nil and match.warm == true or nil, arms = match and match.arms == true or nil,
 			expedition = expedition })
 	end

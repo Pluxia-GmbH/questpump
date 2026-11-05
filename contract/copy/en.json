@@ -1537,7 +1537,7 @@
     "watch.size",
     "watch.summary"
    ],
-   "note": "Button: closes a sheet or a dialog.",
+   "note": "Button: closes a sheet or a dialog; on a pump's Ready view on the phones and the computer, the bar's way out of a pump that banks nothing, which ends the pump as End the pump here did (an expedition's round on Android: the expedition) (the game's Close: \"Ends this pump\").",
    "max": 18
   },
   "common.done": {
@@ -4423,22 +4423,6 @@
    ],
    "note": "A switch of the Games tab's After a match card: each offer opens the pump at Ready, at a match's end as at a game's close, and the match card shows only while it is off (2026-10-29, Rapha: \"this pop up is not needed at all\"; \"Open the pump when the game closes\", at the close alone, until then); on at first since 2026-10-27 (Rapha: \"make it default to start for everyone\"; off at first until then) (slice 56; the Offers page's until then)."
   },
-  "desk.offers.pause": {
-   "text": "Pause offers",
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "A row of the Games tab's After a match card, its value the pause's state, the title of its window and the tray menu's submenu: no offer after a match for a while (slice 56; the Offers page's row until then)."
-  },
-  "desk.offers.pause.four": {
-   "text": "For 4 hours",
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "A choice of Pause offers: a row of its window on the Games tab and an item of the tray's submenu."
-  },
   "desk.offers.pause.game": {
    "text": "While {game} runs",
    "args": {
@@ -4446,9 +4430,10 @@
    },
    "screens": [
     "desk.games",
-    "desk.tray"
+    "desk.tray",
+    "desk.pump.ready"
    ],
-   "note": "A choice of Pause offers (its window on the Games tab, the tray's submenu): until the game running now closes. {game} is its name (Dota 2, a picked program's)."
+   "note": "A choice of Pause offers (its window on the Games tab, the tray's submenu, the menu of a pump's Pause): until the game running now closes. {game} is its name (Dota 2, a picked program's)."
   },
   "desk.offers.pause.game.none": {
    "text": "While this game runs",
@@ -4457,33 +4442,6 @@
     "desk.tray"
    ],
    "note": "The choice of Pause offers that names the game running now (its window on the Games tab, the tray's submenu), dimmed while no game QuestPump watches runs."
-  },
-  "desk.offers.pause.hour": {
-   "text": "For an hour",
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "A choice of Pause offers: a row of its window on the Games tab and an item of the tray's submenu."
-  },
-  "desk.offers.pause.night": {
-   "text": "Until {time}",
-   "args": {
-    "time": "string"
-   },
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "A choice of Pause offers (its window on the Games tab, the tray's submenu): until the next game day begins. {time} is that clock time in the computer's own format, 04:00 on most nights."
-  },
-  "desk.offers.pause.resumed": {
-   "text": "Until you resume",
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "A choice of Pause offers (its window on the Games tab, the tray's submenu): until the player resumes them on the Games tab or in the tray."
   },
   "desk.offers.paused.game": {
    "text": "Paused while {game} runs",
@@ -4503,33 +4461,6 @@
     "desk.tray"
    ],
    "note": "The pause's state while offers come (Pause offers' value and its window's line on the Games tab, the tray's submenu)."
-  },
-  "desk.offers.paused.resumed": {
-   "text": "Paused until you resume",
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "The pause's state (Pause offers' value and its window's line on the Games tab, the Now card's words while paused, the tray's submenu): until the player resumes the offers."
-  },
-  "desk.offers.paused.until": {
-   "text": "Paused until {time}",
-   "args": {
-    "time": "string"
-   },
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "The pause's state (Pause offers' value and its window's line on the Games tab, the Now card's words while paused, the tray's submenu): {time} is the clock time it ends, in the computer's own format."
-  },
-  "desk.offers.resume": {
-   "text": "Resume offers",
-   "screens": [
-    "desk.games",
-    "desk.tray"
-   ],
-   "note": "Ends the pause of the offers now: the Games tab's Now card's button and a row of the Pause offers window while a pause stands, and the tray's item."
   },
   "desk.place.desk": {
    "text": "Beside the desk",
@@ -5692,7 +5623,6 @@
    "screens": [
     "desk.expedition.round",
     "desk.pump.count",
-    "desk.pump.ready",
     "desk.pump.run",
     "expedition.round",
     "pump.count",
@@ -6131,6 +6061,82 @@
    "note": "A Segmented choice, the game's settings.pace.light. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace).",
    "max": 12
   },
+  "games.pause": {
+   "text": "Pause offers",
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "note": "A row of the Games tab's After a match card on the computer, its value the pause's state, the title of its window, the tray menu's submenu, and the title of the first group in the menu of a pump's Pause on the phones and the computer (whose choices also end the pump): no game offer for a while (slice 56; the phones' since 2026-11-05, their linked games' and their own games' offers)."
+  },
+  "games.pause.four": {
+   "text": "For 4 hours",
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "note": "A choice of Pause offers: a row of its window on the Games tab, an item of the tray's submenu and of the menu of a pump's Pause on the phones and the computer."
+  },
+  "games.pause.hour": {
+   "text": "For an hour",
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "note": "A choice of Pause offers: a row of its window on the Games tab, an item of the tray's submenu and of the menu of a pump's Pause on the phones and the computer."
+  },
+  "games.pause.night": {
+   "text": "Until {time}",
+   "args": {
+    "time": "string"
+   },
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "note": "A choice of Pause offers (its window on the Games tab, the tray's submenu, the menu of a pump's Pause on the phones and the computer): until the next game day begins. {time} is that clock time in the device's own format, 04:00 on most nights."
+  },
+  "games.pause.resumed": {
+   "text": "Until you resume",
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "note": "A choice of Pause offers (its window on the Games tab, the tray's submenu, the menu of a pump's Pause on the phones and the computer): until the player resumes them (the computer's Games tab or tray, the phones' Linked games or Games on this phone)."
+  },
+  "games.paused.resumed": {
+   "text": "Paused until you resume",
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "menu.links",
+    "menu.phonegames"
+   ],
+   "note": "The pause's state (Pause offers' value and its window's line on the Games tab, the Now card's words while paused, the tray's submenu; on the phones the line of the card over Resume offers on Linked games and Games on this phone): until the player resumes the offers."
+  },
+  "games.paused.until": {
+   "text": "Paused until {time}",
+   "args": {
+    "time": "string"
+   },
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "menu.links",
+    "menu.phonegames"
+   ],
+   "note": "The pause's state (Pause offers' value and its window's line on the Games tab, the Now card's words while paused, the tray's submenu; on the phones the line of the card over Resume offers on Linked games and Games on this phone): {time} is the clock time it ends, in the device's own format."
+  },
   "games.pick": {
    "text": "Add a game",
    "screens": [
@@ -6196,6 +6202,16 @@
     "pump.tab"
    ],
    "note": "The start of a game's standing pump (slice 57: every match its own pump): the tray's item, Pump home's foot, the Games tab's Now card while the offer stands and nothing holds it, and the phones' Pump tab offer; {game} the offer's own name, one on every surface (a named game's as contract/links.json's computer list writes it, a found or added program's own name). It names the game the pump follows, never the match's length, a result or a debt (the care rule)."
+  },
+  "games.resume": {
+   "text": "Resume offers",
+   "screens": [
+    "desk.games",
+    "desk.tray",
+    "menu.links",
+    "menu.phonegames"
+   ],
+   "note": "Ends the pause of the game offers now: the Games tab's Now card's button and a row of the Pause offers window while a pause stands, the tray's item, and on the phones the button of the card on Linked games and Games on this phone while a pause stands."
   },
   "games.setup": {
    "text": "Ask after each match",
@@ -10482,8 +10498,6 @@
   "ladders.next": {
    "text": "Up next",
    "screens": [
-    "ladders.tab",
-    "desk.book",
     "pump.tab",
     "desk.home"
    ],
@@ -10493,7 +10507,7 @@
     "macos",
     "windows"
    ],
-   "note": "SectionLabel over a tree's Up next in Book's Ladders (docs/ui.md, \"The Book's ladders and paths\"): the three step-ups of the chosen tree closest to done, each its next step's move, its ladder and what the climb still takes; a tree with none shows its Next line under it instead. Since 2026-11-03 also over Pump home's card of the cardio moves today and the step-up closest to done (Rapha: the step-up's row alone read as \"a random exercise\")."
+   "note": "SectionLabel over Pump home's embers row and the step-up closest to done of all the ladders (docs/ui.md, \"The Book's ladders and paths\"); the Book's own Up next went on 2026-11-04."
   },
   "ladders.next.time": {
    "text": "{time}+",
@@ -11080,7 +11094,7 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The search field over Book's moves: its label and its prompt."
+   "note": "The search field over Book's moves: its label and its prompt; since 2026-11-04 also the spoken name of the Book's round search button beside the gear, which shows Moves."
   },
   "ladders.search.clear": {
    "text": "Clear the search",
@@ -11102,10 +11116,12 @@
   "ladders.segment.ladders": {
    "text": "Ladders",
    "screens": [
-    "desk.book",
     "ladders.tab"
    ],
-   "note": "Book's switch, first segment: the move ladders (each family's climb from easy to hard)."
+   "note": "The iPhone Book's switch, first segment: the move ladders (each family's climb from easy to hard), until its unlock tracks land; Android and the computer show no switch since 2026-11-04.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.segment.moves": {
    "text": "Moves",
@@ -11113,7 +11129,12 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "Book's switch, second segment: every move the game knows, as tiles."
+   "note": "The spoken name of the filters' group over the desktop app's Moves (behind the Book's search button since 2026-11-04, when the Ladders | Moves switch whose second segment this was went). On the iPhone also the Book's switch, second segment: every move the game knows, as tiles, until its unlock tracks land.",
+   "platforms": [
+    "ios",
+    "macos",
+    "windows"
+   ]
   },
   "ladders.share": {
    "text": "Share the record",
@@ -11877,7 +11898,7 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "A floating button over a talent tree on the phones and the computer while the player's frontier (the glowing step, else their highest step in the tree) is scrolled out of view: scrolls back to it. Since 2026-10-29 only the iPhone shows it, until its twin of the ladders and their paths lands (docs/ui.md, \"The Book's ladders and paths\"), which Android and the computer show.",
+   "note": "A floating button over a talent tree on the iPhone (its trees; Android and the computer show none since 2026-11-04) while the player's frontier (the glowing step, else their highest step in the tree) is scrolled out of view: scrolls back to it. Since 2026-10-29 only the iPhone shows it, until its twin of the ladders and their paths lands (docs/ui.md, \"The Book's ladders and paths\"), which Android and the computer show.",
    "platforms": [
     "ios"
    ]
@@ -11888,7 +11909,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer while no step glows: back after a break, each ladder's first set places the player again."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04) while no step glows: back after a break, each ladder's first set places the player again.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.chip": {
    "text": "{move} · step {n} · {tree}",
@@ -11915,7 +11939,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer while no step glows: every open climb's day already counted; {time} is when the first counts again, a time of day (08:00)."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04) while no step glows: every open climb's day already counted; {time} is when the first counts again, a time of day (08:00).",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.find": {
    "text": "Find a move",
@@ -11941,7 +11968,7 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The tree's ladder line under its Next line on the phones and the computer, naming the selected step's ladder: {ladder} the ladder as the sheet names it (Push), {n} the step on the one 1-14 scale (5), {standing} where the player stands (ladders.standing.*: Push · step 5 · your step). Also the name of each ladder's column for a screen reader. Since 2026-10-29 only the iPhone shows it, until its twin of the ladders and their paths lands (docs/ui.md, \"The Book's ladders and paths\"), which Android and the computer show.",
+   "note": "The tree's ladder line under its Next line on the iPhone (its trees; Android and the computer show none since 2026-11-04), naming the selected step's ladder: {ladder} the ladder as the sheet names it (Push), {n} the step on the one 1-14 scale (5), {standing} where the player stands (ladders.standing.*: Push · step 5 · your step). Also the name of each ladder's column for a screen reader. Since 2026-10-29 only the iPhone shows it, until its twin of the ladders and their paths lands (docs/ui.md, \"The Book's ladders and paths\"), which Android and the computer show.",
    "platforms": [
     "ios"
    ]
@@ -11967,7 +11994,7 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The one expander of a talent tree on the phones and the computer: opens the thin rows (steps no ladder of the tree holds or nears yet) for the session. {count} is how many steps they hold (Show the 9 steps ahead). Since 2026-10-29 only the iPhone shows it, until its twin of the ladders and their paths lands (docs/ui.md, \"The Book's ladders and paths\"), which Android and the computer show.",
+   "note": "The one expander of a talent tree on the iPhone (its trees; Android and the computer show none since 2026-11-04): opens the thin rows (steps no ladder of the tree holds or nears yet) for the session. {count} is how many steps they hold (Show the 9 steps ahead). Since 2026-10-29 only the iPhone shows it, until its twin of the ladders and their paths lands (docs/ui.md, \"The Book's ladders and paths\"), which Android and the computer show.",
    "platforms": [
     "ios"
    ]
@@ -11982,7 +12009,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer, by the step that glows: its step is an orange or gold step still to earn: one fresh set of {move} at {earn}, its range's floor (3, a hold's 0:20), earns its colour. Keep the plus after {earn}."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04), by the step that glows: its step is an orange or gold step still to earn: one fresh set of {move} at {earn}, its range's floor (3, a hold's 0:20), earns its colour. Keep the plus after {earn}.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.earn.mark": {
    "text": "Next: one Perfect hold of {move} earns it.",
@@ -11993,7 +12023,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer, by the step that glows: its step is a pose's orange step still to earn: one Perfect hold of {move} earns its colour."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04), by the step that glows: its step is a pose's orange step still to earn: one Perfect hold of {move} earns its colour.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.proof": {
    "text": "Next: {proof} {goal}.",
@@ -12005,7 +12038,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer, by the step that glows: its climb waits only for a stage of its path (slice 42; its proof until then), {proof} that stage's move (Close push-up) at its top {goal} with a plus (12+); a cardio stage's is ladders.tree.next.proof.clean."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04), by the step that glows: its climb waits only for a stage of its path (slice 42; its proof until then), {proof} that stage's move (Close push-up) at its top {goal} with a plus (12+); a cardio stage's is ladders.tree.next.proof.clean.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.proof.clean": {
    "args": {
@@ -12017,12 +12053,15 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "A talent tree's Next line where the glowing cardio climb waits only for a stage of its path (slice 42): {proof} its form, {have} of the {need} clean days. Plural on {need}; {have} comes as text.",
+   "note": "A talent tree's Next line where the glowing cardio climb waits only for a stage of its path (slice 42): {proof} its form, {have} of the {need} clean days. Plural on {need}; {have} comes as text. The iPhone alone shows it since 2026-11-04 (its trees).",
    "text": "Next: {proof}: {have} of {need} clean days.",
    "plural": {
     "one": "Next: {proof}: {have} of {need} clean day.",
     "other": "Next: {proof}: {have} of {need} clean days."
-   }
+   },
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.proof.held": {
    "text": "Next: {proof}. {wait}",
@@ -12034,7 +12073,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer where the path's next stage names a move not open yet (2026-10-19; ns.PathNext's `waits`): {proof} that move (Knee clap push-up), {wait} is always a whole sentence with its own full stop, which the line adds none after and no code adds or strips (2026-10-19, the double-check's fix review; slices 49-50 translate it whole): a stage's opener (ladders.held.opens: Opens after Bulgarian split squat at 25 a side., and its .mark and .perfect forms), the move's own stretch check (ladders.held.check: Opens after your first Good hold of Deep squat., and ladders.held.check.perfect), or another ladder's record or step (ladders.step.waits: Waits for a record of 12 on Feet-up push-up., ladders.step.waits.step). The game says the same (Locales/enUS.lua tree.next.pathHeld)."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04) where the path's next stage names a move not open yet (2026-10-19; ns.PathNext's `waits`): {proof} that move (Knee clap push-up), {wait} is always a whole sentence with its own full stop, which the line adds none after and no code adds or strips (2026-10-19, the double-check's fix review; slices 49-50 translate it whole): a stage's opener (ladders.held.opens: Opens after Bulgarian split squat at 25 a side., and its .mark and .perfect forms), the move's own stretch check (ladders.held.check: Opens after your first Good hold of Deep squat., and ladders.held.check.perfect), or another ladder's record or step (ladders.step.waits: Waits for a record of 12 on Feet-up push-up., ladders.step.waits.step). The game says the same (Locales/enUS.lua tree.next.pathHeld).",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.proof.mark": {
    "text": "Next: {proof}, close enough to its goal pose on {days} days.",
@@ -12046,11 +12088,14 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer, by the step that glows: its climb waits only for a pose stage of its path, {proof} (Low lunge), answered close enough on {days} game days (2), as the card's stage row says it (ladders.card.stage.mark).  Plural on the day count (2026-10-16, slice 40's double-check).",
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04), by the step that glows: its climb waits only for a pose stage of its path, {proof} (Low lunge), answered close enough on {days} game days (2), as the card's stage row says it (ladders.card.stage.mark).  Plural on the day count (2026-10-16, slice 40's double-check).",
    "plural": {
     "one": "Next: {proof}, close enough to its goal pose on {days} day.",
     "other": "Next: {proof}, close enough to its goal pose on {days} days."
-   }
+   },
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.proof.perfect": {
    "text": "Next: {proof}, Perfect on {days} days.",
@@ -12062,11 +12107,14 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer, by the step that glows: ladders.tree.next.proof.mark where the pose must be answered Perfect, as the card's stage row says it (ladders.card.stage.mark.perfect).  Plural on the day count (2026-10-16, slice 40's double-check).",
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04), by the step that glows: ladders.tree.next.proof.mark where the pose must be answered Perfect, as the card's stage row says it (ladders.card.stage.mark.perfect).  Plural on the day count (2026-10-16, slice 40's double-check).",
    "plural": {
     "one": "Next: {proof}, Perfect on {days} day.",
     "other": "Next: {proof}, Perfect on {days} days."
-   }
+   },
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.next.trial": {
    "text": "Next: do one max set of {move} to find where you start.",
@@ -12077,7 +12125,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer, by the step that glows: the tree's ladder the Trial places next, whose first set finds the player's step there (Push-up)."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04), by the step that glows: the tree's ladder the Trial places next, whose first set finds the player's step there (Push-up).",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.none": {
    "text": "Nothing to climb here right now: each ladder is at its top or waiting.",
@@ -12085,7 +12136,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer while no step glows: every ladder of the tree is at its top, not open yet or shut."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04) while no step glows: every ladder of the tree is at its top, not open yet or shut.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.pain": {
    "text": "Paused: you marked pain for every climb here.",
@@ -12093,7 +12147,10 @@
     "desk.book",
     "ladders.tab"
    ],
-   "note": "The Next line under a talent tree's name on the phones and the computer while no step glows: a pain flag holds each open climb of the tree."
+   "note": "The Next line under a talent tree's name on the iPhone (its trees; Android and the computer show none since 2026-11-04) while no step glows: a pain flag holds each open climb of the tree.",
+   "platforms": [
+    "ios"
+   ]
   },
   "ladders.tree.rest": {
    "text": "Rest today. Pumps come back at {time}.",
@@ -12116,7 +12173,7 @@
    "screens": [
     "ladders.tab"
    ],
-   "note": "The name of VoiceOver's rotor on a talent tree: it lists the glowing step first, then each next step (the step above the player's on a ladder) in the tree's order.",
+   "note": "The name of VoiceOver's rotor on a talent tree: it lists the glowing step first, then each next step (the step above the player's on a ladder) in the tree's order. The iPhone alone shows it since 2026-11-04 (its trees).",
    "platforms": [
     "ios"
    ]
@@ -14360,7 +14417,6 @@
     "desk.menu.setup",
     "menu.free_mode",
     "pump.joints",
-    "desk.pump.ready",
     "desk.home"
    ],
    "note": "{joint} is a joint's name, such as Knee: its pain flag was set in the game."
@@ -14374,14 +14430,6 @@
     "places.place"
    ],
    "note": "Section label in Your setup over the switches Floor moves, Room to move and Quiet mode."
-  },
-  "menu.free.pumpon": {
-   "text": "A pump is running. Changes apply from your next pump; for pain right now, use Pain on the pump.",
-   "screens": [
-    "desk.menu.setup",
-    "menu.free_mode"
-   ],
-   "note": "Pain is the name of a button on the pump screen."
   },
   "menu.free.restart": {
    "text": "Start over in the app",
@@ -15152,6 +15200,14 @@
     "pump.questdone"
    ],
    "note": "Your setup's value in the Menu: no equipment chosen."
+  },
+  "menu.setup.pumpon": {
+   "text": "A pump is running. Pain flags apply now; other changes apply from your next pump.",
+   "screens": [
+    "desk.menu.setup",
+    "menu.free_mode"
+   ],
+   "note": "Your setup's card on the phones and the computer while a pump runs that a change waits for (a catch-up of banked moves, whose Settings opens the page over it): a pain flag set here rests the moves it loads at once, every other change waits for the next pump."
   },
   "menu.sounds": {
    "text": "Sounds",
@@ -17656,6 +17712,42 @@
    ],
    "note": "A result line after the window that proves the next step did not pass (slice 53): saved other than Yes, to the end, or stopped; nothing changes, and the next session's first window tries again. The counted step's card says the same while the proving waits for that session (ns.Proving's waits), in the Next line's place, as the game's (Locales/enUS.lua ladders.step.climbWaits)."
   },
+  "pump.count.cap": {
+   "text": "Up to {max}: 50% more than the {counted} counted",
+   "args": {
+    "max": "string",
+    "counted": "string"
+   },
+   "screens": [
+    "pump.count",
+    "desk.pump.count"
+   ],
+   "platforms": [
+    "android",
+    "macos",
+    "windows"
+   ],
+   "max": 60,
+   "note": "Under the count's dial while the count stands at its most (slice 66, Rapha, 2026-11-04: \"dont allow it to do more than 50% more of what the app counted\"): {max} is that most and {counted} what the app counted (the reps the figure ended by Done, the stopwatch's seconds), each in the move's unit, reps as a number (45, 30), seconds as m:ss (1:00, 0:40). Shown only while the count is at its most and what the app counted set it, never where a floor did; pump.count.cap.goal where a set of reps' goal did. The iPhone shows it once its count moves onto the dial (owed, slice 66)."
+  },
+  "pump.count.cap.goal": {
+   "text": "Up to {max}: 50% more than the {goal} to beat",
+   "args": {
+    "max": "string",
+    "goal": "string"
+   },
+   "screens": [
+    "pump.count",
+    "desk.pump.count"
+   ],
+   "platforms": [
+    "android",
+    "macos",
+    "windows"
+   ],
+   "max": 60,
+   "note": "Under the count's dial while the count stands at its most and the number a set of reps has to beat set it (slice 66; David, 2026-11-04: \"you fix and decide on the best\"): the app counts at the figure's pace, far slower than a fast honest set, so a set of reps takes half again its goal (its record without one) where that passes what was counted. {max} is that most and {goal} that number, reps as a number (46, 31). Shown only while the count is at its most, never where a floor set it; pump.count.cap where what the app counted did. The iPhone shows it once its count moves onto the dial (owed, slice 66)."
+  },
   "pump.count.clean.end": {
    "text": "Yes, to the end",
    "screens": [
@@ -18879,8 +18971,7 @@
    "text": "Save",
    "screens": [
     "pump.joints",
-    "desk.home",
-    "desk.pump.ready"
+    "desk.home"
    ],
    "note": "Button: flags the joints switched on."
   },
@@ -19301,7 +19392,7 @@
     "pump.ready",
     "watch.ready"
    ],
-   "note": "Row in a pump's More window, in the game's words (its Pause menu's \"Something hurts\"): says where it hurts; moves that load it leave the pump.",
+   "note": "Row in a pump's More window on the watch, and on the phones and the computer an item of the menu of a pump's Pause on its Ready view (its submenu's title on the phones), in the game's words (its Pause menu's \"Something hurts\"): says where it hurts; moves that load it leave the pump.",
    "max": 22
   },
   "pump.move": {
@@ -19735,6 +19826,14 @@
     "other": "Your best: {count} clean reps"
    }
   },
+  "pump.ready.body": {
+   "text": "Your body",
+   "screens": [
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "note": "The title of the group in the menu of a pump's Pause that holds Something hurts and I feel unwell (the second where the device makes offers), in the game's words (Locales ui.pause.body)."
+  },
   "pump.ready.carry": {
    "text": "{seconds} s with a load that makes the last 10 s hard",
    "args": {
@@ -19761,7 +19860,6 @@
    "text": "End the pump here",
    "screens": [
     "desk.pump.count",
-    "desk.pump.ready",
     "desk.pump.run",
     "pump.ready",
     "watch.ready"
@@ -19912,6 +20010,33 @@
     "pump.ready"
    ],
    "note": "pump.ready.mark.days where only Perfect counts the day (the slot's ask Perfect: ns.MarkNeeds below a harder step); {days} and {total} as there. The game's ui.target.posePerfect. Slice 47 (2026-10-19): any goal pose of the player's step counts the family's day; the step opens after three such days (pose_unlock_days), at least pose_anchor_days of them on its main pose (pose_anchor_days_risky where only Perfect counts) and pose_perfect_days answered Perfect where Good counts too (ns.PoseNeeds)."
+  },
+  "pump.ready.new": {
+   "text": "New",
+   "screens": [
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "max": 10,
+   "note": "A small tag beside the move's name on a pump's Ready view on the move's first appearance (a first max set, a placement, or a move never done), as the game's NEW."
+  },
+  "pump.ready.pause": {
+   "text": "Pause",
+   "screens": [
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "max": 12,
+   "note": "A button in the bar of a pump's Ready view on the phones and the computer, with its menu's arrow, in the game's words (its bar's Pause, Locales ui.panel.pause), and the name its menu is read by: how long the game offers pause, which ends the pump (where the device makes offers), then Your body's Something hurts and I feel unwell."
+  },
+  "pump.ready.settings": {
+   "text": "Settings",
+   "screens": [
+    "desk.pump.ready",
+    "pump.ready"
+   ],
+   "max": 14,
+   "note": "A button in the bar of a pump's Ready view on the phones and the computer, in the game's words (its bar's Settings, Locales ui.panel.settings): opens Your setup over the pump, which waits on its Ready view."
   },
   "pump.ready.start": {
    "text": "Start",
@@ -20142,12 +20267,12 @@
    "note": "Button: the first side is done; the other side follows."
   },
   "pump.saved.bar.best": {
-   "text": "best {time}",
+   "text": "best {value}",
    "args": {
-    "time": "string"
+    "value": "string"
    },
    "screens": [
-    "HoldBar",
+    "CountBar",
     "pump.saved",
     "desk.pump.saved"
    ],
@@ -20157,15 +20282,15 @@
     "windows"
    ],
    "max": 14,
-   "note": "Over the hold bar's best post (slice 65): the move's record before this hold as m:ss; no post once the record stands at the top or past it. The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "Over the count bar's best post (slices 65 and 66): the move's record before this set in its unit, reps as a number (14), seconds as m:ss (0:42); no post once the record stands at the top or past it, none on a timed move. The iPhone and the Apple Watch show it once their moves pour the same way (owed, slices 65 and 66)."
   },
   "pump.saved.bar.goal": {
-   "text": "goal {time}",
+   "text": "goal {value}",
    "args": {
-    "time": "string"
+    "value": "string"
    },
    "screens": [
-    "HoldBar",
+    "CountBar",
     "pump.saved",
     "desk.pump.saved"
    ],
@@ -20175,7 +20300,7 @@
     "windows"
    ],
    "max": 14,
-   "note": "Under the hold bar's goal post (slice 65): the hold's goal as m:ss (0:30). The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "Under the count bar's goal post (slices 65 and 66): the move's goal in its unit, reps as a number (12), seconds as m:ss (0:30). The iPhone and the Apple Watch show it once their moves pour the same way (owed, slices 65 and 66)."
   },
   "pump.saved.bar.step": {
    "text": "step {n}",
@@ -20184,7 +20309,7 @@
    },
    "noPlural": true,
    "screens": [
-    "HoldBar",
+    "CountBar",
     "pump.saved",
     "desk.pump.saved"
    ],
@@ -20194,15 +20319,15 @@
     "windows"
    ],
    "max": 12,
-   "note": "The hold bar's label on the phone (slice 65), lower case: the step whose range the bar spans; the computer puts kit.reward.step's ladder before it. The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "The hold bar's label on the phone (slice 65), lower case: the step whose range the bar spans; the computer puts kit.reward.step's ladder before it. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
   },
   "pump.saved.bar.top": {
-   "text": "top {time}",
+   "text": "top {value}",
    "args": {
-    "time": "string"
+    "value": "string"
    },
    "screens": [
-    "HoldBar",
+    "CountBar",
     "pump.saved",
     "desk.pump.saved"
    ],
@@ -20212,7 +20337,7 @@
     "windows"
    ],
    "max": 14,
-   "note": "Under the hold bar's top post (slice 65): the top of the step's range as m:ss, the time a day at the top needs. The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "Under the count bar's top post (slices 65 and 66): the top of the step's range in the move's unit, reps as a number (15), seconds as m:ss (1:00), the count a day at the top needs; none on a counted set or a timed move. The iPhone and the Apple Watch show it once their moves pour the same way (owed, slices 65 and 66)."
   },
   "pump.saved.finish": {
    "text": "Finish",
@@ -20226,7 +20351,7 @@
     "windows"
    ],
    "max": 16,
-   "note": "The primary button of the seconds pour on the pump's last move (slice 65): the pump's Result at once. The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "The primary button of the seconds pour on the pump's last move (slice 65): the pump's Result at once. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
   },
   "pump.saved.next": {
    "text": "Next: {move}",
@@ -20243,7 +20368,7 @@
     "windows"
    ],
    "max": 40,
-   "note": "The primary button of a hold's seconds pour (slice 65, Rapha, 2026-11-03), live from the pour's start: the next move's Ready view at once (Enter on the computer); {move} is the next move's name. The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "The primary button of a hold's seconds pour (slice 65, Rapha, 2026-11-03), live from the pour's start: the next move's Ready view at once (Enter on the computer); {move} is the next move's name. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
   },
   "pump.saved.unlocked": {
    "text": "Step {n} unlocked",
@@ -20262,7 +20387,7 @@
     "windows"
    ],
    "max": 28,
-   "note": "The caption over the step-up reveal's new move (slice 65): the step of the ladder the hold just opened, in gold caps; the move's name and its quality word come under it. The iPhone and the Apple Watch show it once their hold saves its seconds the same way (owed, slice 65)."
+   "note": "The caption over the step-up reveal's new move (slice 65): the step of the ladder the hold just opened, in gold caps; the move's name and its quality word come under it. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
   },
   "pump.side.first": {
    "text": "{move}: first side",
@@ -20845,7 +20970,7 @@
     "pump.timed_ask",
     "pumpfirst.door"
    ],
-   "note": "Last row of a pump's More window, in the stop colour with the heart: stops the pump at once and rests every pump until the next day; also the door's quiet last button, which opens the unwell window (title and its confirming primary are this key, then the line Apps open for the day), whose primary writes the same lock without a pump, so every app opens for the day."
+   "note": "Last row of a pump's More window (on a Ready view of the phones and the computer the last item of the menu of its Pause; a game pump's Ready view on the phones keeps it in its More window), in the stop colour with the heart: stops the pump at once and rests every pump until the next day; also the door's quiet last button, which opens the unwell window (title and its confirming primary are this key, then the line Apps open for the day), whose primary writes the same lock without a pump, so every app opens for the day."
   },
   "pump.unwell.game": {
    "text": "Stop in the game too: click Pause, then I feel unwell.",
@@ -20865,7 +20990,7 @@
     "pump.running",
     "pump.timed_ask"
    ],
-   "note": "Read by a screen reader after I feel unwell in a pump's More window."
+   "note": "Read by a screen reader after I feel unwell in a pump's More window (on a Ready view of the phones and the computer, in the menu of its Pause)."
   },
   "pump.waiting.catchup": {
    "text": "Catch up",
@@ -24173,6 +24298,20 @@
     "wearos"
    ],
    "max": 60
+  },
+  "watch.count.cap": {
+   "text": "Up to {max}",
+   "args": {
+    "max": "string"
+   },
+   "screens": [
+    "watch.count"
+   ],
+   "platforms": [
+    "wearos"
+   ],
+   "max": 16,
+   "note": "Under the watch's count while it stands at its most (slice 66): half again what the watch counted; {max} in the move's unit, reps as a number (45), seconds as m:ss (1:00). The Apple Watch shows it once its count moves onto the dial (owed, slice 66)."
   },
   "watch.count.form": {
    "text": "All out and clean?",

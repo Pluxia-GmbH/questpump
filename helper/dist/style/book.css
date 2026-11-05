@@ -501,57 +501,219 @@ qp-card.qp-trains qp-muscle-map {
 /* The Book's ladders and paths (views/book/book.js and ladder.js; docs/ui.md, "The Book's ladders and paths"), their
  * marks in surface.LadderTree's and StepsBar's tokens --------------------------------------------------------------- */
 
-/* a tree's Up next under its label, none while it shows nothing */
-.qp-book-next {
+/* a tree's ladders, a card a branch */
+.qp-book-branches {
 	display: flex;
 	flex-direction: column;
 	gap: var(--qp-layout-space12);
+	container-type: inline-size;
 }
 
-.qp-book-next:empty {
-	display: none;
+/* a ladder's row (surface.LadderRow): a column at each end, a move's name over its tile centred, the player's step's
+ * QualityWord under its tile; between them the ladder's name over the bar, which runs from tile to tile, and what the
+ * climb still takes under the bar (rows 2 and 3 of the middle, so a long line grows the row and never runs over it) */
+.qp-ladder-duo {
+	--qp-duo-column: var(--qp-surface-ladder-row-column);
+	--qp-duo-now: var(--qp-surface-ladder-row-tile-now);
+	--qp-duo-next: var(--qp-surface-ladder-row-tile-next);
+	--qp-duo-lines: var(--qp-surface-ladder-row-line-count);
+	display: grid;
+	grid-template-columns: var(--qp-duo-column) minmax(0, 1fr) var(--qp-duo-column);
+	grid-template-areas: "cn lad xn" "ct bar xt" "cu bar .";
+	align-items: center;
+	gap: var(--qp-surface-ladder-row-row-gap) 0;
 }
 
-/* a ladder's meter: a segment a step that holds a move, one the player has in its quality's tone */
-.qp-step-meter {
+/* a move's name: centred over its tile, wrapping upward into the room over the row, never at a hyphen */
+.qp-duo-name {
+	grid-area: cn;
+	align-self: end;
+	justify-self: center;
+	display: -webkit-box;
+	max-width: 100%;
+	overflow: hidden;
+	color: var(--qp-color-text);
+	text-align: center;
+	text-wrap: balance;
+	overflow-wrap: break-word;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: var(--qp-duo-lines);
+}
+
+.qp-duo-name[data-at="next"] {
+	grid-area: xn;
+	color: var(--qp-color-text2);
+}
+
+.qp-nowrap {
+	white-space: nowrap;
+}
+
+.qp-duo-ladder {
+	grid-area: lad;
+	align-self: end;
+	justify-self: center;
+	min-width: 0;
+	padding-inline: var(--qp-layout-space8);
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+
+.qp-duo-tile {
+	grid-area: ct;
+	justify-self: center;
+	position: relative;
+	display: grid;
+	isolation: isolate;
+}
+
+.qp-duo-tile qp-move-tile {
+	--qp-tile: var(--qp-duo-now);
+}
+
+.qp-duo-tile[data-at="next"] {
+	grid-area: xt;
+}
+
+.qp-duo-tile[data-at="next"] qp-move-tile {
+	--qp-tile: var(--qp-duo-next);
+}
+
+/* the player's step in a soft light */
+.qp-duo-spot::before {
+	content: "";
+	position: absolute;
+	inset: calc(var(--qp-surface-ladder-row-spotlight-reach) * -1);
+	z-index: -1;
+	background: var(--qp-surface-ladder-row-spotlight);
+	pointer-events: none;
+}
+
+/* the bar from tile to tile, over the columns' room beside them, its middle on the tiles'; the line at the top step
+ * as wide */
+.qp-duo-bar, .qp-duo-key[data-at="top"] {
+	grid-area: bar;
+	min-width: 0;
+	margin-inline: calc((var(--qp-duo-now) - var(--qp-duo-column)) / 2 + var(--qp-surface-ladder-row-bar-inset))
+		calc((var(--qp-duo-next) - var(--qp-duo-column)) / 2 + var(--qp-surface-ladder-row-bar-inset));
+}
+
+.qp-duo-bar {
+	align-self: start;
 	display: flex;
-	gap: var(--qp-surface-steps-bar-gap);
-	width: 100%;
+	flex-direction: column;
+	padding-top: calc((var(--qp-duo-now) - var(--qp-surface-ladder-row-bar-height)) / 2);
 }
 
-.qp-step-meter i {
-	flex: 1;
-	height: var(--qp-layout-step-bar-height);
-	border-radius: var(--qp-surface-steps-bar-radius);
-	background: var(--qp-surface-steps-bar-track);
+.qp-duo-key {
+	color: var(--qp-color-text2);
+	text-align: center;
+	text-wrap: balance;
+	overflow-wrap: break-word;
 }
 
-.qp-step-meter i[data-on] {
-	background: var(--qp-tone);
+.qp-duo-bar > .qp-duo-key {
+	margin-top: calc(var(--qp-surface-ladder-row-key-gap) - var(--qp-surface-ladder-row-bar-height) / 2);
 }
 
-/* Up next's climb that counts no days: its ring's share as a bar */
+/* at the top step, or a ladder that waits whole: the line alone under the ladder's name */
+.qp-duo-key[data-at="top"] {
+	align-self: center;
+}
+
+.qp-duo-word {
+	grid-area: cu;
+	align-self: start;
+	justify-self: center;
+}
+
+/* narrowUnder (560px; a container query takes no custom property): narrower columns and tiles, a third line */
+@container (width < 560px) {
+	.qp-ladder-duo {
+		--qp-duo-column: var(--qp-surface-ladder-row-column-narrow);
+		--qp-duo-now: var(--qp-surface-ladder-row-tile-now-narrow);
+		--qp-duo-next: var(--qp-surface-ladder-row-tile-next-narrow);
+		--qp-duo-lines: var(--qp-surface-ladder-row-narrow-line-count);
+	}
+}
+
+/* stackUnder (345px): the ladder's name on a line of its own over the row */
+@container (width < 345px) {
+	.qp-ladder-duo {
+		--qp-duo-column: var(--qp-surface-ladder-row-column-stacked);
+		grid-template-areas: "lad lad lad" "cn . xn" "ct bar xt" "cu bar .";
+	}
+
+	.qp-duo-ladder {
+		align-self: center;
+	}
+}
+
+/* the one progress mark (book.js progressBar): a round bar, its fill gold to its end, a glowing tip there breathing on
+ * the tiles' one clock (--qp-tip-now) */
 .qp-fill-bar {
+	position: relative;
 	display: block;
 	width: 100%;
-	height: var(--qp-layout-step-bar-height);
-	border-radius: var(--qp-surface-steps-bar-radius);
-	background: linear-gradient(to right, var(--qp-surface-steps-bar-done) calc(var(--qp-fill) * 100%),
-		var(--qp-surface-steps-bar-track) 0);
+	height: var(--qp-surface-ladder-row-bar-height);
+	border-radius: calc(var(--qp-surface-ladder-row-bar-height) / 2);
+	background: var(--qp-surface-ladder-row-track);
+	box-shadow: inset var(--qp-surface-ladder-row-bar-shade);
+}
+
+.qp-fill-bar-fill {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-start: 0;
+	width: max(var(--qp-surface-ladder-row-bar-height), calc(var(--qp-fill) * 100%));
+	border-radius: inherit;
+	background: var(--qp-surface-ladder-row-fill);
+	box-shadow: inset 0 1px 0 var(--qp-surface-ladder-row-fill-shine), var(--qp-surface-ladder-row-fill-glow);
+}
+
+.qp-fill-bar-tip {
+	position: absolute;
+	top: 50%;
+	inset-inline-start: max(calc(var(--qp-surface-ladder-row-bar-height) / 2),
+		calc(var(--qp-fill) * 100% - var(--qp-surface-ladder-row-bar-height) / 2));
+	width: var(--qp-surface-ladder-row-tip);
+	height: var(--qp-surface-ladder-row-tip);
+	margin: calc(var(--qp-surface-ladder-row-tip) / -2) 0 0 calc(var(--qp-surface-ladder-row-tip) / -2);
+	border-radius: 50%;
+	background: var(--qp-surface-ladder-row-tip-light);
+	pointer-events: none;
+	animation: qp-fill-tip var(--qp-motion-track-tip-duration) infinite;
+	animation-delay: calc(var(--qp-tip-now, 0ms) * -1);
+}
+
+@keyframes qp-fill-tip {
+	0%, 100% {
+		opacity: var(--qp-surface-ladder-row-tip-low-opacity);
+		transform: scale(var(--qp-surface-ladder-row-tip-low-fraction));
+		animation-timing-function: ease-in-out;
+	}
+
+	50% {
+		opacity: 1;
+		transform: scale(1);
+		animation-timing-function: ease-in-out;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.qp-fill-bar-tip {
+		animation: none;
+	}
 }
 
 /* a step's tile on its path, with room round it for the ring's gap and stroke, and under it for the beads; its quality
- * glow off, so the ring's gap stays dark (the phones' MoveTile `path`) */
+ * aura off (kit.css), so the ring's gap stays dark (the phones' MoveTile `path`) */
 .qp-path-tile {
 	position: relative;
 	flex: none;
 	display: grid;
 	place-items: center;
 	padding: calc(var(--qp-layout-ring-gap) + var(--qp-layout-ring-width));
-}
-
-.qp-path-tile qp-move-tile {
-	--qp-surface-move-tile-glow-radius: 0px;
 }
 
 .qp-path-tile:has(.qp-path-beads) {
@@ -821,7 +983,7 @@ button.qp-card-check.qp-card-link:hover {
 
 /* Windows' high contrast and every forced palette: the system's colours, each state kept by its shape */
 @media (forced-colors: active) {
-	.qp-path-ring path, .qp-path-beads i, .qp-step-meter i, .qp-fill-bar {
+	.qp-path-ring path, .qp-path-beads i, .qp-fill-bar, .qp-fill-bar-fill {
 		forced-color-adjust: none;
 	}
 
@@ -855,18 +1017,19 @@ button.qp-card-check.qp-card-link:hover {
 		background: GrayText;
 	}
 
-	/* a step the player has: filled; one ahead: an outline */
-	.qp-step-meter i {
-		background: Canvas;
-		outline: var(--qp-layout-hairline) solid GrayText;
-	}
-
-	.qp-step-meter i[data-on] {
-		background: CanvasText;
-	}
-
+	/* the bar: the fill Highlight in an outlined well, no glow; the spotlight off */
 	.qp-fill-bar {
-		background: linear-gradient(to right, Highlight calc(var(--qp-fill) * 100%), Canvas 0);
+		background: Canvas;
+		box-shadow: none;
 		outline: var(--qp-layout-hairline) solid CanvasText;
+	}
+
+	.qp-fill-bar-fill {
+		background: Highlight;
+		box-shadow: none;
+	}
+
+	.qp-fill-bar-tip, .qp-duo-spot::before {
+		display: none;
 	}
 }

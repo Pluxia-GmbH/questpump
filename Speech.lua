@@ -355,7 +355,8 @@ end)
 -- a dead bug's two sides ends two), on every rep set
 -- (a max set, a target set and on past its goal, a catch-up's, /qp try's) up to max_reps, a pace the player counts out
 -- loud with (safety.md hazard 3). The Running view shows the same count in the clock's place, and Done starts the
--- count step at it for the player to keep or change (Speech.RepsBy, Panel.lua; David, 2026-10-13). It never ticks (a
+-- count on the dial at it for the player to keep or change, and caps it at half again it or the set's goal, whichever
+-- is higher (Speech.RepsBy, Events.lua Lc.CountedBy and Lc.CountMost; David, 2026-10-13; slice 66). It never ticks (a
 -- take the voice cannot say stays silent), no other line holds it back (mark_gap_s), and a count its timer brings too
 -- late is skipped for the next rep's.
 -- A side move counts each side's run from 1, past its goal, until the player presses Switch sides, then the other
@@ -394,8 +395,8 @@ end
 -- setup, on by default): its beat, one loop of the move's figure, and the seconds in the loop at which its reps end
 -- (Figure.Loop; the loop keeps to the same clock, Panel.lua showFigure); nil without the figure's pack. A counted set
 -- is a cardio slot. The switches decide it, never whether the voice is heard: the Running view's number and the count
--- step's start (Panel.lua) keep to it through a silenced game (Speech.Silence), a missing take and a count skipped as
--- late.
+-- step's start and most (Panel.lua, Events.lua Lc.CountedBy) keep to it through a silenced game (Speech.Silence), a
+-- missing take and a count skipped as late.
 function Speech.RepCount(slot)
 	if slot.kind ~= K.rep or not (ns.profile.speech and ns.profile.countReps) then return nil end
 	local beat, ends = ns.Figure.Loop(slot.move)
@@ -414,8 +415,8 @@ local function countsBy(beat, ends, elapsed)
 end
 
 -- The reps a count (Speech.RepCount's plan) has reached by the clock's `elapsed`, up to max_reps, where the voice
--- stops: the Running view's number and the count step's start (Panel.lua). It never falls as the clock runs, so a side
--- move's shorter run gives its weaker side's count.
+-- stops: the Running view's number and the count step's start (Panel.lua, Events.lua Lc.CountedBy). It never falls
+-- as the clock runs, so a side move's shorter run gives its weaker side's count.
 function Speech.RepsBy(plan, elapsed)
 	return math.min(countsBy(plan.beat, plan.ends, elapsed), C.max_reps)
 end

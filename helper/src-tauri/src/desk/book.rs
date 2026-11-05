@@ -10,9 +10,8 @@
 //! `book`, the game's own rules beside the game's sheet the app shows): every ladder's row (a ladder that waits whole
 //! too, since the talent trees draw them all: slice 38), its fourteen steps with what each step's card starts (`start`,
 //! `ns.StartFor`) and its Path (the road to its top, every step free since 2026-10-14, its pace Pro's), its entry in
-//! its tree (the ring, the day, `waits`, `placing`, `appRung`), the three trees (each one's glow or why none glows, and
-//! its Up next: `up_next`, docs/ui.md "The Book's ladders and paths"; and the one closest to done of them all, Pump
-//! home's row: `closest`), every move's record (a loaded move's with its
+//! its tree (the ring, the day, `waits`, `placing`, `appRung`), the step-up closest to done of all the trees (Pump
+//! home's row: `closest`, docs/ui.md "The Book's ladders and paths"), every move's record (a loaded move's with its
 //! weight), familiarity and switches, the move that takes its place while it is set aside and what its window's Start
 //! starts (`Engine::starts`), this computer's favourites, the share card's style, the shown
 //! sheet's character, and, with Pro (`Helper::pro_on`), the open ladder page's charts from the game's sheets and rows (`history`). It is built again whenever the engine's state
@@ -679,28 +678,17 @@ impl Reads {
 	}
 }
 
-/// A talent tree as the `book` topic carries it: the engine's ([`BookTree`]: its glow or why none glows) and its Up
-/// next ([`up_next`]: the ladders in the order its rows show).
-#[derive(Serialize, Debug, Clone, PartialEq)]
-struct TreeRow {
-	#[serde(flatten)]
-	tree: BookTree,
-	next: Vec<u8>,
-}
-
-/// How many climbs a tree's Up next names at most (the phones' `UP_NEXT`).
-const UP_NEXT: usize = 3;
-
-/// A tree's Up next (2026-10-29; the twin of the phones' core `upNext`, SheetBoard.kt): its ladders a set can move now
-/// (Progress.lua `ns.TreeGlow`'s test: open, its day not in, no pain flag holding it, a ring with a fill) whose
-/// player's step has a step above it, by their ring's fill (`ns.StepRing`, the share of the climb done) from the
-/// highest, a tie in the tree's order, at most [`UP_NEXT`]; none while felt unwell locks every pump (`rest`).
-fn up_next(words: &Words, tree: &BookTree, ladders: &[BookLadder]) -> Vec<u8> {
+/// A tree's climb closest to its next step (2026-10-29; the twin of the phones' core `upNext`'s first, SheetBoard.kt):
+/// of its ladders a set can move now (Progress.lua `ns.TreeGlow`'s test: open, its day not in, no pain flag holding
+/// it, a ring with a fill) whose player's step has a step above it, the one with the fullest ring (`ns.StepRing`, the
+/// share of the climb done), a tie in the tree's order, with that fill; none while felt unwell locks every pump
+/// (`rest`).
+fn tree_climb(words: &Words, tree: &BookTree, ladders: &[BookLadder]) -> Option<(u8, i64)> {
 	if tree.reason.as_deref() == Some("rest") {
-		return Vec::new();
+		return None;
 	}
-	let Some(sheet) = words.trees.iter().find(|t| t.key == tree.tree) else { return Vec::new() };
-	let mut climbs: Vec<(u8, i64)> = sheet
+	let sheet = words.trees.iter().find(|t| t.key == tree.tree)?;
+	sheet
 		.branches
 		.iter()
 		.flat_map(|b| b.ladders.iter())
@@ -712,24 +700,19 @@ fn up_next(words: &Words, tree: &BookTree, ladders: &[BookLadder]) -> Vec<u8> {
 			let above = row.steps.iter().any(|s| s.r#move.is_some() && s.rung.is_some_and(|r| r > now));
 			(open && above).then_some((id, fill))
 		})
-		.collect();
-	climbs.sort_by_key(|c| std::cmp::Reverse(c.1));
-	climbs.into_iter().take(UP_NEXT).map(|(id, _)| id).collect()
+		.fold(None, fuller)
+}
+
+/// The fuller of two climbs, the first on a tie.
+fn fuller(best: Option<(u8, i64)>, climb: (u8, i64)) -> Option<(u8, i64)> {
+	if best.is_none_or(|(_, top)| climb.1 > top) { Some(climb) } else { best }
 }
 
 /// The step-up closest to done across the trees (2026-11-02, Pump home's row; the twin of the phones' core
-/// `upNextFirst`, SheetBoard.kt): of the first of each tree's Up next ([`up_next`]), the one with the fullest ring, a
-/// tie in the trees' order; none while nothing climbs (felt unwell rests every tree).
-fn closest(trees: &[TreeRow], ladders: &[BookLadder]) -> Option<u8> {
-	let fill = |id: u8| ladders.iter().find(|l| l.ladder == id).and_then(|l| l.ring.as_ref()?.fill).unwrap_or(0);
-	let mut best: Option<(u8, i64)> = None;
-	for id in trees.iter().filter_map(|t| t.next.first().copied()) {
-		let f = fill(id);
-		if best.is_none_or(|(_, top)| f > top) {
-			best = Some((id, f));
-		}
-	}
-	best.map(|(id, _)| id)
+/// `upNextFirst`, SheetBoard.kt): of each tree's closest climb ([`tree_climb`]), the one with the fullest ring, a tie
+/// in the trees' order; none while nothing climbs (felt unwell rests every tree).
+fn closest(words: &Words, trees: &[BookTree], ladders: &[BookLadder]) -> Option<u8> {
+	trees.iter().filter_map(|t| tree_climb(words, t, ladders)).fold(None, fuller).map(|(id, _)| id)
 }
 
 /// `book`: what the one progression says now.
@@ -755,9 +738,7 @@ struct BookTopic {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	tint: Option<String>,
 	ladders: Vec<LadderRow>,
-	/// The three talent trees: each one's glow or why none (`BookTree`) and its Up next ([`up_next`]).
-	trees: Vec<TreeRow>,
-	/// The step-up closest to done of all the trees' Up next, Pump home's row ([`closest`]): its ladder.
+	/// The step-up closest to done of all the trees, Pump home's row ([`closest`]): its ladder.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	closest: Option<u8>,
 	moves: Vec<MoveRow>,
@@ -933,39 +914,31 @@ impl Helper {
 		let character = shown.and_then(|g| g.name);
 		let chart = if pro { self.ladder_chart() } else { None };
 		let topic = match &self.book_log.answer {
-			Some(Answer { book, starts, opens, needs, checks, sets }) => {
-				let trees: Vec<TreeRow> = book
-					.trees
+			Some(Answer { book, starts, opens, needs, checks, sets }) => BookTopic {
+				ready: true,
+				pro,
+				style: self.settings.share_style,
+				card: self.settings.share_card,
+				format: self.settings.share_format,
+				sound: self.settings.share_sound,
+				character,
+				figure,
+				tint: tint.clone(),
+				ladders: rows(words, &book.ladders, opens, needs),
+				closest: closest(words, &book.trees, &book.ladders),
+				moves: book
+					.moves
 					.iter()
-					.map(|tree| TreeRow { next: up_next(words, tree, &book.ladders), tree: tree.clone() })
-					.collect();
-				BookTopic {
-					ready: true,
-					pro,
-					style: self.settings.share_style,
-					card: self.settings.share_card,
-					format: self.settings.share_format,
-					sound: self.settings.share_sound,
-					character,
-					figure,
-					tint: tint.clone(),
-					ladders: rows(words, &book.ladders, opens, needs),
-					closest: closest(&trees, &book.ladders),
-					trees,
-					moves: book
-						.moves
-						.iter()
-						.map(|m| MoveRow {
-							fact: m.clone(),
-							start: starts.get(&m.r#move).cloned(),
-							checks: checks.get(&m.r#move).cloned(),
-							sets: sets.get(&m.r#move).map(|list| list.iter().map(SetRow::of).collect()),
-						})
-						.collect(),
-					favourites: self.favourites(),
-					chart,
-				}
-			}
+					.map(|m| MoveRow {
+						fact: m.clone(),
+						start: starts.get(&m.r#move).cloned(),
+						checks: checks.get(&m.r#move).cloned(),
+						sets: sets.get(&m.r#move).map(|list| list.iter().map(SetRow::of).collect()),
+					})
+					.collect(),
+				favourites: self.favourites(),
+				chart,
+			},
 			None => BookTopic {
 				ready: false,
 				pro,
@@ -977,7 +950,6 @@ impl Helper {
 				figure,
 				tint: tint.clone(),
 				ladders: Vec::new(),
-				trees: Vec::new(),
 				closest: None,
 				moves: Vec::new(),
 				favourites: self.favourites(),

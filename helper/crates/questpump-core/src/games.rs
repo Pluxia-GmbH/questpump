@@ -846,6 +846,8 @@ pub struct Watcher {
 	playing_since: Option<i64>,
 	/// The games started again after a close that offered, since `take_resumed`.
 	resumed: Vec<Watched>,
+	/// The feed finishes under their floor, each game with its match's milliseconds, since `take_short`.
+	short: Vec<(Watched, i64)>,
 }
 
 impl Watcher {
@@ -870,6 +872,7 @@ impl Watcher {
 			heard: HashMap::new(),
 			playing_since: None,
 			resumed: Vec::new(),
+			short: Vec::new(),
 		}
 	}
 
@@ -890,6 +893,14 @@ impl Watcher {
 	/// takes them once every process of the look was stepped (`Games::tick`), so a resume is never also a new start.
 	pub fn take_resumed(&mut self) -> Vec<Watched> {
 		std::mem::take(&mut self.resumed)
+	}
+
+	/// The feed finishes held back since the last call because their match ran under its floor (`match_min_s`, a
+	/// checkpoint game's `match_checkpoint_min`), each game with its match's milliseconds, for the desktop app's log: such
+	/// a finish offers nothing and leaves no other trace (2026-11-04, an MTG Arena match under 5 minutes that offered
+	/// nothing).
+	pub fn take_short(&mut self) -> Vec<(Watched, i64)> {
+		std::mem::take(&mut self.short)
 	}
 
 	/// What a quit at `quit_at` (unix ms) keeps for the next start (`restore`): every run, open or closed within
@@ -1015,11 +1026,17 @@ impl Watcher {
 			self.heard.entry(watched).or_insert(at);
 		}
 		// the floor a close has spaces a feed's finishes too, a checkpoint game's by its own
-		let finish = finish.filter(|f| {
-			f.at_close
-				|| !self.runs.contains_key(&f.watched)
-				|| f.ended_at - f.began_at >= self.feed_floor_ms(&f.watched)
-		});
+		let finish = match finish {
+			Some(f)
+				if !f.at_close
+					&& self.runs.contains_key(&f.watched)
+					&& f.ended_at - f.began_at < self.feed_floor_ms(&f.watched) =>
+			{
+				self.short.push((f.watched, f.ended_at - f.began_at));
+				None
+			}
+			other => other,
+		};
 		if let Some(f) = &finish
 			&& let Some(run) = self.runs.get_mut(&f.watched)
 		{

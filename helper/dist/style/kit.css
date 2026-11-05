@@ -1224,6 +1224,96 @@ qp-empty-state qp-primary-button {
 	margin-top: var(--qp-layout-space8);
 }
 
+/* Menu (2026-11-05: a pump's Pause): a box in the card's fill and edge, with the tooltip's shadow and no dim, placed
+ * by its owner (qp-menu.js `place`, through --qp-menu-x and --qp-menu-y); its choices in rows of the label type, a
+ * group's title in caps over them and a rule between groups, fading in as it opens */
+
+.qp-menu {
+	position: fixed;
+	inset: auto;
+	left: var(--qp-menu-x, 0);
+	top: var(--qp-menu-y, 0);
+	min-width: calc(var(--qp-layout-row-height) * 3);
+	max-width: calc(100vw - var(--qp-layout-space8) * 2);
+	max-height: calc(100vh - var(--qp-layout-space8) * 2);
+	margin: 0;
+	padding: var(--qp-layout-space6);
+	border: 0;
+	border-radius: var(--qp-layout-button-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-surface-card-edge),
+		var(--qp-surface-tooltip-shadow);
+	color: var(--qp-color-text);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	animation: qp-fade-in var(--qp-motion-window) both;
+}
+
+.qp-menu::backdrop {
+	background: transparent;
+}
+
+.qp-menu-title {
+	padding: var(--qp-layout-space6) var(--qp-layout-space12) var(--qp-layout-space2);
+	color: var(--qp-color-text2);
+}
+
+.qp-menu-rule {
+	height: var(--qp-layout-hairline);
+	margin: var(--qp-layout-space6) var(--qp-layout-space4);
+	background: var(--qp-color-line);
+}
+
+.qp-menu-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+	width: 100%;
+	min-height: var(--qp-layout-quiet-height);
+	padding: var(--qp-layout-space6) var(--qp-layout-space12);
+	border-radius: var(--qp-layout-space6);
+	font: var(--qp-type-label-font);
+	color: var(--qp-color-text);
+	text-align: start;
+	white-space: nowrap;
+	transition: background-color var(--qp-motion-press);
+}
+
+.qp-menu-item:hover, .qp-menu-item:focus-visible, .qp-menu-item[aria-expanded="true"] {
+	background: var(--qp-wide-hover);
+}
+
+.qp-menu-item:focus-visible {
+	outline-offset: calc(var(--qp-wide-focus-ring-width) * -1);
+}
+
+.qp-menu-item:active {
+	background: rgb(0 0 0 / var(--qp-surface-press-shade-opacity));
+}
+
+.qp-menu-item.qp-destructive {
+	color: var(--qp-color-stop);
+}
+
+.qp-menu-item .qp-end-nav {
+	display: flex;
+	color: var(--qp-color-text3);
+}
+
+/* a menu button's arrow after its words (SecondaryButton's `menu`): the row's chevron turned up, toward the menu
+ * that opens above it */
+.qp-menu-caret {
+	display: inline-block;
+	width: var(--qp-layout-space8);
+	height: var(--qp-layout-space8);
+	margin-inline-start: var(--qp-layout-button-gap);
+	border-right: var(--qp-layout-space2) solid currentColor;
+	border-bottom: var(--qp-layout-space2) solid currentColor;
+	transform: translateY(25%) rotate(-135deg);
+	vertical-align: middle;
+}
+
 /* Toast ------------------------------------------------------------------------------------------------------------ */
 
 qp-toast {
@@ -1842,9 +1932,7 @@ qp-move-tile[data-size="60"] {
 	background: var(--qp-surface-move-tile-well);
 	box-shadow: inset 0 0 0 var(--qp-layout-tile-edge) var(--qp-tone, var(--qp-surface-move-tile-untrained-edge)),
 		inset 0 0 0 calc(var(--qp-layout-tile-edge) + var(--qp-surface-move-tile-inner-width))
-		var(--qp-surface-move-tile-inner-color),
-		0 0 var(--qp-surface-move-tile-glow-radius) color-mix(in srgb, var(--qp-tone, transparent)
-		calc(var(--qp-surface-move-tile-glow-opacity) * 100%), transparent);
+		var(--qp-surface-move-tile-inner-color);
 	overflow: hidden;
 }
 
@@ -1969,6 +2057,358 @@ qp-move-tile[data-ahead] .qp-tile-well img {
 .qp-tile-mastered qp-art {
 	width: calc(var(--qp-layout-tree-mastered) * 0.7);
 	height: calc(var(--qp-layout-tree-mastered) * 0.7);
+}
+
+/* The quality's aura (surface.QualityAura; Rapha, 2026-11-04): a halo of the tier's tone blurred behind the tile, an
+ * edge over the well's that widens with the tile, and from Uncommon up a loop each tier adds to the one below: Uncommon's
+ * halo breathes, Rare's glint runs round the edge, Epic's two arcs turn against each other, Legendary's flame ring
+ * turns over a steady breath with embers rising off its top, Artifact's prism turns through edge and halo with frost
+ * sparks at its corners. Every loop runs on one clock: its delay is the page's time when the tile began to move
+ * (--qp-aura-now, which qp-move-tile sets), so every tile of a tier stands at the same phase; a tile that does not
+ * move (no `aura`, Reduce Motion, under stillUnder) is paused at frozenFraction of each cycle. Each sweep starts at the
+ * top and turns clockwise, as a conic gradient does. */
+
+@property --qp-aura-a {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@property --qp-aura-b {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@keyframes qp-aura-turn {
+	to {
+		--qp-aura-a: 360deg;
+	}
+}
+
+@keyframes qp-aura-back {
+	from {
+		--qp-aura-b: 360deg;
+	}
+
+	to {
+		--qp-aura-b: 0deg;
+	}
+}
+
+/* the breath: low to high and back, eased at both ends as the phones' cosine is */
+@keyframes qp-aura-breathe {
+	0%, 100% {
+		opacity: var(--qp-aura-lo);
+		animation-timing-function: ease-in-out;
+	}
+
+	50% {
+		opacity: var(--qp-aura-hi);
+		animation-timing-function: ease-in-out;
+	}
+}
+
+@keyframes qp-aura-rise {
+	0% {
+		transform: translate(0, 0) scale(1);
+		opacity: 0;
+		animation-timing-function: ease-out;
+	}
+
+	12% {
+		opacity: 1;
+		animation-timing-function: ease-out;
+	}
+
+	100% {
+		transform: translate(var(--qp-aura-drift),
+			calc(var(--qp-tile) * var(--qp-surface-quality-aura-ember-rise-fraction) * -1)) scale(0.25);
+		opacity: 0;
+	}
+}
+
+@keyframes qp-aura-twinkle {
+	0%, 68%, 100% {
+		transform: scale(0) rotate(0deg);
+		opacity: 0;
+	}
+
+	80% {
+		transform: scale(1) rotate(45deg);
+		opacity: 1;
+	}
+
+	90% {
+		transform: scale(0.4) rotate(70deg);
+		opacity: 0.6;
+	}
+}
+
+qp-move-tile[data-q] {
+	--qp-aura-lo: 0;
+	--qp-aura-hi: 0;
+	--qp-aura-blur: var(--qp-surface-quality-aura-glow-fraction);
+	--qp-aura-edge: var(--qp-surface-quality-aura-edge-fraction);
+	--qp-aura-frozen: var(--qp-surface-quality-aura-frozen-fraction);
+	--qp-aura-now: 0ms;
+	isolation: isolate;
+	container-type: size;
+}
+
+qp-move-tile[data-q][data-aura-on] {
+	--qp-aura-frozen: 0;
+}
+
+qp-move-tile[data-q="common"] {
+	--qp-aura-lo: var(--qp-surface-quality-aura-common-glow-opacity);
+	--qp-aura-hi: var(--qp-surface-quality-aura-common-glow-opacity);
+}
+
+qp-move-tile[data-q="uncommon"] {
+	--qp-aura-lo: var(--qp-surface-quality-aura-uncommon-glow-low-opacity);
+	--qp-aura-hi: var(--qp-surface-quality-aura-uncommon-glow-high-opacity);
+}
+
+qp-move-tile[data-q="rare"] {
+	--qp-aura-lo: var(--qp-surface-quality-aura-rare-glow-low-opacity);
+	--qp-aura-hi: var(--qp-surface-quality-aura-rare-glow-high-opacity);
+}
+
+qp-move-tile[data-q="epic"] {
+	--qp-aura-lo: var(--qp-surface-quality-aura-epic-glow-low-opacity);
+	--qp-aura-hi: var(--qp-surface-quality-aura-epic-glow-high-opacity);
+	--qp-aura-blur: var(--qp-surface-quality-aura-epic-glow-fraction);
+	--qp-aura-edge: var(--qp-surface-quality-aura-epic-edge-fraction);
+}
+
+qp-move-tile[data-q="legendary"] {
+	--qp-aura-lo: var(--qp-surface-quality-aura-legendary-glow-low-opacity);
+	--qp-aura-hi: var(--qp-surface-quality-aura-legendary-glow-high-opacity);
+	--qp-aura-blur: var(--qp-surface-quality-aura-crown-glow-fraction);
+	--qp-aura-edge: var(--qp-surface-quality-aura-crown-edge-fraction);
+}
+
+qp-move-tile[data-q="artifact"] {
+	--qp-aura-lo: var(--qp-surface-quality-aura-artifact-glow-low-opacity);
+	--qp-aura-hi: var(--qp-surface-quality-aura-artifact-glow-high-opacity);
+	--qp-aura-blur: var(--qp-surface-quality-aura-crown-glow-fraction);
+	--qp-aura-edge: var(--qp-surface-quality-aura-crown-edge-fraction);
+}
+
+.qp-aura-halo, .qp-aura-edge, .qp-aura-fx {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--qp-layout-tile-radius);
+	pointer-events: none;
+}
+
+qp-move-tile[data-size="44"] :is(.qp-aura-halo, .qp-aura-edge) {
+	border-radius: var(--qp-layout-tile-radius-small);
+}
+
+/* each loop's delay: the clock less its phase in its own cycle (a fx mark a quarter cycle after the one before, a
+ * whole cycle added so the phase never falls below 0) */
+.qp-aura-halo, .qp-aura-edge, .qp-aura-fx b {
+	--qp-aura-lag: 0;
+	--qp-aura-at: calc(var(--qp-aura-frozen) + 1 - var(--qp-aura-lag));
+}
+
+.qp-aura-halo {
+	z-index: -1;
+	background: var(--qp-tone);
+	filter: blur(calc(var(--qp-tile) * var(--qp-aura-blur)));
+	opacity: var(--qp-aura-lo);
+}
+
+qp-move-tile[data-q="starter"] .qp-aura-halo {
+	display: none;
+}
+
+qp-move-tile:is([data-q="uncommon"], [data-q="rare"], [data-q="epic"], [data-q="legendary"]) .qp-aura-halo {
+	animation: qp-aura-breathe var(--qp-motion-aura-breathe-duration) infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-breathe-duration));
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-halo {
+	background: conic-gradient(from var(--qp-aura-a), var(--qp-surface-quality-aura-artifact-prism-stops));
+	animation: qp-aura-turn var(--qp-motion-aura-prism-duration) linear infinite,
+		qp-aura-breathe var(--qp-motion-aura-breathe-duration) infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-prism-duration)),
+		calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-breathe-duration));
+}
+
+/* the edge: a ring of the tier's width cut out of its paint, over the well's own edge and under the tile's marks */
+.qp-aura-edge {
+	z-index: 1;
+	padding: max(var(--qp-layout-tile-edge), calc(var(--qp-tile) * var(--qp-aura-edge)));
+	background: var(--qp-tone);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+qp-move-tile[data-q="rare"] .qp-aura-edge {
+	background: conic-gradient(from var(--qp-aura-a), var(--qp-surface-quality-aura-rare-glint-stops));
+	animation: qp-aura-turn var(--qp-motion-aura-glint-duration) linear infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-glint-duration));
+}
+
+qp-move-tile[data-q="epic"] .qp-aura-edge {
+	--qp-aura-arc: var(--qp-surface-quality-aura-epic-arc-fraction);
+	background: conic-gradient(from var(--qp-aura-a), transparent calc((1 - var(--qp-aura-arc)) * 100%),
+		var(--qp-surface-quality-aura-epic-arc-hi) calc((1 - var(--qp-aura-arc) / 2) * 100%), transparent 100%),
+		conic-gradient(from var(--qp-aura-b), transparent calc((1 - var(--qp-aura-arc)) * 100%),
+		var(--qp-surface-quality-aura-epic-arc-light) calc((1 - var(--qp-aura-arc) / 2) * 100%), transparent 100%),
+		var(--qp-surface-quality-aura-epic-edge);
+	animation: qp-aura-turn var(--qp-motion-aura-arcs-duration) linear infinite,
+		qp-aura-back var(--qp-motion-aura-arcs-duration) linear infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-arcs-duration));
+}
+
+qp-move-tile[data-q="legendary"] .qp-aura-edge {
+	background: conic-gradient(from var(--qp-aura-a), var(--qp-surface-quality-aura-legendary-flame-stops));
+	animation: qp-aura-turn var(--qp-motion-aura-flame-duration) linear infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-flame-duration));
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-edge {
+	background: conic-gradient(from var(--qp-aura-a), var(--qp-surface-quality-aura-artifact-prism-stops));
+	animation: qp-aura-turn var(--qp-motion-aura-prism-duration) linear infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-prism-duration));
+}
+
+/* Legendary's embers and Artifact's frost sparks */
+.qp-aura-fx {
+	z-index: 1;
+	display: none;
+}
+
+qp-move-tile:is([data-q="legendary"], [data-q="artifact"]) .qp-aura-fx {
+	display: block;
+}
+
+.qp-aura-fx b {
+	position: absolute;
+	display: block;
+	opacity: 0;
+}
+
+.qp-aura-fx b:nth-child(2) {
+	--qp-aura-lag: 0.25;
+}
+
+.qp-aura-fx b:nth-child(3) {
+	--qp-aura-lag: 0.5;
+}
+
+.qp-aura-fx b:nth-child(4) {
+	--qp-aura-lag: 0.75;
+}
+
+qp-move-tile[data-q="legendary"] .qp-aura-fx b {
+	bottom: calc(var(--qp-tile) * 0.9);
+	width: max(2px, calc(var(--qp-tile) * var(--qp-surface-quality-aura-ember-fraction)));
+	height: max(2px, calc(var(--qp-tile) * var(--qp-surface-quality-aura-ember-fraction)));
+	border-radius: 50%;
+	background: var(--qp-surface-quality-aura-legendary-hi);
+	box-shadow: 0 0 calc(var(--qp-tile) * var(--qp-surface-quality-aura-ember-fraction) * 2) var(--qp-tone);
+	animation: qp-aura-rise var(--qp-motion-aura-ember-duration) infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-ember-duration));
+}
+
+qp-move-tile[data-q="legendary"] .qp-aura-fx b:nth-child(1) {
+	left: 18%;
+	--qp-aura-drift: calc(var(--qp-tile) * -0.1);
+}
+
+qp-move-tile[data-q="legendary"] .qp-aura-fx b:nth-child(2) {
+	left: 46%;
+	--qp-aura-drift: calc(var(--qp-tile) * 0.07);
+}
+
+qp-move-tile[data-q="legendary"] .qp-aura-fx b:nth-child(3) {
+	left: 70%;
+	--qp-aura-drift: calc(var(--qp-tile) * -0.05);
+}
+
+qp-move-tile[data-q="legendary"] .qp-aura-fx b:nth-child(4) {
+	left: 86%;
+	--qp-aura-drift: calc(var(--qp-tile) * 0.12);
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-fx b {
+	width: calc(var(--qp-tile) * var(--qp-surface-quality-aura-spark-fraction));
+	height: calc(var(--qp-tile) * var(--qp-surface-quality-aura-spark-fraction));
+	background: var(--qp-surface-quality-aura-spark);
+	clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+	filter: drop-shadow(0 0 calc(var(--qp-tile) * 0.05) var(--qp-tone));
+	animation: qp-aura-twinkle var(--qp-motion-aura-spark-duration) infinite;
+	animation-delay: calc(var(--qp-aura-now) * -1 - var(--qp-aura-at) * var(--qp-motion-aura-spark-duration));
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-fx b:nth-child(1) {
+	left: -8%;
+	top: -8%;
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-fx b:nth-child(2) {
+	right: -8%;
+	top: 20%;
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-fx b:nth-child(3) {
+	right: 12%;
+	bottom: -10%;
+}
+
+qp-move-tile[data-q="artifact"] .qp-aura-fx b:nth-child(4) {
+	left: 10%;
+	bottom: -6%;
+}
+
+/* a tile that does not move holds every loop at its frozen phase (after the tiers' rules, whose `animation` runs it) */
+qp-move-tile[data-q]:not([data-aura-on]) :is(.qp-aura-halo, .qp-aura-edge, .qp-aura-fx b) {
+	animation-play-state: paused;
+}
+
+/* under stillUnder (32, surface.QualityAura; a container query takes no custom property) a tile holds still: its
+ * colour, its edge at the frozen phase, its halo at most smallGlowOpacity, no embers or sparks (each override as
+ * specific as a tier's rule, and after it) */
+@container (width < 32px) {
+	qp-move-tile[data-q] .qp-aura-edge {
+		--qp-aura-now: 0ms;
+		--qp-aura-frozen: var(--qp-surface-quality-aura-frozen-fraction);
+		animation-play-state: paused;
+	}
+
+	qp-move-tile[data-q] .qp-aura-halo {
+		animation: none;
+		opacity: min(var(--qp-aura-hi), var(--qp-surface-quality-aura-small-glow-opacity));
+	}
+
+	qp-move-tile[data-q] .qp-aura-fx {
+		display: none;
+	}
+}
+
+/* a step's path keeps its quality glow off, so the gold ring alone marks the player's step */
+.qp-path-tile :is(.qp-aura-halo, .qp-aura-edge, .qp-aura-fx) {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	qp-move-tile[data-q] :is(.qp-aura-halo, .qp-aura-edge, .qp-aura-fx b) {
+		--qp-aura-now: 0ms;
+		--qp-aura-frozen: var(--qp-surface-quality-aura-frozen-fraction);
+		animation-play-state: paused;
+	}
+}
+
+@media (forced-colors: active) {
+	qp-move-tile[data-q] :is(.qp-aura-halo, .qp-aura-edge, .qp-aura-fx) {
+		display: none;
+	}
 }
 
 /* The game's tile (the Games tab, slice 56) ------------------------------------------------------------------------ */
@@ -2870,6 +3310,16 @@ qp-move-figure-pair figure {
 	height: var(--qp-layout-space16);
 }
 
+/* the mark and its word in one colour, the game's green and red (tokens.json color.about: 4.5:1 and more on the page
+   and the card the pair stands on); the fault's words under them keep their meta grey */
+.qp-pair-right .qp-pair-word {
+	color: var(--qp-color-ok);
+}
+
+.qp-pair-wrong .qp-pair-word {
+	color: var(--qp-color-stop);
+}
+
 /* TimerRing, the pump's dial: the ring at the side its owner gives it (`--qp-ring-side`; the token's size at most where
    the owner gives none), its face inside the well holding the digit or "Go" alone, else the clock over its caption,
    each a share of the ring's side (surface.TimerRing's dial fractions; a container's inline size, so they follow the
@@ -2947,7 +3397,7 @@ qp-timer-ring {
 	line-height: 1;
 }
 
-qp-timer-ring[data-state="count"] .qp-ring-clock, qp-timer-ring[data-state="reps"] .qp-ring-clock {
+qp-timer-ring:is([data-state="count"], [data-state="reps"], [data-state="entry"]) .qp-ring-clock {
 	font-size: calc(var(--qp-surface-timer-ring-dial-count-fraction) * 100cqw);
 }
 
@@ -3107,7 +3557,8 @@ qp-move-window qp-figure-stage {
 	margin-inline: auto;
 }
 
-/* TimerRing's pour (slice 65): the gold New record chip under the clock once the seconds pass the record */
+/* TimerRing's pour and its count on the dial (slices 65 and 66): the gold New record chip under the number once it
+   passes the record */
 .qp-ring .qp-ring-chip {
 	grid-area: 4 / 1;
 	align-self: start;
@@ -3119,22 +3570,22 @@ qp-move-window qp-figure-stage {
 	white-space: nowrap;
 }
 
-/* HoldBar (slice 65): the label over the track in the step's tone, the range over 86 % of the track and the spill past
-   it in the tone's light, the posts through the track with their words under it (the goal's, the top's) or over it
-   (the best's), each lit once the seconds pass it, and the track's glow at the top */
-qp-hold-bar {
+/* CountBar (slices 65 and 66): the label over the track in the step's tone, the range over 86 % of the track and the
+   spill past it in the tone's light, the posts through the track with their words under it (the goal's, the top's) or
+   over it (the best's), each lit once the count passes it, and the track's glow at the top */
+qp-count-bar {
 	--qp-tone: var(--qp-color-gold);
-	--qp-hold-track: var(--qp-layout-space8);
+	--qp-count-track: var(--qp-layout-space8);
 	display: block;
 	min-width: 0;
 }
 
-.qp-hold-body {
+.qp-count-body {
 	position: relative;
 	padding-bottom: calc(var(--qp-type-meta-size) * var(--qp-type-meta-line-height) + var(--qp-layout-space8));
 }
 
-.qp-hold-head {
+.qp-count-head {
 	display: flex;
 	align-items: center;
 	gap: var(--qp-surface-quality-word-gem-gap);
@@ -3142,51 +3593,51 @@ qp-hold-bar {
 	color: var(--qp-tone);
 }
 
-.qp-hold-track {
+.qp-count-track {
 	position: relative;
-	height: var(--qp-hold-track);
-	border-radius: calc(var(--qp-hold-track) / 2);
+	height: var(--qp-count-track);
+	border-radius: calc(var(--qp-count-track) / 2);
 	background: linear-gradient(to right, var(--qp-color-track) 86%, transparent 86%);
 }
 
-.qp-hold-fill, .qp-hold-spill {
+.qp-count-fill, .qp-count-spill {
 	position: absolute;
 	inset-block: 0;
 	width: calc(var(--qp-at, 0) * 100%);
 	border-radius: inherit;
 }
 
-.qp-hold-fill {
+.qp-count-fill {
 	left: 0;
 	background: var(--qp-tone);
 	box-shadow: 0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-tone);
 }
 
-.qp-hold-spill {
+.qp-count-spill {
 	left: 86%;
 	background: var(--qp-color-gold-hi);
 }
 
-qp-hold-bar[data-full] .qp-hold-track {
+qp-count-bar[data-full] .qp-count-track {
 	box-shadow: 0 0 var(--qp-surface-move-tile-glow-radius) var(--qp-tone);
 }
 
-.qp-hold-posts {
+.qp-count-posts {
 	position: relative;
 	height: 0;
 }
 
-.qp-hold-post {
+.qp-count-post {
 	position: absolute;
 	left: calc(var(--qp-at, 0) * 100%);
 	bottom: calc(-0.5 * var(--qp-layout-space8));
 	width: var(--qp-layout-hairline);
-	height: calc(var(--qp-hold-track) + var(--qp-layout-space8));
+	height: calc(var(--qp-count-track) + var(--qp-layout-space8));
 	background: var(--qp-color-line-strong);
 	transform: translateX(-50%);
 }
 
-.qp-hold-post > span {
+.qp-count-post > span {
 	position: absolute;
 	left: 50%;
 	transform: translateX(-50%);
@@ -3194,19 +3645,19 @@ qp-hold-bar[data-full] .qp-hold-track {
 	color: var(--qp-color-text3);
 }
 
-.qp-hold-post[data-side="down"] > span {
+.qp-count-post[data-side="down"] > span {
 	top: 100%;
 }
 
-.qp-hold-post[data-side="up"] > span {
+.qp-count-post[data-side="up"] > span {
 	bottom: 100%;
 }
 
-.qp-hold-post[data-hit] {
+.qp-count-post[data-hit] {
 	background: var(--qp-tone);
 }
 
-.qp-hold-post[data-hit] > span {
+.qp-count-post[data-hit] > span {
 	color: var(--qp-color-text);
 }
 
@@ -3488,7 +3939,7 @@ qp-step-reveal {
 		outline: var(--qp-layout-hairline) solid CanvasText;
 	}
 
-	.qp-xp-fill, .qp-vault-fill, .qp-hold-fill, .qp-hold-spill, .qp-hold-post[data-hit] {
+	.qp-xp-fill, .qp-vault-fill, .qp-count-fill, .qp-count-spill, .qp-count-post[data-hit] {
 		background: Highlight;
 	}
 
@@ -3496,12 +3947,12 @@ qp-step-reveal {
 		background: GrayText;
 	}
 
-	.qp-hold-track {
+	.qp-count-track {
 		background: Canvas;
 		outline: var(--qp-layout-hairline) solid GrayText;
 	}
 
-	.qp-hold-post {
+	.qp-count-post {
 		background: CanvasText;
 	}
 

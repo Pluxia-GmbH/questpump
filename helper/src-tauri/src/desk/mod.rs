@@ -57,6 +57,7 @@ use std::time::Instant;
 use serde_json::Value;
 use tokio::sync::oneshot;
 
+use crate::lan;
 use crate::runtime::Helper;
 use place::Place;
 use state::Publisher;
@@ -181,6 +182,7 @@ impl Helper {
 			DeskAsk::Gone => {
 				self.book_pages_gone();
 				self.sync_pages_gone();
+				self.pumps.window(false, lan::now_ms());
 			}
 			DeskAsk::Reel { body, done } => {
 				let outcome = self.reel_make(&body);

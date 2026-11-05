@@ -1,33 +1,30 @@
 // Book (docs/ui.md, "Hero, the Book and the Log" and "The Book's ladders and paths"; the phones' BookTab, design v3
-// §4): the root's TopBar over the Ladders | Moves switch. Ladders: the talent trees' Segmented (Strength, Endurance,
-// Flexibility: the first until the player picks another), the tree's Up next (the climbs closest to their next step, the
-// `book` topic's `next`, desk/book.rs `up_next`: each its next step's tile, move and ladder, what the climb still takes
-// with its days as pips or its ring's share as a bar, opening the ladder's page at that step; with none, the tree's Next
-// line: why nothing climbs now), then one card of the tree's ladders in the tree's order on the higher rung of the game's
-// sheet and the app's own (its move's tile, the family in caps, the move, the record (nothing before the first), a pose's
-// hold, a chevron on cardio; its QualityWord with "Step 5 of 22" and its steps as one meter in their tiers' colours), a
-// row opening the ladder's page with its path, a family not open yet's its card with what opens it. Moves: the search
-// (Cmd/Ctrl+F, from any other root too; each move's terms: its name, muscles, block, group and equipment), the filters
-// (All, Favourites, Not trained yet, the regions, the blocks, "Off: 3" while a move is switched off), then every move the
-// search and the filter leave by family, the grid as wide as the window (three to six tiles a row); the pointer resting
-// on a tile shows its tooltip, a click opens its window with its Start, grown out of the tile and shrinking back into it
-// as the player closes it (slice 46). After the words or the filter rest, a screen reader hears how many moves are left.
-// A redraw keeps the focus on the row, the chip or the tile it was on (its window, once closed, gives it back to the
-// tile). A move started from a card or a window returns there once its pump has gone (`resume`, the router's at the
-// cover's end). From `book` and `book.words` (desk/book.rs) and the `pump` topic's gate.
-
-import {get} from "../../lib/bridge.js";
+// §4): the root's TopBar with the search button beside the gear, over the ladders. Ladders: the talent trees' Segmented
+// (Strength, Endurance, Flexibility: the first until the player picks another), then the tree's ladders in its order, a
+// card a branch, on the higher rung of the game's sheet and the app's own: the move standing for the player's step named
+// over its tile with that step's QualityWord under it, the next step's move named over its tile in its ahead face, and
+// between them the ladder's name in caps over the ring's share as a round bar (the one progress mark) with what the
+// climb still takes under it; a row opens the ladder's page with its path, a family not open yet's its card with what
+// opens it. Moves, behind the search button
+// (which closes it again, as Escape does): the search (Cmd/Ctrl+F, from any other root too; each move's terms: its name,
+// muscles, block, group and equipment), the filters (All, Favourites, Not trained yet, the regions, the blocks, "Off: 3"
+// while a move is switched off), then every move the search and the filter leave by family, the grid as wide as the
+// window (three to six tiles a row); the pointer resting on a tile shows its tooltip, a click opens its window with its
+// Start, grown out of the tile and shrinking back into it as the player closes it (slice 46). After the words or the
+// filter rest, a screen reader hears how many moves are left. A redraw keeps the focus on the row, the chip or the tile
+// it was on (its window, once closed, gives it back to the tile). A move started from a card or a window returns there
+// once its pump has gone (`resume`, the router's at the cover's end). From `book` and `book.words` (desk/book.rs) and the
+// `pump` topic.
 import {t} from "../../lib/copy.js";
 import {announce, keepFocus} from "../../lib/focus.js";
 import {push, register} from "../../lib/router.js";
-import {h, qualityName, styled} from "../../kit/element.js";
+import {h, styled} from "../../kit/element.js";
 import {page, watch} from "../page.js";
 import {goLink, openCardWindow, openMoveWindow, startMove} from "./card.js";
 import {
-	LADDER, factsOf, fold, knownWords, ladderValue, lookup, moveName, opensWords, qualityWord, recordWords, tile,
-	tileQuality, valueCell,
+	LADDER, factsOf, fold, knownWords, lookup, moveName, opensWords, qualityWord, recordWords, tile, tileQuality,
 } from "./common.js";
-import {ladderOf, stepAt, stepTip, treeNext, waitingNote} from "./steps.js";
+import {kindOf, ladderOf, stepAt, stepTip, waitingNote} from "./steps.js";
 
 /** How long the words and the filter rest before a screen reader hears the count. */
 const SETTLE_MS = 800;
@@ -49,75 +46,76 @@ export function stepsUp(row) {
 	return row.steps.filter((s) => s.rung && s.move).reverse();
 }
 
-/** Whether the player has a step: on the row's rung or under it. */
-function stepHeld(row, step) {
-	return step.rung <= row.rung;
+/** The one progress mark of a climb, the ring's share (Progress.lua `ns.StepRing`: the record toward the top and the
+ * days there in one share; `fill` per mille) as a round bar whose fill ends in a glowing tip, breathing on the tiles'
+ * one clock (motion.trackTip, held under reduced motion): the Book's ladder rows and Pump home's closest step-up.
+ * Decoration: the rows read their words. */
+export function progressBar(fill) {
+	const share = Math.max(0, Math.min(1000, fill ?? 0)) / 1000;
+	return styled(h("span", {class: "qp-fill-bar", "aria-hidden": "true"}, h("span", {class: "qp-fill-bar-fill"}),
+		h("i", {class: "qp-fill-bar-tip"})), {"--qp-fill": share, "--qp-tip-now": `${Math.round(performance.now())}ms`});
 }
 
-/** A ladder's steps as one meter: a segment a step that holds a move, from its first up, the steps the player has in
- * their tier's colour, the rest the track, so the colour turns where the tier does. Decoration: the row reads its step.
- */
-function stepMeter(row) {
-	return h("span", {class: "qp-step-meter", "aria-hidden": "true"}, ...stepsUp(row).map((s) => {
-		const tone = stepHeld(row, s) ? qualityName(s.quality) : null;
-		return tone ? styled(h("i", {"data-on": ""}), {"--qp-tone": `var(--qp-quality-${tone})`}) : h("i");
-	}));
+/** A move's name over its tile in a ladder's row: a hyphenated word (push-up, One-arm) never breaks at its hyphen. */
+function overName(text, at) {
+	return h("span", {class: "qp-type-body-strong qp-duo-name", "data-at": at},
+		text.split(" ").flatMap((word, i) => [i ? " " : "", word.includes("-") ? h("span", {class: "qp-nowrap", text: word})
+			: word]));
 }
 
-/** A ladder's row: the whole row opens its page; a ladder that waits whole (a family not open yet, or one the setup or
- * the player's own list leaves no move, whatever its rung) opens its card, which says why and what to change. */
+/** A ladder's row (Rapha, 2026-11-04, the exploration Ladder Row; surface.LadderRow): a column at each end, the
+ * player's step's move named over its tile in its quality and a soft light, its QualityWord under it, and the next
+ * step's move named over its tile in the ahead face; between them the ladder's name in caps over the one progress
+ * mark (`progressBar`), what the climb still takes under it (the player's step's key line, steps.js `stepTip`); at the
+ * top step no bar and no next, the key line under the ladder's name. The whole row opens its page. A ladder that waits
+ * whole (a family not open yet, or one the setup or the player's own list leaves no move, whatever its rung) shows its
+ * first move in the ahead face and what opens it, and opens its card, which says why and what to change. */
 function ladderRow(w, book, row, openCard) {
-	const words = w.ladders.get(row.ladder);
-	const name = w.moves.get(row.move)?.name ?? "";
+	const lad = ladderOf(w, book, row.ladder);
+	if (!lad) return null;
+	const name = moveName(w, row.move);
+	const ladder = h("span", {class: "qp-type-ladder-name qp-duo-ladder", text: lad.words.name});
 	if (row.waits || row.opens || row.rung === 0) {
-		const lad = ladderOf(w, book, row.ladder);
-		const line = row.opens ? opensWords(w, row.opens) : lad ? waitingNote(lad) : "";
+		const line = row.opens ? opensWords(w, row.opens) : waitingNote(lad);
 		return h("qp-card-row", {class: "qp-ladder-row"},
-			h("button", {type: "button", class: "qp-ladder-body", "data-focus-key": `ladder:${row.ladder}`,
-				"on:click": () => openCard(row.ladder)},
-			tile(w, row.move, {size: 60, name, face: "ahead"}),
-			h("div", {class: "qp-ladder-words"},
-				h("span", {class: "qp-type-caps", text: words.name}),
-				h("span", {class: "qp-type-subtitle", text: line})),
-			h("span", {class: "qp-ladder-chevron", "aria-hidden": "true"})));
+			h("button", {type: "button", class: "qp-ladder-body qp-ladder-duo", "data-focus-key": `ladder:${row.ladder}`,
+				"aria-label": [lad.words.name, line].filter(Boolean).join(", "), "on:click": () => openCard(row.ladder)},
+			overName(name, "now"), ladder,
+			h("span", {class: "qp-duo-tile", "data-at": "now"}, tile(w, row.move, {size: 64, face: "ahead"})),
+			line ? h("span", {class: "qp-type-meta qp-duo-key", "data-at": "top", text: line}) : ""));
 	}
-	const value = ladderValue(row, words);
-	// the row counts as its meter does: the steps that hold a move, never the steps' own numbers
-	const steps = stepsUp(row);
-	const step = steps.filter((s) => stepHeld(row, s)).length;
+	const quality = qualityWord(w, row.quality);
+	const st = lad.now;
+	const kind = st ? kindOf(lad, st) : null;
+	const key = st ? stepTip(w, lad, st, kind).key : "";
+	const next = kind === "now" ? stepAt(lad, lad.cur + 1) : null;
+	const nextName = next?.move ? moveName(w, next.move) : "";
+	const owned = kind === "top" || (kind === "now" && !st.state.earn);
 	return h("qp-card-row", {class: "qp-ladder-row"},
-		h("button", {type: "button", class: "qp-ladder-body", "data-focus-key": `ladder:${row.ladder}`,
+		h("button", {type: "button", class: "qp-ladder-body qp-ladder-duo", "data-focus-key": `ladder:${row.ladder}`,
+			"aria-label": [lad.words.name, name, quality, nextName, key].filter(Boolean).join(", "),
 			"on:click": () => push(LADDER, {ladder: row.ladder})},
-			tile(w, row.move, {size: 60, quality: row.quality, name, word: qualityWord(w, row.quality), step}),
-			h("div", {class: "qp-ladder-words"},
-				h("span", {class: "qp-type-caps", text: words.name}),
-				h("span", {class: "qp-type-body-strong", text: name}),
-				h("div", {class: "qp-quality-line"}, h("qp-quality-word", {quality: row.quality,
-					word: qualityWord(w, row.quality)}),
-				steps.length ? h("span", {class: "qp-type-meta",
-					text: t("kit.pips.label", {step, total: steps.length})}) : ""),
-				stepMeter(row)),
-			value ? valueCell(value) : words.dose === "cardio" ? h("span", {class: "qp-ladder-chevron", "aria-hidden": "true"}) : null));
+		overName(name, "now"), ladder, nextName ? overName(nextName, "next") : "",
+		h("span", {class: "qp-duo-tile qp-duo-spot", "data-at": "now"},
+			tile(w, st?.move ?? row.move, {size: 64, face: "pose", quality: owned ? st.quality : null, moving: true,
+				...(st?.mastered ? {mastered: ""} : {})})),
+		nextName ? h("span", {class: "qp-duo-bar"}, progressBar(lad.row.ring?.fill),
+			key ? h("span", {class: "qp-type-meta qp-duo-key", text: key}) : "") : "",
+		nextName ? h("span", {class: "qp-duo-tile", "data-at": "next"}, tile(w, next.move, {size: 42, face: "ahead"})) : "",
+		!nextName && key ? h("span", {class: "qp-type-meta qp-duo-key", "data-at": "top", text: key}) : "",
+		h("qp-quality-word", {class: "qp-duo-word", quality: row.quality, word: quality})));
 }
 
-/** A climb of a tree's Up next: its next step's tile (its pose greyed, a step ahead), its move over its ladder, what the
- * climb still takes (the player's step's key line, steps.js `stepTip`) with its days as pips where it counts days,
- * else its ring's share as a bar; read as one, it opens the ladder's page at that step (`open`: pushed on the Book's
- * stack; Pump home's row, the router's `openLadder`). */
-export function nextRow(w, book, id, open = (ladder, step) => push(LADDER, {ladder, step})) {
+/** Pump home's closest step-up (the router's `openLadder` opens it): its next step's tile (its pose greyed, a step
+ * ahead), its move over its ladder, what the climb still takes (the player's step's key line, steps.js `stepTip`) over
+ * the one progress mark the Book's rows fill (`progressBar`); read as one, it opens the ladder's page at that step
+ * (`open`). */
+export function nextRow(w, book, id, open) {
 	const lad = ladderOf(w, book, id);
 	const next = lad && stepAt(lad, lad.cur + 1);
 	if (!lad?.now || !next?.move) return null;
 	const tip = stepTip(w, lad, lad.now, "now");
 	const name = moveName(w, next.move);
-	const under = [];
-	if (tip.key) under.push(h("span", {class: "qp-type-meta", text: tip.key}));
-	if (tip.pips?.need > 0) {
-		under.push(h("qp-day-pips", {have: Math.min(tip.pips.have, tip.pips.need), need: tip.pips.need, "aria-hidden": "true"}));
-	} else {
-		const fill = Math.max(0, Math.min(1000, lad.row.ring?.fill ?? 0));
-		under.push(styled(h("span", {class: "qp-fill-bar", "aria-hidden": "true"}), {"--qp-fill": fill / 1000}));
-	}
 	return h("qp-card-row", {class: "qp-ladder-row"},
 		h("button", {type: "button", class: "qp-ladder-body", "data-focus-key": `next:${id}`,
 			"aria-label": [name, lad.words.name, tip.key].filter(Boolean).join(", "),
@@ -125,7 +123,9 @@ export function nextRow(w, book, id, open = (ladder, step) => push(LADDER, {ladd
 		tile(w, next.move, {size: 44, face: "ahead"}),
 		h("div", {class: "qp-ladder-words"},
 			h("span", {class: "qp-type-body-strong", text: name}),
-			h("span", {class: "qp-type-meta", text: lad.words.name}), ...under),
+			h("span", {class: "qp-type-meta", text: lad.words.name}),
+			tip.key ? h("span", {class: "qp-type-meta", text: tip.key}) : "",
+			progressBar(lad.row.ring?.fill)),
 		h("span", {class: "qp-ladder-chevron", "aria-hidden": "true"})));
 }
 
@@ -136,17 +136,6 @@ export function rowsCard(rows) {
 		row.place = all.length === 1 ? "alone" : i === 0 ? "first" : i === all.length - 1 ? "last" : "middle";
 	});
 	return card;
-}
-
-/** A tree's Up next under its label: its climbs' rows, else the tree's Next line (why nothing climbs now), else
- * nothing. `pump` the pump topic (the felt-unwell lock's end). */
-function upNext(w, book, tree, pump) {
-	const rows = (tree.next ?? []).map((id) => nextRow(w, book, id)).filter(Boolean);
-	if (rows.length) return [h("qp-section-label", {label: t("ladders.next")}), rowsCard(rows)];
-	const line = treeNext(w, book, tree, pump);
-	if (!line) return [];
-	return [h("qp-section-label", {label: t("ladders.next")}),
-		h("qp-card", {}, h("p", {class: "qp-type-body", text: line}))];
 }
 
 /** The Moves side's filters in their order, Off with its count while a move is off. */
@@ -166,9 +155,9 @@ register("book", () => {
 	// the wide column, its TopBar as wide
 	view.el.classList.add("qp-wide");
 	view.body.classList.add("qp-wide");
-	const segment = h("qp-segmented", {value: "ladders"});
-	segment.options = [{value: "ladders", label: t("ladders.segment.ladders")},
-		{value: "moves", label: t("ladders.segment.moves")}];
+	// Moves behind the TopBar's search button, which closes it again while it shows
+	const find = h("qp-round-button", {icon: "search"});
+	view.bar.action = find;
 	const ladders = h("div", {class: "qp-book-side qp-ladders"});
 	const moves = h("div", {class: "qp-book-side qp-book-moves", hidden: true});
 	const search = h("qp-text-input", {mode: "search", label: t("ladders.search"), prompt: t("ladders.search"),
@@ -176,19 +165,17 @@ register("book", () => {
 	const chips = h("div", {class: "qp-filter-row", role: "group", "aria-label": t("ladders.segment.moves")});
 	const grid = h("div", {class: "qp-book-families"});
 	const tooltip = h("qp-tooltip");
-	// the Ladders side: the trees' Segmented, the tree's Up next, its ladders
-	const trees = h("qp-segmented", {label: t("ladders.segment.ladders")});
-	const next = h("div", {class: "qp-book-next"});
-	const list = h("div", {class: "qp-book-rows"});
-	ladders.append(trees, next, list);
+	// the Ladders side: the trees' Segmented, then the tree's ladders, a card a branch
+	const trees = h("qp-segmented");
+	const list = h("div", {class: "qp-book-branches"});
+	ladders.append(trees, list);
 	moves.append(search, chips, grid);
-	view.body.append(segment, ladders, moves);
+	view.body.append(ladders, moves);
 	document.body.append(tooltip);
 	view.stops.push(() => tooltip.remove());
 
 	let w = null;
 	let book = null;
-	let pump = get("pump");
 	let tree = null; // the tree the player picked, by its key (the first until then)
 	let filter = "all";
 	let terms = null; // each move's terms, folded
@@ -224,12 +211,15 @@ register("book", () => {
 	};
 
 	const choose = (side) => {
-		segment.value = side;
 		ladders.hidden = side !== "ladders";
 		moves.hidden = side !== "moves";
+		find.icon = side === "moves" ? "close" : "search";
 		tooltip.hide();
 	};
-	segment.addEventListener("qp-change", (e) => choose(e.detail));
+	find.addEventListener("click", () => {
+		if (moves.hidden) view.findMove();
+		else choose("ladders");
+	});
 	trees.addEventListener("qp-change", (e) => {
 		tree = e.detail;
 		drawLadders();
@@ -238,7 +228,6 @@ register("book", () => {
 	const drawLadders = () => keepFocus(ladders, () => {
 		if (!book.ready) {
 			trees.hidden = true;
-			next.replaceChildren();
 			list.replaceChildren(loading());
 			return;
 		}
@@ -247,11 +236,10 @@ register("book", () => {
 		trees.hidden = sheet.length < 2;
 		trees.options = sheet.map((tr) => ({value: tr.key, label: tr.name}));
 		trees.value = shown?.key ?? null;
-		const order = shown ? shown.branches.flatMap((b) => b.ladders) : book.ladders.map((l) => l.ladder);
-		const rows = order.map((id) => book.ladders.find((l) => l.ladder === id)).filter(Boolean);
-		const state = shown && book.trees.find((tr) => tr.tree === shown.key);
-		next.replaceChildren(...(state ? upNext(w, book, state, pump) : []));
-		list.replaceChildren(rowsCard(rows.map((row) => ladderRow(w, book, row, (ladder) => listCard(ladder)))));
+		const branches = shown ? shown.branches.map((b) => b.ladders) : [book.ladders.map((l) => l.ladder)];
+		list.replaceChildren(...branches.map((ids) => ids.map((id) => book.ladders.find((l) => l.ladder === id))
+			.filter(Boolean).map((row) => ladderRow(w, book, row, (ladder) => listCard(ladder))).filter(Boolean))
+			.filter((rows) => rows.length).map(rowsCard));
 	});
 
 	/** Whether the search and the filter leave a move. */
@@ -401,16 +389,14 @@ register("book", () => {
 		draw();
 	});
 	watch(view, "pump", (p) => {
-		pump = p;
 		// a pump on screen keeps only its own return: none for a pump that is no move started here (one the engine
 		// refused composed none), the list's or the move window's else
 		if (p.pump) {
 			const place = p.pump.what === "move" ? p.pump.from?.place : null;
 			if (place !== "list" && place !== "move") returning = null;
 		}
-		if (w && book?.ready) drawLadders();
 	});
-	view.primary = () => segment;
+	view.primary = () => (moves.hidden && !trees.hidden ? trees : find);
 	view.openStep = (ladder, step) => {
 		wanted = {ladder, step};
 		openWanted();
@@ -427,8 +413,14 @@ register("book", () => {
 		search.focus();
 	};
 	view.onFind = () => view.findMove();
-	// Escape: the Tooltip
-	view.onKey = (e) => tooltip.escape(e);
+	// Escape: the Tooltip, else Moves back to the ladders
+	view.onKey = (e) => {
+		if (tooltip.escape(e)) return true;
+		if (e.key !== "Escape" || moves.hidden) return false;
+		choose("ladders");
+		find.focus();
+		return true;
+	};
 	/** The pump's cover has gone (the router's `uncover`): a move started here comes back where it started, the list's
 	 * row or the move's window again. */
 	view.resume = () => {

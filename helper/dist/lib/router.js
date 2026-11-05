@@ -1,7 +1,9 @@
 // Where the page is (docs/ui.md, "The window model"): the five roots, Pump, Hero, Book, Log and Games (the desktop's
 // fifth, slice 56), each with its own stack of pages (a tab keeps its stack; choosing the shown tab again takes it back
 // to its root page, and that page back to its top, as the phones' TopOnTab does); the Menu's stack over the root it was
-// opened from (its gear), which a tab closes; and a pump's cover over everything, the ActionBar with it. A view is made
+// opened from (its gear), which a tab closes; a pump's cover over everything, the ActionBar with it; and the pages its
+// Ready view's Settings opens over the pump in the cover (since 2026-11-05: Your setup, and what it pushes), whose back
+// returns to the pump as it stands, gone with the cover. A view is made
 // by the factory its id registered (views/index.js) and is {el, primary?, onKey?, onFind?, findMove?, resume?,
 // onShown?, onLeft?, secret?, stops}: its element, the control its keys go to first, its own keys (keys.js),
 // Cmd/Ctrl+F's target, the Book's Moves search that Cmd/Ctrl+F reaches from a view with no search of its own (another
@@ -35,6 +37,7 @@ let root = "pump";
 const stacks = Object.fromEntries(ROOTS.map((r) => [r, []]));
 let menu = [];
 let covering = null;
+let above = []; // the pages over a pump's cover, in it (`over`)
 let went = 0;
 let pressed = null; // the control the click being dispatched pressed (a mouse click focuses no button in WebKit)
 let tabsOn = null; // whether the tabs can act, as Rust was last told (`tellTabs`)
@@ -75,7 +78,7 @@ function drop(entry) {
 }
 
 function top() {
-	return covering ?? menu.at(-1) ?? stacks[root].at(-1);
+	return above.at(-1) ?? covering ?? menu.at(-1) ?? stacks[root].at(-1);
 }
 
 /** Whether a pump covers the window (a moment that waits for the pump's end, the best day's, asks). */
@@ -83,8 +86,8 @@ export function covered() {
 	return Boolean(covering);
 }
 
-/** Whether `view` is the view in front: the top page of the root shown, with no Menu and no pump's cover over it (the
- * Games tab, in front as a game is found, has seen it). */
+/** Whether `view` is the view in front: the last page over a pump's cover, else the pump, else the top page of the
+ * Menu or of the root shown (the Games tab, in front as a game is found, has seen it). */
 export function isFront(view) {
 	return front === view;
 }
@@ -100,11 +103,12 @@ function show(focus, key) {
 	host.stage.inert = Boolean(covering);
 	host.menu.hidden = !menu.length;
 	for (const r of ROOTS) host.stacks[r].hidden = r !== root || menu.length > 0;
-	for (const list of [...Object.values(stacks), menu]) {
+	for (const list of [...Object.values(stacks), menu, above]) {
 		list.forEach((entry, i) => {
 			entry.view.el.hidden = i !== list.length - 1;
 		});
 	}
+	if (covering) covering.view.el.hidden = above.length > 0;
 	host.bar.selected = root;
 	const entry = top();
 	if (entry) {
@@ -233,7 +237,7 @@ export function openStep(ladder, step) {
 }
 
 /** Pump home's closest step-up (2026-11-02): the Book on its own page with ladder `ladder`'s page pushed, step `step`
- * in view (its view's `openLadder`), as the Book's Up next opens it; none while a pump covers the window or a window
+ * in view (its view's `openLadder`); none while a pump covers the window or a window
  * stands over the page. */
 export function openLadder(ladder, step) {
 	if (!tabsFree()) return;
@@ -260,15 +264,35 @@ export function goTop(to) {
 	seen(to);
 }
 
-/** Pushes a page onto the stack in front (the Menu's while it is open). */
+/** Pushes a page onto the stack in front (the pages over a pump's cover while one stands, else the Menu's while it is
+ * open). */
 export function push(id, params) {
-	const list = menu.length ? menu : stacks[root];
-	list.push(place(make(id, params), menu.length ? host.menu : host.stacks[root]));
+	if (above.length) {
+		above.push(place(make(id, params), host.cover));
+	} else {
+		const list = menu.length ? menu : stacks[root];
+		list.push(place(make(id, params), menu.length ? host.menu : host.stacks[root]));
+	}
 	show();
 }
 
-/** Back one page; the Menu's own page closes the Menu. */
+/** Opens a page over a pump's cover (its Ready view's Settings: Your setup, 2026-11-05), the pump under it out of
+ * sight and its keys with the page, the ActionBar still out of reach; Back from it returns to the pump as it stands
+ * then. None without a cover. */
+export function over(id, params) {
+	if (!covering) return;
+	above.push(place(make(id, params), host.cover));
+	show();
+}
+
+/** Back one page; the Menu's own page closes the Menu, and the last page over a pump's cover returns to the pump. */
 export function back() {
+	if (above.length) {
+		const gone = above.pop();
+		drop(gone);
+		show(gone.opener, gone.openerKey);
+		return;
+	}
 	const list = menu.length ? menu : stacks[root];
 	if (list.length <= 1) {
 		if (menu.length) closeMenu(true);
@@ -298,8 +322,22 @@ function closeMenu(focusBack) {
 /** Covers the whole window with a view (a pump), the ActionBar and the pages under it out of reach; one that takes
  * another's place never leaves the window uncovered between them (no `qp-uncovered`). */
 export function cover(id, params) {
+	dropAbove();
 	if (covering) drop(covering);
 	covering = place(make(id, params), host.cover);
+	show();
+}
+
+/** The pages over a pump's cover go with it. */
+function dropAbove() {
+	for (const entry of above.splice(0)) drop(entry);
+}
+
+/** Back to the pump from the pages over its cover (its stage left Ready meanwhile: a setup change that left it no
+ * move ended it, and its Result must not run unseen under them); nothing with none. */
+export function toCover() {
+	if (!above.length) return;
+	dropAbove();
 	show();
 }
 
@@ -308,6 +346,7 @@ export function cover(id, params) {
  * slice 38), else its own focus. */
 export function uncover() {
 	if (!covering) return;
+	dropAbove();
 	drop(covering);
 	covering = null;
 	show(top()?.view.resume?.() ?? null);

@@ -92024,7 +92024,7 @@
           "compose": {
             "family": "kill",
             "match": {
-              "minutes": 0
+              "minutes": 5
             },
             "tier": 2
           },
@@ -92037,7 +92037,7 @@
               "move": 101,
               "pace": true,
               "rung": 2,
-              "seconds": 20,
+              "seconds": 23,
               "tier": 2
             },
             {
@@ -92046,7 +92046,7 @@
               "ladder": 6,
               "move": 291,
               "rung": 2,
-              "seconds": 20,
+              "seconds": 23,
               "tier": 2
             }
           ]
@@ -92054,25 +92054,25 @@
         {
           "at": 1790103660,
           "result": {
-            "elapsed": 20,
+            "elapsed": 23,
             "index": 1,
             "pace": 1,
             "stopped": false,
-            "value": 20
+            "value": 23
           },
           "rows": [
-            "1790103660|0|0|2|0|6|2|101|3|0|20|5|16384"
+            "1790103660|0|0|2|0|6|2|101|3|0|23|5|16384"
           ]
         },
         {
           "at": 1790103720,
           "result": {
-            "elapsed": 20,
+            "elapsed": 23,
             "index": 2,
             "stopped": false,
-            "value": 20
+            "value": 23
           },
-          "rows": ["1790103720|0|0|2|1|6|2|291|3|0|20|5|0"]
+          "rows": ["1790103720|0|0|2|1|6|2|291|3|0|23|5|0"]
         },
         {
           "at": 1790114400,
@@ -92237,7 +92237,7 @@
           ]
         }
       ],
-      "name": "the minutes sat as cardio's length (slice 48): a match pump's steady cardio moves share its minutes as a quest's share its active minutes, at 0, 7, 20 and 60 minutes sat, a Normal pump's two steady moves splitting them (every group but cardio left out: no ladder to place, no major move, no stretch)",
+      "name": "the minutes sat as cardio's length (slice 48): a match pump's steady cardio moves share its minutes as a quest's share its active minutes, at 5, 7, 20 and 60 minutes sat, a Normal pump's two steady moves splitting them (every group but cardio left out: no ladder to place, no major move, no stretch)",
       "profile": {
         "exclude": {
           "groups": ["calf", "carry", "core", "hinge", "lunge", "mobility", "pull", "push", "situp", "squat", "yoga"],
@@ -172353,6 +172353,485 @@
         "wk": [1, 4, 1, 9, 1],
         "ws": 1789963200,
         "xp": 532
+      }
+    },
+    {
+      "events": [
+        {
+          "at": 1790100000,
+          "start": ["1790100000|0|0|0|0|1|1|0|8|4|0|0|0", "1790100000|0|0|0|0|2|1|0|8|4|0|0|0", "1790100000|0|0|0|0|4|1|0|8|4|0|0|0", "1790100000|0|0|0|0|6|2|0|8|4|0|0|0", "1790100000|0|0|0|0|7|1|0|8|4|0|0|0", "1790100000|0|0|0|0|9|1|0|8|4|0|0|0", "1790100000|0|0|0|0|10|1|0|8|4|0|0|0", "1790100000|0|0|0|0|24|1|0|8|4|0|0|0"]
+        },
+        {
+          "at": 1790103600,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 0
+            },
+            "tier": 1
+          },
+          "rows": ["1790103600|0|0|1|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 101,
+              "pace": true,
+              "rung": 2,
+              "seconds": 20,
+              "tier": 1
+            }
+          ]
+        },
+        {
+          "at": 1790103660,
+          "result": {
+            "elapsed": 20,
+            "index": 1,
+            "pace": 1,
+            "stopped": false,
+            "value": 20
+          },
+          "rows": [
+            "1790103660|0|0|1|0|6|2|101|3|0|20|5|16384"
+          ]
+        },
+        {
+          "at": 1790114400,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 0,
+              "warm": true
+            },
+            "tier": 2
+          },
+          "rows": ["1790114400|0|0|2|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "kind": 3,
+              "ladder": 6,
+              "move": 621,
+              "rung": 2,
+              "seconds": 27,
+              "tier": 2,
+              "warm": true
+            }
+          ]
+        },
+        {
+          "at": 1790114460,
+          "result": {
+            "elapsed": 27,
+            "index": 1,
+            "stopped": false,
+            "value": 27
+          },
+          "rows": ["1790114460|0|0|2|0|6|2|621|3|0|27|5|0"]
+        },
+        {
+          "at": 1790125200,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 0
+            },
+            "tier": 3
+          },
+          "rows": ["1790125200|0|0|3|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 620,
+              "pace": true,
+              "rung": 2,
+              "seconds": 28,
+              "tier": 3
+            }
+          ]
+        },
+        {
+          "at": 1790125260,
+          "result": {
+            "elapsed": 28,
+            "index": 1,
+            "pace": 1,
+            "stopped": false,
+            "value": 28
+          },
+          "rows": [
+            "1790125260|0|0|3|0|6|2|620|3|0|28|5|16384"
+          ]
+        },
+        {
+          "at": 1790136000,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 2
+            },
+            "tier": 1
+          },
+          "rows": ["1790136000|0|0|1|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 95,
+              "pace": true,
+              "rung": 2,
+              "seconds": 33,
+              "tier": 1
+            }
+          ]
+        },
+        {
+          "at": 1790136060,
+          "result": {
+            "elapsed": 33,
+            "index": 1,
+            "pace": 1,
+            "stopped": false,
+            "value": 33
+          },
+          "rows": ["1790136060|0|0|1|0|6|2|95|3|0|33|5|16384"]
+        },
+        {
+          "at": 1790146800,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 2,
+              "warm": true
+            },
+            "tier": 2
+          },
+          "rows": ["1790146800|0|0|2|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "kind": 3,
+              "ladder": 6,
+              "move": 101,
+              "rung": 2,
+              "seconds": 26,
+              "tier": 2,
+              "warm": true
+            }
+          ]
+        },
+        {
+          "at": 1790146860,
+          "result": {
+            "elapsed": 26,
+            "index": 1,
+            "stopped": false,
+            "value": 26
+          },
+          "rows": ["1790146860|0|0|2|0|6|2|101|3|0|26|5|0"]
+        },
+        {
+          "at": 1790157600,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 2
+            },
+            "tier": 3
+          },
+          "rows": ["1790157600|0|0|3|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 291,
+              "pace": true,
+              "rung": 2,
+              "seconds": 26,
+              "tier": 3
+            }
+          ]
+        },
+        {
+          "at": 1790157660,
+          "result": {
+            "elapsed": 26,
+            "index": 1,
+            "pace": 1,
+            "stopped": false,
+            "value": 26
+          },
+          "rows": [
+            "1790157660|0|0|3|0|6|2|291|3|0|26|5|16384"
+          ]
+        },
+        {
+          "at": 1790168400,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 4
+            },
+            "tier": 1
+          },
+          "rows": ["1790168400|0|0|1|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 621,
+              "rung": 2,
+              "seconds": 36,
+              "tier": 1
+            }
+          ]
+        },
+        {
+          "at": 1790168460,
+          "result": {
+            "elapsed": 36,
+            "index": 1,
+            "stopped": false,
+            "value": 36
+          },
+          "rows": ["1790168460|0|0|1|0|6|2|621|3|0|36|5|0"]
+        },
+        {
+          "at": 1790179200,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 4,
+              "warm": true
+            },
+            "tier": 2
+          },
+          "rows": ["1790179200|0|0|2|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "kind": 3,
+              "ladder": 6,
+              "move": 620,
+              "rung": 2,
+              "seconds": 36,
+              "tier": 2,
+              "warm": true
+            }
+          ]
+        },
+        {
+          "at": 1790179260,
+          "result": {
+            "elapsed": 36,
+            "index": 1,
+            "stopped": false,
+            "value": 36
+          },
+          "rows": ["1790179260|0|0|2|0|6|2|620|3|0|36|5|0"]
+        },
+        {
+          "at": 1790190000,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 4
+            },
+            "tier": 3
+          },
+          "rows": ["1790190000|0|0|3|0|0|0|0|6|1|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 101,
+              "rung": 2,
+              "seconds": 30,
+              "tier": 3
+            }
+          ]
+        },
+        {
+          "at": 1790190060,
+          "result": {
+            "elapsed": 30,
+            "index": 1,
+            "stopped": false,
+            "value": 30
+          },
+          "rows": ["1790190060|0|0|3|0|6|2|101|3|0|30|5|0"]
+        },
+        {
+          "at": 1790200800,
+          "compose": {
+            "family": "kill",
+            "match": {
+              "minutes": 5
+            },
+            "tier": 2
+          },
+          "rows": ["1790200800|0|0|2|0|0|0|0|6|2|1|7|0"],
+          "slots": [
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 95,
+              "rung": 2,
+              "seconds": 34,
+              "tier": 2
+            },
+            {
+              "keep": 45,
+              "kind": 3,
+              "ladder": 6,
+              "move": 621,
+              "rung": 2,
+              "seconds": 34,
+              "tier": 2
+            }
+          ]
+        }
+      ],
+      "name": "a short match's pump (2026-11-04, match_short_min): a match under it composes at Light whatever its size, one move, warm or not, and a match of exactly match_short_min minutes at the player's Moves per match, a Normal pump's two (every group but cardio left out, as the minutes sat's flow: no ladder to place, no major move, so a Normal and a Big pump would take two and three)",
+      "profile": {
+        "exclude": {
+          "groups": ["calf", "carry", "core", "hinge", "lunge", "mobility", "pull", "push", "situp", "squat", "yoga"],
+          "ids": []
+        },
+        "experience": "none",
+        "floor": true,
+        "gear": [],
+        "include": [],
+        "noHeadDown": false,
+        "noJump": false,
+        "noStrain": false,
+        "quiet": false,
+        "space": true
+      },
+      "summary": {
+        "ad": 2,
+        "at": 1790200800,
+        "build": "falcon",
+        "crit": 5,
+        "def": 2,
+        "ear": [
+          [1, 0],
+          [1, 0],
+          [0],
+          [1, 0],
+          [0],
+          [2, 0, 0],
+          [1, 0],
+          [0],
+          [1, 0],
+          [1, 0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [0],
+          [1, 0]
+        ],
+        "em": 3,
+        "exp": 0,
+        "into": 198,
+        "lad": [
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+          [2, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [1, 0, 0, 0]
+        ],
+        "last": [0, 0, 0, 0],
+        "ld": [0, 0, 0, 0, 0],
+        "ls": [0, 0, 0, 0, 0],
+        "lvl": 3,
+        "lx": [
+          [1790103600, 69],
+          [1790114400, 17],
+          [1790125200, 192],
+          [1790136000, 50],
+          [1790146800, 18],
+          [1790157600, 18],
+          [1790168400, 18],
+          [1790179200, 18],
+          [1790190000, 18]
+        ],
+        "mq": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+        "mw": [3, 0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 9, 0, 0],
+        "need": 234,
+        "nx": [
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 2, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0]
+        ],
+        "owed": 0,
+        "par": 0,
+        "rest": 0,
+        "rs": 2,
+        "rt": 1790190060,
+        "st": [10, 14, 10, 13, 11],
+        "streak": 2,
+        "tokens": 1,
+        "v": 6,
+        "va": [9, 0, 6, 1790568000],
+        "wk": [0, 4, 0, 3, 1],
+        "ws": 1789963200,
+        "xp": 418
       }
     }
   ],

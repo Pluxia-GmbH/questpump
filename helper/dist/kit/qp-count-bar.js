@@ -1,17 +1,19 @@
-// HoldBar (slice 65; the phones' HoldBar, the game's result view): a hold's seconds against its step, filled in the
-// step's quality tone. `bar` is {ladder, step, quality, goal, best, top, range}: the label `{ladder} · step {n}` (`step
-// {n}` without a ladder), the range from 0 to the step's top (`range`) over 86 % of the track and a spill past it for
-// the seconds beyond, and posts with their words at the goal, at the record before this hold (none once it stands at
-// the top or past it) and at the top, each lit once the seconds pass it; `held` the seconds in it. `slot(n)` is where
-// the nth second lands (the window's px, for its grain), `flash()` the track's flash with its sparks at the top, and
-// `roll(next)` turns it over to the next step's bar after a step-up. Decoration: the pour's words and the rows say it.
+// CountBar (slice 66, every move's; the hold bar of slice 65; the phones' CountBar, the game's result view): a move's
+// count against its step, filled in the step's quality tone. `bar` is {ladder, step, quality, goal, best, top, range,
+// seconds}: the label `{ladder} · step {n}` (`step {n}` without a ladder), the range from 0 to the step's top (`range`)
+// over 86 % of the track and a spill past it for the count beyond, and posts with their words at the goal, at the
+// record before this set (none once it stands at the top or past it) and at the top, each lit once the count passes
+// it, in the move's unit (`seconds`: m:ss, else the number of reps); `held` the count in it. `slot(n)` is where the nth
+// unit lands (the window's px, for its grain), `flash()` the track's flash with its sparks at the top, and `roll(next)`
+// turns it over to the next step's bar after a step-up. Decoration: the pour's words and the rows say it.
 
 import {t} from "../lib/copy.js";
-import {clock} from "../lib/format.js";
+import {clock, LOCALE} from "../lib/format.js";
 import {KitElement, define, h, qualityName, styled, token} from "./element.js";
 
 /** The share of the track the range takes; the rest is the spill's (the mockup's `.tr`). */
 const SPAN = 0.86;
+const NUMBER = new Intl.NumberFormat(LOCALE);
 const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 /** A CSS transform to (x, y) px, then `then` (a scale, a rotation: `turned`). */
@@ -49,14 +51,14 @@ export function sparks(layer, x, y, n, reach, all = false) {
 	}
 }
 
-class QpHoldBar extends KitElement {
+class QpCountBar extends KitElement {
 	build() {
-		this.label = h("span", {class: "qp-hold-label qp-type-caps"});
-		this.fill = h("i", {class: "qp-hold-fill"});
-		this.spill = h("i", {class: "qp-hold-spill"});
-		this.track = h("div", {class: "qp-hold-track"}, this.fill, this.spill);
-		this.posts = h("div", {class: "qp-hold-posts"});
-		this.body = h("div", {class: "qp-hold-body"}, h("div", {class: "qp-hold-head"}, h("span", {class: "qp-gem"}),
+		this.label = h("span", {class: "qp-count-label qp-type-caps"});
+		this.fill = h("i", {class: "qp-count-fill"});
+		this.spill = h("i", {class: "qp-count-spill"});
+		this.track = h("div", {class: "qp-count-track"}, this.fill, this.spill);
+		this.posts = h("div", {class: "qp-count-posts"});
+		this.body = h("div", {class: "qp-count-body"}, h("div", {class: "qp-count-head"}, h("span", {class: "qp-gem"}),
 			this.label), this.track, this.posts);
 		this.setAttribute("aria-hidden", "true");
 		this.append(this.body);
@@ -83,8 +85,8 @@ class QpHoldBar extends KitElement {
 	}
 
 	/** A share of the range as a share of the track. */
-	at(seconds) {
-		return seconds / Math.max(1, this.barData?.range ?? 1) * SPAN;
+	at(count) {
+		return count / Math.max(1, this.barData?.range ?? 1) * SPAN;
 	}
 
 	update() {
@@ -98,9 +100,10 @@ class QpHoldBar extends KitElement {
 			this.label.textContent = b.ladder ? t("kit.reward.step", {ladder: b.ladder, step: b.step ?? 0})
 				: t("pump.saved.bar.step", {n: b.step ?? 0});
 			this.label.hidden = b.step == null;
-			const post = (value, key, side) => value == null ? null : styled(h("i", {class: "qp-hold-post", "data-value":
-				value, "data-side": side}, h("span", {class: "qp-type-meta", text: t(key, {time: clock(value)})})),
-			{"--qp-at": this.at(value)});
+			const value = (n) => (b.seconds ? clock(n) : NUMBER.format(n));
+			const post = (n, key, side) => n == null ? null : styled(h("i", {class: "qp-count-post", "data-value": n,
+				"data-side": side}, h("span", {class: "qp-type-meta", text: t(key, {value: value(n)})})),
+			{"--qp-at": this.at(n)});
 			this.posts.replaceChildren(...[post(b.goal, "pump.saved.bar.goal", "down"),
 				post(b.best, "pump.saved.bar.best", "up"), post(b.top, "pump.saved.bar.top", "down")].filter(Boolean));
 		}
@@ -109,13 +112,13 @@ class QpHoldBar extends KitElement {
 		styled(this.fill, {"--qp-at": this.at(Math.min(held, range))});
 		styled(this.spill, {"--qp-at": Math.min(1 - SPAN, this.at(Math.max(0, held - range)))});
 		for (const p of this.posts.children) {
-			const value = Number(p.dataset.value);
-			p.toggleAttribute("data-hit", p.dataset.side === "up" ? held > value : held >= value);
+			const n = Number(p.dataset.value);
+			p.toggleAttribute("data-hit", p.dataset.side === "up" ? held > n : held >= n);
 		}
 		this.toggleAttribute("data-full", b.top != null && held >= b.top);
 	}
 
-	/** The window's px of the middle of second `n`'s place on the track (past the range, in the spill). */
+	/** The window's px of the middle of unit `n`'s place on the track (past the range, in the spill). */
 	slot(n) {
 		const r = this.track.getBoundingClientRect();
 		return {x: r.left + Math.min(1, this.at(n - 0.5)) * r.width, y: r.top + r.height / 2};
@@ -146,4 +149,4 @@ class QpHoldBar extends KitElement {
 	}
 }
 
-define("qp-hold-bar", QpHoldBar);
+define("qp-count-bar", QpCountBar);

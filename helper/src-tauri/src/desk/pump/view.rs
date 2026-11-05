@@ -38,7 +38,8 @@ pub(super) struct Topic {
 	/// Where the player pumps on this computer, asked before the first own pump.
 	place: bool,
 	choose: Option<ChooseView>,
-	/// The joints and their flags, for the Ready view's Pain, under the game's question.
+	/// The joints and their flags, for Something hurts in the Ready view's Pause menu (the joints not flagged), under the
+	/// game's question.
 	pain: Vec<Joint>,
 	pain_ask: &'static str,
 	/// The starts that went nowhere on this run (`Helper::pump_nowhere`: refused as the engine read them again,
@@ -67,14 +68,12 @@ struct ChooseView {
 	one_size: bool,
 }
 
-/// A joint as the picker shows it: flagged, and flagged by the game's own rows (`in_game`, the phones' `JointPicker`'s
-/// "(in the game)").
+/// A joint as Something hurts lists it: its words, and whether a flag rests it already (which leaves it out).
 #[derive(Serialize, PartialEq)]
 struct Joint {
 	id: u8,
 	name: &'static str,
 	flagged: bool,
-	in_game: bool,
 }
 
 #[derive(Serialize, PartialEq)]
@@ -126,7 +125,7 @@ struct PumpView {
 	/// The Legendary moment on show over the Result: its row's index among the result's rows.
 	legend: Option<usize>,
 	calm: Option<CalmView>,
-	/// A hold's pour, its rewards and its step's reveal (slice 65), on its `saved` stage.
+	/// A move's pour, its rewards and its step's reveal (slices 65 and 66), on its `saved` stage.
 	saved: Option<pour::SavedView>,
 	/// The expedition it is a round of (slice 51): its bar, its breather and its Result's facts.
 	expedition: Option<super::expedition::TripView>,
@@ -364,8 +363,9 @@ struct SwapOption {
 	kind: String,
 }
 
-/// The count step; on a counted set since slice 42 its form step (the clean reps if counted, Yes, to the end, Form
-/// slipped and since slice 53 Not all out), its record the form's best clean count.
+/// The count step, set on the dial since slice 66 (and the count a hold's "Could you have held longer?" asks about,
+/// which the dial shows still); on a counted set since slice 42 its form step (the clean reps if counted, Yes, to the
+/// end, Form slipped and since slice 53 Not all out), its record the form's best clean count.
 #[derive(Serialize, PartialEq)]
 struct CountView {
 	/// `reps`, `reps_side`, `hold`, `hold_side` or `form` (a counted set's).
@@ -373,7 +373,11 @@ struct CountView {
 	name: &'static str,
 	seconds: i64,
 	from: i64,
+	/// The most the dial takes: half again what the app counted, on a set of reps or its number to beat, where that
+	/// binds (`Run::count_cap`), else one set's most.
 	most: i64,
+	/// Where the share set that most (slice 66): it and what set it, which the line names while the count stands at it.
+	cap: Option<CapView>,
 	hold: bool,
 	record: Option<i64>,
 	chip: Option<i64>,
@@ -385,6 +389,24 @@ struct CountView {
 	could_not: Option<&'static str>,
 	/// A loaded move's weight box beside the reps.
 	kg: Option<KgView>,
+}
+
+/// The most a count takes and what set it (`run::CapBy`): what the app counted (`pump.count.cap`'s {max} and {counted}),
+/// or the number a set of reps has to beat (`pump.count.cap.goal`'s {max} and {goal}).
+#[derive(Serialize, PartialEq)]
+struct CapView {
+	max: i64,
+	counted: Option<i64>,
+	goal: Option<i64>,
+}
+
+impl CapView {
+	fn of(max: i64, by: run::CapBy) -> Self {
+		match by {
+			run::CapBy::Counted(n) => Self { max, counted: Some(n), goal: None },
+			run::CapBy::Goal(n) => Self { max, counted: None, goal: Some(n) },
+		}
+	}
 }
 
 /// A loaded move's weight box (tenths of a kg), its - and + as Progress.lua `ns.LoadStep` steps them: a weight in each
@@ -683,7 +705,7 @@ enum Reward {
 	Stats {
 		stats: Vec<Reward>,
 	},
-	/// The XP one save earned, on a hold's pour (slice 65; the Result carries the pump's on its bar).
+	/// The XP one save earned, on a move's pour (slice 65; the Result carries the pump's on its bar).
 	Xp {
 		xp: i64,
 	},
@@ -2282,6 +2304,9 @@ fn count_view(run: &Run, m: &PlannedMove) -> CountView {
 	let c = facts().constants();
 	let hold = m.kind == kind::HOLD;
 	let most = count_most(m.counted, hold);
+	// the line names the half again only where that sets the most; at the floor (`min_reps`, `min_seconds`) none
+	let capped = run.count_cap(m);
+	let cap = capped.and_then(|cap| cap.by.map(|by| CapView::of(cap.most, by)));
 	let question = match (m.counted, hold, m.side) {
 		(true, ..) => "form",
 		(false, true, true) => "hold_side",
@@ -2323,17 +2348,24 @@ fn count_view(run: &Run, m: &PlannedMove) -> CountView {
 			top: Lifted::of(m.top_load, m.top_reps),
 		}
 	});
+	// never past it: a hold held past `max_seconds` starts at that most, which Save takes
+	let top = capped.map_or(most, |cap| cap.most);
 	CountView {
 		question,
 		name: facts().name(m.r#move).unwrap_or_default(),
 		seconds: c.count_s,
-		from: run.count.typed.map_or(run.count_from, |t| t.value),
-		most,
+		from: match run.stage {
+			Stage::Longer { typed, .. } => typed.value,
+			_ => run.count.typed.map_or(run.count_from, |t| t.value),
+		}
+		.min(top),
+		most: top,
+		cap,
 		hold,
 		record: m.record,
 		chip: m.record.or(m.placing),
 		max_set: run.max_set(m),
-		max_line: max_line(most),
+		max_line: if capped.is_some() { String::new() } else { max_line(most) },
 		check,
 		change: &w.really_change,
 		empty: &w.empty,
@@ -2448,7 +2480,9 @@ fn pump_view(h: &Helper, run: &Run) -> PumpView {
 			.as_ref()
 			.filter(|_| ready)
 			.map(|o| swap_view(o, shown.is_some_and(|m| new_move(m, seen(run.current))))),
-		count: shown.filter(|_| run.stage == Stage::Counting).map(|m| count_view(run, m)),
+		count: shown
+			.filter(|_| matches!(run.stage, Stage::Counting | Stage::Longer { .. }))
+			.map(|m| count_view(run, m)),
 		result: if run.what.app() {
 			run.result.clone()
 		} else {
@@ -2492,7 +2526,6 @@ pub(super) fn topic(h: &Helper) -> Topic {
 	let p = &h.pumps;
 	let now = lan::now_ms();
 	let flags = &p.flags;
-	let game = h.engine_folded().map_or(&[][..], |f| f.game_flags.as_slice());
 	let w = &facts().sheet.words;
 	Topic {
 		gate: h.pump_gate(),
@@ -2505,16 +2538,13 @@ pub(super) fn topic(h: &Helper) -> Topic {
 			offer: c.offer.clone(),
 			kinds: words::kinds().iter().map(|k| k.key.as_str()).collect(),
 			arms: h.arms_game(),
-			one_size: h.match_one_size(),
+			one_size: h.offer_one_size(c.offer.as_deref()),
 		}),
 		pain: facts()
 			.sheet
 			.joints
 			.iter()
-			.map(|j| {
-				let flagged = flags.contains(&j.id);
-				Joint { id: j.id, name: &j.name, flagged, in_game: flagged && game.contains(&j.id) }
-			})
+			.map(|j| Joint { id: j.id, name: &j.name, flagged: flags.contains(&j.id) })
 			.collect(),
 		pain_ask: &w.pain.asked,
 		refused: p.refused,

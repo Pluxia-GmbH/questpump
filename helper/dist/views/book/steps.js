@@ -5,7 +5,7 @@
 // Mastered, what earns an orange or gold step, and what reaching a step of the Path takes. The ladder's page, the trees and the
 // step's card all word a step through these, and from slice 38 the trees' own: a step's place on its ladder, the
 // Tooltip's four lines, its spoken name, a Start's label and the card's lines beside it, a refused Start's lines and
-// links, and a tree's Next line, each from the Book's fields as the engine gave them (ns.StartFor, ns.StepRing,
+// links, each from the Book's fields as the engine gave them (ns.StartFor, ns.StepRing,
 // ns.TreeEntry, ns.TreeGlow, ns.Stages, ns.MoveOpen, ns.NeedDone), never a rule of its own.
 
 import {t} from "../../lib/copy.js";
@@ -196,8 +196,7 @@ function nextName(w, path, next) {
 }
 
 /** The path's `next` stage once the climb's own days are in, by the keys of the line that names it (`keys`: the
- * hover's key line and a ladder page's next row, `ladders.measure.proof*`, the game's `tree.key.path*`, or a tree's
- * Next line, `ladders.tree.next.proof*`): "Then Pistol, hands on the desk 8+" (its top with a loaded move's weight, as
+ * hover's key line and a ladder page's next row, `ladders.measure.proof*`, the game's `tree.key.path*`): "Then Pistol, hands on the desk 8+" (its top with a loaded move's weight, as
  * the game's Sheet.ClimbTop), a pose's close enough or Perfect on its days, a form's clean days so far; in the move's
  * own top, days and days so far, as the game's and the phones' lines read them. */
 function thenWords(w, path, next, keys) {
@@ -211,12 +210,10 @@ function thenWords(w, path, next, keys) {
 	}
 }
 
-/** The keys of a key line's and a tree's Next line's next stage (`thenWords`). */
+/** The keys of a key line's next stage (`thenWords`). */
 const THEN_KEYS = {
 	key: {count: "ladders.measure.proof", mark: "ladders.measure.proof.mark",
 		perfect: "ladders.measure.proof.mark.perfect", clean: "ladders.measure.proof.clean"},
-	tree: {count: "ladders.tree.next.proof", mark: "ladders.tree.next.proof.mark",
-		perfect: "ladders.tree.next.proof.perfect", clean: "ladders.tree.next.proof.clean"},
 };
 
 /** What holds the path's next stage where its move is not open (the engine's `next.waits`, ns.PathNext's: the game's
@@ -954,41 +951,6 @@ export function heldBy(pump) {
 		case "game": return {state: "disabled", note: t("pump.waiting.game"), reason: "game"};
 		case "engine": return {state: "busy", note: null, reason: "reading"};
 		default: return null;
-	}
-}
-
-/** A tree's Next line under its name (docs/ui.md's "The tree's lines"): the glowing ladder's next step as its ladder's
- * page words it (the stage of its path still to do once the days are in, slice 42; the fresh set that earns a step
- * still to earn), the Trial's first set, or why nothing glows. `pump` the pump topic (the lock's end). */
-export function treeNext(w, book, tree, pump) {
-	if (tree.glow) {
-		const lad = ladderOf(w, book, tree.glow);
-		if (!lad) return "";
-		if (tree.kind === "trial") {
-			return t("ladders.tree.next.trial", {move: moveName(w, lad.now?.move ?? lad.row.move)});
-		}
-		const earn = lad.now?.state.earn;
-		if (earn?.mark) return t("ladders.tree.next.earn.mark", {move: moveName(w, lad.now.move)});
-		if (earn) return t("ladders.tree.next.earn", {move: moveName(w, earn.move), earn: amount(earn.count, earn.seconds)});
-		const next = stepAt(lad, lad.cur + 1);
-		const c = next?.state.kind === "next" ? next.state.climb : null;
-		if (!c) return "";
-		// a counted cardio climb's proving window first (slice 53, Tree.lua Tree.NextCardio): its days and path are in
-		if (c.kind === "clean" && lad.row.proving) return provingWords(w, lad.row.proving);
-		// once the days are in, the path's next stage as the engine names it (ns.PathNext), or its move and what holds it
-		const n = c.need > 0 && c.have >= c.need ? c.next : null;
-		if (!n) return climbWords(w, c, book).line ?? "";
-		const held = heldWords(w, book, n);
-		if (held) return t("ladders.tree.next.proof.held", {proof: moveName(w, n.move), wait: held});
-		return thenWords(w, c.path, n, THEN_KEYS.tree);
-	}
-	switch (tree.reason) {
-		// the lock's end is the pump topic's (the desktop's own lock, which every row's felt-unwell stop sets)
-		case "rest": return pump?.locked_until != null ? t("ladders.tree.rest", {time: time(pump.locked_until)}) : "";
-		case "day": return t("ladders.tree.day", {time: time((tree.at ?? 0) * 1000)});
-		case "pain": return t("ladders.tree.pain");
-		case "break": return t("ladders.tree.break");
-		default: return t("ladders.tree.none");
 	}
 }
 

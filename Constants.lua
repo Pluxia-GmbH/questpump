@@ -167,6 +167,9 @@ ns.C = {
 	-- Andreacci 2002): "Halfway. Faster!" at the first's seconds left, "Ten more. Everything!" at the second's, each in
 	-- that mark's place (Speech.lua; the callout family shout<s>, callout_takes' shout takes each)
 	shout_at_s = { 15, 10 },
+	-- a saved move's result holds this long before the next move's Ready view: a set saved with no pour, and since
+	-- 2026-11-04 every pour once its rows are in (Rapha: "yes try for now with auto progress"; slices 65 and 66 waited
+	-- for Next until then); the apps' own pumps read it from contract/library.json
 	record_hold_s = 1.5,
 	banner_plain_s = 4, banner_hold_s = 5, banner_row_s = 1.5, banner_fade_s = 0.5, banner_rows = 4,
 	-- an orange or gold unlock's frame, the move in its colour's light, stays this long (a click closes it sooner)
@@ -234,9 +237,16 @@ ns.C = {
 	-- from contract/library.json; Rapha, 2026-11-03: "so we dont have records e.g. saying 1 s or 1 rep ... only count
 	-- from 3 reps and 7 seconds as valid"), but a first max set is never banked (ns.FirstMaxSet)
 	min_reps = 3, min_seconds = 7,
-	-- an ask after a move (the whole move's, the goal pose's, the pace's, the hold's, a counted set's answers) takes no
-	-- digit and no click this long after it shows, so the key or the click that ended the move never answers it
-	-- (2026-10-31); the apps' settle wait, contract/design/tokens.json motion.settle, is the same half second
+	-- a hold the app counted (the stopwatch) saves at most that count times 1 + count_over_share, rounded down, never
+	-- under min_seconds; a rep move it counted (the reps the figure ended by Done, at the figure's pace) at most that
+	-- share of the higher of that count and the number it has to beat (the higher of the goal and the record), never under
+	-- min_reps, and one with no number to beat (a first max set, a placement) one set's most; the apps' own pumps read
+	-- it from contract/library.json (slice 66; Rapha, 2026-11-04: "dont allow it to do more than 50% more of what the
+	-- app counted"; David, 2026-11-04: "you fix and decide on the best")
+	count_over_share = 0.5,
+	-- an ask after a move (the whole move's, the goal pose's, the pace's, the hold's, a counted set's answers, the
+	-- count) takes no digit and no click this long after it shows, so the key or the click that ended the move never
+	-- answers it (2026-10-31); the apps' settle wait, contract/design/tokens.json motion.settle, is the same half second
 	answer_settle_s = 0.5,
 	-- a hold's seconds pour (slice 65, Rapha, 2026-11-03; the apps' contract/design/tokens.json motion.pour, pourFly
 	-- and stepReveal): one grain a second held leaves the dial pour_hold_s after the save, their starts spread over
@@ -385,8 +395,11 @@ ns.C = {
 	-- never hears), never from before League's previous close, the latest move or the latest return to the computer;
 	-- since slice 48's double-check the seconds of no input at the computer while a match offer's card shows after
 	-- which the player has left the desk and the offer goes to the phone and the watch; since 2026-10-28 the least a
-	-- checkpoint game's feed finish (a mission handed in) waits from the game's start or the last that offered
-	match_offer_min = 10, match_min_s = 300, match_relaunch_s = 90,
+	-- checkpoint game's feed finish (a mission handed in) waits from the game's start or the last that offered; since
+	-- 2026-11-04 (Rapha, after an MTG Arena match under 5 minutes offered nothing: "drop it to 2 min", "also for other
+	-- games") the least is 2 minutes (5 until then), and a match under match_short_min minutes composes its pump at the
+	-- Light pace, one move ("2 min to 5 be 1 move pump"), on every device
+	match_offer_min = 10, match_min_s = 120, match_relaunch_s = 90, match_short_min = 5,
 	match_sat_min = 20, match_step_min = 12, match_min_league_s = 480, match_lead_league_min = 5, match_away_s = 120,
 	match_checkpoint_min = 20,
 	-- the games and apps on the phone (docs/phone-games.md, 2026-10-16), exported for the phones as the links' are (the

@@ -107,9 +107,9 @@ export function statusLine(game) {
 /** The pause's state in words. */
 export function pauseLine(pause) {
 	switch (pause.kind) {
-		case "until": return t("desk.offers.paused.until", {time: time(pause.at * 1000)});
+		case "until": return t("games.paused.until", {time: time(pause.at * 1000)});
 		case "while_running": return t("desk.offers.paused.game", {game: gameName(pause)});
-		case "until_resumed": return t("desk.offers.paused.resumed");
+		case "until_resumed": return t("games.paused.resumed");
 		default: return t("desk.offers.paused.none");
 	}
 }
@@ -386,7 +386,7 @@ export function hiddenWindow(tileOf) {
  * while one stands; "while the game runs" only while a watched game runs, naming the first running tile, the game Rust
  * pauses for. */
 export function pauseWindow() {
-	const el = h("qp-window", {heading: t("desk.offers.pause")});
+	const el = h("qp-window", {heading: t("games.pause")});
 	const state = words("", "meta");
 	const pick = (kind) => {
 		intent("games.pause", {kind}).catch(console.error);
@@ -404,14 +404,14 @@ export function pauseWindow() {
 	const draw = (topic) => {
 		const running = topic.tiles.find((tile) => tile.running);
 		state.textContent = pauseLine(topic.pause);
-		hour.heading = t("desk.offers.pause.hour");
-		four.heading = t("desk.offers.pause.four");
-		night.heading = t("desk.offers.pause.night", {time: time(topic.night * 1000)});
+		hour.heading = t("games.pause.hour");
+		four.heading = t("games.pause.four");
+		night.heading = t("games.pause.night", {time: time(topic.night * 1000)});
 		game.heading = running ? t("desk.offers.pause.game", {game: gameName(running)})
 			: t("desk.offers.pause.game.none");
 		game.disabled = !running;
-		resumed.heading = t("desk.offers.pause.resumed");
-		resume.heading = t("desk.offers.resume");
+		resumed.heading = t("games.pause.resumed");
+		resume.heading = t("games.resume");
 		resumeCard.hidden = topic.pause.kind === "none";
 	};
 	return {el, open: () => el.open(), draw};

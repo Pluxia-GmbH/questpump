@@ -13,7 +13,9 @@
 //! moves: {groups: [{key, name}], out: [{move, name}], count}, pump_on, words}`, `body_reset` while the body started
 //! empty because `body.json` did not read at this start and no device filled it since (`Kept::unread`), `look` the
 //! engine's (none before its first look, or while it does not answer), `in_game` the joints the game's own rows flag
-//! (the fold's answer, `Helper::engine_folded`), `words` the sheet's (`menu_pages::Words`).
+//! (the fold's answer, `Helper::engine_folded`), `pump_on` while a pump runs that a change here waits for (a pump's
+//! Settings opens this page over its Ready view, where a change reaches an app pump at once: `Helper::setup_refilter`;
+//! a catch-up takes only the pain flags at once, resting the moves they load), `words` the sheet's (`menu_pages::Words`).
 //!
 //! **Intents**: `setup.look` (the engine's look again: the page's mount), `setup.place {key: "floor"|"space"|"quiet",
 //! on}`, `setup.gear {key, on}`, `setup.switch {key: "no_jump"|"no_strain"|"no_head_down", on}`, `setup.experience
@@ -94,6 +96,7 @@ struct Topic<'a> {
 	look: Option<&'a Look>,
 	in_game: &'a [u8],
 	moves: YourMoves,
+	/// A pump runs that a change here waits for (`Helper::desk_pump_refits`): the page's card says so.
 	pump_on: bool,
 	words: &'a Value,
 }
@@ -230,6 +233,8 @@ impl Helper {
 				}
 				self.engine_ready_or(intent)?;
 				self.set_pain(joint, on);
+				// after its rows on the engine's ordered door: the pump on its Ready view follows the flags
+				self.setup_refilter(false);
 			}
 			"setup.focus" => {
 				let focus = number::<u8>(intent, "focus")?;
@@ -238,6 +243,8 @@ impl Helper {
 				}
 				self.engine_ready_or(intent)?;
 				self.set_focus(focus);
+				// after its row on the engine's ordered door: the pump on its Ready view is composed with the new focus
+				self.setup_refilter(true);
 			}
 			_ => return Err(intent.unknown()),
 		}
@@ -263,7 +270,7 @@ impl Helper {
 			look: self.menu.setup.as_ref(),
 			in_game: self.engine_folded().map_or(&[], |f| f.game_flags.as_slice()),
 			moves: YourMoves::of(&moves),
-			pump_on: self.desk_pump_running(),
+			pump_on: self.desk_pump_running() && !self.desk_pump_refits(),
 			words: &WORDS,
 		};
 		self.publish(SETUP, &topic);

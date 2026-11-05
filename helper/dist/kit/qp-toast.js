@@ -69,7 +69,7 @@ function lead(toast) {
 		case "title": return h("qp-art", {name: "reward_title", class: "qp-text"});
 		case "level":
 		case "paragon": return h("qp-art", {name: "reward_xp", class: "qp-gold"});
-		case "unlock": return h("qp-move-tile", {size: 44, move: toast.key, quality: toast.quality});
+		case "unlock": return h("qp-move-tile", {size: 44, move: toast.key, quality: toast.quality, moving: true});
 		case "found": return h("qp-art", {name: "mark_check", class: "qp-text2"});
 		// the day's embers, every one lit, as Pump home's row draws them: the toast's lines say them
 		case "embers": return h("qp-day-pips", {have: toast.day, need: toast.day, "aria-hidden": "true"});

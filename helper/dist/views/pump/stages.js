@@ -1,14 +1,15 @@
 // The pump's stages on the computer (docs/ui.md, "The pump on the computer"; the phones' PumpSession drawn once more):
-// Ready with the move up next in full, the countdown, the running move and "Did you do the whole move?" in Big view,
-// the count (a counted set's form step since slice 42), a hold's "Could you have held longer?" after its Save (slice
-// 52), a hold's pour with its rewards (slice 65), a pose's "How close to the goal pose?", a steady move's "Did you keep
-// that pace to the end?" (slice 42), and the end, its Result with its one reveal or a calm card. Each stage is {el (its
-// head, body and foot), primary, space, onKey, frame, update}: the control its keys go to first (Space or Enter presses
-// it; none where no key may answer), whether Space presses it with the focus on no control too (session.js
-// `pressPrimary`: Start, Switch sides), its own keys (keys.js: Escape is Done on a running move and back to Ready from
-// the countdown; the digits, Backspace and the arrows edit the count), what it draws each frame from Rust's absolute
-// instants (the clock, the digit's ring, an all-out window's part, the reveal), which decides nothing, and what it
-// takes from the topic as it stands (the busy state, the read-aloud button's, the reveal's).
+// Ready with the move up next in full, the countdown, the running move, "Did you do the whole move?", the count set on
+// the run view's dial (slice 66; a counted set's form step since slice 42) and a hold's "Could you have held longer?"
+// after its Save (slice 52) in Big view, every move's pour with its rewards (slice 65's hold's, every move's since
+// slice 66), a pose's "How close to the goal pose?", a steady move's "Did you keep that pace to the end?" (slice 42),
+// and the end, its Result with its one reveal or a calm card. Each stage is {el (its head, body and foot), primary,
+// space, onKey, frame, update}: the control its keys go to first (Space or Enter presses it; none where no key may
+// answer), whether Space presses it with the focus on no control too (session.js `pressPrimary`: Start, Switch sides),
+// its own keys (keys.js: Escape is Done on a running move and back to Ready from the countdown; the digits, Backspace,
+// the arrows and the wheel edit the count), what it draws each frame from Rust's absolute instants (the clock, the
+// digit's ring, an all-out window's part, the reveal), which decides nothing, and what it takes from the topic as it
+// stands (the busy state, the read-aloud button's, the reveal's).
 
 import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
@@ -16,13 +17,15 @@ import {figureName} from "../../lib/figure.js";
 import {announce} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
 import {guardMs} from "../../lib/keys.js";
+import {over} from "../../lib/router.js";
 import {openShare, streakCard} from "../../lib/share.js";
 import {h, qualityName} from "../../kit/element.js";
-import {shifted, turned} from "../../kit/qp-hold-bar.js";
+import {shifted, turned} from "../../kit/qp-count-bar.js";
+import {countUnit} from "../../kit/qp-stepper.js";
 import {rest, tripResult} from "./expedition.js";
 import {howAndTips, stopLine} from "../../kit/move-how.js";
 import {
-	ANSWERS, amount, checkWords, clock, continueWords, goalOf, lifted, line, paceLine, phase, preview, question,
+	ANSWERS, amount, checkWords, clock, continueWords, goalOf, line, paceLine, phase, preview, question,
 	recordWords, reward, sideName,
 } from "./words.js";
 
@@ -64,7 +67,7 @@ function settles() {
 }
 
 /** The steps of the pump (a bar a move, a match pump's riders marked: slice 61) and, where the stage has them, the "···"
- * and Big view's full screen. */
+ * (every stage but Ready, whose bar holds its ways since 2026-11-05) and Big view's full screen. */
 function steps(pump, ctx, {more = true, big = false} = {}) {
 	const bar = h("qp-steps-bar", {total: pump.moves.length, now: pump.current + 1});
 	bar.riders = pump.moves.map((m) => m.rider);
@@ -116,13 +119,13 @@ function goalRow(m) {
 			h("span", {class: "qp-type-num-medium", text: record})) : null);
 }
 
-/** The swap row under the goal (Panel.lua's swap row, the one place to swap; on the computer since 2026-10-26, David:
- * "I cannot siwtch to an easier version"): the first of Rust's offers in the game's order, its tile and its words with
- * the move named, one click to swap it in; with more offers the row's trailing segment, "More ways to swap", opens the
- * Swap window with the rest. A click in the keys' guard time after it is drawn does nothing, so a double click never
- * swaps and swaps back (the row comes again as "Back to" under the pointer), and while the engine answers it is
- * disabled (`busy`). None until the options come, without one, or while felt unwell locks pumps (Close in place of
- * Start). */
+/** The swap row under the figure (Panel.lua's swap row under its right column's figure, the one place to swap; on the
+ * computer since 2026-10-26, David: "I cannot siwtch to an easier version", under the goal until 2026-11-05): the
+ * first of Rust's offers in the game's order, its tile and its words with the move named, one click to swap it in;
+ * with more offers the row's trailing segment, "More ways to swap", opens the Swap window with the rest. A click in the
+ * keys' guard time after it is drawn does nothing, so a double click never swaps and swaps back (the row comes again as
+ * "Back to" under the pointer), and while the engine answers it is disabled (`busy`). None until the options come,
+ * without one, or while felt unwell locks pumps (Close in place of Start). */
 function swapRow(pump, topic, ctx) {
 	const [first, ...rest] = pump.swap?.options ?? [];
 	if (!first || topic.locked_until) return {el: null, busy() {}};
@@ -134,17 +137,41 @@ function swapRow(pump, topic, ctx) {
 	return {el: h("qp-card", {rows: true}, row), busy: (on) => (row.disabled = on)};
 }
 
+/** The Ready bar's ways (2026-11-05, the game's bar: Panel.lua's Bank all, Skip, Pause and Settings at its left), each
+ * a secondary button: the way out, Bank all on a match's pump while a move of its own is left, Bank the rest on a
+ * catch-up and once only a match pump's riders are left (Rust's `bank`, slice 58: one click, no confirm), Close on
+ * every other pump, which ends it as End the pump here did (`pump.end`: a pump the player started owes nothing, call 4);
+ * the game's Skip on a rider (one click, since 2026-10-09); Pause, opening its menu above it (`pauseMenu`); and Settings,
+ * Your setup over the pump (lib/router.js `over`), whose back returns to the pump on its Ready view. */
+function readyWays(pump, ctx) {
+	const secondary = (label, act, props = {}) => h("qp-secondary-button", {label, ...props, "on:click": act});
+	const out = pump.bank
+		? secondary(t(pump.bank === "it" ? "pump.ready.bank" : "pump.ready.bank.rest"), () => heard(intent("pump.bank")))
+		: secondary(t("common.close"), () => heard(intent("pump.end")));
+	const skip = pump.skip ? secondary(t("pump.unfinished.skip"), () => heard(intent("pump.skip")),
+		{hint: t("pump.unfinished.skip.hint")}) : null;
+	const pause = secondary(t("pump.ready.pause"), () => ctx.open("pause", pause), {menu: true});
+	// its focus key brings the focus back to it as Your setup's back returns to a pump drawn again meanwhile
+	const settings = secondary(t("pump.ready.settings"), () => over("desk.menu.setup"),
+		{"data-focus-key": "pump:settings"});
+	return h("div", {class: "qp-ready-ways"}, ...[out, skip, pause, settings].filter(Boolean));
+}
+
 /** Ready (2026-10-24, David: "It should be like the addon. Just go right away in and show whats up next."; the
- * game's Ready view; a quest page of every move's line until then): × (leave), the steps and the "···"; the move up
- * next in full, its figure playing large and pausable (Big view's one figure, `ctx.figure`, so the same film goes on
- * into the countdown) beside its words or over them (pump.css), a stretch check's "Stretch check" over its name, its
- * name with its quality, its goal with its record, the swap row while Swap offers a move (`swapRow`), the lines under
- * the goal in the phones' order (a pose's goal pose, a first max set's how far to go, Rust's `lines`), the arms rest's
- * line while the pump rests the arms for an aim game (slice 48's double-check: `arms`, the game's name), the move's
- * rewards' pills, its stop line (none on a timed move without one), How with the read-aloud button at its heading's
- * end and Tips, and on its first appearance the right-versus-wrong pair; then Start, under it the game's bar: on a
- * match's pump Bank all on every move of its own, on a catch-up Bank the rest, then the game's Skip, each quiet (slice
- * 58); while felt unwell locks pumps (a lock that came while the pump waited), the rest's line and Close. */
+ * game's Ready view; a quest page of every move's line until then), in the game's shape since 2026-11-05 (David: "I
+ * would like to improve the desktop app to be more like the wow addon. See how it has a better UI with a right wrong
+ * example. An easy way to switch to an alternative exercise. bank pause settings buttons etc."): × (leave) and the
+ * steps; the move up next in full, its words (a stretch check's "Stretch check" over its name, its name with NEW beside
+ * it on its first appearance and its quality, its goal with its record, the lines under the goal in the phones' order:
+ * a pose's goal pose, a first max set's how far to go, Rust's `lines`; the arms rest's line while the pump rests the
+ * arms for an aim game, slice 48's double-check: `arms`, the game's name; the move's rewards' pills, its stop line, none
+ * on a timed move without one, How with the read-aloud button at its heading's end and Tips) beside the game's right
+ * column (pump.css; on a narrow window the figure over the words and the rest under them, the page's order): its
+ * figure playing large and pausable (Big view's one figure, `ctx.figure`, so the same film goes on into the countdown),
+ * on its first appearance the right-versus-wrong pair under it, and the swap row while Swap offers a move (`swapRow`);
+ * then the game's bar, its ways at the left (`readyWays`)
+ * and Start at the right, the one red primary; while felt unwell locks pumps (a lock that came while the pump waited),
+ * the rest's line and Close alone. */
 export function ready(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
 	const figure = h("qp-figure-stage", {class: "qp-ready-figure", fill: true, pausable: true, move: figureName(m)});
@@ -152,44 +179,36 @@ export function ready(pump, topic, ctx) {
 	const guide = guideButton(pump);
 	const said = (text) => (text ? h("p", {class: "qp-type-subtitle", text}) : null);
 	const name = h("div", {class: "qp-ready-name"}, pump.check ? said(t("pump.source.check")) : null,
-		h("h1", {class: "qp-type-title", text: m.name}),
+		h("div", {class: "qp-ready-title"}, h("h1", {class: "qp-type-title", text: m.name}),
+			m.first ? h("qp-slant-tag", {label: t("pump.ready.new")}) : null),
 		m.quality ? h("qp-quality-word", {quality: m.quality, word: m.word}) : null);
 	const pills = pump.rewards.length ? h("div", {class: "qp-ready-pills"}, ...pump.rewards.map((p) =>
 		h("qp-reward-pill", p.kind === "stat"
 			? {kind: "stat", amount: p.amount, stat: p.stat, record: amount(p.beat, p.hold), glyph: `stat_${p.key}`}
 			: p))) : null;
 	const swapping = swapRow(pump, topic, ctx);
-	const words = h("div", {class: "qp-ready-words"}, ...[name, goalRow(m), swapping.el, said(m.mark),
-		said(m.note), ...pump.lines.map((l) => said(line(l))),
-		pump.arms ? said(t("pump.rest.arms", {game: pump.arms})) : null, pills,
-		stopLine(m.stop), ...howAndTips({setup: pump.setup, how: pump.how, tips: pump.tips, action: guide.el}),
-		m.first ? h("qp-move-figure-pair", {move: figureName(m), name: m.name}) : null].filter(Boolean));
+	const words = h("div", {class: "qp-ready-words"}, ...[name, goalRow(m), said(m.mark), said(m.note),
+		...pump.lines.map((l) => said(line(l))), pump.arms ? said(t("pump.rest.arms", {game: pump.arms})) : null, pills,
+		stopLine(m.stop), ...howAndTips({setup: pump.setup, how: pump.how, tips: pump.tips, action: guide.el})]
+		.filter(Boolean));
+	const pair = m.first ? h("qp-move-figure-pair", {move: figureName(m), name: m.name}) : null;
+	const below = pair || swapping.el
+		? h("div", {class: "qp-ready-below"}, ...[pair, swapping.el].filter(Boolean)) : null;
 	let primary;
-	const foot = [];
+	let foot;
 	if (topic.locked_until) {
-		foot.push(h("p", {class: "qp-type-subtitle qp-pump-centre",
-			text: t("pump.ready.locked", {time: time(topic.locked_until)})}));
 		primary = button("qp-primary-button", t("common.close"), () => heard(intent("pump.end")));
+		foot = [h("p", {class: "qp-type-subtitle qp-pump-centre",
+			text: t("pump.ready.locked", {time: time(topic.locked_until)})}), primary];
 	} else {
 		primary = button("qp-primary-button", t("pump.ready.start"), () => heard(intent("pump.ready.start")),
-			{state: pump.busy ? "busy" : "normal"});
-		// a match's pump banks like a quest's, and a catch-up's moves left stay unfinished (slice 58): the game's Bank
-		// all, or Bank the rest, one click (Rust's `bank`), before Skip as the game's bar puts it
-		if (pump.bank) {
-			foot.push(button("qp-quiet-button", t(pump.bank === "it" ? "pump.ready.bank" : "pump.ready.bank.rest"),
-				() => heard(intent("pump.bank"))));
-		}
-		// a catch-up's move is an unfinished one: the game's Skip, one click (since 2026-10-09)
-		if (pump.skip) {
-			foot.push(h("qp-quiet-button", {label: t("pump.unfinished.skip"), hint: t("pump.unfinished.skip.hint"),
-				"on:click": () => heard(intent("pump.skip"))}));
-		}
+			{class: "qp-ready-start", state: pump.busy ? "busy" : "normal"});
+		foot = [h("div", {class: "qp-ready-bar"}, readyWays(pump, ctx), primary)];
 	}
-	foot.unshift(primary);
 	const {el} = frame({
 		head: [h("qp-round-button", {icon: "close", small: true, "on:click": () => ctx.open("leave")}),
-			...steps(pump, ctx)],
-		body: [figure, words],
+			...steps(pump, ctx, {more: false})],
+		body: [figure, words, below].filter(Boolean),
 		foot,
 		layout: "qp-ready",
 	});
@@ -234,8 +253,9 @@ function bigMiddle(pump, ctx) {
 	const ring = h("qp-timer-ring");
 	const sub = h("p", {class: "qp-big-line"});
 	const words = h("div", {class: "qp-big-words"}, sub);
-	const stage = h("div", {class: "qp-big-stage"}, name, figure, h("div", {class: "qp-big-dial"}, ring), words);
-	return {ring, sub, words, parts: [stage]};
+	const dial = h("div", {class: "qp-big-dial"}, ring);
+	const stage = h("div", {class: "qp-big-stage"}, name, figure, dial, words);
+	return {name, ring, dial, sub, words, parts: [stage]};
 }
 
 /** The countdown (design v3 §4): the move's name and its side, the move's figure playing where it will run, the digit
@@ -441,22 +461,31 @@ export function pacing(pump, topic, ctx) {
 const LONGER = [[1, "pump.hold.ask.no"], [2, "pump.hold.ask.little"], [3, "pump.hold.ask.lot"]];
 
 /** A fresh hold of a Stamina Ledger ladder whose Save the ledger asks about (slice 52, Progress.lua ns.HoldAsk; the
- * phones' pump.count longer): its key pose held still, the question, its three answers as rows (keys 1-3; Enter and
- * Escape answer nothing), which answer once the ask has settled (`settles`), and Back; the hold is saved with its
- * answer, nothing before it. */
+ * phones' pump.count longer), on the run view it was counted on (slice 66): the dial still at the seconds saved, the
+ * question in the name's place, its three answers as rows under the dial (keys 1-3; Enter and Escape answer nothing),
+ * which answer once the ask has settled (`settles`), and Back; the hold is saved with its answer, nothing before it. */
 export function longer(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
+	const c = pump.count;
 	const settled = settles();
-	const heading = h("h1", {class: "qp-type-heading qp-pump-centre", tabindex: "-1", text: t("pump.hold.ask.title")});
+	const mid = bigMiddle(pump, ctx);
+	mid.name.textContent = t("pump.hold.ask.title");
+	mid.name.tabIndex = -1;
+	const whole = against(m, c);
+	const share = whole ? c.from / whole : 1;
+	mid.ring.mode = {kind: "entry", text: String(c.from), unit: countUnit(c.from, true), share,
+		chip: c.chip != null && c.from > c.chip};
 	const answer = (code) => settled(() => heard(intent("pump.longer", {answer: code})));
 	const rows = LONGER.map(([code, words], i) => h("qp-row", {step: i + 1, heading: t(words), trailing: "action",
 		"on:click": answer(code)}));
-	const body = [h("qp-figure-stage", {move: figureName(m), still: true, class: "qp-pump-figure"}), heading,
-		h("qp-card", {rows: true}, ...rows)];
-	const {el} = frame({head: steps(pump, ctx), body, foot: [back(pump)]});
+	mid.words.replaceChildren(h("qp-card", {rows: true, class: "qp-big-card"}, ...rows));
+	const guide = guideButton(pump);
+	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts, foot: [ways(guide, pump)]});
 	return {
 		el,
-		primary: () => heading,
+		big: true,
+		primary: () => mid.name,
+		update: (next) => guide.show(next.guide),
 		onKey(e) {
 			const n = /^[1-3]$/.test(e.key) ? Number(e.key) : 0;
 			if (!n) return false;
@@ -466,13 +495,13 @@ export function longer(pump, topic, ctx) {
 	};
 }
 
-// A hold saved: its pour -------------------------------------------------------------------------------------------
+// A move saved: its pour ---------------------------------------------------------------------------------------------
 
 /** How far down a grain's path sags under the straight line between the dial and the bar (px), as the mockup flies
  * them. */
 const GRAIN_SAG = 30;
 
-/** A grain from the dial's tip (`from`) into its second's place on the bar (`to`), flying `fly` ms from `delay` ms
+/** A grain from the dial's tip (`from`) into its unit's place on the bar (`to`), flying `fly` ms from `delay` ms
  * from now (a negative delay starts it part way, as a late frame finds it). */
 function grain(layer, from, to, fly, delay) {
 	const el = h("i", {class: "qp-pour-grain", "aria-hidden": "true"});
@@ -494,14 +523,17 @@ function tipOf(ring, share) {
 	return {x: r.left + r.width / 2 + radius * Math.cos(a), y: r.top + r.height / 2 + radius * Math.sin(a), angle};
 }
 
-/** A hold saved (slice 65, `desk.pump.saved`; the phones' pump.saved): the figure dimmed, the seconds pouring one a
- * second from the dial's tip into their places on the HoldBar beside it, the dial emptying as they leave, the clock
- * counting each landing second, the record chip once past the record and the top's flash and sparks; then, where the
- * save opened a step, the StepReveal over the figure's room folding into its unlock row while the bar rolls over to
- * the next step's; then the move's own rows, in place of the dial on a wide window and of the figure on a tall one.
- * `Next: {move}` (Finish on the pump's last move) is the primary from the first frame (Enter); a click on the stage
- * lands one stage (the pour, then the reveal); Back and Escape take the move back to its Ready view, nothing saved,
- * while the pour runs. Rust plans every instant and plays the sounds; under Reduce Motion the end state at once. */
+/** A move saved (slice 65's hold, every move since slice 66, `desk.pump.saved`; the phones' pump.saved): the figure
+ * dimmed, what it saved (a set of reps' reps, a hold's seconds, a counted set's clean reps, a timed move's seconds)
+ * pouring one grain a unit from the dial's tip into their places on the CountBar beside it, the dial emptying as they
+ * leave, its number counting each landing unit (m:ss for seconds), the record chip once past the record and the top's
+ * flash and sparks; then, where the save opened a step, the StepReveal over the figure's room folding into its unlock
+ * row while the bar rolls over to the next step's; then the move's own rows, in place of the dial on a wide window and
+ * of the figure on a tall one, the next move coming by itself the game's record_hold_s after them, or after the last
+ * window over the stage closed, never under one (Rust's `Pour::goes_on_at`; Rapha, 2026-11-04). `Next: {move}` (Finish
+ * on the pump's last move) is the primary from the first frame (Enter); a click on the stage lands one stage (the pour, then the
+ * reveal); Back and Escape take the move back to its Ready view, nothing saved, while the pour runs. Rust plans every
+ * instant and plays the sounds; under Reduce Motion the end state at once. */
 export function saved(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
 	let s = pump.saved;
@@ -509,7 +541,7 @@ export function saved(pump, topic, ctx) {
 	const mid = bigMiddle(pump, ctx);
 	const [stage] = mid.parts;
 	stage.classList.add("qp-saved");
-	const bar = h("qp-hold-bar", {class: "qp-saved-bar"});
+	const bar = h("qp-count-bar", {class: "qp-saved-bar"});
 	bar.bar = s.bar;
 	const rows = h("div", {class: "qp-saved-rows", hidden: true});
 	const room = h("div", {class: "qp-saved-room"});
@@ -523,10 +555,11 @@ export function saved(pump, topic, ctx) {
 	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts,
 		foot: [next, h("div", {class: "qp-pump-ways"}, guide.el, backButton)]});
 	stage.addEventListener("click", settled(() => heard(intent("pump.saved.land"))));
-	const caption = m.target.kind === "time" ? t("kit.sweep.goal", {time: clock(m.target.value)}) : "";
-	const record = m.record ?? null;
-	const top = s.bar.top;
-	const f0 = Math.min(1, s.seconds / Math.max(1, s.against));
+	const {goal, top, seconds} = s.bar;
+	const caption = goal == null ? "" : seconds ? t("kit.sweep.goal", {time: clock(goal)})
+		: t("kit.sweep.goal.reps", {count: goal});
+	const record = s.record ?? null;
+	const f0 = Math.min(1, s.value / Math.max(1, s.against));
 	let poured = 0;
 	let flashed = false;
 	let reveal = null;
@@ -537,7 +570,7 @@ export function saved(pump, topic, ctx) {
 	if (matchMedia("(prefers-reduced-motion: reduce)").matches && !s.landed) {
 		heard(intent("pump.saved.land", {still: true}));
 	}
-	const landedCount = (now) => (s.landed ? s.seconds : s.starts.filter((at) => at + s.fly <= now).length);
+	const landedCount = (now) => (s.landed ? s.value : s.starts.filter((at) => at + s.fly <= now).length);
 	const showRows = (now, e) => {
 		if (earnedFor !== e) {
 			earnedFor = e;
@@ -577,12 +610,12 @@ export function saved(pump, topic, ctx) {
 		},
 		onKey(e) {
 			if (e.key !== "Escape" || s.landed) return false;
-			// as Back's click: an Escape pressed twice, the one that ended the hold first, never drops the pour
+			// as Back's click: an Escape right behind the Save never drops the pour
 			settled(() => heard(intent("pump.back")))();
 			return true;
 		},
 		frame(now) {
-			const n = s.seconds;
+			const n = s.value;
 			const started = s.landed ? n : s.starts.filter((at) => at <= now).length;
 			// the grains that have left and not yet flown, each once
 			if (s.landed) layer.replaceChildren();
@@ -593,7 +626,7 @@ export function saved(pump, topic, ctx) {
 				}
 			}
 			const held = landedCount(now);
-			mid.ring.mode = {kind: "pour", clock: held, share: f0 * (n - started) / Math.max(1, n), caption,
+			mid.ring.mode = {kind: "pour", clock: held, seconds, share: f0 * (n - started) / Math.max(1, n), caption,
 				chip: record != null && held > record};
 			if (!folded) bar.held = held;
 			if (!flashed && top != null && held >= top) {
@@ -630,9 +663,16 @@ export function saved(pump, topic, ctx) {
 	};
 }
 
-// The count -----------------------------------------------------------------------------------------------------------
+// The count, set on the dial (slice 66) -------------------------------------------------------------------------------
 
-/** A loaded move's weight box beside the reps (the kg mode's stepper: `load_box_step` steps or a kettlebell's sizes,
+/** What the dial's arc stands the count against: the move's goal (its count or its hold's seconds), else its record (a
+ * counted set's best clean count); none for a move with neither, whose arc is full for any count. */
+function against(m, c) {
+	const goal = m.target.kind === "goal" || m.target.kind === "time" ? m.target.value : null;
+	return goal ?? c.record ?? null;
+}
+
+/** A loaded move's weight box under the dial (the kg mode's stepper: `load_box_step` steps or a kettlebell's sizes,
  * typing "." or ","), at the weight typed before a check, else the plan or the start range's low end (`first`), empty
  * once the player clears it for no weight; none on any other move. */
 function weightBox(c) {
@@ -648,44 +688,66 @@ function weightBox(c) {
  * and its words: keys 1-3 (Not all out since slice 53). */
 const FORMS = [[0, "pump.count.clean.end"], [1, "pump.count.slipped"], [2, "pump.count.notallout"]];
 
-/** A counted set's form step (slice 42, 2026-10-16; David: "The count in a time is not accurate enough and individual.
- * It should not actually be used to advance"; the phones' pump.count counted, the game's counted Result): the move's
- * figure, "{move}: all out and clean?" (slice 53; "did your form hold?" until then), its best clean count, the optional
- * count as one row, "Clean reps" and the compact stepper from "–" (0: no count, read "Not counted"; 2026-10-23, the
- * full stepper reading Not counted until then), the three answers as rows of equal weight, Yes, to the end, Form
- * slipped and Not all out (each saves the set with the count the stepper holds; keys 1-3 while the stepper does not
- * hold the focus, which takes the digits and Backspace; a click or a key once the step has settled, `settles`), and
- * "Is that right?" for a count far from the best, its Yes sending the count with the answer it was given and Change
- * it, Enter pressing that Yes; Back. No primary while it does not ask: Enter and Escape answer nothing. No "Done
- * without a count" either (windows.js): only an answer saves a counted set. */
+/** The line under the dial while the count stands at its most: half again what the app counted (`pump.count.cap`,
+ * slice 66; Rapha, 2026-11-04: "with explanation") or the number a set of reps has to beat (`pump.count.cap.goal`),
+ * whichever set it, else one set's most in the game's words; none where the floor of what counts sets the most (Rust's
+ * `count_view`), hidden otherwise. */
+function mostLine(c) {
+	const max = c.cap && amount(c.cap.max, c.hold);
+	const capped = c.cap?.goal != null ? t("pump.count.cap.goal", {max, goal: amount(c.cap.goal, c.hold)})
+		: c.cap && t("pump.count.cap", {max, counted: amount(c.cap.counted, c.hold)});
+	const text = capped || c.max_line;
+	const el = h("p", {class: "qp-big-line", hidden: true, text});
+	return {el, show: (value) => (el.hidden = !text || value < c.most)};
+}
+
+/** The dial of the count: the Stepper whose value the run view's TimerRing shows (`ring`), − and + at its sides, from
+ * where the count step starts (the reps the figure ended by Done, a hold's stopwatch, the weaker side's; none on a
+ * counted set), at most `most` (half again what the app counted or a set of reps' number to beat where that binds,
+ * Rust's `count_cap`), the arc against the goal or the record, the record chip past the record. */
+function dialOf(m, c, mid, props) {
+	const stepper = h("qp-stepper", {class: "qp-dial-count", value: c.from, least: 0, most: c.most,
+		unit: c.hold ? "seconds" : "reps", record: c.chip, against: against(m, c), ...props});
+	stepper.ring = mid.ring;
+	mid.dial.replaceChildren(stepper);
+	return stepper;
+}
+
+/** A counted set's form step on its run view (slice 42, 2026-10-16; David: "The count in a time is not accurate enough
+ * and individual. It should not actually be used to advance"; the phones' pump.count counted, the game's counted
+ * Result; on the dial since slice 66): "{move}: all out and clean?" (slice 53; "did your form hold?" until then) in the
+ * name's place, its optional clean count on the dial from "–" (0: no count, read "Not counted"), and under it the three
+ * answers as rows of equal weight, Yes, to the end, Form slipped and Not all out (each saves the set with the count the
+ * dial holds, on a click once the step has settled, `settles`; the digits and Backspace type the count wherever the
+ * focus stands, as the game's do: keys 1-3 took the answers until 2026-11-04, so a typed 24 saved Form slipped), and "Is that right?" for a count far from the best, its Yes sending the count
+ * with the answer it was given and Change it, Enter pressing that Yes; Back. No primary while it does not ask: Enter
+ * and Escape answer nothing. No "Done without a count" either (windows.js): only an answer saves a counted set. */
 function formStep(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
 	const c = pump.count;
-	const clean = t("pump.count.clean.label");
-	const stepper = h("qp-stepper", {compact: true, value: c.from, least: 0, most: c.most, record: c.chip,
-		label: clean, none: t("pump.count.none")});
-	const count = h("qp-card", {class: "qp-stepper-line"},
-		h("span", {class: "qp-row-words"}, h("span", {class: "qp-row-title", text: clean})), stepper);
-	const heading = h("h1", {class: "qp-type-heading qp-pump-centre", tabindex: "-1", text: question(c)});
-	const best = c.record != null ? h("p", {class: "qp-type-subtitle qp-pump-centre",
-		text: t("pump.ready.best", {count: c.record})}) : null;
+	const mid = bigMiddle(pump, ctx);
+	mid.name.textContent = question(c);
+	mid.name.tabIndex = -1;
+	const stepper = dialOf(m, c, mid, {label: t("pump.count.clean.label"), none: t("pump.count.none")});
 	const check = c.check ? checkWords(c.check) : null;
-	const asked = check ? h("qp-card", {}, h("p", {class: "qp-type-body", text: check.line})) : null;
+	const asked = check ? h("qp-card", {class: "qp-big-card"}, h("p", {class: "qp-type-body", text: check.line})) : null;
 	const send = (value, answer) => heard(intent("pump.count", {value, answer}));
 	const settled = settles();
 	const pick = (answer) => settled(() => send(stepper.value ?? 0, answer));
-	const rows = FORMS.map(([answer, words], i) => h("qp-row", {step: i + 1, heading: t(words), trailing: "action",
-		"on:click": pick(answer)}));
-	const answers = h("qp-card", {rows: true}, ...rows);
+	const rows = FORMS.map(([answer, words]) => h("qp-row", {heading: t(words), trailing: "action", "on:click": pick(answer)}));
+	const answers = h("qp-card", {rows: true, class: "qp-big-card"}, ...rows);
+	const most = mostLine(c);
+	mid.words.replaceChildren(...[most.el, asked, answers].filter(Boolean));
 	const yes = check ? button("qp-primary-button", check.yes, settled(() => send(c.check.value, c.check.answer))) : null;
 	const change = c.check ? button("qp-quiet-button", c.change, () => heard(intent("pump.count.clear"))) : null;
-	const body = [h("qp-figure-stage", {move: figureName(m), class: "qp-pump-figure"}), heading, best, count, asked,
-		answers].filter(Boolean);
-	const {el} = frame({head: steps(pump, ctx), body, foot: [yes, change, back(pump)].filter(Boolean)});
+	const guide = guideButton(pump);
+	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts,
+		foot: [yes, change, ways(guide, pump)].filter(Boolean)});
 	let fresh = true; // the count the step started from: the first digit typed replaces it
 	let asking = false;
 	const settle = () => {
 		const value = stepper.value ?? 0;
+		most.show(value);
 		const was = asking;
 		asking = Boolean(c.check) && value === c.check.value;
 		// the focus on the answers moves to the Yes that takes their place, and back
@@ -698,27 +760,28 @@ function formStep(pump, topic, ctx) {
 	settle();
 	return {
 		el,
-		primary: () => (asking ? yes : heading),
-		update: settle,
+		big: true,
+		primary: () => (asking ? yes : mid.name),
+		update(next) {
+			guide.show(next.guide);
+			settle();
+		},
 		onKey(e) {
 			const typing = stepper.contains(document.activeElement);
-			// while "Is that right?" asks, Enter on the stepper's value presses its Yes, as the count's does (on a − or +
-			// it steps)
+			// while "Is that right?" asks, Enter on the dial's value presses its Yes, as the count's does (on a − or + it
+			// steps)
 			if (asking && e.key === "Enter" && stepper.control.contains(document.activeElement)) {
 				yes.control.click();
 				return true;
 			}
-			if (!typing && !asking && /^[1-3]$/.test(e.key)) {
-				pick(FORMS[Number(e.key) - 1][0])();
-				return true;
-			}
-			if (typing && /^[0-9]$/.test(e.key)) {
+			const types = typing || !asking;
+			if (types && /^[0-9]$/.test(e.key)) {
 				if (fresh) stepper.set(Number(e.key));
 				else stepper.type(Number(e.key));
 				fresh = false;
 				return true;
 			}
-			if (typing && e.key === "Backspace") stepper.erase();
+			if (types && e.key === "Backspace") stepper.erase();
 			else if (e.key === "ArrowUp" || e.key === "ArrowRight") stepper.step(1);
 			else if (e.key === "ArrowDown" || e.key === "ArrowLeft") stepper.step(-1);
 			else return false;
@@ -728,47 +791,45 @@ function formStep(pump, topic, ctx) {
 	};
 }
 
-/** An app pump's count, and since 2026-10-12 a catch-up's for a move the engine dosed (mockup pump-count; the game's
- * result view): a counted set's form step (`formStep`, slice 42); else the move's figure, the question naming it, the
- * player's record (a loaded move's weighted record), the stepper (the digits, Backspace and the arrows type into it;
- * the first digit replaces the count it started from) and on a loaded move the weight box beside it (the keys go to the
- * one in focus; "." or "," to the weight's), what Save keeps with a weight ("16 reps with 11 kg"), one set's most where
- * the count reaches it, and "Is that right?" for a count (or a weight) far from the record, its Yes in Save's place and
- * Change it in "Could not do one"'s while the boxes hold the count it asks about; a new count there takes Save back
- * (the phones' CountStep.changed()), which sends that count to be checked again. Save never takes 0 on a first max set;
- * Back. Enter is the primary. The record chip shows on a count past the reps record, but not with a weight on a move
- * with a weighted record, a score the reps alone cannot tell. */
+/** An app pump's count, and since 2026-10-12 a catch-up's for a move the engine dosed (the game's result view), set on
+ * the run view's dial since slice 66 (Rapha, 2026-11-04: "maybe just in the circle adjust the times and reps etc.
+ * instead of new screen (its bad ux anyways)"; a count view of its own until then): Done keeps the move's figure on its
+ * stage and stops the clock, the question naming the move takes the name's place, and the dial holds the count, − and +
+ * at its sides (the digits, Backspace, the arrows and the wheel step and type it; the first digit replaces the count it
+ * started from); a counted set's form step (`formStep`, slice 42). Under the dial: the line while the count stands at
+ * its most (`mostLine`), on a loaded move the weight box (the keys go to it while it has the focus; "." or "," move it
+ * there) with what Save keeps with a weight ("16 reps with 11 kg"), and "Is that right?" for a count (or a weight) far
+ * from the record, its Yes in Save's place and Change it in "Could not do one"'s while the dial and the box hold the
+ * count it asks about; a new count there takes Save back (the phones' CountStep.changed()), which sends that count to
+ * be checked again. Save never takes 0 on a first max set; Back. Enter is the primary. The record chip shows on a
+ * count past the reps record, but not with a weight on a move with a weighted record, a score the reps alone cannot
+ * tell. */
 export function counting(pump, topic, ctx) {
 	if (pump.count.question === "form") return formStep(pump, topic, ctx);
 	const m = pump.moves[pump.current];
 	const c = pump.count;
-	const figure = h("qp-figure-stage", {move: figureName(m), class: "qp-pump-figure"});
+	const mid = bigMiddle(pump, ctx);
 	const ask = question(c);
-	const stepper = h("qp-stepper", {value: c.from, least: 0, most: c.most, unit: c.hold ? "seconds" : "reps",
-		record: c.chip, label: ask});
+	mid.name.textContent = ask;
+	const stepper = dialOf(m, c, mid, {label: ask});
 	const weight = weightBox(c);
-	const boxes = weight ? h("div", {class: "qp-pump-boxes"}, stepper, weight) : stepper;
-	const kept = weight ? h("p", {class: "qp-type-subtitle qp-pump-centre"}) : null;
-	const most = h("p", {class: "qp-type-meta qp-pump-centre", text: c.max_line});
+	const kept = weight ? h("p", {class: "qp-big-line"}) : null;
+	const most = mostLine(c);
 	const check = c.check ? checkWords(c.check) : null;
-	const asked = check ? h("qp-card", {}, h("p", {class: "qp-type-body", text: check.line})) : null;
-	const record = c.kg?.top ? lifted(c.kg.top.load, c.kg.top.reps, c.kg.each)
-		: c.record != null ? amount(c.record, c.hold) : null;
-	const body = [figure, h("h1", {class: "qp-type-heading qp-pump-centre", text: ask}),
-		record != null ? h("p", {class: "qp-type-subtitle qp-pump-centre", text: t("kit.record.yours", {record})})
-			: null,
-		boxes, kept, most, asked].filter(Boolean);
-	// "Is that right?" can come on the press that ended a hold (its Done, which Enter is while it runs): its Yes and the
-	// Save beside it answer once it has settled, so that press pressed twice never answers it; the plain count's Save
-	// does at once
-	const settled = c.check ? settles() : (act) => act;
+	const asked = check ? h("qp-card", {class: "qp-big-card"}, h("p", {class: "qp-type-body", text: check.line})) : null;
+	mid.words.replaceChildren(...[most.el, weight, kept, asked].filter(Boolean));
+	// the count comes on the press that ended the move (its Done, which Enter is while it runs) and starts at a count of
+	// its own (a hold's stopwatch, the voice's reps), and "Is that right?" comes on the press of Save: Save, Yes and
+	// Could not do one answer once it has settled, so that press pressed twice never answers them, as the phones' foot
+	const settled = settles();
 	const count = (value, load) => settled(() => heard(intent("pump.count", {value: value(), load: load() ?? null})));
 	const save = button("qp-primary-button", t("pump.count.save"), count(() => stepper.value, () => weight?.value));
-	const couldNot = c.could_not ? button("qp-quiet-button", c.could_not, () => heard(intent("pump.count.couldnot")))
-		: null;
+	const couldNot = c.could_not
+		? button("qp-quiet-button", c.could_not, settled(() => heard(intent("pump.count.couldnot")))) : null;
 	const yes = check ? button("qp-primary-button", check.yes, count(() => c.check.value, () => c.check.load)) : null;
 	const change = c.check ? button("qp-quiet-button", c.change, () => heard(intent("pump.count.clear"))) : null;
-	const foot = [yes, change, save, couldNot, back(pump)].filter(Boolean);
+	const guide = guideButton(pump);
+	const foot = [yes, change, save, couldNot, ways(guide, pump)].filter(Boolean);
 	let fresh = true; // the count the step started from: the first digit typed replaces it
 	let freshWeight = true; // so the weight planned
 	let busy = pump.busy;
@@ -776,7 +837,7 @@ export function counting(pump, topic, ctx) {
 	const settle = () => {
 		const value = stepper.value ?? 0;
 		const load = weight?.value ?? null;
-		most.hidden = value < c.most;
+		most.show(value);
 		if (kept) {
 			kept.textContent = load != null && value > 0 ? preview(value, load, c.kg.each) : "";
 			kept.hidden = !kept.textContent;
@@ -788,6 +849,8 @@ export function counting(pump, topic, ctx) {
 		const held = [yes, change, save, couldNot].some((el) => el?.contains(document.activeElement));
 		for (const el of [asked, yes, change]) if (el) el.hidden = !asking;
 		for (const el of [save, couldNot]) if (el) el.hidden = asking;
+		// Save disabled at 0 on a max set would drop its focus to the page: the dial keeps it
+		if (c.max_set && value === 0 && save.contains(document.activeElement)) stepper.control.focus({preventScroll: true});
 		save.state = c.max_set && value === 0 ? "disabled" : busy ? "busy" : "normal";
 		if (asking !== was && held) (asking ? yes : save).focus({preventScroll: true});
 	};
@@ -809,17 +872,18 @@ export function counting(pump, topic, ctx) {
 		freshWeight = false;
 		return true;
 	};
-	const {el} = frame({head: steps(pump, ctx), body, foot});
-	el.classList.add("qp-pump-count");
+	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts, foot});
 	return {
 		el,
+		big: true,
 		primary: () => (asking ? yes : save),
 		update(next) {
 			busy = next.busy;
+			guide.show(next.guide);
 			settle();
 		},
 		onKey(e) {
-			// Enter in the count's or the weight's value presses the primary, as it would from it (the game's Enter saves
+			// Enter in the dial's or the weight's value presses the primary, as it would from it (the game's Enter saves
 			// the count in its box); on a − or + it steps, the button's own
 			if (e.key === "Enter" && [stepper, weight].some((box) => box?.control.contains(document.activeElement))) {
 				(asking ? yes : save).control.click();

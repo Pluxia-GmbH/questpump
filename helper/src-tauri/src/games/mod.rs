@@ -452,6 +452,9 @@ impl Games {
 		// once every process of this look was stepped, the fed games' too: a game started again within
 		// `match_relaunch_s` of a close that offered is resumed in this look, never also a new run
 		ticked.resumed = self.watcher.take_resumed().iter().map(|w| w.id().to_owned()).collect();
+		for (watched, ms) in self.watcher.take_short() {
+			log::info!("offer {} end: dropped (its match ran {} s, under its floor)", watched.link(), ms / 1_000);
+		}
 		self.open = self.running.clone();
 		for watched in Watched::named() {
 			let key = watched.link();

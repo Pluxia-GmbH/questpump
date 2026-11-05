@@ -1,4 +1,4 @@
-// StepReveal (slice 65; the phones' StepReveal, the game's result view): the step a hold's save opened, played over the
+// StepReveal (slice 65; the phones' StepReveal, the game's result view): the step a move's save opened, played over the
 // figure's room once the pour lands. `reveal` is Rust's {at, opens, folds, tiles, from, to, step, quality, word, hero,
 // colour, landed}: the ladder's tiles come in, the held ones muted and the ones ahead dark behind padlocks, the
 // current one (`from`) never highlighted; a light runs along the rail from its edge to the next tile (`to`) and fills
@@ -11,7 +11,7 @@
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, h, qualityName, styled} from "./element.js";
-import {flyMs, shifted, sparks} from "./qp-hold-bar.js";
+import {flyMs, shifted, sparks} from "./qp-count-bar.js";
 
 /** Each part's start and length as shares of the opening (`revealFromMs`; the mockup's 1240 ms). */
 const AT = {
@@ -61,7 +61,7 @@ class QpStepReveal extends KitElement {
 			const ahead = i > r.from;
 			const tone = qualityName(tile.quality);
 			const el = h("span", {class: "qp-reveal-tile", "data-state": ahead ? "ahead" : "held"},
-				h("qp-move-tile", {move: tile.key, quality: tile.quality, size: "60"}),
+				h("qp-move-tile", {move: tile.key, quality: tile.quality, size: "60", moving: i === r.to}),
 				h("i", {class: "qp-reveal-flash"}), h("i", {class: "qp-reveal-shock"}),
 				ahead ? h("qp-art", {name: "mark_lock", class: "qp-reveal-lock"}) : null);
 			if (tone) el.style.setProperty("--qp-tone", `var(--qp-quality-${tone})`);

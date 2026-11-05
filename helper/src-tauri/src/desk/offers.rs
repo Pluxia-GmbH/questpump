@@ -33,8 +33,9 @@
 //! {key, port}` (1024 to 65535, refused while another fed game takes it), `games.aim {key, on}` (an aim game's arms
 //! rest), `games.grant {key}` (Windows' one-time elevated grant on the folder a game's file goes into), `games.test`
 //! ("Send a test offer"), `games.pace {pace}` (Moves per match, a change of the body every device shares),
-//! `games.pause {kind: none | hour | four_hours | night | game | resumed}`, `games.open_on_close {on}` and
-//! `games.seen` (the tab opened, or in front as its dot came: the dot goes until a game is found again).
+//! `games.pause {kind: none | hour | four_hours | night | game | resumed}` (the same pause a pump's Pause menu sets on
+//! its Ready view, `pump.pause`, which ends the pump with it), `games.open_on_close {on}` and `games.seen` (the tab
+//! opened, or in front as its dot came: the dot goes until a game is found again).
 //!
 //! The tray, while an offer stands and nothing holds it, holds "Pump for {game}" (slice 57, `games.pump`, the name the
 //! offer carries: Start a pump with "A match" chosen, `card.start` with no offer and no size), and while a game is
@@ -226,17 +227,17 @@ pub(crate) fn tray_items(app: &tauri::App) -> tauri::Result<TrayItems> {
 	// its words, the game's name, come as an offer stands (`redraw`)
 	let pump = item(PUMP, "", true)?;
 	let status = item(STATUS, copy::desk_offers_paused_none(), false)?;
-	let hour = item(HOUR, copy::desk_offers_pause_hour(), true)?;
-	let four = item(FOUR, copy::desk_offers_pause_four(), true)?;
+	let hour = item(HOUR, copy::games_pause_hour(), true)?;
+	let four = item(FOUR, copy::games_pause_four(), true)?;
 	let night = item(NIGHT, "", true)?;
 	let game = item(GAME, copy::desk_offers_pause_game_none(), false)?;
-	let resumed = item(RESUMED, copy::desk_offers_pause_resumed(), true)?;
-	let resume = item(RESUME, copy::desk_offers_resume(), false)?;
+	let resumed = item(RESUMED, copy::games_pause_resumed(), true)?;
+	let resume = item(RESUME, copy::games_resume(), false)?;
 	let (line, line2) = (PredefinedMenuItem::separator(app)?, PredefinedMenuItem::separator(app)?);
 	let pause = Submenu::with_id_and_items(
 		app,
 		PAUSE,
-		copy::desk_offers_pause(),
+		copy::games_pause(),
 		true,
 		&[&status, &line, &hour, &four, &night, &game, &resumed, &line2, &resume],
 	)?;
@@ -406,18 +407,18 @@ impl Helper {
 		let pump = self.offer_ready(now).map(|offer| copy::games_pump(&offer.name));
 		let status = match self.pause_view() {
 			PauseView::None => copy::desk_offers_paused_none().to_owned(),
-			PauseView::Until { at } => copy::desk_offers_paused_until(&clock(at)),
+			PauseView::Until { at } => copy::games_paused_until(&clock(at)),
 			PauseView::WhileRunning { key, .. } => {
 				copy::desk_offers_paused_game(&Games::name_of(&key, &self.settings.games).unwrap_or_default())
 			}
-			PauseView::UntilResumed => copy::desk_offers_paused_resumed().to_owned(),
+			PauseView::UntilResumed => copy::games_paused_resumed().to_owned(),
 		};
 		let paused = self.settings.offers.pause != Pause::None;
 		TrayOffers {
 			pump,
 			pause: paused || watched,
 			status,
-			night: copy::desk_offers_pause_night(&clock(night)),
+			night: copy::games_pause_night(&clock(night)),
 			game: self.running_game(lists).map(|r| copy::desk_offers_pause_game(&r.name)),
 			paused,
 		}
@@ -601,9 +602,16 @@ impl Helper {
 
 	/// The pause the tab or the tray chose (`games.pause`).
 	fn pause(&mut self, intent: &Intent) -> Result<(), String> {
+		let kind = intent.arg("kind").and_then(Value::as_str).ok_or("games.pause takes a kind")?;
+		self.offers_paused(kind)
+	}
+
+	/// The pause `kind` names set (`none`, `hour`, `four_hours`, `night`, `game` or `resumed`: the Games tab's, the
+	/// tray's and a pump's Pause menu's, `Helper::pause_offers`), its items in the tray drawn again, or why none was,
+	/// nothing changed: no offers on this computer, no watched game running for `game`, or no such pause.
+	pub(crate) fn offers_paused(&mut self, kind: &str) -> Result<(), String> {
 		let t = self.tunables().ok_or("no offers on this computer")?;
 		let now = lan::now_ms().div_euclid(1_000);
-		let kind = intent.arg("kind").and_then(Value::as_str).ok_or("games.pause takes a kind")?;
 		let pause = match kind {
 			"none" => Pause::None,
 			"hour" => Pause::Until { at: now + t.hour_s },
@@ -614,7 +622,7 @@ impl Helper {
 				Pause::WhileRunning { game: self.running_game(&lists).ok_or("no watched game runs")?.id }
 			}
 			"resumed" => Pause::UntilResumed,
-			_ => return Err(format!("games.pause: no pause {kind}")),
+			_ => return Err(format!("no pause {kind}")),
 		};
 		log::info!("offers: the pause {kind}");
 		self.settings.offers.pause = pause;

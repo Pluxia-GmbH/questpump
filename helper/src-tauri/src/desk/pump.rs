@@ -62,8 +62,8 @@
 //! **The `pump` topic** (`view.rs` holds its shapes): `gate` (`lock`, `game`, `engine` or null: why no pump starts
 //! now), `locked_until` (ms), `owed` (the moves a catch-up here pays), `refused` (the starts that went nowhere on this
 //! run, a count the page that pressed one reads), the windows Rust asks for (`place`: where the player pumps, which the
-//! welcome's page draws; `choose`: the Start a pump window with its preset), `pain` (the joints with their flags,
-//! `in_game` where the game's own rows set one) and `pump`, the pump on screen: its id, what it is (`quick`, `free`
+//! welcome's page draws; `choose`: the Start a pump window with its preset), `pain` (the joints with their flags)
+//! and `pump`, the pump on screen: its id, what it is (`quick`, `free`
 //! with its `kind`, `move` with `from`, where its Result returns, or `catchup`), its stage with the instants the page
 //! draws from (`go` and `digit`, `start` and `limit`, `asked`), a side move's `side` (`first` or `other`, the side on:
 //! Big view's name and countdown line say it, its figure is mirrored on the other and Done reads Switch sides on the
@@ -96,15 +96,19 @@
 //! answer, `ns.Enum.answer`: 0 Yes, to the end, 1 Form slipped, 2 Not all out, slice 53),
 //! `pump.count.clear` ("Change it"), `pump.count.none` (Done without a count),
 //! `pump.count.couldnot`, `pump.swap {take: another|easier|backup|back}` (the swap row and its window, on any move the
-//! engine gives options), `pump.pain {joints}` (the Ready view's Pain),
+//! engine gives options), `pump.pain {joints}` (the Ready view's Pain: its Pause menu's Something hurts, on every
+//! pump since 2026-11-05, a catch-up resting the moves it loads), `pump.pause {kind}` (its Pause menu's how long: the
+//! offers paused as `games.pause` pauses them, then the pump ends as `pump.end` ends it),
 //! `pump.skip` (a rider's Ready view's Skip: a catch-up's since 2026-10-09, a match pump's rider since slice 61),
 //! `pump.bank` (Bank all on a match pump's Ready view while a move of its own is left, Bank the rest on a catch-up's
 //! and once only a match pump's riders are left, slices 58 and 61: `Helper::pump_bank`),
-//! `pump.unwell`, `pump.end` (End the pump here, on a rider the "···"'s Bank the rest),
+//! `pump.unwell`, `pump.end` (End the pump here past the Ready view, on a rider the "···"'s Bank the rest; the Ready
+//! bar's Close on a pump that banks nothing),
 //! `pump.leave {then: close|quit}` and `pump.stay` ("Leave the pump?"'s
 //! answers), `pump.fullscreen {on}` (Big view's own toggle), `pump.land {still?}` (the Result's reveal at its end),
-//! `pump.saved.land {still?}` (a hold's pour at its end, then its step's reveal; slice 65), `pump.saved.next` (its
-//! Next or Finish),
+//! `pump.saved.land {still?}` (a move's pour at its end, then its step's reveal; slices 65 and 66),
+//! `pump.saved.next` (its Next or Finish), `pump.window {open}` (a window stands over the page, or none does any more:
+//! `Pumps::window`; a page that starts says none, which frees a wait a page that went left),
 //! `pump.continue` and `pump.guide` (the read-aloud button on Ready and in Big view's foot: begin, pause or go on
 //! reading the move's How and Tips, `guide.rs`). A start takes no linked game (`link`): the desktop's pumps reach every
 //! Log from their rows alone, which carry none (a phone keeps its own pump's link in its own history).
@@ -126,6 +130,7 @@ use questpump_core::body::{self, DEFAULT_PACE};
 use questpump_core::codes::{answer, clear, flags, kind, outcome, pace};
 use questpump_core::games::MATCH;
 use questpump_core::link::OwedMove;
+use questpump_core::offers::Offer;
 use questpump_core::protocol::{ExpeditionStage, PumpKind, RowRecord, Source};
 use questpump_core::row::Row;
 use questpump_core::session::{
@@ -154,7 +159,7 @@ use crate::copy;
 use crate::lan;
 use crate::runtime::{self, Helper};
 use crate::ui::{self, Shared, WindowAsk};
-use run::{Beats, CatchMove, Due, End, Entered, Mark, Marks, MoveRun};
+use run::{Beats, Cap, CatchMove, Due, End, Entered, Mark, Marks, MoveRun};
 
 /// The topic.
 const TOPIC: &str = "pump";
@@ -470,8 +475,9 @@ enum Stage {
 		typed: Typed,
 		confirmed: bool,
 	},
-	/// A hold saved (slice 65): its seconds pour into the hold bar (`Run::pour`), its row written as the pour lands
-	/// (`pump_pour_land`), then its rewards, until Next or Finish (`pump_saved_next`).
+	/// A move saved (slice 65's hold, every move since slice 66): its count or seconds pour into the count bar
+	/// (`Run::pour`), its row written as the pour lands (`pump_pour_land`), then its rewards, until Next or Finish
+	/// (`pump_saved_next`).
 	Saved,
 	/// The pump is over: its Result or its calm card.
 	Done,
@@ -615,17 +621,17 @@ struct Run {
 	/// (`pump_judge`), or until the check keeps the count step, and a move done without a count until the engine names
 	/// its step down (`pump_empty`): Back waits, and an early end is `held` until then.
 	saving: bool,
-	/// A hold's Done saving its stopwatch's seconds (slice 65), until a step shows: "Is that right?" on the count step,
-	/// "Could you have held longer?" or the pour; meanwhile no count step is published.
-	seconds_saving: bool,
-	/// An app pump's own hold saved and on its way to its pour while the sheet before its write is read (`pump_pour`):
-	/// an early end writes it as its landing would (`pump_pour_left`).
-	pouring: Option<MoveResult>,
+	/// An app pump's own move saved and on its way to its pour while the sheet before its write is read (`pump_pour`),
+	/// with what its line shows: an early end writes it as its landing would (`pump_pour_left`).
+	pouring: Option<(MoveResult, Recorded)>,
 	held: Held,
 	count: CountStep,
 	/// Where the count's stepper starts (`pump_finish_move`): a set of reps the voice counted at the reps counted by
 	/// Done, a hold at its stopwatch's seconds, else at the count to reach, the record or 0.
 	count_from: i64,
+	/// What the app counted of the move on its count step (`pump_finish_move`): a set of reps' reps the figure ended by
+	/// Done, a hold's stopwatch, the weaker side's on a side move; none where it counted nothing (slice 66).
+	counted: Option<i64>,
 	/// The engine holds it (an app pump's compose, a catch-up's `Engine::catch_up` that answered), so Swap's options
 	/// are asked of it (`pump_swaps`); not a catch-up whose `Engine::catch_up` failed, whose moves each run by their
 	/// time.
@@ -668,7 +674,7 @@ struct Run {
 	done_at: Option<i64>,
 	result: Option<view::Earned>,
 	reveal: Option<view::Reveal>,
-	/// A hold's pour on its `Saved` stage (slice 65).
+	/// A move's pour on its `Saved` stage (slice 65's hold, every move's since slice 66).
 	pour: Option<view::pour::Pour>,
 	/// The Legendary moment on show over the Result (2026-10-09): the index of its orange or gold step's row among the
 	/// Result's rows; Continue walks them in order before the Result closes.
@@ -729,11 +735,11 @@ impl Run {
 			checked: BTreeMap::new(),
 			ready_toward: None,
 			saving: false,
-			seconds_saving: false,
 			pouring: None,
 			held: Held::default(),
 			count: CountStep::default(),
 			count_from: 0,
+			counted: None,
 			on_engine: true,
 			swaps: None,
 			swapped: BTreeSet::new(),
@@ -873,6 +879,19 @@ impl Run {
 			.collect();
 	}
 
+	/// A catch-up's move at `i` leaves it unrun (its Skip, its Pain): the move, its rung and the owed row it pays go,
+	/// its other moves keeping their slots, as the engine's catch-up keeps their places.
+	fn leave_catch_up(&mut self, i: usize) {
+		if i >= self.moves.len() {
+			return;
+		}
+		let slot = self.moves.remove(i).slot;
+		if i < self.rungs.len() {
+			self.rungs.remove(i);
+		}
+		self.owed.remove(&slot);
+	}
+
 	/// The id a rider's payment goes under: a match pump's `riders_id`, a catch-up's own `id`.
 	fn pay_id(&self) -> &str {
 		self.riders_id.as_deref().unwrap_or(&self.id)
@@ -906,6 +925,22 @@ impl Run {
 		self.dosed(m) && m.target.is_none() && m.record.is_none() && (m.kind == kind::REP || m.kind == kind::HOLD)
 	}
 
+	/// The most the count of `m` takes on its count step where the app counted it (`CountStep::cap`, slice 66), every
+	/// count path through it: the dial's + stops there, and a count entered past it is saved as it (`Helper::pump_count`).
+	/// A hold's count is its stopwatch, real time, which stands alone. A set of reps' runs at the figure's pace, far slower
+	/// than a fast honest set, so its share also counts from the number it has to beat, the one the dial's arc stands
+	/// against (stages.js `against`: the goal, else the record); a first max set and a placement plan neither, and their
+	/// count, the player's baseline, takes no share at all.
+	fn count_cap(&self, m: &PlannedMove) -> Option<Cap> {
+		let c = facts().constants();
+		let most = view::count_most(m.counted, m.kind == kind::HOLD);
+		if m.kind == kind::HOLD {
+			return CountStep::cap(self.counted, None, most, c.count_over_share, c.min_seconds);
+		}
+		let beat = view::goal(m).into_iter().chain(m.record).max()?;
+		CountStep::cap(self.counted, Some(beat), most, c.count_over_share, c.min_reps)
+	}
+
 	/// A first max set (Progress.lua `ns.FirstMaxSet`, `PlannedMove::first_max`), as the game's short rule reads it: a
 	/// rep move or a hold the engine dosed as a placement, or as a max set with no record. Never `max_set` alone: that
 	/// also holds for a move with a record whose form changed since (`ns.Goal`), which banks when short as any set does.
@@ -914,7 +949,7 @@ impl Run {
 	}
 
 	/// Back is on every stage after Start, until the count is saved (a rider's count or pace, or a kept steady
-	/// move's end, while the engine checks or judges it; a hold's while its pour runs, its row unwritten, slice 65).
+	/// move's end, while the engine checks or judges it; a saved move's while its pour runs, its row unwritten, slice 65).
 	fn can_back(&self) -> bool {
 		match self.stage {
 			Stage::Counting | Stage::Pacing { .. } | Stage::Longer { .. } | Stage::Running { .. } => !self.saving,
@@ -994,8 +1029,8 @@ pub(crate) struct Pumps {
 	refused: u32,
 	/// The Start a pump window asked for, and whether from outside the window.
 	choose: Option<(Choose, bool)>,
-	/// The pain flags as the engine last said (`pain_flags`), for the topic's owed moves and the joint picker; a
-	/// catch-up asks them again as it starts.
+	/// The pain flags as the engine last said (`pain_flags`), for the topic's owed moves and Something hurts' joints;
+	/// a catch-up asks them again as it starts.
 	flags: Vec<u8>,
 	/// The stores as the flags were last asked for (`Helper::store_mark`): rows came since when they differ, and the
 	/// flags are `stale` until the engine can answer.
@@ -1008,6 +1043,9 @@ pub(crate) struct Pumps {
 	takes: BTreeMap<String, String>,
 	/// The computer is held awake.
 	awake: bool,
+	/// A pump runs that a setup change waits for (anything but an app pump on its Ready view, `Helper::pump_refits`),
+	/// as Your setup was last told (its `pump_on`).
+	setup_waits: bool,
 	/// The tray's items as last drawn: a pump on, Quick pump, Catch up.
 	tray: (bool, bool, bool),
 	/// When the loop last looked at the pump's clock (ms): a countdown or a timed move asks to be looked at again within
@@ -1020,9 +1058,22 @@ pub(crate) struct Pumps {
 	/// install the app follows holds the move's takes (read again at each publish).
 	guide: Option<guide::Guide>,
 	offered: bool,
+	/// A window stands over the page, as the page last said (`Pumps::window`).
+	covered: bool,
 }
 
 impl Pumps {
+	/// A window came over the page or the last one left it, as the page says (`pump.window`; its start says none, and the
+	/// main window's end does in its place, so a window that went without a word holds nothing): a move's pour waits
+	/// under one (`Pour::cover`), and one that stood before the pour was planned counts (a "Leave the pump?" as a timed
+	/// move ends by its clock).
+	pub(crate) fn window(&mut self, open: bool, now: i64) {
+		self.covered = open;
+		if let Some(pour) = self.run.as_mut().and_then(|r| r.pour.as_mut()) {
+			pour.cover(open, now);
+		}
+	}
+
 	/// A pump is on screen and runs: from its Ready view until its moves are done, or an expedition's breather between
 	/// two rounds.
 	fn on(&self) -> bool {
@@ -1365,6 +1416,7 @@ impl Helper {
 				self.pump_pain(joints)
 			}
 			"pump.unwell" => self.pump_stop(Stop::Unwell),
+			"pump.pause" => self.pump_pause(&text("kind").ok_or("pump.pause takes a kind")?),
 			"pump.end" => self.pump_end(),
 			"pump.leave" => {
 				let quit = text("then").as_deref() == Some("quit");
@@ -1374,19 +1426,28 @@ impl Helper {
 				ui::update(&self.app, |v| v.shell.leave = None);
 				Ok(())
 			}
-			"pump.fullscreen" => {
-				let on = intent.arg("on").and_then(Value::as_bool).ok_or("pump.fullscreen takes on")?;
-				self.pump_toggle_full(on)
-			}
-			"pump.land" => {
-				let still = intent.arg("still").and_then(Value::as_bool).unwrap_or(false);
-				self.pump_land(still);
-				Ok(())
-			}
-			"pump.saved.land" => self.pump_saved_land(intent.arg("still").and_then(Value::as_bool) == Some(true)),
+			"pump.fullscreen" | "pump.land" | "pump.saved.land" | "pump.window" => self.pump_page_intent(intent),
 			"pump.saved.next" => self.pump_saved_next(),
 			"pump.continue" => self.pump_continue(),
 			"pump.guide" => self.pump_guide(),
+			_ => Err(intent.unknown()),
+		}
+	}
+
+	/// The intents about the page itself: Big view's toggle, a reveal or a pour at its end, the windows over it.
+	fn pump_page_intent(&mut self, intent: &Intent) -> Result<(), String> {
+		let flag = |name: &str| intent.arg(name).and_then(Value::as_bool);
+		match intent.kind() {
+			"pump.fullscreen" => self.pump_toggle_full(flag("on").ok_or("pump.fullscreen takes on")?),
+			"pump.land" => {
+				self.pump_land(flag("still").unwrap_or(false));
+				Ok(())
+			}
+			"pump.saved.land" => self.pump_saved_land(flag("still") == Some(true)),
+			"pump.window" => {
+				self.pumps.window(flag("open").ok_or("pump.window takes open")?, lan::now_ms());
+				Ok(())
+			}
 			_ => Err(intent.unknown()),
 		}
 	}
@@ -1475,6 +1536,13 @@ impl Helper {
 	/// match show no size to choose (slice 48's double-check).
 	pub(crate) fn match_one_size(&self) -> bool {
 		body::sizes_alike(self.body.body.match_pace.as_ref().map_or(DEFAULT_PACE, |p| p.value.as_str()))
+	}
+
+	/// Whether every size of the pump from the match offer `offer` takes the same moves: `match_one_size`, or the
+	/// standing offer's match was a short one, which composes at Light (`Tunables::short`, 2026-11-04).
+	pub(crate) fn offer_one_size(&self, offer: Option<&str>) -> bool {
+		let short = |o: &Offer| self.games.as_ref().is_some_and(|g| g.tunables().short(o.minutes));
+		self.match_one_size() || offer.and_then(|id| self.standing.current().filter(|o| o.id == id)).is_some_and(short)
 	}
 
 	/// The streak's board now, as Pump home draws it.
@@ -1992,8 +2060,7 @@ impl Helper {
 	fn pump_ready(&mut self) {
 		let Some(run) = self.pumps.run.as_mut() else { return };
 		run.stage = Stage::Ready;
-		// a hold's save (slice 65) never reaches past its own move
-		run.seconds_saving = false;
+		// a move's save (its pour, slice 65) never reaches past its own move
 		run.pouring = None;
 		run.pour = None;
 		self.pump_regoal();
@@ -2321,11 +2388,16 @@ impl Helper {
 				let Some(pour) = run.pour.as_mut() else { return };
 				let due = pour.take_due(now);
 				let lands = pour.lands_by(now);
+				let goes_on = pour.goes_on_at().is_some_and(|at| now >= at);
 				for event in due {
 					self.cue(Cue::Event(event));
 				}
 				if lands {
 					self.pump_pour_land(false, true);
+				}
+				if goes_on {
+					// the move goes on by itself once its rows are in, as Next would (`Pour::goes_on_at`)
+					let _ = self.pump_saved_next();
 				}
 			}
 			Stage::Done => {
@@ -2403,9 +2475,8 @@ impl Helper {
 		if let Some(limit) = limit.filter(|&l| l <= elapsed) {
 			self.pump_end_side(start, limit, start + run::millis(limit));
 			// the timed end's sound where the move waits for its count; a move that ended done sounded `done` for it
-			// (one sound at the end, as the phones play one), and a side move's first side says "Switch sides."; a hold
-			// saving its seconds sounds its pour instead (slice 65)
-			if self.pumps.run.as_ref().is_some_and(|r| r.stage == Stage::Counting && !r.seconds_saving) {
+			// (one sound at the end, as the phones play one), and a side move's first side says "Switch sides."
+			if self.pumps.run.as_ref().is_some_and(|r| r.stage == Stage::Counting) {
 				self.cue(Cue::Event("timeUp"));
 			}
 		}
@@ -2613,29 +2684,22 @@ impl Helper {
 		}
 		run.count.clear();
 		run.stage = Stage::Counting;
-		// a hold's stepper starts at its stopwatch's seconds, or none far under its goal (a placement's, under the
-		// record that stays); a counted set's optional count at none, Not counted (slice 42: no count to reach, its
-		// best never a goal); a set of reps the voice counted at the reps counted by Done (2026-10-13), one with none
-		// counted yet or uncounted at its goal, else its record
-		run.count_from = if m.kind == kind::HOLD {
-			CountStep::held_count(seconds, m.target.or(m.placing), facts().constants().timed_ask_share)
-		} else if m.counted {
+		// a hold's count starts at its stopwatch's seconds, the player's to change since the clock stops only once
+		// they reach Done (David, 2026-11-04: "it takes time to stand up"; Done saved them with no step from slice 65
+		// until then), or none far under its goal (a placement's, under the record that stays); a counted set's
+		// optional count at none, Not counted (slice 42: no count to reach, its best never a goal); a set of reps the
+		// voice counted at the reps counted by Done (2026-10-13), one with none counted yet or uncounted at its goal,
+		// else its record
+		let held = (m.kind == kind::HOLD)
+			.then(|| CountStep::held_count(seconds, m.target.or(m.placing), facts().constants().timed_ask_share));
+		// what the app counted, the count's most counts from (slice 66, `Run::count_cap`): none on a counted set, whose
+		// count the app never counts
+		run.counted = if m.counted { None } else { held.or(counted).filter(|&n| n > 0) };
+		run.count_from = if m.counted {
 			0
 		} else {
-			counted.filter(|&n| n > 0).or_else(|| view::goal(&m)).or(m.record).unwrap_or(0)
+			held.or_else(|| counted.filter(|&n| n > 0).or_else(|| view::goal(&m)).or(m.record)).unwrap_or(0)
 		};
-		// a hold's Done saves the stopwatch's seconds with no count step (slice 65): the engine's check of them first,
-		// whose "Is that right?" shows on the count step (Change it opens it with them), then "Could you have held
-		// longer?" where it asks, then the pour; under the ask's share the count step comes from 0, and from them on a
-		// first max set under `min_seconds` (`pump_end_side`), which asks its count
-		if m.kind == kind::HOLD && run.count_from > 0 && !short_count(&m, run.count_from) {
-			let typed = Typed { value: run.count_from, load: None, answer: answer::YES };
-			let max_set = run.max_set(&m);
-			if let Entered::Check(typed) = run.count.enter(typed, max_set, false) {
-				run.seconds_saving = true;
-				return self.pump_validate(m.slot, typed);
-			}
-		}
 		self.pump_publish();
 	}
 
@@ -2651,6 +2715,10 @@ impl Helper {
 		let answer = if seconds >= to { pace::EASILY } else { pace::JUST };
 		let result = MoveResult { value: seconds, elapsed: seconds, pace: Some(answer), ..MoveResult::default() };
 		run.answers.insert(m.slot, answer);
+		if !run.rider(m.slot) && advance {
+			self.pump_own(result, Recorded::Time(seconds));
+			return true;
+		}
 		if !run.rider(m.slot) {
 			self.pump_write(result, Recorded::Time(seconds));
 		} else if run.dosed(m) {
@@ -2678,6 +2746,8 @@ impl Helper {
 		if typed.load.is_some() && !view::loaded(&m) {
 			return Err("this move takes no weight".to_owned());
 		}
+		// at most the count's cap (slice 66): a count past it is saved as it, as the dial would set it
+		let typed = Typed { value: run.count_cap(&m).map_or(typed.value, |cap| typed.value.min(cap.most)), ..typed };
 		if short_count(&m, typed.value) {
 			// a first max set is never banked: it saves as "Could not do one" (the game's `Lc.Enter`)
 			if run.first_max_set(&m) {
@@ -2709,7 +2779,7 @@ impl Helper {
 	}
 
 	/// The engine checks the count entered on move `index` (`pump_checked` with its answer); the page hears it from
-	/// the caller, or from the answer where a hold's Done saved its seconds (slice 65), so no count step shows first.
+	/// the caller.
 	fn pump_validate(&mut self, index: usize, typed: Typed) {
 		let Some(id) = self.pump_busy() else { return };
 		// a rider's count is on its way to its set from here (an app pump's own is written at once)
@@ -2726,10 +2796,6 @@ impl Helper {
 					Ok(check) => h.pump_checked(typed, check),
 					Err(e) => {
 						log::warn!("pump {id}: the engine checked no count: {e}");
-						// the count step shows, its count as Done gave it
-						if let Some(run) = h.pumps.run.as_mut() {
-							run.seconds_saving = false;
-						}
 						h.pump_publish();
 						h.pump_unhold();
 					}
@@ -2748,7 +2814,6 @@ impl Helper {
 		let hold = run.shown().is_some_and(|m| m.kind == kind::HOLD);
 		match run.count.checked(typed, CountStep::asks(check, counted)) {
 			Outcome::Stays => {
-				run.seconds_saving = false;
 				self.pump_publish();
 				self.pump_unhold();
 			}
@@ -2782,14 +2847,11 @@ impl Helper {
 				}
 				run.stage = Stage::Longer { typed, confirmed };
 				run.saving = false;
-				run.seconds_saving = false;
 				h.pump_publish();
 				h.pump_unhold();
 			},
 		);
-		if !self.pumps.run.as_ref().is_some_and(|r| r.seconds_saving) {
-			self.pump_publish();
-		}
+		self.pump_publish();
 	}
 
 	/// The answer to "Could you have held longer?" (`ns.Enum.longer`: 1 No, 2 A little, 3 A lot; slice 52, Events.lua
@@ -2806,11 +2868,10 @@ impl Helper {
 	}
 
 	/// A count checked and kept, with a hold's answer to "Could you have held longer?" (`longer`): an app pump records
-	/// its own move's, and a rider's is judged (`pump_judge`), a typed 0 there done without a count (Events.lua
-	/// `Lc.CouldNot`'s note: "Could not do one" stores the 0). An early end held for a rider's count (`Held`) waits on
-	/// through its
-	/// judge, or on a typed 0 through the engine's step down (`pump_empty`), the move done on its count step (no next
-	/// move first), so the end pays it done.
+	/// its own move's (`pump_record`, whose count pours), and a rider's is judged (`pump_judge`), a typed 0 there done
+	/// without a count (Events.lua `Lc.CouldNot`'s note: "Could not do one" stores the 0). An early end held for a
+	/// rider's count (`Held`) waits on through its judge, or on a typed 0 through the engine's step down
+	/// (`pump_empty`), the move done on its count step (no next move first), so the end pays it done.
 	fn pump_save(&mut self, typed: Typed, confirmed: bool, longer: Option<u8>) {
 		let Some(run) = self.pumps.run.as_mut() else { return self.pump_unhold() };
 		let elapsed = run.shown().and_then(|m| run.ran.get(&m.slot)).copied().unwrap_or(0);
@@ -2824,13 +2885,7 @@ impl Helper {
 			longer,
 			..MoveResult::default()
 		};
-		let hold = run.shown().is_some_and(|m| m.kind == kind::HOLD);
-		let pours = !run.on_rider() && hold && typed.value > 0;
-		// a hold's seconds saved anywhere but into its pour are saved now (slice 65)
-		run.seconds_saving &= pours;
-		if pours {
-			self.pump_pour(result);
-		} else if !run.on_rider() {
+		if !run.on_rider() {
 			self.pump_record(result, true);
 		} else if typed.value > 0 {
 			let shown = if counted {
@@ -2845,13 +2900,35 @@ impl Helper {
 		}
 	}
 
-	/// An app pump's own hold saved (slice 65): the app's own sheet before its write is read, and its seconds pour
-	/// (`Stage::Saved`), the row unwritten until the pour lands (`pump_pour_land`); an engine that fails to read it has
-	/// the hold recorded at once, as before the pour.
-	fn pump_pour(&mut self, result: MoveResult) {
-		let Some(run) = self.pumps.run.as_mut() else { return };
+	/// An app pump's own move saved (slice 65's hold, every move since slice 66): what it saved pours into its count bar
+	/// (`pump_pour`), its row written as the pour lands; a count of 0 pours nothing and is written at once.
+	fn pump_own(&mut self, result: MoveResult, shown: Recorded) {
+		if result.value > 0 {
+			self.pump_pour(result, shown);
+		} else {
+			self.pump_written(result, shown);
+		}
+	}
+
+	/// An app pump's own move written at once with what its line shows (a pose's stretch checks read behind its row,
+	/// `pump_checked_after`), and the next move.
+	fn pump_written(&mut self, result: MoveResult, shown: Recorded) {
+		let Some(slot) = self.pumps.run.as_ref().and_then(Run::shown).map(|m| m.slot) else { return };
+		self.pump_write(result, shown);
+		self.pump_checked_after(slot);
+		self.pump_advance(true);
+	}
+
+	/// An app pump's own move saved (`pump_own`): the app's own sheet before its write is read, and its count or seconds
+	/// pour (`Stage::Saved`), the row unwritten until the pour lands (`pump_pour_land`); meanwhile the stage it was saved
+	/// on stays, taking no second answer (`Run::pouring`). An engine that fails to read it has the move written at once,
+	/// as before the pour.
+	fn pump_pour(&mut self, result: MoveResult, shown: Recorded) {
+		let Some(run) = self.pumps.run.as_mut().filter(|r| r.pouring.is_none() && r.pour.is_none()) else { return };
 		let Some(slot) = run.shown().map(|m| m.slot) else { return };
-		run.pouring = Some(result);
+		run.pouring = Some((result, shown));
+		// a timed move's run is over: no mark of its side comes while the sheet is read
+		run.cues = Cues::default();
 		let Some(id) = self.pump_busy() else { return };
 		let at = unix_s(lan::now_ms());
 		self.engine_call(
@@ -2860,46 +2937,45 @@ impl Helper {
 				if !h.pump_answered(&id) {
 					return;
 				}
-				let waiting = |r: &&mut Run| {
-					matches!(r.stage, Stage::Counting | Stage::Longer { .. })
-						&& r.shown().is_some_and(|m| m.slot == slot)
-						&& r.pouring.is_some()
-				};
+				// Back, the next move or the pump's early end took it meanwhile (`pump_pour_left`)
+				let waiting = |r: &&mut Run| r.shown().is_some_and(|m| m.slot == slot) && r.pouring.is_some();
 				let Some(run) = h.pumps.run.as_mut().filter(waiting) else { return };
-				run.seconds_saving = false;
 				run.pouring = None;
-				// a sheet that does not read leaves the save's own rewards unknown: recorded at once, as before the pour
+				// a sheet that does not read leaves the save's own rewards unknown: written at once, as before the pour
 				let before = match answer {
 					Ok(summary) => view::Sum::read(&summary),
 					Err(e) => {
-						log::warn!("pump {id}: the sheet before the hold's save: {e}");
+						log::warn!("pump {id}: the sheet before the move's save: {e}");
 						None
 					}
 				};
-				let Some(before) = before else { return h.pump_record(result, true) };
+				let Some(before) = before else { return h.pump_written(result, shown) };
 				let Some(m) = run.shown().cloned() else { return };
 				let step = run.slots.get(slot).and_then(Option::as_ref).map_or((0, 0), |s| (s.ladder, s.rung));
 				let next = run.moves.get(run.current + 1).and_then(|n| facts().name(n.r#move));
 				let fresh = run.written.is_empty();
-				run.pour = Some(view::pour::Pour::plan(lan::now_ms(), &m, result, step, before, fresh, next));
+				let covered = h.pumps.covered;
+				let saved = view::pour::Saved { result, shown, step, before, fresh, next, covered };
+				run.pour = Some(view::pour::Pour::plan(lan::now_ms(), &m, saved));
 				run.stage = Stage::Saved;
 				h.pump_publish();
 			},
 		);
 	}
 
-	/// The hold's pour lands (its last grain, a click on the stage, Next or Finish; `still`: Reduce Motion): its row is
-	/// written now, and with `earn` its jingle plays where one is due and what the save earned is read after the write
-	/// (`pump_saved_earned`); Next and Finish read nothing, as the move goes on.
+	/// The move's pour lands (its last grain, a click on the stage, Next or Finish; `still`: Reduce Motion): its row is
+	/// written now (a pose's stretch checks read behind it), and with `earn` its jingle plays where one is due and what
+	/// the save earned is read after the write (`pump_saved_earned`); Next and Finish read nothing, as the move goes on.
 	fn pump_pour_land(&mut self, still: bool, earn: bool) {
 		let now = lan::now_ms();
 		let Some(pour) = self.pumps.run.as_mut().and_then(|r| r.pour.as_mut()).filter(|p| !p.landed()) else { return };
 		let event = pour.land(now, still);
-		let (slot, result) = (pour.slot, pour.result);
+		let (slot, result, shown) = (pour.slot, pour.result, pour.shown);
 		if let Some(event) = event.filter(|_| earn) {
 			self.cue(Cue::Event(event));
 		}
-		self.pump_write(result, Recorded::Count(result.value, result.load));
+		self.pump_write(result, shown);
+		self.pump_checked_after(slot);
 		if !earn {
 			return;
 		}
@@ -2910,7 +2986,7 @@ impl Helper {
 		// a sheet that does not read after the write still shows the move's row and plays its jingle
 		self.pump_call(
 			move |e| {
-				let summary = e.summary(at).map_err(|e| log::warn!("pump: the sheet after the hold's save: {e}")).ok();
+				let summary = e.summary(at).map_err(|e| log::warn!("pump: the sheet after the move's save: {e}")).ok();
 				let goals = firsts
 					.iter()
 					.map(|&(slot, move_id, n)| Ok((slot, e.next_goal(move_id, n)?)))
@@ -2923,7 +2999,7 @@ impl Helper {
 		self.pump_publish();
 	}
 
-	/// What the hold's save earned (the app's own sheet after its write; without one, the move's row alone), while its
+	/// What the move's save earned (the app's own sheet after its write; without one, the move's row alone), while its
 	/// pour is still on screen: its rows and its step's reveal, with the jingle due at once under Reduce Motion.
 	fn pump_saved_earned(&mut self, slot: usize, summary: Option<&Value>, goals: &[(usize, i64)]) {
 		let after = summary.and_then(view::Sum::read);
@@ -2937,7 +3013,7 @@ impl Helper {
 		self.pump_publish();
 	}
 
-	/// A click on the stage while a hold's pour shows, or Reduce Motion from its first frame (`still`): the pour at its
+	/// A click on the stage while a move's pour shows, or Reduce Motion from its first frame (`still`): the pour at its
 	/// end and its row written; once landed, its step's reveal and its rows at their end.
 	fn pump_saved_land(&mut self, still: bool) -> Result<(), String> {
 		let run = self.pumps.run.as_mut().filter(|r| r.stage == Stage::Saved).ok_or("no pour")?;
@@ -2953,8 +3029,8 @@ impl Helper {
 		Ok(())
 	}
 
-	/// The pump ends while a hold's pour runs (`pump_stop`: the window closed, End the pump here, Leave, the game's offer,
-	/// felt unwell, the app quitting; slice 65): the pour lands and its row is written with its seconds, as its landing
+	/// The pump ends while a move's pour runs (`pump_stop`: the window closed, End the pump here, Leave, the game's offer,
+	/// felt unwell, the app quitting; slice 65): the pour lands and its row is written with what it saved, as its landing
 	/// would write it, with the felt-unwell `reason` where that ended it, whose row then locks; only Back drops it. True
 	/// where it wrote that row.
 	fn pump_pour_left(&mut self, reason: Option<u8>) -> bool {
@@ -2970,21 +3046,21 @@ impl Helper {
 			}
 			return pending;
 		}
-		// on its way to the pour (its check, "Could you have held longer?" or the sheet before it read): the hold as
-		// saved, else its stopwatch's seconds
-		let Some(slot) = run.shown().map(|m| m.slot) else { return false };
-		let elapsed = run.ran.get(&slot).copied().unwrap_or(0);
-		let seconds = MoveResult { value: run.count_from, elapsed, ..MoveResult::default() };
-		let Some(result) = run.pouring.take().or(run.seconds_saving.then_some(seconds)) else { return false };
+		// on its way to the pour (the sheet before it read): the move as saved
+		let Some((result, shown)) = run.pouring.take() else { return false };
+		let slot = run.shown().map(|m| m.slot);
 		let result = MoveResult { reason, ..result };
-		run.seconds_saving = false;
-		// written here, so no ask still waiting writes it again (`pump_unanswered`)
-		run.stage = Stage::Counting;
-		self.pump_write(result, Recorded::Count(result.value, result.load));
+		// written here as its pour's landing would, so neither an ask still waiting (`pump_unanswered`) nor the stage it
+		// was saved on (a counted set's count step, `pump_stop`) writes it again
+		run.stage = Stage::Saved;
+		self.pump_write(result, shown);
+		if let Some(slot) = slot {
+			self.pump_checked_after(slot);
+		}
 		true
 	}
 
-	/// Next or Finish on a hold's pour (slice 65, live from its first frame): the pour lands and its row is written
+	/// Next or Finish on a move's pour (slice 65, live from its first frame): the pour lands and its row is written
 	/// first where it has not, the move's one jingle plays where none has, and the next move's Ready view shows, or the
 	/// Result after the pump's last move.
 	fn pump_saved_next(&mut self) -> Result<(), String> {
@@ -3038,6 +3114,9 @@ impl Helper {
 	fn pump_mark(&mut self, answer: u8) -> Result<(), String> {
 		let run = self.pumps.run.as_ref().ok_or("no pump")?;
 		let Stage::Marking { seconds } = run.stage else { return Err("nothing asked".to_owned()) };
+		if run.pouring.is_some() {
+			return Err("answered already".to_owned());
+		}
 		let m = run.shown().ok_or("no move")?;
 		log::info!("pump {}: move {}, how close: {answer}", run.id, m.r#move);
 		let slot = m.slot;
@@ -3045,9 +3124,7 @@ impl Helper {
 		if let Some(run) = self.pumps.run.as_mut() {
 			run.answers.insert(slot, answer);
 		}
-		self.pump_write(result, Recorded::Time(result.value));
-		self.pump_checked_after(slot);
-		self.pump_advance(true);
+		self.pump_own(result, Recorded::Time(result.value));
 		Ok(())
 	}
 
@@ -3078,6 +3155,9 @@ impl Helper {
 		let Stage::Pacing { seconds } = run.stage else { return Err("nothing asked".to_owned()) };
 		if run.busy > 0 && run.on_rider() {
 			return Err("the engine judges it".to_owned());
+		}
+		if run.pouring.is_some() {
+			return Err("answered already".to_owned());
 		}
 		let app = !run.on_rider();
 		let m = run.shown().ok_or("no move")?;
@@ -3310,8 +3390,8 @@ impl Helper {
 		}
 	}
 
-	/// An app pump's move result, written at once (`typed`: a count from the box, else a timed move's seconds), and the
-	/// next move; a typed 0 is done without a count, a counted set's its clean reps (0: not counted) with its answer.
+	/// An app pump's move result (`typed`: a count from the dial, else a timed move's seconds), poured and then written
+	/// (`pump_own`); a typed 0 is done without a count, a counted set's its clean reps (0: not counted) with its answer.
 	fn pump_record(&mut self, result: MoveResult, typed: bool) {
 		let counted = self.pumps.run.as_ref().and_then(Run::shown).is_some_and(|m| m.counted);
 		let shown = if !typed {
@@ -3323,8 +3403,7 @@ impl Helper {
 		} else {
 			Recorded::Done
 		};
-		self.pump_write(result, shown);
-		self.pump_advance(true);
+		self.pump_own(result, shown);
 	}
 
 	/// The current move's result through the engine (its rows kept as they come back), and what its line shows; a set
@@ -3385,7 +3464,6 @@ impl Helper {
 		run.count.clear();
 		run.pour = None;
 		run.pouring = None;
-		run.seconds_saving = false;
 		run.cues = Cues::default();
 		if let Some((start, riders, end)) = run.before_start.take() {
 			(run.pump_start, run.riders_start, run.last_end) = (start, riders, end);
@@ -3417,19 +3495,21 @@ impl Helper {
 		self.pump_skip_owed(owed.move_id, owed.ts)?;
 		self.pump_engine_skip(&id, slot);
 		let run = self.pumps.run.as_mut().ok_or("no pump")?;
-		let i = run.current;
 		if merged {
 			run.drop_move(slot);
 		} else {
-			// a catch-up's other moves keep their slots, as the engine's catch-up keeps their places
-			run.moves.remove(i);
-			if i < run.rungs.len() {
-				run.rungs.remove(i);
-			}
-			run.owed.remove(&slot);
+			run.leave_catch_up(run.current);
 		}
+		self.pump_after_leaving();
+		Ok(())
+	}
+
+	/// The move on the Ready view left the pump (Skip, a catch-up's Pain): the next move's Ready view, else the pump
+	/// ends, leaving the screen with no card where no move of it ran.
+	fn pump_after_leaving(&mut self) {
+		let Some(run) = self.pumps.run.as_mut() else { return };
 		run.spoken = None;
-		if i < run.moves.len() {
+		if run.current < run.moves.len() {
 			self.pump_ready();
 			self.pump_publish();
 		} else if run.ran.is_empty() {
@@ -3437,14 +3517,15 @@ impl Helper {
 		} else {
 			self.pump_finish(false);
 		}
-		Ok(())
 	}
 
 	/// A move ended too short to count (`min_reps`, `min_seconds`: `short_count`, `pump_end_side`; Rapha, 2026-11-03,
 	/// the game's `Lc.ShortBank`): banked without a word or a row of its own. A match pump's own move goes in the game's
 	/// owed queue as Bank all puts it there (`Run::bank`, `pump_write_bank`), under an id of its own (`short_id`), a
 	/// rider stays the unfinished move it is, a move of a pump the player started owes nothing; its run is forgotten
-	/// (`ran`), so no Result and no payment counts it, and the next move shows (after the last the pump ends).
+	/// (`ran`), so no Result and no payment counts it, and the next move shows (after the last the pump ends, with no
+	/// card where no move of it was kept, as Bank all closes the game's, `Lc.Finish("banked")`; an expedition's round
+	/// goes on to the next).
 	fn pump_short(&mut self) {
 		let Some(run) = self.pumps.run.as_mut() else { return };
 		let Some(slot) = run.shown().map(|m| m.slot) else { return };
@@ -3454,7 +3535,6 @@ impl Helper {
 		run.move_start = None;
 		run.asked = None;
 		run.count.clear();
-		run.seconds_saving = false;
 		let banks = run.what.app() && run.offer.is_some() && !run.rider(slot);
 		if let Some((mut bank, slots)) = banks.then(|| run.bank()) {
 			bank.moves = bank.moves.into_iter().zip(slots).filter(|&(_, s)| s == slot).map(|(m, _)| m).collect();
@@ -3462,6 +3542,10 @@ impl Helper {
 			self.pump_write_bank(&bank);
 		}
 		self.pump_advance(false);
+		let empty = |r: &Run| r.ran.is_empty() && r.recorded.is_empty() && !matches!(r.what, What::Expedition { .. });
+		if self.pumps.run.as_ref().is_some_and(|r| !r.running() && empty(r)) {
+			self.pump_dismiss();
+		}
 	}
 
 	/// A rider at `slot` leaves the pump on the engine (`Engine::skip`): the engine's catch-up holds its other moves'
@@ -3555,11 +3639,25 @@ impl Helper {
 		}
 	}
 
-	/// End the pump here (the "···"'s, `pump.end`; Leave's on its ×): as Leave ends it, but on a match pump whose
-	/// riders alone are left, where it reads Bank the rest, as that ends it (`Stop::Rest`, slice 61).
+	/// End the pump here (the "···"'s past the Ready view, `pump.end`; the Ready bar's Close on a pump that banks
+	/// nothing, Pause's how long, `pump_pause`; Leave's on its ×): as Leave ends it, but on a match pump whose riders
+	/// alone are left, where it reads Bank the rest, as that ends it (`Stop::Rest`, slice 61).
 	fn pump_end(&mut self) -> Result<(), String> {
 		let rest = self.pumps.run.as_ref().is_some_and(|r| r.what.app() && r.ends_rest());
 		self.pump_stop(if rest { Stop::Rest } else { Stop::Left })
+	}
+
+	/// Pause's how long on the Ready view (`pump.pause {kind}`; the game's `Lc.PausePump`, where the character pauses
+	/// and the pump ends): the offers pause as the Games tab's Pause offers pauses them (`pause_offers`: an hour, four
+	/// hours, until the next game day, while the watched game running now runs, until resumed), then the pump ends as
+	/// its bar's Close ends it (`pump_end`: its own moves not done count for nothing, a catch-up's and its riders stay
+	/// unfinished, with only riders left a match pump ends done). Refused, nothing changed, off a Ready view and where
+	/// that pause cannot be (no offers on this computer, no watched game runs): the pump is looked at first and the
+	/// pause is set whole or not at all, so the two happen together or neither does.
+	fn pump_pause(&mut self, kind: &str) -> Result<(), String> {
+		self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready).ok_or("no Pause now")?;
+		self.pause_offers(kind)?;
+		self.pump_end()
 	}
 
 	/// A match pump's moves `bank` names written in the game's owed queue (`Session::bank`: the computer's source, dated
@@ -3681,6 +3779,11 @@ impl Helper {
 			}
 		}
 		run.ride(&pump.riders);
+		// riders a refit brought in (a setup change let an owed move fit) pay under an id of their own, as those of its
+		// first composition do: the pump's own id is its Bank all's, which `Session::catch_up` takes as paid
+		if run.riders_id.is_none() && !run.owed.is_empty() {
+			run.riders_id = Some(new_id());
+		}
 		run.swapped = pump.swapped.into_iter().collect();
 		run.rungs = pump.slots.iter().map(|s| s.rung).collect();
 		(run.slots, run.moves, run.previews) = (pump.slots.into_iter().map(Some).collect(), moves, previews);
@@ -3691,25 +3794,70 @@ impl Helper {
 		self.pump_publish();
 	}
 
-	/// The Ready view's Pain (on every Ready view of an app pump, a match pump's riders' too): the joints the player
-	/// named flagged, their rows kept whatever is on screen when the engine answers; before any move ended the pump is
-	/// composed again, after one, a move banked too short among them (`pump_short`), the rest keeps what the flags allow
-	/// (a rider the flags refuse leaves it to wait, slice 61); a pump with no move left from the one shown on ends.
+	/// The Ready view's Pain (Pause's Something hurts, on every pump's Ready view as on the game's): the joints the
+	/// player named flagged, their rows kept whatever is on screen when the engine answers; an app pump then composed
+	/// again or refit (`pump_refit`), a catch-up resting the moves they load (`pump_rest_pained`).
 	fn pump_pain(&mut self, joints: Vec<u8>) -> Result<(), String> {
-		let run = self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready && r.what.app()).ok_or("no Pain now")?;
-		let (from, recorded) = (run.shown().map_or(0, |m| m.slot), run.current > 0);
+		let run = self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready).ok_or("no Pain now")?;
+		let app = run.what.app();
 		if joints.is_empty() {
 			self.pump_publish();
-			return Ok(());
+		} else if app {
+			self.pump_refit(Refit::Pain(joints));
+		} else {
+			self.pump_rest_pained(joints);
 		}
+		Ok(())
+	}
+
+	/// An app pump waits on its Ready view (`desk_pump_refits`): a setup change reaches it at once (`pump_setup_refit`).
+	pub(crate) fn pump_refits(&self) -> bool {
+		self.pumps.run.as_ref().is_some_and(|r| r.stage == Stage::Ready && r.what.app())
+	}
+
+	/// What the pumps' filters read changed in Your setup (`setup_refilter`; the game's refilter on its "Settings"
+	/// message): the profile's (`profile`), or the pain flags, which the engine holds already when this is asked, so the
+	/// pump moves only where they differ from those it knew (`Pumps::flags`). An app pump on its Ready view; a
+	/// catch-up on its Ready view rests the moves the flags now load, as its Something hurts does (`pump_rest_pained`),
+	/// and keeps its moves through a profile's change; a pump past its Ready view keeps its moves (Your setup says so:
+	/// its `pump_on`).
+	pub(crate) fn pump_setup_refit(&mut self, profile: bool) {
+		if self.pump_refits() {
+			self.pump_refit(if profile { Refit::Profile } else { Refit::Flags(self.pumps.flags.clone()) });
+		} else if !profile && self.pumps.run.as_ref().is_some_and(|r| r.stage == Stage::Ready) {
+			self.pump_rest_pained(Vec::new());
+		}
+	}
+
+	/// An app pump on its Ready view after `refit` (the game's refilter, Events.lua `refilter`; a match pump's riders
+	/// too): before any move ended the pump is composed again, after one, a move banked too short among them
+	/// (`pump_short`), the rest keeps what the filters allow now (a rider they refuse leaves it to wait, slice 61; the
+	/// engine's `Pump:afterPain`); a pump with no move left from the one shown on ends. Pain's joints are flagged first,
+	/// their rows kept whatever is on screen when the engine answers, and nothing else changes where its flags were
+	/// set already.
+	fn pump_refit(&mut self, refit: Refit) {
+		let Some(run) = self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready && r.what.app()) else { return };
+		let (from, recorded) = (run.shown().map_or(0, |m| m.slot), run.current > 0);
 		let at = unix_s(lan::now_ms());
-		let Some(id) = self.pump_busy() else { return Ok(()) };
+		let Some(id) = self.pump_busy() else { return };
 		self.engine_call(
 			move |e| {
-				let before = e.pain_flags()?;
-				let pain = e.pain_rows(&joints, true, at)?;
-				let flags = e.pain_flags()?;
-				if flags == before {
+				let (pain, flags, changed) = match refit {
+					Refit::Pain(joints) => {
+						let before = e.pain_flags()?;
+						let pain = e.pain_rows(&joints, true, at)?;
+						let flags = e.pain_flags()?;
+						let changed = flags != before;
+						(pain, flags, changed)
+					}
+					Refit::Profile => (Vec::new(), e.pain_flags()?, true),
+					Refit::Flags(known) => {
+						let flags = e.pain_flags()?;
+						let changed = flags != known;
+						(Vec::new(), flags, changed)
+					}
+				};
+				if !changed {
 					return Ok((pain, flags, None));
 				}
 				e.after_pain(from, recorded, at)?;
@@ -3724,14 +3872,14 @@ impl Helper {
 				let (pain, flags, planned) = match answer {
 					Ok(answer) => answer,
 					Err(e) => {
-						log::warn!("pump {id}: the pain flags: {e}");
+						log::warn!("pump {id}: the moves again for the filters: {e}");
 						return h.pump_publish();
 					}
 				};
 				h.pump_keep(&id, None, &rows(&pain));
 				h.pumps.flags = flags;
 				let Some((pump, moves, previews, swaps)) = planned.filter(|_| shown) else { return h.pump_publish() };
-				// none left from the one shown on (a rider the flags refuse leaves to wait): the pump ends
+				// none left from the one shown on (a rider the filters refuse leaves to wait): the pump ends
 				let ends = moves.len() <= h.pumps.run.as_ref().map_or(0, |r| r.current);
 				h.pump_moves(pump, moves, previews, |i| !recorded || i >= from);
 				if ends {
@@ -3744,7 +3892,55 @@ impl Helper {
 			},
 		);
 		self.pump_publish();
-		Ok(())
+	}
+
+	/// A catch-up's Pain (the game's Something hurts, on every pump; since 2026-11-05), or the flags Your setup set over
+	/// it (`joints` empty): the joints flagged, their rows kept whatever is on screen when the engine answers, then every
+	/// move from the one on Ready on whose move loads a joint flagged now leaves the catch-up, its owed row left
+	/// unfinished as a catch-up's start leaves such a move (`pump_payable`) and its other moves keeping their slots as
+	/// its Skip leaves them (`Run::leave_catch_up`), nothing written for it. Where the move on Ready left, the next
+	/// move's Ready view shows, or the catch-up ends as Bank the rest ends it; where it stays, only Swap's options are
+	/// asked again, since the flags changed what they may offer.
+	fn pump_rest_pained(&mut self, joints: Vec<u8>) {
+		let at = unix_s(lan::now_ms());
+		let Some(id) = self.pump_busy() else { return };
+		self.engine_call(
+			move |e| {
+				let pain = if joints.is_empty() { Vec::new() } else { e.pain_rows(&joints, true, at)? };
+				Ok((pain, e.pain_flags()?))
+			},
+			move |h, answer| {
+				let shown = h.pump_answered(&id);
+				let (pain, flags) = match answer {
+					Ok(answer) => answer,
+					Err(e) => {
+						log::warn!("pump {id}: the pain flags: {e}");
+						return h.pump_publish();
+					}
+				};
+				h.pump_keep(&id, None, &rows(&pain));
+				h.pumps.flags = flags;
+				let Some(run) = h.pumps.run.as_mut().filter(|r| shown && r.stage == Stage::Ready) else {
+					return h.pump_publish();
+				};
+				let hurts = |m: &PlannedMove| facts().move_joints(m.r#move).iter().any(|j| h.pumps.flags.contains(j));
+				let rested: Vec<usize> = (run.current..run.moves.len()).filter(|&i| hurts(&run.moves[i])).collect();
+				let shown_left = rested.first() == Some(&run.current);
+				if !rested.is_empty() {
+					log::info!("pump {id}: {} moves rest for the pain flagged", rested.len());
+				}
+				for &i in rested.iter().rev() {
+					run.leave_catch_up(i);
+				}
+				if shown_left {
+					h.pump_after_leaving();
+				} else {
+					h.pump_swaps();
+					h.pump_publish();
+				}
+			},
+		);
+		self.pump_publish();
 	}
 
 	/// An end that waits for the engine (`Held`, done by `pump_unhold` once it answers): while it checks or judges a
@@ -3790,8 +3986,9 @@ impl Helper {
 	/// row sets): an app pump writes its own running timed move's or its waiting pose's row with the unwell reason,
 	/// else the pump banked with it (a running rider's time counts as ran, its riders done paid with no lock of their
 	/// own); a catch-up's stop goes with its moves. A match pump's Bank the rest on a rider (`Stop::Rest`) ends it as
-	/// done with its Result (slice 61, the game's `Lc.Finish("rest")`). A pump left with no move run,
-	/// and a catch-up left at Bank the rest with its moves done paid, leave the screen with no calm card (Rapha,
+	/// done with its Result (slice 61, the game's `Lc.Finish("rest")`). A pump left with no move run, at Bank the rest too
+	/// (its own moves all ended too short: the game's `Lc.Bank` closes it, `Lc.Finish("banked")`), and a catch-up left at
+	/// Bank the rest with its moves done paid, leave the screen with no calm card (Rapha,
 	/// 2026-10-28: Bank the rest says it already). While the engine checks or judges a rider's count (or a kept move's
 	/// set) the end waits until the count is a set or stays on its step (`Held`, `pump_stop_held`).
 	fn pump_stop(&mut self, why: Stop) -> Result<(), String> {
@@ -3801,7 +3998,7 @@ impl Helper {
 		let now = lan::now_ms();
 		// a move the computer slept through counts none of it
 		self.pump_slept(now);
-		// a hold saved or saving its seconds is written as its landing would write it (slice 65); only Back drops it
+		// a move whose count or seconds were saved is written as its pour's landing would (slice 65); only Back drops it
 		let poured = self.pump_pour_left((why == Stop::Unwell).then_some(UNWELL));
 		let run = self.pumps.run.as_mut().filter(|r| r.running()).ok_or("no pump runs")?;
 		// an app pump's counted set left at its ask: done with no count and Form slipped, once it ended (below); felt
@@ -3877,7 +4074,7 @@ impl Helper {
 			self.pump_write(result, Recorded::Counted(0, answer::SLIPPED));
 		}
 		let run = self.pumps.run.as_mut().ok_or("no pump")?;
-		let leaves = why == Stop::Left && (run.ran.is_empty() || !run.what.app());
+		let leaves = matches!(why, Stop::Left | Stop::Rest) && (run.ran.is_empty() || !run.what.app());
 		match why {
 			Stop::Unwell => {
 				run.unwell = true;
@@ -4498,14 +4695,19 @@ impl Helper {
 				super::reel::cancel(&self.app);
 			}
 			self.hold_sound(running);
-			// Your setup and Backup say whether a pump is on screen
-			self.publish_setup();
+			// Backup says whether a pump is on screen
 			self.publish_backup();
 			// the game's save folds again for the sheet the app shows once the pump ended (`home_ask` holds that fold
 			// back while a pump runs)
 			if !running {
 				self.home_stale();
 			}
+		}
+		// Your setup says whether a change waits for the next pump (its `pump_on`)
+		let waits = running && !self.pump_refits();
+		if waits != self.pumps.setup_waits {
+			self.pumps.setup_waits = waits;
+			self.publish_setup();
 		}
 		let free = !running && self.pump_gate().is_none();
 		let tray = (running, free, !running && self.catch_up_gate().is_none() && topic.owed > 0);
@@ -4515,6 +4717,15 @@ impl Helper {
 			let _ = self.app.run_on_main_thread(move || draw_tray(&handle, tray));
 		}
 	}
+}
+
+/// What moves an app pump on its Ready view (`Helper::pump_refit`): the player's Pain, the joints to flag (Pause's
+/// Something hurts); Your setup's profile (the place, the Body switches, the moves left out or checked); or the pain
+/// flags Your setup set, against those the pump knew.
+enum Refit {
+	Pain(Vec<u8>),
+	Profile,
+	Flags(Vec<u8>),
 }
 
 /// How a pump ends early.

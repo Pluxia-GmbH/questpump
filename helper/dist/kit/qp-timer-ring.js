@@ -7,10 +7,13 @@
 // the seconds run, m:ss, counting up to the full move's total, the arc the time left to it) | hold {elapsed, goal?,
 // record?} (the time held, its goal or record under it) | count {reps, goal?, word?} (a set of reps the voice counts:
 // the reps counted, "goal 16+" or else its word under them, the arc filling toward the goal; 2026-10-13) | reps {goal}
-// ("16+" over goal) | word {word} | pour {clock, share, caption?, chip} (a hold's saved seconds pouring out of it, slice
-// 65: the seconds landed, the arc the share still to pour, the gold New record chip once past the record)}, its seconds
-// from Rust's absolute instants each frame; `go` shows "Go" alone for a move's first second. Read as one: the digit, the seconds left, run or held with the goal or the record, the reps
-// counted with the goal or the word, or the goal.
+// ("16+" over goal) | word {word} | entry {text, unit, share, chip} (the count set on the dial at Done, slice 66: the
+// Stepper's value over its unit, the arc the count's share of the goal, the gold New record chip past the record) |
+// pour {clock, seconds, share, caption?, chip} (a move's saved count pouring out of it, slices 65 and 66: the count
+// landed, m:ss where it is `seconds`, the arc the share still to pour, the gold New record chip once past the
+// record)}, its seconds from Rust's absolute instants each frame; `go` shows "Go" alone for a move's first second. Read
+// as one: the digit, the seconds left, run or held with the goal or the record, the reps counted with the goal or the
+// word, the count set, or the goal.
 
 import {t} from "../lib/copy.js";
 import {clock, LOCALE} from "../lib/format.js";
@@ -70,6 +73,7 @@ class QpTimerRing extends KitElement {
 				return against ? Math.min(1, m.elapsed / against) : 1;
 			}
 			case "count": return m.goal ? Math.min(1, m.reps / m.goal) : 1;
+			case "entry":
 			case "pour": return Math.min(1, Math.max(0, m.share));
 			default: return 1;
 		}
@@ -89,7 +93,11 @@ class QpTimerRing extends KitElement {
 			case "countdown": return m.digit > 0 ? String(m.digit) : t("kit.sweep.go");
 			case "timed": return seconds(Math.ceil(m.left));
 			case "up": return seconds(Math.floor(Math.min(m.total, m.elapsed)));
-			case "pour": return m.chip ? `${seconds(m.clock)}, ${t("kit.reward.tag.record")}` : seconds(m.clock);
+			case "pour": {
+				const landed = m.seconds ? seconds(m.clock) : t("log.reps", {count: m.clock});
+				return m.chip ? `${landed}, ${t("kit.reward.tag.record")}` : landed;
+			}
+			case "entry": return m.chip ? `${m.text} ${m.unit}, ${t("kit.reward.tag.record")}` : `${m.text} ${m.unit}`;
 			case "hold": {
 				const held = seconds(Math.floor(m.elapsed));
 				const against = m.goal ? t("kit.sweep.goal.spoken", {count: m.goal})
@@ -124,8 +132,11 @@ class QpTimerRing extends KitElement {
 			small = m.goal ? t("kit.sweep.goal", {time: clock(m.goal)})
 				: m.record ? t("kit.sweep.record", {count: m.record}) : "";
 		} else if (m.kind === "pour") {
-			big = clock(m.clock);
+			big = m.seconds ? clock(m.clock) : NUMBER.format(m.clock);
 			small = m.caption ?? "";
+		} else if (m.kind === "entry") {
+			big = m.text;
+			small = m.unit;
 		} else if (m.kind === "count") {
 			big = NUMBER.format(m.reps);
 			small = this.countUnder();
@@ -138,7 +149,7 @@ class QpTimerRing extends KitElement {
 		this.clockEl.hidden = !big || Boolean(word);
 		if (this.caption.textContent !== small) this.caption.textContent = small;
 		this.caption.hidden = !small || Boolean(word);
-		this.chip.hidden = !(m.kind === "pour" && m.chip);
+		this.chip.hidden = !((m.kind === "pour" || m.kind === "entry") && m.chip);
 		const said = this.spoken();
 		if (this.getAttribute("aria-label") !== said) this.setAttribute("aria-label", said);
 	}

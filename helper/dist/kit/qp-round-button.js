@@ -1,9 +1,9 @@
 // RoundButton: a 40 circle (36 in a pump, `small`) of card with a line edge and its glyph in text2, named for a screen
 // reader: the gear that opens the Menu, a page's way back, a pump's other choices ("···"), a window's close, Share and
 // the coach's flag, the streak page's earlier and later month (slice 51), a Carousel's previous and next (a chevron
-// each way) and Pump home's place button (2026-11-03: the place in use's own glyph, contract/places.json `glyphs`),
-// which `spoken` alone names; `spoken` names the others where their glyph's name says too little (the Saga's Week
-// tile's Share week). Hover lifts it, a press darkens it.
+// each way), the Book's search (Moves, 2026-11-04) and Pump home's place button (2026-11-03: the place in use's own
+// glyph, contract/places.json `glyphs`), which `spoken` alone names; `spoken` names the others where their glyph's name
+// says too little (the Saga's Week tile's Share week). Hover lifts it, a press darkens it.
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, h} from "./element.js";
@@ -14,6 +14,7 @@ const ICONS = {
 	more: {label: () => t("kit.more")},
 	close: {glyph: "mark_close", label: () => t("common.close")},
 	share: {glyph: "mark_share", label: () => t("kit.share")},
+	search: {glyph: "mark_search", label: () => t("ladders.search")},
 	report: {glyph: "mark_report", label: () => t("coach.report.label")},
 	earlier: {label: () => t("pump.streak.month.earlier")},
 	later: {label: () => t("pump.streak.month.later")},

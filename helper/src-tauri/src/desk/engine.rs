@@ -40,9 +40,9 @@
 //! ids: the game's save's pain flags). Every fold sets it and every merge keeps it current: the same door job asks
 //! `gameFlags` after the merge (`Engine::game_flags`). The engine's own rows reach it once the session keeps them
 //! (`Session::keep_computer`'s effects through `Helper::apply`: a merge of no rows then answers what the engine's
-//! writes changed). Its readers: DESK-PUMP's joint picker and Pump home's check-in window name a joint flagged in
-//! `game_flags` "flagged in the game" (the phones' `JointPicker`), and DESK-MENU's Your setup does the same in its pain
-//! list (the phones' `PainSection`); none runs a call for them. Your setup's experience lock is the summary's (any
+//! writes changed). Its readers: Pump home's check-in window names a joint flagged in `game_flags` "flagged in the
+//! game" (the phones' `JointPicker`), and DESK-MENU's Your setup does the same in its pain list (the phones'
+//! `PainSection`); none runs a call for them (a pump's Something hurts lists only the joints not flagged). Your setup's experience lock is the summary's (any
 //! ladder holds a rung, the phones' `FreeMode.started`). Each fold and merge that lands asks Your setup's look again
 //! (`Helper::setup_look`), so its pain flags, focus and start rungs follow every row. A view that needs the flags at
 //! the instant of a call asks `Engine::game_flags` through `Helper::engine_call`.
@@ -277,7 +277,8 @@ impl Helper {
 
 	/// The body, this computer's place, its favourites or its title changed: the engine takes the profile they make now
 	/// (nothing when it is the one it has; before the engine's start its `init` takes the profile as it stands then),
-	/// and the Book, Your setup, Pump home and Hero read it again.
+	/// the Book, Your setup, Pump home and Hero read it again, and where what the pumps' filters read changed
+	/// (`filtered`) the pump on its Ready view is composed again or refit after it (`setup_refilter`).
 	pub(crate) fn profile_changed(&mut self) {
 		if self.engine.profile.is_none() || self.engine.state == EngineState::Failed {
 			return;
@@ -286,6 +287,7 @@ impl Helper {
 		if self.engine.profile.as_ref() == Some(&profile) {
 			return;
 		}
+		let refilter = self.engine.profile.as_ref().is_some_and(|before| filtered(before) != filtered(&profile));
 		self.engine.profile = Some(profile.clone());
 		self.engine_call(
 			move |engine| engine.set_profile(&profile),
@@ -299,6 +301,9 @@ impl Helper {
 		self.book_refresh();
 		self.setup_look();
 		self.home_stale();
+		if refilter {
+			self.setup_refilter(true);
+		}
 	}
 
 	/// The engine's start, once the session is open: a new player's engine with this computer's profile and `STAMP`,
@@ -476,4 +481,18 @@ impl Helper {
 			},
 		);
 	}
+}
+
+/// What of a profile makes the pump on its Ready view (the game's `filterKey`, Events.lua: the place's gear, floor
+/// moves, room and quiet, the Body switches, the moves left out and the opt-in moves checked; and the experience, whose
+/// start rungs a pump not started is composed from, as Your setup shows no wait for it over that pump); the favourites,
+/// the title and "Moves per match" move no pump on screen.
+fn filtered(p: &Profile) -> (&[String], [bool; 6], &Exclusions, &[u16], &str) {
+	(
+		&p.gear,
+		[p.floor, p.space, p.quiet, p.no_jump, p.no_strain, p.no_head_down],
+		&p.exclude,
+		&p.include,
+		&p.experience,
+	)
 }

@@ -14,7 +14,11 @@
 // RoundButton's size beside the value with no unit (the row names it), which steps through `steps` where it has them
 // (a list, ascending: its ends are the least and the most) and shows as its page's words where it has them (`text`,
 // read as the value too), the value and its keys named by the page (`label`, `less-label`, `more-label`). `none` is
-// what a 0 is (a counted set's "Not counted", 2026-10-23): it shows a dash and reads as those words.
+// what a 0 is (a counted set's "Not counted", 2026-10-23): it shows a dash and reads as those words. On the dial
+// (slice 66: the pump's count set on its TimerRing at Done, `ring`, given before it is built) the ring is its value,
+// − and + at its sides: the ring's face shows the value over its unit, its arc the value's share of `against` (the
+// goal, else the record; full for any count without one), and its gold chip takes the record chip's place; the wheel
+// steps it too.
 
 import {t} from "../lib/copy.js";
 import {kg} from "../lib/format.js";
@@ -22,6 +26,14 @@ import {KitElement, define, emit, h} from "./element.js";
 
 /** The computer's decimal separator, which the kg box shows a typed point as (half a kg, in kg, without its digits). */
 const POINT = kg(5).replace(/\d/g, "");
+
+/** A count's unit in words: its seconds (`seconds`) or its reps, one or more. */
+export function countUnit(value, seconds) {
+	return seconds ? t(value === 1 ? "kit.second" : "kit.seconds") : t(value === 1 ? "kit.rep" : "kit.reps");
+}
+
+/** The wheel's travel one step takes on the dial (px; a line's travel, `deltaMode` 1, counts as one step). */
+const WHEEL_STEP = 40;
 
 /** Typed kg ("12", "12.", "12.55") in tenths of a kg, to the nearest tenth (a second decimal of 5 or more rounds up);
  * none for nothing typed. */
@@ -37,8 +49,13 @@ class QpStepper extends KitElement {
 		this.more = h("button", {type: "button", class: "qp-step-key", text: "+", "on:click": () => this.step(1)});
 		this.number = h("span", {class: "qp-type-num-count"});
 		this.unitWord = h("span", {class: "qp-type-caps"});
+		if (this.ring) this.ring.setAttribute("aria-hidden", "true");
 		this.control = h("div", {class: "qp-step-value", role: "spinbutton", tabindex: "0",
-			"on:keydown": (e) => this.key(e)}, this.number, this.unitWord);
+			"on:keydown": (e) => this.key(e)}, ...(this.ring ? [this.ring] : [this.number, this.unitWord]));
+		if (this.ring) {
+			this.wheeled = 0;
+			this.addEventListener("wheel", (e) => this.wheel(e), {passive: false});
+		}
 		this.chip = h("qp-chip", {state: "record", label: t("kit.toast.record")});
 		this.append(h("div", {class: "qp-stepper-row"}, this.less, this.control, this.more), this.chip);
 		/** The kg mode's characters as typed, shown until a step, a clamp or a new value replaces them. */
@@ -137,6 +154,17 @@ class QpStepper extends KitElement {
 		this.update();
 	}
 
+	/** The wheel on the dial: up one step per `WHEEL_STEP` of travel up, down per one down. */
+	wheel(e) {
+		e.preventDefault();
+		this.wheeled += e.deltaMode === 0 ? e.deltaY : Math.sign(e.deltaY) * WHEEL_STEP;
+		while (Math.abs(this.wheeled) >= WHEEL_STEP) {
+			const by = this.wheeled > 0 ? -1 : 1;
+			this.wheeled += by * WHEEL_STEP;
+			this.step(by);
+		}
+	}
+
 	key(e) {
 		if (e.key === "ArrowUp" || e.key === "ArrowRight") this.step(1);
 		else if (e.key === "ArrowDown" || e.key === "ArrowLeft") this.step(-1);
@@ -159,8 +187,7 @@ class QpStepper extends KitElement {
 		const blank = value === 0 && Boolean(this.none);
 		const unit = this.text || this.compact || blank ? ""
 			: this.unitOne && this.unitOther ? (value === 1 ? this.unitOne : this.unitOther)
-				: this.unit === "seconds" ? t(value === 1 ? "kit.second" : "kit.seconds")
-					: t(value === 1 ? "kit.rep" : "kit.reps");
+				: countUnit(value, this.unit === "seconds");
 		this.number.textContent = this.text ?? (blank ? "–" : String(value));
 		this.unitWord.textContent = unit;
 		this.unitWord.hidden = !unit;
@@ -169,7 +196,12 @@ class QpStepper extends KitElement {
 		this.control.setAttribute("aria-valuemin", String(least));
 		if (this.most !== null || this.steps.length) this.control.setAttribute("aria-valuemax", String(most));
 		this.control.setAttribute("aria-valuetext", this.text ?? (blank ? this.none : `${value} ${unit}`.trim()));
-		this.chip.hidden = this.record === null || value <= this.record;
+		const passed = this.record !== null && value > this.record;
+		this.chip.hidden = !passed || Boolean(this.ring);
+		if (this.ring) {
+			const share = this.against ? value / this.against : value > 0 ? 1 : 0;
+			this.ring.mode = {kind: "entry", text: this.number.textContent, unit, share, chip: passed};
+		}
 	}
 
 	/** The minus and the plus disabled at their ends; a key that disables while it holds the focus hands it to the
@@ -199,4 +231,4 @@ class QpStepper extends KitElement {
 
 define("qp-stepper", QpStepper, {value: Number, least: Number, most: Number, record: Number, unit: String,
 	"unit-one": String, "unit-other": String, decimal: Boolean, first: Number, stride: Number, compact: Boolean,
-	text: String, label: String, "less-label": String, "more-label": String, none: String});
+	text: String, label: String, "less-label": String, "more-label": String, none: String, against: Number});

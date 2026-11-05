@@ -30,6 +30,7 @@ pub(crate) struct Constants {
 	pub match_relaunch_s: i64,
 	pub match_sat_min: i64,
 	pub match_step_min: i64,
+	pub match_short_min: i64,
 	pub match_away_s: i64,
 	pub remind_cap: u32,
 	pub remind_cap_max: u32,

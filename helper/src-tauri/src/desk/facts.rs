@@ -363,9 +363,14 @@ pub(crate) struct Constants {
 	pub(crate) cardio_full_days: i64,
 	pub(crate) star_fractions: Vec<f64>,
 	pub(crate) timed_ask_share: f64,
+	/// A count the app counted (a hold's stopwatch, a set of reps' counted reps or the number it has to beat where that
+	/// is higher) takes at most this share more (slice 66, `CountStep::cap`).
+	pub(crate) count_over_share: f64,
 	/// A move ended under these reps or seconds counts nothing and is banked without a word (`Helper::pump_short`).
 	pub(crate) min_reps: i64,
 	pub(crate) min_seconds: i64,
+	/// A saved move's result holds this long before the next move goes on by itself (`Pour::goes_on_at`).
+	pub(crate) record_hold_s: f64,
 	pub(crate) mark_s: i64,
 	pub(crate) mark_to: i64,
 	pub(crate) mark_voice_s: i64,

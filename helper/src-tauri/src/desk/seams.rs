@@ -185,6 +185,33 @@ impl Helper {
 		self.pump_make_way()
 	}
 
+	/// A setup change reaches the pump on screen at once (`setup_refilter`): an app pump waiting on its Ready view,
+	/// whose Settings opens Your setup over it; Your setup says a change waits for the next pump only while a pump runs
+	/// that it does not reach whole (a catch-up's, which takes the pain flags alone). Owner: DESK-PUMP (`desk/pump.rs`). Caller: Your setup
+	/// (`menu_pages/setup.rs`).
+	pub(crate) fn desk_pump_refits(&self) -> bool {
+		self.pump_refits()
+	}
+
+	/// What makes the pump on its Ready view changed (the game's refilter, Events.lua `filterKey`): the profile's or the
+	/// focus (`profile`: the place's gear, floor moves, room and quiet, the Body switches, the moves left out or checked,
+	/// the experience, the focus) or the pain flags Your setup set: an app pump waiting on its Ready view is composed
+	/// again while no move of it ended, else refit from its move on, as its Pain does; a catch-up's on its Ready view
+	/// rests the moves the flags load (`pump_setup_refit`). Owner: DESK-PUMP (`desk/pump.rs`). Callers: the engine's
+	/// profile (`desk/engine.rs` `profile_changed`), Your setup's pain and focus (`menu_pages/setup.rs`).
+	pub(crate) fn setup_refilter(&mut self, profile: bool) {
+		self.pump_setup_refit(profile);
+	}
+
+	/// A pump's Pause menu paused the offers (`pump.pause`, the game's Pause: how long): the pause `kind` names set and
+	/// the Games tab and the tray drawn again, or why none was, nothing changed (`offers_paused`). Owner: DESK-GAMES
+	/// (`desk/offers.rs`). Caller: DESK-PUMP (`desk/pump.rs` `pump_pause`).
+	pub(crate) fn pause_offers(&mut self, kind: &str) -> Result<(), String> {
+		self.offers_paused(kind)?;
+		self.show_games();
+		Ok(())
+	}
+
 	/// A pump is being made on this computer (the engine composes or doses it, a match pump's riders among them): the
 	/// reminder offer waits as it waits while one runs. Owner: DESK-PUMP (`desk/pump.rs`). Callers: the reminders
 	/// (`desk/reminders.rs` `publish_reminders`), the socket's quit and restart and the update's install

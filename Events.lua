@@ -276,8 +276,8 @@ function Lc.OweOpen(p, ts)
 		if not p.results[i] then
 			local pend = performed and i == p.index and (p.longerAsk or p.pour) and p.pending
 			if pend then
-				-- a hold left at "Could you have held longer?": its typed set, no answer; a hold whose seconds still
-				-- pour (slice 65): saved as its landing would (Lc.Commit's row, its answer kept); only Back drops it
+				-- a hold left at "Could you have held longer?": its typed set, no answer; a move that still pours
+				-- (slices 65 and 66): saved as its landing would (Lc.Commit's row, its answer kept); only Back drops it
 				Lc.WriteResult(p, i, pend.outcome, pend.value, pend.confirmed, p.pour and pend.answer or nil, pend.load)
 			elseif performed and i == p.index then -- its count never typed: done, a timed move with its seconds
 				Lc.WriteResult(p, i, O.done,
@@ -803,7 +803,7 @@ local function toReady(p)
 	p.view, p.state, p.goAt = "ready", "open", nil
 	p.runStart, p.paused, p.pausedAt, p.elapsed, p.limit, p.side, p.sides = nil, nil, nil, nil, nil, nil, nil
 	p.pending, p.really, p.reallyLoad, p.reallyCheck, p.asking, p.marking = nil, nil, nil, nil, nil, nil
-	p.pacing, p.reallyAnswer, p.keep, p.longerAsk, p.pours, p.pour = nil, nil, nil, nil, nil, nil
+	p.pacing, p.reallyAnswer, p.keep, p.longerAsk, p.pour = nil, nil, nil, nil, nil
 	-- a move banked too short ended too: a recompose would bring it back beside its owed row
 	p.started = next(p.results) ~= nil or p.shortBanked ~= nil or p.shortRiders ~= nil
 end
@@ -815,7 +815,7 @@ local function backToReady(p)
 end
 
 -- The Back button (David, 2026-10-05: "there needs to be a back button"), in the countdown, while the move runs and on
--- the result view until its count is saved (a hold's while its seconds pour, slice 65); a saved count is corrected with
+-- the result view until its count is saved (while it pours, slices 65 and 66); a saved count is corrected with
 -- /qp undo.
 function Lc.Back()
 	local p = Lc.pump
@@ -931,12 +931,61 @@ function Lc.HeldCount(p, slot)
 	return seconds
 end
 
--- Whether a hold's Done saves its stopwatch's seconds with no count step (slice 65, Rapha, 2026-11-03): a hold of a
--- pump (never /qp try's, which stores nothing) whose stopwatch ran its share (Lc.HeldCount) and min_seconds (a first
--- max set under them, which Lc.Done never banks, asks its count).
-local function savesSeconds(p, slot)
-	return slot.kind == K.hold and not slot.practice and p.kind ~= "practice" and p.elapsed >= C.min_seconds
-		and Lc.HeldCount(p, slot) ~= nil
+-- What the app counted of the move that just ended, where its count step starts: a hold's stopwatch (Lc.HeldCount), a
+-- set of reps' count of the reps the figure ended by Done (Speech.RepCount; David, 2026-10-13: "prefill the rep count
+-- after done press"), each on the run's own clock, so a side move's is its weaker side's (p.elapsed, its shorter run);
+-- nil where nothing counted it (a counted set, the count reps switch off, no figure pack, an empty stopwatch).
+function Lc.CountedBy(p, slot)
+	local n
+	if slot.kind == K.hold and not slot.counted then
+		n = Lc.HeldCount(p, slot)
+	elseif slot.kind == K.rep then
+		local plan = ns.Speech.RepCount(slot)
+		n = plan and ns.Speech.RepsBy(plan, p.elapsed or 0)
+	end
+	return n and n > 0 and n or nil
+end
+
+-- The most the count step takes (slice 66; Rapha, 2026-11-04: "dont allow it to do more than 50% more of what the app
+-- counted"; David, 2026-11-04, of a fast honest set the figure counts short: "you fix and decide on the best"). A
+-- hold's count is its stopwatch, real time: what the app counted (Lc.CountedBy) times 1 + count_over_share, rounded
+-- down. A set of reps' count runs at the figure's pace, far slower than a fast honest set: that share of the higher of
+-- it and the number the set has to beat, the higher of the goal the dial's ring is held against and the record at the
+-- weight `load` (Lc.BestAt), since a repeat's goal sits under the record and a count past it is always one; with
+-- neither, or on a first max set or a placement (ns.FirstMaxSet), whose count is the player's baseline, no share at
+-- all. Done before the first rep ended counted nothing, as an empty stopwatch does, so the player's word stands. Never
+-- under the least a set counts (min_reps, a hold's min_seconds: a cap under it would make every count short,
+-- ns.ShortCount) and never over one set's most (ns.CountMax), which a count the app did not
+-- count keeps. Returns the most and, where the share passes that least and stays under one set's most (the dial's line
+-- names the share, so it says why + stopped there only then, Panel.lua), what set it: the count it came from, or nil
+-- and the number to beat; never a lower bound.
+function Lc.CountMost(p, slot, load)
+	local most, counted = ns.CountMax(slot), Lc.CountedBy(p, slot)
+	if not counted then return most end
+	local hold = slot.kind == K.hold
+	local beat
+	if not hold and not ns.FirstMaxSet(ns.state, slot) then
+		local goal, best = ns.SlotGoal(slot), Lc.BestAt(slot, load)
+		beat = goal and best and math.max(goal, best) or goal or best
+	end
+	if not (hold or beat) then return most end
+	local share = math.floor(math.max(counted, beat or 0) * (1 + C.count_over_share))
+	local least = hold and C.min_seconds or C.min_reps
+	local cap = math.max(share, least)
+	if cap >= most then return most end
+	if share <= least then return cap end
+	if beat and beat > counted then return cap, nil, beat end
+	return cap, counted
+end
+
+-- The record a count of `slot`'s is held against (slice 66: the dial's ring, the pour's best post, its chip and its
+-- jingle): on a loaded move with a weighted record the reps that record makes at the weight `load` (tenths of a kg),
+-- as ns.Validate and ns.Classify read it, else its best; nil without one.
+function Lc.BestAt(slot, load)
+	local best = ns.Record(ns.state, slot.move)
+	local topLoad, topReps = ns.LoadRecord(ns.state, slot.move)
+	if best and load and load > 0 and topLoad then return ns.RepsAt(ns.LoadScore(topLoad, topReps), load) end
+	return best
 end
 
 -- Done (the button, Enter, or Escape while a move runs); timeUp when a timed move ran its full time. A side move's
@@ -971,7 +1020,7 @@ function Lc.Done(timeUp)
 	local timed = slot.kind == K.cardio or slot.kind == K.flow
 	-- a timed move or a hold ended under min_seconds (a hold's weaker side, a timed move's two sides summed) counts
 	-- nothing: banked without a word (Lc.ShortBank), never in /qp try, which stores nothing; a hold's first max set goes
-	-- on to its count, whose Back undoes a Done pressed by mistake (ns.FirstMaxSet, savesSeconds)
+	-- on to its count, whose Back undoes a Done pressed by mistake (ns.FirstMaxSet)
 	if not timeUp and slot.kind ~= K.rep and p.kind ~= "practice" and not slot.practice
 		and p.elapsed < C.min_seconds and not (slot.kind == K.hold and ns.FirstMaxSet(ns.state, slot)) then
 		return Lc.ShortBank()
@@ -980,7 +1029,7 @@ function Lc.Done(timeUp)
 	-- just where Done ended it between its plan and 45 s (the steady ledger reads both as answers, DB.lua steadyRow)
 	if p.keep and p.elapsed >= (slot.seconds or 0) then
 		p.pending = { outcome = O.done, value = math.floor(p.elapsed), answer = timeUp and E.pace.easily or E.pace.just }
-		Lc.Commit()
+		Lc.Save()
 		return
 	end
 	-- ended before timed_ask_share of its seconds (both sides' on a side move), it asks once whether the whole move was
@@ -1000,26 +1049,21 @@ function Lc.Done(timeUp)
 	if timed and timeUp and markAsks(p, slot) then return askMark(p) end
 	if timed and timeUp and paceAsks(p, slot) then return askPace(p) end
 	if timed then
-		-- later, it is recorded at once with the clock's seconds, as one that ran its time is with its whole seconds
+		-- later, it is saved at once with the clock's seconds, as one that ran its time is with its whole seconds
 		p.pending = timedResult(p, slot, timeUp)
-		Lc.Commit()
+		Lc.Save()
 		return
 	end
+	-- a set of reps or a hold asks its count on the dial (slice 66), from what the app counted (Lc.CountedBy): a hold's
+	-- stopwatch stops only once the player reaches Done, so nothing saves here (David, 2026-11-04: "it takes time to
+	-- stand up"; Done saved a hold's seconds with no step from slice 65 until then)
 	p.pending = nil
-	-- a hold that ran its share saves its seconds as if typed (slice 65): "Is that right?" and "Could you have held
-	-- longer?" still ask where they do, then the seconds pour (Lc.Enter); a count over one set's most opens the count
-	-- step with it, as one typed there does
-	if savesSeconds(p, slot) then
-		p.pours, p.state = true, "result" -- Lc.Enter reads the result view; each of its ways announces it
-		if Lc.Enter(Lc.HeldCount(p, slot)) == "max" then setState(p, "result") end
-		return
-	end
 	setState(p, "result")
 end
 
--- A typed count (the rep box's Enter, the spinner's Record, the "Really?" row's Yes), recorded at once (David,
+-- A count saved (the dial's Save or Enter, the "Really?" row's Yes; Panel.lua RecordInput), recorded at once (David,
 -- 2026-10-04: "let people type and that's it"; a stopped-because row asked why below the goal until then), with the
--- weight box's `load` on a loaded move (tenths of a kg, nil: none). Returns "max" when the box asks for one set or a
+-- weight box's `load` on a loaded move (tenths of a kg, nil: none). Returns "max" for a count over one set or a
 -- weight past load_max_kg, "really" when the "Really?" row asks about a count far above or far below the record or a
 -- weight far over the planned one (ns.Validate's answer kept as p.reallyCheck for its words; the same count and weight
 -- again keep them, stored as typed and marked confirmed), or nothing once the move is recorded.
@@ -1072,7 +1116,7 @@ function Lc.Whole(all)
 	if all and markAsks(p, slot) then return askMark(p) end
 	if all and paceAsks(p, slot) then return askPace(p) end
 	p.pending = timedResult(p, slot, all)
-	Lc.Commit()
+	Lc.Save()
 end
 
 -- The answer to "How close to the goal pose?" (ns.Enum.mark; David, 2026-10-09: "Maybe 4 options or so on how well the
@@ -1087,7 +1131,7 @@ function Lc.Mark(answer)
 	p.marking = nil
 	p.pending = timedResult(p, slot, true)
 	p.pending.answer = answer
-	Lc.Commit()
+	Lc.Save()
 end
 
 -- The answer to "Did you keep that pace to the end?" (ns.Enum.pace, slice 42, 2026-10-17; three answers since slice
@@ -1101,7 +1145,7 @@ function Lc.Pace(answer)
 	p.pacing = nil
 	p.pending = timedResult(p, slot, true)
 	p.pending.answer = answer
-	Lc.Commit()
+	Lc.Save()
 end
 
 -- The answer to "Could you have held longer?" (ns.Enum.longer, slice 52): the hold recorded as typed, the answer in its
@@ -1125,7 +1169,7 @@ end
 -- the XP is the same whatever it is). Returns "max", "really", or nothing once recorded.
 function Lc.Counted(value, answer)
 	local p = Lc.pump
-	if not p or p.state ~= "result" or p.committed or p.asking then return end
+	if not p or p.state ~= "result" or p.committed or p.asking or p.pour then return end
 	local slot = p.moves[p.index]
 	if not slot.counted then return end
 	value = (value or 0) > 0 and value or nil
@@ -1146,7 +1190,7 @@ function Lc.Counted(value, answer)
 		answer == E.answer.slipped and "form slipped" or answer == E.answer.notAllOut and "not all out" or "clean",
 		tostring(value or "none"))
 	p.pending = { outcome = outcome, value = stored, confirmed = confirmed or nil, answer = answer }
-	Lc.Commit()
+	Lc.Save()
 end
 
 -- "Change it" on the "Really?" row: the count it asked about goes, nothing written.
@@ -1188,7 +1232,7 @@ end
 -- move's kept pace). Returns what the rows earned on the sheet (the XP and stat gains, the titles), which the Result
 -- view's Rewards section fills in, the cardio day the set brought (ns.CardioDay: the fold marks the row, DB.lua
 -- cardioMove), read before a climb its rung rows make resets the counts, or nil, the set's row as the fold left it and
--- what it moved (ns.Progression's events: a hold's pour reads its day at the top and its step-up, slice 65).
+-- what it moved (ns.Progression's events: the pour reads its day at the top and its step-up, slices 65 and 66).
 function Lc.WriteResult(p, i, outcome, value, confirmed, answer, load)
 	local slot = p.moves[i]
 	p.results[i] = outcome
@@ -1231,6 +1275,16 @@ local function earnedXP(earned)
 	return xp
 end
 
+-- The move goes on by itself record_hold_s from now, a set saved with no pour's from its save and a pour's once its
+-- rows are in (Rapha, 2026-11-04: "yes try for now with auto progress"), and never under a window: while a hold stands
+-- (the game menu and what it opens, the addon's own windows, a popup, Lc.Hold) or QuestPump's own menu is open nothing
+-- runs, and the set's draw once the view is the player's again (a hold's end, a fight's end, the menu's close:
+-- Panel.lua renderResult) starts a whole record_hold_s (David, 2026-11-04: "yes and yes", QA-8). Next goes at once.
+function Lc.GoOn()
+	if T.active("advance") or next(Lc.holds) or ns.Menu.Shown() then return end
+	after("advance", C.record_hold_s, function() Lc.Next() end)
+end
+
 -- Records the pending result and moves on after record_hold_s, so the recorded set is read: its outcome, its Rewards
 -- rows, a loaded move's next weight and a timed move's "Finished: 60 s · +12 XP" (David, 2026-10-01: a countdown
 -- "simply disappeared without further feedback"). Every set holds: a set to a goal, a timed move, and a max set, the
@@ -1258,28 +1312,37 @@ function Lc.Commit()
 		p.last.nextLoad, p.last.nextTarget = ns.NextLoad(ns.state, slot.move, ns.now(),
 			ns.FilterContext(ns.profile, ns.state).gear)
 	end
-	-- a hold's pour waits for Next once its rows are in (slice 65: no move on by itself)
-	if not p.pour then after("advance", C.record_hold_s, function() Lc.Next() end) end
+	-- a move that poured goes on once its rows are in (Panel.lua Pour.showRows), the same hold after them
+	if not p.pour then Lc.GoOn() end
 	setState(p, "result")
 end
 
--- Saves the pending result: a hold whose Done saved its seconds (p.pours) pours them first (slice 65, Rapha,
--- 2026-11-03: "the seconds should collect into a bar that shows the hold against its step"), its row written when the
--- pour lands (Lc.Land), so Back while it pours saves nothing; `p.pour` keeps the seconds and the record before them,
--- which the bar's best post and the record's jingle read. With the game's reduced motion (Tree.Moving) there is no
--- pour: it lands at once.
+-- Saves the pending result: every move's count pours first (slice 65's hold, Rapha, 2026-11-03: "the seconds should
+-- collect into a bar that shows the hold against its step"; every move since slice 66, Rapha, 2026-11-04: "so the
+-- collect animation for all moves"), a set of reps' reps, a hold's seconds, a counted set's clean count, a timed move's
+-- seconds, its row written when the pour lands (Lc.Land), so Back while it pours saves nothing; `p.pour` keeps the
+-- count, whether it is a timed move's seconds, the record before it (Lc.BestAt) and whether it beat it, which the
+-- bar's best post and the record's jingle read. A count of 0 and no count (Could not do one, a counted set not
+-- counted) pour nothing, nor does /qp try, which stores nothing; a move ended too short never comes here
+-- (Lc.ShortBank). With the game's reduced motion (Tree.Moving) there is no pour: it lands at once.
 function Lc.Save()
 	local p = Lc.pump
 	if not p or not p.pending or p.committed or p.pour then return end
-	if not p.pours then return Lc.Commit() end
-	local slot = p.moves[p.index]
-	p.pour = { value = p.pending.value, best = ns.Record(ns.state, slot.move), beat = p.pending.outcome == O.beat }
-	ns.Log("I", "pump %d: %s, %d s pour", p.id, ns.Library[slot.move].key, p.pending.value)
+	local slot, value = p.moves[p.index], p.pending.value
+	if p.kind == "practice" or slot.practice or not value or value <= 0 then return Lc.Commit() end
+	-- what was saved pours in its own unit: a timed move's seconds, and a counted set's where it stopped early (O.stopped,
+	-- as its outcome line reads it), else the count; a best only where the count can be a record: none on seconds, nor
+	-- on a counted set saved Form slipped or Not all out (ns.Judge: Yes, to the end alone), a loaded set's at its weight
+	local pend = p.pending
+	local timed = (slot.kind == K.cardio or slot.kind == K.flow) and (not slot.counted or pend.outcome == O.stopped)
+	local best = not timed and not (slot.counted and pend.answer) and Lc.BestAt(slot, pend.load) or nil
+	p.pour = { value = value, timed = timed, best = best, beat = pend.outcome == O.beat }
+	ns.Log("I", "pump %d: %s, %d pour", p.id, ns.Library[slot.move].key, value)
 	if not ns.Tree.Moving() then return Lc.Commit() end
 	setState(p, "result")
 end
 
--- The pour landed (its last grain, a click on the stage, Next or Finish): the hold's row is written (Lc.Commit).
+-- The pour landed (its last grain, a click on the stage, Next or Finish): the move's row is written (Lc.Commit).
 function Lc.Land()
 	local p = Lc.pump
 	if not p or p.state ~= "result" or not p.pour or p.committed then return end
@@ -1300,13 +1363,13 @@ end
 -- autostarts and there is also no option to switch"), its goal set again on the sets before it (readyGoal).
 function Lc.Next()
 	local p = Lc.pump
-	if p and p.pour then Lc.Land() end -- Next while a hold's seconds pour: they land first (slice 65)
+	if p and p.pour then Lc.Land() end -- Next while a move pours: it lands first (slices 65 and 66)
 	if not p or p.state ~= "result" or not p.committed then return end
 	cancel("advance")
 	if p.index >= #p.moves then return Lc.Finish("done") end
 	p.index = p.index + 1
 	p.view, p.committed, p.last, p.pending, p.elapsed, p.runStart = "ready", nil, nil, nil, nil, nil
-	p.pours, p.pour = nil, nil
+	p.pour = nil
 	p.really, p.reallyLoad, p.reallyCheck = nil, nil, nil -- a "Really?" of the move before is not this one's
 	readyGoal(p)
 	setState(p, "open")
@@ -1528,10 +1591,10 @@ ns.On("Settings", function()
 end)
 
 -- Escape past an open pump's views (on them the key frame lets it through, so the game menu opens and nothing is
--- banked). `boxEmpty` tells whether the rep box holds a number. "Did you do the whole move?", "How close to the goal
--- pose?", "Did you keep that pace to the end?", "Could you have held longer?" and a counted set's three answers take
--- a click: Escape, which ends a running move, never answers them.
-function Lc.Escape(boxEmpty)
+-- banked). `countEmpty` tells whether the count's dial holds no number. "Did you do the whole move?", "How close to
+-- the goal pose?", "Did you keep that pace to the end?", "Could you have held longer?" and a counted set's three
+-- answers take a click: Escape, which ends a running move, never answers them.
+function Lc.Escape(countEmpty)
 	local p = Lc.pump
 	if not p or not p.started then return false end
 	if p.state == "countdown" then
@@ -1539,14 +1602,14 @@ function Lc.Escape(boxEmpty)
 	elseif p.state == "running" then
 		Lc.Done()
 	elseif p.state == "result" and p.pour then
-		-- Back while a hold's seconds pour (slice 65); once they landed Escape does nothing: Next is Enter
+		-- Back while a move pours (slices 65 and 66); once it landed Escape does nothing: Next is Enter
 		if not p.committed then Lc.Back() end
 	elseif p.state == "result" and not p.asking and not p.marking and not p.pacing and not p.longerAsk then
 		if p.committed and p.moves[p.index].practice then
 			Lc.Finish("practice")
 		elseif p.committed then
 			Lc.Next()
-		elseif boxEmpty and not p.moves[p.index].counted then -- a counted set's answers take a click (Lc.Counted)
+		elseif countEmpty and not p.moves[p.index].counted then -- a counted set's answers take a click (Lc.Counted)
 			Lc.EmptyDone()
 		end
 	end
@@ -1592,6 +1655,7 @@ end
 function Lc.Hold(reason)
 	if Lc.holds[reason] then return end
 	Lc.holds[reason] = true
+	cancel("advance") -- a saved set's hold runs whole once this one ends (Lc.GoOn)
 	local p = Lc.pump
 	if p then
 		if p.state == "countdown" then toReady(p) end
@@ -1620,6 +1684,11 @@ function Lc.Visible()
 	local p = Lc.pump
 	return p ~= nil and VISIBLE[p.state] == true and not next(Lc.holds) and not Lc.combat and not InCombatLockdown()
 end
+
+-- QuestPump's own menu over a saved set takes its hold as Lc.Hold does: it runs whole from the close (Lc.GoOn).
+ns.On("Menu", function()
+	if ns.Menu.Shown() then cancel("advance") end
+end)
 
 -- On demand: the HUD chip, the keybinding and /qp pump open the pending pump at once, or a pump of every owed move,
 -- oldest first and spread after the latest set (Engine.lua spreadRiders), or with nothing owed one move that earns XP
@@ -1700,7 +1769,7 @@ function Lc.StartMove(choice, from)
 	return true
 end
 
--- /qp try: 20 s of wall push-ups and the rep box, at any time (before setup too); nothing is stored.
+-- /qp try: 20 s of wall push-ups and its count on the dial, at any time (before setup too); nothing is stored.
 function Lc.Try()
 	if not ns.db then return end
 	if Lc.Locked() then return ns.Print("chat.locked") end

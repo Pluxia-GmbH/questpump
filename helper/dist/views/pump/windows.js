@@ -1,14 +1,17 @@
-// The pump's windows on the computer (the phones' PumpWindows, JointWindow and StartWindow drawn once more): those a
-// stage opens (the "···", the swap row's more ways to swap, How to do it, the joints that hurt, leaving the pump) and
-// those Rust asks for through the `pump` and `shell` topics, whichever view is in front (Start a pump with its preset,
-// "Leave the pump?" when the window closes or QuestPump quits mid-pump, and "Speakers or headset?" before the first
-// pump). Every window closes with Escape or its ×, which never ends, banks or skips a pump.
+// The pump's windows on the computer (the phones' PumpWindows and StartWindow drawn once more): those a stage opens
+// (the "···" past the Ready view, the swap row's more ways to swap, How to do it, the Ready bar's Pause menu, leaving
+// the pump) and those Rust asks for through the `pump` and `shell` topics, whichever view is in front (Start a pump with
+// its preset, "Leave the pump?" when the window closes or QuestPump quits mid-pump, and "Speakers or headset?" before
+// the first pump). Every window closes with Escape or its ×, which never ends, banks or skips a pump.
 
 import {get, intent, subscribe} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {figureName} from "../../lib/figure.js";
+import {topWindow} from "../../lib/focus.js";
+import {time} from "../../lib/format.js";
 import {whenStarted} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
+import {gameName} from "../games/windows.js";
 import {openPlaces} from "../places/places.js";
 import {gearLine, inUse, placeName} from "../places/words.js";
 import {kindName, recordWords, sizes} from "./words.js";
@@ -52,43 +55,28 @@ function anyDone(pump) {
 		|| pump.moves.some((x) => x.state === "done");
 }
 
-/** The "···" (from the bottom): How to do it past the Ready view (which shows How and Tips itself), It hurts
- * somewhere on an app pump's Ready view (Swap is the Ready view's swap row alone, as in the game, since 2026-10-26),
- * Done without a count on the count but a counted set's form step (its three answers save it Not counted, as the game's and the
- * phones' do; Rust refuses it there), End the pump here (and an expedition's End the timed pump), which reads Bank
- * the rest on a rider, a catch-up's move or a
- * match pump's (slices 58 and 61; End's action: a running timed move's seconds paid, the rest left unfinished) and
- * leaves a rider's Ready view to its bar's Bank the rest where the bar shows it, and last "I feel unwell", in
- * the stop
- * colour, what it does read after its name (none on a Ready view while felt unwell rests the pumps, whose
- * Close
- * stays). */
-export function more(pump, topic, open) {
+/** The "···" (from the bottom) on every stage past the Ready view, whose own bar holds its ways (since 2026-11-05): How
+ * to do it, Done without a count on the count but a counted set's form step (its three answers save it Not counted,
+ * as the game's and the phones' do; Rust refuses it there), End the pump here (and an expedition's End the timed
+ * pump), which reads Bank the rest on a rider, a catch-up's move or a match pump's (slices 58 and 61; End's action: a
+ * running timed move's seconds paid, the rest left unfinished), and last "I feel unwell", in the stop colour, what it
+ * does read after its name. */
+export function more(pump, open) {
 	return openWindow({heading: t("kit.more"), placement: "bottom"}, (content, win) => {
-		const rows = [];
-		if (pump.stage !== "ready") {
-			rows.push(row(win, {heading: t("pump.more.how"), glyph: "action_character"}, () => open("move")));
-		}
-		if (pump.stage === "ready" && pump.what !== "catchup") {
-			rows.push(row(win, {heading: t("pump.more.pain"), glyph: "mark_report"}, () => open("pain")));
-		}
+		const rows = [row(win, {heading: t("pump.more.how"), glyph: "action_character"}, () => open("move"))];
 		if (pump.stage === "counting" && !pump.moves[pump.current]?.counted) {
 			rows.push(row(win, {heading: pump.count.empty, glyph: "mark_check", trailing: "action"},
 				() => heard(intent("pump.count.none"))));
 		}
-		if (!(pump.rest && pump.stage === "ready" && pump.bank === "rest")) {
-			rows.push(row(win, {heading: t(pump.rest ? "pump.ready.bank.rest" : "pump.ready.end"), glyph: "mark_close",
-				trailing: "action"}, () => heard(intent("pump.end"))));
-		}
+		rows.push(row(win, {heading: t(pump.rest ? "pump.ready.bank.rest" : "pump.ready.end"), glyph: "mark_close",
+			trailing: "action"}, () => heard(intent("pump.end"))));
 		// an expedition's round: its end too, which ends on the Result of the rounds done (slice 51)
 		if (pump.what === "expedition") {
 			rows.push(row(win, {heading: t("expedition.stop"), glyph: "mark_close", trailing: "action"},
 				() => heard(intent("expedition.stop"))));
 		}
-		if (!(pump.stage === "ready" && topic.locked_until)) {
-			rows.push(row(win, {heading: t("pump.unwell"), hint: t("pump.unwell.hint"), glyph: "mark_heart",
-				trailing: "action", destructive: true}, () => heard(intent("pump.unwell"))));
-		}
+		rows.push(row(win, {heading: t("pump.unwell"), hint: t("pump.unwell.hint"), glyph: "mark_heart",
+			trailing: "action", destructive: true}, () => heard(intent("pump.unwell"))));
 		content.append(h("qp-card", {rows: true}, ...rows));
 	});
 }
@@ -122,27 +110,34 @@ export function move(pump) {
 	return shown;
 }
 
-/** The Ready view's It hurts somewhere: the joints, in the game's words, as switches (Panel.lua's joint view; the
- * phones' JointWindow): those flagged on and fixed (a flag the game set says so), the others off until the player
- * names one; Save flags those switched on. */
-export function pain(topic) {
-	const picked = new Set();
-	return openWindow({heading: topic.pain_ask, placement: "bottom", primary: t("pump.joints.save")}, (content, win) => {
-		content.append(h("qp-card", {rows: true}, ...topic.pain.map((j) => {
-			const name = j.in_game ? t("menu.free.pain.ingame", {joint: j.name}) : j.name;
-			const toggle = h("qp-row", {heading: name, trailing: "toggle", checked: j.flagged, disabled: j.flagged});
-			toggle.addEventListener("qp-change", (e) => {
-				if (e.detail) picked.add(j.id);
-				else picked.delete(j.id);
-				toggle.checked = e.detail;
-			});
-			return toggle;
-		})));
-		win.addEventListener("qp-primary", () => {
-			heard(intent("pump.pain", {joints: [...picked].sort((a, b) => a - b)}));
-			win.close();
-		});
-	});
+/** The Ready bar's Pause (2026-11-05; the game's Panel.PauseMenu, opened above its button `from`): how long, the
+ * Games tab's Pause offers' choices under its name (an hour, four hours, until the next game day, while the watched
+ * game running now runs, while one runs, until resumed; none where this computer holds no offers), each pausing them and
+ * ending the pump as its bar's Close does (`pump.pause`); then Your body: Something hurts while a joint is left
+ * unflagged, its joints in a menu beside it under the game's question, one click flagging one (`pump.pain`), and I feel
+ * unwell last, in the stop colour, what it does read after its name (`pump.unwell`). */
+export function pauseMenu(topic, from) {
+	const games = get("games");
+	const running = games?.tiles?.find((tile) => tile.running);
+	const pause = (kind) => () => heard(intent("pump.pause", {kind}));
+	const items = games ? [
+		{group: t("games.pause")},
+		{label: t("games.pause.hour"), act: pause("hour")},
+		{label: t("games.pause.four"), act: pause("four_hours")},
+		{label: t("games.pause.night", {time: time(games.night * 1000)}), act: pause("night")},
+		running ? {label: t("desk.offers.pause.game", {game: gameName(running)}), act: pause("game")} : null,
+		{label: t("games.pause.resumed"), act: pause("resumed")},
+	] : [];
+	const joints = topic.pain.filter((j) => !j.flagged);
+	items.push({group: t("pump.ready.body")}, joints.length ? {label: t("pump.more.pain"), submenu: {
+		label: topic.pain_ask,
+		items: joints.map((j) => ({label: j.name, act: () => heard(intent("pump.pain", {joints: [j.id]}))})),
+	}} : null, {label: t("pump.unwell"), hint: t("pump.unwell.hint"), destructive: true,
+		act: () => heard(intent("pump.unwell"))});
+	const menu = h("qp-menu", {label: t("pump.ready.pause")});
+	menu.items = items.filter(Boolean);
+	menu.open(from);
+	return menu;
 }
 
 /** Leaving the pump before its end (its ×, the window's close, Quit QuestPump): what stays of it, in a catch-up's
@@ -289,7 +284,31 @@ function followShell(shell) {
 	}, {once: true});
 }
 
+/** Tells Rust when a window comes over the page and when the last one leaves it (`pump.window`), for a move's pour to
+ * wait on (`Pour::cover`; David, 2026-11-04, QA-8): any window, those a stage opened and those Rust asks for alike, one
+ * that goes with its page or without closing too, which is why the tree is watched while one stands (a window a page
+ * holds leaves with that page, its `open` unchanged). A window opened from another stays over the page through the
+ * change, since the new one stands before the old has left. A page that starts has none, which frees what a page that
+ * went left waiting. */
+function watchWindows() {
+	let over = false;
+	const opened = new MutationObserver(() => look());
+	const left = new MutationObserver(() => look());
+	const look = () => {
+		const now = topWindow() !== null;
+		if (now === over) return;
+		over = now;
+		if (now) left.observe(document.body, {childList: true, subtree: true});
+		else left.disconnect();
+		heard(intent("pump.window", {open: now}));
+	};
+	opened.observe(document.documentElement, {subtree: true, attributes: true, attributeFilter: ["open"]});
+	heard(intent("pump.window", {open: false}));
+	look();
+}
+
 whenStarted(() => {
 	subscribe("pump", followPump);
 	subscribe("shell", followShell);
+	watchWindows();
 });

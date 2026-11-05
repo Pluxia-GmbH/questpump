@@ -1,14 +1,16 @@
-//! A hold's pour (slice 65, `desk.pump.saved`): Done saved the stopwatch's seconds, and they fly one a second from the
-//! dial into the hold bar against the step's range; the row is written as the pour lands, and the move's own rewards
-//! (its row, the step it opened with its reveal, its stats and XP) show from the app's own sheet before and after that
-//! one write, as the phones' per-move card reads them (`RewardsLine.since`). Rust plans every instant and plays the
-//! sounds as they come due, as the Result's reveal does (`Reveal`); the page draws from the instants.
+//! A move's pour (slice 65's hold, every move since slice 66, `desk.pump.saved`): what its save saved (a set of reps'
+//! reps, a hold's seconds, a counted set's clean reps, a timed move's seconds) flies one grain a unit from the dial into
+//! the count bar against the step's range; the row is written as the pour lands, and the move's own rewards (its row,
+//! the step it opened with its reveal, its stats and XP) show from the app's own sheet before and after that one write,
+//! as the phones' per-move card reads them (`RewardsLine.since`). Rust plans every instant and plays the sounds as they
+//! come due, as the Result's reveal does (`Reveal`); the page draws from the instants.
 
-use questpump_engine::PlannedMove;
+use questpump_core::codes::{answer, kind};
+use questpump_engine::{MoveResult, PlannedMove};
 use serde::Serialize;
 
-use super::super::Run;
 use super::super::run;
+use super::super::{Recorded, Run};
 use super::{MOTION, Reward, Row, Sets, Sum, Tile, moved, stats, tile, unlocks};
 use crate::desk::facts::facts;
 
@@ -20,11 +22,12 @@ const CLOSING: f64 = 0.62;
 /// The most of a ladder's step tiles the reveal shows, the current one and the one it opens among them.
 const TILES: u8 = 7;
 
-/// The hold bar (`HoldBar`): the step's range from 0 to its top (`range` where a step has none), its label's ladder and
-/// step in the step's quality, and the posts at the goal, at the record before this hold (none once that stands at the
-/// top or past it) and at the top.
+/// The count bar (`CountBar`, every move's since slice 66; the hold bar of slice 65): the step's range from 0 to its top
+/// (`range` where a step has none), its label's ladder and step in the step's quality, the posts at the goal, at the
+/// record before this set (none once that stands at the top or past it) and at the top, and the unit its words are in
+/// (`seconds`: m:ss, else a number).
 #[derive(Serialize, Clone, PartialEq)]
-pub(in crate::desk::pump) struct HoldBar {
+pub(in crate::desk::pump) struct CountBar {
 	ladder: Option<&'static str>,
 	step: Option<i64>,
 	quality: Option<u8>,
@@ -32,16 +35,67 @@ pub(in crate::desk::pump) struct HoldBar {
 	best: Option<i64>,
 	top: Option<i64>,
 	range: i64,
+	seconds: bool,
 }
 
-impl HoldBar {
-	fn of(ladder: u8, rung: u8, goal: Option<i64>, best: Option<i64>, top: Option<i64>, held: i64) -> Self {
+impl CountBar {
+	fn of(ladder: u8, rung: u8, posts: Posts, held: i64) -> Self {
+		let Posts { goal, best, top, seconds } = posts;
 		let name = Some(facts().ladder_name(ladder)).filter(|n| !n.is_empty());
 		let step = facts().step(ladder, rung).map(i64::from);
 		let quality = Some(facts().rung_quality(ladder, i64::from(rung))).filter(|&q| q > 0);
 		let range = top.unwrap_or_else(|| goal.into_iter().chain(best).chain([held, 1]).max().unwrap_or(1));
-		Self { ladder: name, step, quality, goal, best: best.filter(|&b| top.is_none_or(|t| b < t)), top, range }
+		let best = best.filter(|&b| top.is_none_or(|t| b < t));
+		Self { ladder: name, step, quality, goal, best, top, range, seconds }
 	}
+}
+
+/// What a move's bar stands its save against, by what was saved (slice 66): a set of reps or a hold its goal, its record
+/// before this set (none with a weight, whose record is a score the engine judges from the row: the count step shows
+/// no chip for it either) and its step's top (a first max set's where its step has no window); a counted set its best
+/// clean count alone, and only on "Yes, to the end" (a slipped or not all-out count is never a record, `ns.Judge`), no
+/// count to reach and no top; seconds (a timed move, a pose, a counted set stopped before its end) their goal alone,
+/// never a record or a best; and its unit.
+#[derive(Clone, Copy, PartialEq)]
+struct Posts {
+	goal: Option<i64>,
+	best: Option<i64>,
+	top: Option<i64>,
+	seconds: bool,
+}
+
+impl Posts {
+	fn of(m: &PlannedMove, (ladder, rung): (u8, u8), shown: Recorded) -> Self {
+		let load = match shown {
+			Recorded::Counted(_, said) => {
+				return Self { goal: None, best: m.record.filter(|_| said == answer::YES), top: None, seconds: false };
+			}
+			Recorded::Time(_) => return Self { goal: m.seconds, best: None, top: None, seconds: true },
+			Recorded::Count(_, load) => load,
+			Recorded::Done => None,
+		};
+		if m.counted || (m.kind != kind::REP && m.kind != kind::HOLD) {
+			return Self { goal: m.seconds, best: None, top: None, seconds: true };
+		}
+		let top = facts().window(ladder, rung, m.r#move).map(|w| w.hi).or(m.top);
+		let best = m.record.filter(|_| load.is_none());
+		Self { goal: super::goal(m), best, top, seconds: m.kind == kind::HOLD }
+	}
+}
+
+/// A move's save on its way to its pour (`Helper::pump_pour`): what it saved and what its line shows, its slot's ladder
+/// and rung, the app's own sheet before the write (`before`; `fresh` where this is the pump's first write, whose
+/// summary's last pump is another pump's, so this save's gains are the whole of the last pump's after it) and the next
+/// move's name (none on the pump's last).
+pub(in crate::desk::pump) struct Saved {
+	pub(in crate::desk::pump) result: MoveResult,
+	pub(in crate::desk::pump) shown: Recorded,
+	pub(in crate::desk::pump) step: (u8, u8),
+	pub(in crate::desk::pump) before: Sum,
+	pub(in crate::desk::pump) fresh: bool,
+	pub(in crate::desk::pump) next: Option<&'static str>,
+	/// A window already stands over the page as the pour starts (`Pumps::window`).
+	pub(in crate::desk::pump) covered: bool,
 }
 
 /// The step-up reveal (`StepReveal`) over the figure's room: the ladder's tiles (`from` the current step's, `to` the one
@@ -70,17 +124,18 @@ pub(in crate::desk::pump) struct SavedEarned {
 	rows: Vec<Row>,
 	rows_at: Vec<i64>,
 	reveal: Option<StepReveal>,
-	next_bar: Option<HoldBar>,
+	next_bar: Option<CountBar>,
 }
 
-/// The pour as the page draws it: the seconds held against the dial's whole (`against`), the bar, each grain's start
-/// (`starts`, each landing `fly` after), whether it landed, the next move's name (none on the pump's last: Finish) and,
-/// once written, what it earned.
+/// The pour as the page draws it: the count saved (`value`, in the bar's unit) against the dial's whole (`against`), the
+/// record the dial's chip shows past (none on a timed move), the bar, each grain's start (`starts`, each landing `fly`
+/// after), whether it landed, the next move's name (none on the pump's last: Finish) and, once written, what it earned.
 #[derive(Serialize, Clone, PartialEq)]
 pub(in crate::desk::pump) struct SavedView {
-	seconds: i64,
+	value: i64,
 	against: i64,
-	bar: HoldBar,
+	record: Option<i64>,
+	bar: CountBar,
 	at: i64,
 	starts: Vec<i64>,
 	fly: i64,
@@ -98,10 +153,19 @@ enum Jingle {
 	After { top: bool },
 }
 
-/// A hold's pour on screen, from its plan to Next.
+/// The windows over a pour: one stands, or the last one closed at this instant (ms; 0 before one has).
+#[derive(Clone, Copy, PartialEq)]
+enum Over {
+	Window,
+	Closed(i64),
+}
+
+/// A move's pour on screen, from its plan to Next.
 pub(in crate::desk::pump) struct Pour {
 	pub(in crate::desk::pump) slot: usize,
-	pub(in crate::desk::pump) result: questpump_engine::MoveResult,
+	pub(in crate::desk::pump) result: MoveResult,
+	/// What the move's line shows once its row is written (`Helper::pump_write`).
+	pub(in crate::desk::pump) shown: Recorded,
 	view: SavedView,
 	sounds: Vec<(i64, &'static str)>,
 	jingle: Jingle,
@@ -114,28 +178,19 @@ pub(in crate::desk::pump) struct Pour {
 	before: Option<Sum>,
 	/// A click on the stage came after the pour landed and before what the save earned (`land_reveal`).
 	hurried: bool,
+	/// The windows over the pour (`cover`).
+	over: Over,
 }
 
 impl Pour {
-	/// The pour of hold `m`'s saved `result` from `now`, on its slot's `ladder` and `rung`, with the app's own sheet
-	/// before the write (`before`; `fresh` where this is the pump's first write, whose summary's last pump is another
-	/// pump's, so this save's gains are the whole of the last pump's after it) and the next move's name.
-	pub(in crate::desk::pump) fn plan(
-		now: i64,
-		m: &PlannedMove,
-		result: questpump_engine::MoveResult,
-		(ladder, rung): (u8, u8),
-		before: Sum,
-		fresh: bool,
-		next: Option<&'static str>,
-	) -> Self {
+	/// The pour of move `m`'s save from `now`: one grain a unit of what it saved (a rep, a second), against the posts
+	/// its kind stands it against (`Posts`).
+	pub(in crate::desk::pump) fn plan(now: i64, m: &PlannedMove, saved: Saved) -> Self {
+		let Saved { result, shown, step: (ladder, rung), before, fresh, next, covered } = saved;
 		let motion = &*MOTION;
 		let held = result.value.max(0);
-		let window = facts().window(ladder, rung, m.r#move);
-		// the step's top, or a first max set's where its step has no window
-		let top = window.map(|w| w.hi).or(m.top);
-		let goal = super::goal(m);
-		let best = m.record;
+		let posts = Posts::of(m, (ladder, rung), shown);
+		let Posts { goal, best, top, .. } = posts;
 		let span = motion.pour.min(motion.pour_base + motion.pour_step * held);
 		let n = run::real(held.max(1));
 		let starts: Vec<i64> = (0..held)
@@ -162,7 +217,7 @@ impl Pour {
 				Jingle::Grain(j @ "record") if at_best => Some(j),
 				_ if at_top => Some("pourTop"),
 				_ if at_best || goal == Some(k) => Some("pourPost"),
-				_ if lands - last_tick >= TICK_GAP_MS => {
+				_ if lands.saturating_sub(last_tick) >= TICK_GAP_MS => {
 					last_tick = lands;
 					Some("pourTick")
 				}
@@ -170,13 +225,15 @@ impl Pour {
 			};
 			sounds.extend(event.map(|e| (lands, e)));
 		}
-		let bar = HoldBar::of(ladder, rung, goal, best, top, held);
+		let bar = CountBar::of(ladder, rung, posts, held);
 		Self {
 			slot: m.slot,
 			result,
+			shown,
 			view: SavedView {
-				seconds: held,
+				value: held,
 				against: goal.or(best).filter(|&a| a > 0).unwrap_or(held.max(1)),
+				record: best,
 				bar,
 				at: now,
 				starts,
@@ -194,6 +251,7 @@ impl Pour {
 			rung,
 			before: (!fresh).then_some(before),
 			hurried: false,
+			over: if covered { Over::Window } else { Over::Closed(0) },
 		}
 	}
 
@@ -205,10 +263,32 @@ impl Pour {
 		self.view.landed
 	}
 
-	/// Its next instant: a sound's, or the pour's landing.
+	/// Its next instant: a sound's, the pour's landing, or the move going on by itself.
 	pub(in crate::desk::pump) fn wake(&self) -> Option<i64> {
 		let lands = (!self.view.landed).then_some(self.end);
-		self.sounds.first().map(|&(at, _)| at).into_iter().chain(lands).min()
+		self.sounds.first().map(|&(at, _)| at).into_iter().chain(lands).chain(self.goes_on_at()).min()
+	}
+
+	/// When the move goes on by itself: the game's `record_hold_s` after its last row came in (after the reveal's fold
+	/// where it has no row, after the landing where neither), as a set saved with no pour does (the game's `Lc.GoOn`;
+	/// Rapha, 2026-11-04: "yes try for now with auto progress"; slices 65 and 66 waited for Next until then), or after
+	/// the last window over the pour closed where that came later (`cover`); none before what the save earned is known,
+	/// nor while a window stands.
+	pub(in crate::desk::pump) fn goes_on_at(&self) -> Option<i64> {
+		let Over::Closed(closed) = self.over else { return None };
+		let earned = self.view.earned.as_ref().filter(|_| self.view.landed)?;
+		let last = earned.rows_at.last().copied().or_else(|| earned.reveal.as_ref().map(|r| r.folds));
+		Some(last.unwrap_or(self.end).max(self.end).max(closed) + run::millis(facts().constants().record_hold_s))
+	}
+
+	/// A window came over the pour, or the last one over it went at `now` (`Pumps::window`; David, 2026-11-04: "yes and
+	/// yes", QA-8: the "..."'s row stood where the next Ready's Start lands as the move went on under it).
+	pub(in crate::desk::pump) fn cover(&mut self, open: bool, now: i64) {
+		self.over = match (open, self.over) {
+			(true, _) => Over::Window,
+			(false, Over::Window) => Over::Closed(now),
+			(false, over) => over,
+		};
 	}
 
 	/// The pour ran its last grain by `now` and lands.
@@ -289,12 +369,23 @@ impl Pour {
 		let first = reveal.as_ref().map_or(now + motion.pour_hold, |r: &StepReveal| r.folds);
 		let rows_at: Vec<i64> =
 			(0..rows.len()).map(|i| first + i64::try_from(i).unwrap_or(0) * motion.stagger).collect();
-		// the jingle that comes after the write: the reveal's as its step opens, else the top's or done as the rows do
+		// the jingle that comes after the write: the reveal's as its step opens, else the top's, a record's the engine
+		// judged (a weighted one, a score the pour cannot know) or done as the rows do
+		let record = rows.iter().any(|r| matches!(r.reward, Reward::Record { .. }));
 		let jingle = match self.jingle {
 			_ if self.jingled => None,
 			Jingle::Grain(j) => Some((first, j)),
 			Jingle::After { .. } if reveal.is_some() => reveal.as_ref().map(|r| (r.opens, "unlockUncommon")),
-			Jingle::After { top } => Some((first, if top { "unlock" } else { "done" })),
+			Jingle::After { top } => Some((
+				first,
+				if top {
+					"unlock"
+				} else if record {
+					"record"
+				} else {
+					"done"
+				},
+			)),
 		};
 		self.view.earned = Some(SavedEarned { rows, rows_at, reveal, next_bar });
 		// Reduce Motion, or a click that came before what the save earned: its end at once, with the jingle
@@ -306,9 +397,9 @@ impl Pour {
 		None
 	}
 
-	/// The reveal of unlock `u` (`[ladder, rung, move, quality, …]`) where it is a step of this hold's own ladder, with
+	/// The reveal of unlock `u` (`[ladder, rung, move, quality, …]`) where it is a step of this move's own ladder, with
 	/// the bar of the step it opened.
-	fn reveal(&self, now: i64, u: &[i64]) -> Option<(StepReveal, HoldBar)> {
+	fn reveal(&self, now: i64, u: &[i64]) -> Option<(StepReveal, CountBar)> {
 		let motion = &*MOTION;
 		let (&ladder, &rung, &hero, &quality) = (u.first()?, u.get(1)?, u.get(2)?, u.get(3)?);
 		let (ladder, rung) = (u8::try_from(ladder).ok()?, u8::try_from(rung).ok()?);
@@ -351,7 +442,8 @@ impl Pour {
 			landed: false,
 		};
 		let w = facts().window(ladder, rung, hero);
-		let bar = HoldBar::of(ladder, rung, w.map(|w| w.lo), None, w.map(|w| w.hi), 0);
+		let posts = Posts { goal: w.map(|w| w.lo), best: None, top: w.map(|w| w.hi), seconds: self.view.bar.seconds };
+		let bar = CountBar::of(ladder, rung, posts, 0);
 		Some((reveal, bar))
 	}
 

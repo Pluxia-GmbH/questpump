@@ -70,7 +70,7 @@ function nowCard() {
 	let offer = null; // the offer the card shows: {id, name, kind}
 	const start = h("qp-primary-button", {label: t("pump.questdone.start"), "data-focus-key": "now:start",
 		"on:click": () => intent("pump.start", {kind: offer.kind, offer: offer.id}).catch(console.error)});
-	const resume = h("qp-secondary-button", {label: t("desk.offers.resume"), "data-focus-key": "now:resume",
+	const resume = h("qp-secondary-button", {label: t("games.resume"), "data-focus-key": "now:resume",
 		"on:click": () => intent("games.pause", {kind: "none"}).catch(console.error)});
 	const ways = h("div", {class: "qp-games-now-ways"});
 	const el = h("qp-card", {class: "qp-games-now"}, h("div", {class: "qp-games-now-head"}, icon, head), ways);
@@ -140,7 +140,7 @@ register("games", () => {
 	const pace = paceRows();
 	const open = h("qp-row", {heading: t("desk.offers.open"), glyph: "action_pump", trailing: "toggle",
 		"on:qp-change": (e) => intent("games.open_on_close", {on: e.detail}).catch(console.error)});
-	const pauseRow = h("qp-row", {heading: t("desk.offers.pause"), glyph: "mark_pause", trailing: "value",
+	const pauseRow = h("qp-row", {heading: t("games.pause"), glyph: "mark_pause", trailing: "value",
 		"on:click": () => pause.open()});
 	const test = h("qp-row", {heading: t("games.test"), glyph: "mark_arrow", trailing: "action",
 		"on:click": () => intent("games.test").catch(console.error)});

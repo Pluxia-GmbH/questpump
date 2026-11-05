@@ -447,7 +447,8 @@ impl Helper {
 			return None;
 		}
 		let Some(offer) = self.standing.current() else { return self.reminder_view() };
-		(self.standing.card(now) && offer.look_until.is_none()).then(|| CardView::of(offer, self.match_one_size()))
+		(self.standing.card(now) && offer.look_until.is_none())
+			.then(|| CardView::of(offer, self.offer_one_size(Some(&offer.id))))
 	}
 
 	/// The card at a look: none while something holds the offers back; the test's while it lasts and no newer card is
@@ -704,7 +705,7 @@ impl Helper {
 
 	/// The card an id names: the test's, the standing offer's or the standing reminder's (none: the standing offer).
 	fn card_offer(&self, asked: Option<&str>) -> Option<CardView> {
-		let of = |o: &Offer| CardView::of(o, self.match_one_size());
+		let of = |o: &Offer| CardView::of(o, self.offer_one_size(Some(&o.id)));
 		match asked {
 			Some(TEST) => self.offering.card.test.as_ref().map(|test| test.view.clone()),
 			Some(id) => self
@@ -764,7 +765,7 @@ impl Helper {
 			return;
 		}
 		let Some(offer) = self.standing.current().filter(|o| o.id == id) else { return };
-		let view = CardView::of(offer, self.match_one_size());
+		let view = CardView::of(offer, self.offer_one_size(Some(&offer.id)));
 		let screen =
 			self.offering.card.area_of(&view.id).and_then(|a| screens(&self.app).into_iter().find(|s| s.holds(&a)));
 		self.offering.card.opened = Some(view.id.clone());
