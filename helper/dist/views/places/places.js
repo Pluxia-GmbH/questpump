@@ -1,5 +1,5 @@
 // The places' windows on the computer (docs/plan.md slice 51, "Places"; the phones' expedition.places, places.edit
-// and places.place), from the `places` topic (helper/src-tauri/src/desk/places.rs), each following it while it is open
+// and places.place), from the `places` topic (helper/crates/questpump-desk/src/places.rs), each following it while it is open
 // and leaving the page once closed:
 // - the places window (desk.expedition.places; Pump home's place button opens it too): a Row for each place, its glyph
 //   in a KindTile, its name, its equipment line, the Default tag on the default place (2026-11-03) and the check on the

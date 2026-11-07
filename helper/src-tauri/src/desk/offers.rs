@@ -47,8 +47,10 @@ use std::sync::atomic::AtomicBool;
 
 use questpump_core::body::{Body, DEFAULT_PACE, is_pace};
 use questpump_core::games::{MATCH, Watched};
-use questpump_core::offers::{Offer, Pause, Tunables};
+use questpump_core::offers::{Offer, Pause};
 use questpump_core::session::Zone;
+use questpump_desk::menu_pages::setup::stamped;
+use questpump_desk::settings::GamesSettings;
 use serde::Serialize;
 use serde_json::{Value, json};
 use tauri::menu::{MenuItem, PredefinedMenuItem, Submenu};
@@ -56,7 +58,6 @@ use tauri::{AppHandle, Manager as _, Wry};
 use tokio::sync::oneshot;
 
 use super::card::CardState;
-use super::menu_pages::setup::stamped;
 use super::tray::{TrayLines, clock_at};
 use super::{Desk, DeskAsk, Intent};
 use crate::copy;
@@ -299,36 +300,55 @@ fn redraw(app: &AppHandle, s: &TrayOffers) {
 	lines.show(&items.pause, &items.pause_shown, lines.before_quit(), s.pause);
 }
 
+/// The watched game running now that "while this game runs" names: the first running in the tab's order
+/// (`Lists::playing`), as the tab's Now card and its Pause offers name it.
+fn running_game(lists: &Lists, settings: &GamesSettings) -> Option<Running> {
+	let id = lists.playing()?.key.clone();
+	let name = Games::name_of(&id, settings)?;
+	Some(Running { id, name })
+}
+
+/// The pause `kind` names (`none`, `hour`, `four_hours`, `night`, `game` or `resumed`: the Games tab's, the tray's and a
+/// pump's Pause menu's) as it starts at unix second `now`, or why none does: no offers on this computer (`games`), no
+/// watched game running for `game`, or no such pause.
+pub(crate) fn pause_of(kind: &str, games: Option<&Games>, settings: &GamesSettings, now: i64) -> Result<Pause, String> {
+	let t = games.map(Games::tunables).ok_or("no offers on this computer")?;
+	Ok(match kind {
+		"none" => Pause::None,
+		"hour" => Pause::Until { at: now + t.hour_s },
+		"four_hours" => Pause::Until { at: now + t.four_hours_s },
+		"night" => Pause::Until { at: Zone::new(local_offset_at).next_game_day(now) },
+		"game" => {
+			let lists = games.ok_or("no games on this computer")?.lists(settings);
+			Pause::WhileRunning { game: running_game(&lists, settings).ok_or("no watched game runs")?.id }
+		}
+		"resumed" => Pause::UntilResumed,
+		_ => return Err(format!("no pause {kind}")),
+	})
+}
+
 /// A unix second as the local clock time, as the tray words it.
 fn clock(at: i64) -> String {
 	clock_at(at.saturating_mul(1_000))
 }
 
 impl Helper {
-	/// The offers' numbers; none when library.json's constants did not build in (no game offers then).
-	fn tunables(&self) -> Option<&'static Tunables> {
-		self.games.as_ref().map(Games::tunables)
-	}
-
-	/// The watched game running now that "while this game runs" names: the first running in the tab's order
-	/// (`Lists::playing`), as the tab's Now card and its Pause offers name it.
+	/// The watched game running now that "while this game runs" names (`running_game`).
 	fn running_game(&self, lists: &Lists) -> Option<Running> {
-		let id = lists.playing()?.key.clone();
-		let name = Games::name_of(&id, &self.settings.games)?;
-		Some(Running { id, name })
+		running_game(lists, &self.desk.settings.games)
 	}
 
 	/// The pause as the tab and the tray show it (the game it holds for named as its tile is: a program by its own name,
 	/// a named game by the page).
 	fn pause_view(&self) -> PauseView {
-		match &self.settings.offers.pause {
+		match &self.desk.settings.offers.pause {
 			Pause::None => PauseView::None,
 			Pause::Until { at } => PauseView::Until { at: *at },
 			Pause::WhileRunning { game } => PauseView::WhileRunning {
 				key: game.clone(),
 				name: Watched::from_key(game)
 					.is_none()
-					.then(|| Games::name_of(game, &self.settings.games).unwrap_or_default()),
+					.then(|| Games::name_of(game, &self.desk.settings.games).unwrap_or_default()),
 			},
 			Pause::UntilResumed => PauseView::UntilResumed,
 		}
@@ -337,7 +357,7 @@ impl Helper {
 	/// The standing offer while nothing holds the offers back (`offers_held`): the one the tray's item starts and the
 	/// Now card shows (slice 57).
 	fn offer_ready(&self, now: i64) -> Option<&Offer> {
-		self.standing.current().filter(|_| !self.offers_held(now))
+		self.desk.p.standing.current().filter(|_| !self.offers_held(now))
 	}
 
 	/// The Now card: paused while a pause holds, else ready while an offer stands and nothing holds it
@@ -346,7 +366,7 @@ impl Helper {
 	fn now_card(&self, lists: &Lists, now: i64) -> Now {
 		let on: Vec<&Tile> = lists.tiles.iter().filter(|t| t.on).collect();
 		let running = lists.playing();
-		let paused = self.settings.offers.pause != Pause::None;
+		let paused = self.desk.settings.offers.pause != Pause::None;
 		let ready = if paused { None } else { self.offer_ready(now) };
 		let state = if paused {
 			State::Paused
@@ -370,8 +390,8 @@ impl Helper {
 	/// The Games tab's topic, the tray's offer items and the games watched by name (This computer's state names them
 	/// while no World of Warcraft is found), as they stand (each sent only when it changed).
 	pub(crate) fn show_games(&mut self) {
-		let Some(games) = self.games.as_ref() else { return };
-		let settings = &self.settings.games;
+		let Some(games) = self.desk.p.games.as_ref() else { return };
+		let settings = &self.desk.settings.games;
 		let lists = games.lists(settings);
 		let watching: Vec<String> = lists.watched().iter().map(|w| w.name().to_owned()).collect();
 		let watched = !watching.is_empty();
@@ -386,7 +406,7 @@ impl Helper {
 			lists,
 			picks: self.offering.picker.as_ref().map(|p| p.programs.as_slice()),
 			pick_games: self.offering.picker.as_ref().map(|p| p.games.as_slice()),
-			pace: self.body.body.match_pace.as_ref().map_or(DEFAULT_PACE, |p| p.value.as_str()),
+			pace: self.desk.body.body.match_pace.as_ref().map_or(DEFAULT_PACE, |p| p.value.as_str()),
 			open_on_close: !settings.open_on_close_off,
 			notice: !settings.notice_off,
 			held: self.offers_held(now),
@@ -409,11 +429,11 @@ impl Helper {
 			PauseView::None => copy::desk_offers_paused_none().to_owned(),
 			PauseView::Until { at } => copy::games_paused_until(&clock(at)),
 			PauseView::WhileRunning { key, .. } => {
-				copy::desk_offers_paused_game(&Games::name_of(&key, &self.settings.games).unwrap_or_default())
+				copy::desk_offers_paused_game(&Games::name_of(&key, &self.desk.settings.games).unwrap_or_default())
 			}
 			PauseView::UntilResumed => copy::games_paused_resumed().to_owned(),
 		};
-		let paused = self.settings.offers.pause != Pause::None;
+		let paused = self.desk.settings.offers.pause != Pause::None;
 		TrayOffers {
 			pump,
 			pause: paused || watched,
@@ -442,8 +462,8 @@ impl Helper {
 		match intent.kind() {
 			"games.set" => {
 				let (key, on) = (key()?, on()?);
-				let games = self.games.as_mut().ok_or("no games on this computer")?;
-				if !games.set(key, on, &mut self.settings.games) {
+				let games = self.desk.p.games.as_mut().ok_or("no games on this computer")?;
+				if !games.set(key, on, &mut self.desk.settings.games) {
 					return Err(format!("games.set: no game {key}"));
 				}
 				// a found or picked game's key may be a path in the player's folders: the log names a named game alone
@@ -454,28 +474,28 @@ impl Helper {
 			}
 			"games.setup" => {
 				let key = key()?;
-				let games = self.games.as_mut().ok_or("no games on this computer")?;
-				if games.setup(key, &mut self.settings.games)? {
+				let games = self.desk.p.games.as_mut().ok_or("no games on this computer")?;
+				if games.setup(key, &mut self.desk.settings.games)? {
 					log::info!("games: {key}: asked after each match");
 					self.save_games();
 				}
 			}
 			"games.dismiss" => {
-				let games = self.games.as_mut().ok_or("no games on this computer")?;
-				if games.dismiss(key()?, &mut self.settings.games) {
+				let games = self.desk.p.games.as_mut().ok_or("no games on this computer")?;
+				if games.dismiss(key()?, &mut self.desk.settings.games) {
 					log::info!("games: a found game put away");
 					self.save_games();
 				}
 			}
 			"games.restore" => {
-				if Games::restore(key()?, &mut self.settings.games) {
+				if Games::restore(key()?, &mut self.desk.settings.games) {
 					log::info!("games: a hidden game found again");
 					self.save_games();
 				}
 			}
 			"games.notice" => {
 				let on = on()?;
-				let settings = &mut self.settings.games;
+				let settings = &mut self.desk.settings.games;
 				if settings.notice_off == on {
 					settings.notice_off = !on;
 					log::info!("games: noticing games turned {}", if on { "on" } else { "off" });
@@ -483,8 +503,8 @@ impl Helper {
 				}
 			}
 			"games.pick" => {
-				let games = self.games.as_ref().ok_or("no games on this computer")?;
-				let settings = &self.settings.games;
+				let games = self.desk.p.games.as_ref().ok_or("no games on this computer")?;
+				let settings = &self.desk.settings.games;
 				// a found or added game that is on is a tile already; one turned off stays, which a pick turns on again
 				let on = |key: &str| {
 					!settings.is_off(key)
@@ -500,7 +520,7 @@ impl Helper {
 				let pick =
 					self.offering.picker.as_ref().and_then(|picker| picker.programs.iter().find(|p| p.key == key));
 				let pick = pick.ok_or("games.add: no such program in the picker")?.clone();
-				if Games::add_program(&pick, &mut self.settings.games) {
+				if Games::add_program(&pick, &mut self.desk.settings.games) {
 					log::info!("games: a program picked");
 					self.save_games();
 				}
@@ -508,8 +528,8 @@ impl Helper {
 			}
 			"games.remove" => {
 				let key = key()?;
-				let games = self.games.as_mut().ok_or("no games on this computer")?;
-				if games.remove_program(key, &mut self.settings.games) {
+				let games = self.desk.p.games.as_mut().ok_or("no games on this computer")?;
+				if games.remove_program(key, &mut self.desk.settings.games) {
 					log::info!("games: a program removed");
 					self.save_games();
 				}
@@ -519,8 +539,8 @@ impl Helper {
 				let key = key()?;
 				let port = intent.arg("port").and_then(Value::as_u64).and_then(|p| u16::try_from(p).ok());
 				let port = port.ok_or("games.port takes a port up to 65535")?;
-				let games = self.games.as_mut().ok_or("no games on this computer")?;
-				if games.set_port(key, port, &mut self.settings.games)? {
+				let games = self.desk.p.games.as_mut().ok_or("no games on this computer")?;
+				if games.set_port(key, port, &mut self.desk.settings.games)? {
 					log::info!("games: {key}: its port set");
 					self.save_games();
 				}
@@ -540,31 +560,31 @@ impl Helper {
 			"games.pace" => {
 				let pace = intent.arg("pace").and_then(Value::as_str).filter(|p| is_pace(p));
 				let pace = pace.ok_or("games.pace takes light, balanced or extreme")?;
-				let changed = stamped(pace.to_owned(), self.body.body.match_pace.as_ref());
+				let changed = stamped(pace.to_owned(), self.desk.body.body.match_pace.as_ref(), lan::now_ms());
 				log::info!("games: Moves per match {pace}");
-				self.body_changed(&Body { match_pace: Some(changed), ..Body::default() });
+				self.desk.body_changed(&Body { match_pace: Some(changed), ..Body::default() });
 			}
 			"games.aim" => {
 				let (key, on) = (key()?, on()?);
 				if !Watched::from_key(key).is_some_and(|w| w.aim()) {
 					return Err(format!("games.aim: {key} is no aim game"));
 				}
-				let off = &mut self.settings.games.aim_off;
+				let off = &mut self.desk.settings.games.aim_off;
 				off.retain(|k| k != key);
 				if !on {
 					off.push(key.to_owned());
 				}
 				log::info!("games: {key}: the arms rest {}", if on { "on" } else { "off" });
-				self.save_settings();
+				self.desk.save_settings();
 			}
 			"games.pause" => self.pause(intent)?,
 			"games.open_on_close" => {
-				self.settings.games.open_on_close_off = !on()?;
-				self.save_settings();
+				self.desk.settings.games.open_on_close_off = !on()?;
+				self.desk.save_settings();
 			}
 			"games.seen" => {
-				self.settings.games.seen_at = Some(lan::now_ms().div_euclid(1_000));
-				self.save_settings();
+				self.desk.settings.games.seen_at = Some(lan::now_ms().div_euclid(1_000));
+				self.desk.save_settings();
 			}
 			_ => return Err(intent.unknown()),
 		}
@@ -574,7 +594,7 @@ impl Helper {
 	/// Windows' one-time elevated grant on the folder a game's file goes into, off the loop; a second click while its
 	/// prompt is up asks nothing.
 	fn grant_game(&mut self, key: &str) -> Result<(), String> {
-		let games = self.games.as_mut().ok_or("no games on this computer")?;
+		let games = self.desk.p.games.as_mut().ok_or("no games on this computer")?;
 		let Some(folder) = games.grant_target(key) else { return Ok(()) };
 		let (tx, key) = (self.elevated.clone(), key.to_owned());
 		tokio::spawn(async move {
@@ -594,9 +614,16 @@ impl Helper {
 			Outcome::Declined => log::info!("games: {key}: the administrator step was declined"),
 			Outcome::Failed(_) => log::warn!("games: {key}: the grant could not be made"),
 		}
-		if let Some(games) = self.games.as_mut() {
+		if let Some(games) = self.desk.p.games.as_mut() {
 			games.granted(key, matches!(outcome, Outcome::Done));
 		}
+		self.show_games();
+	}
+
+	/// The offers' pause changed from a pump's Pause menu (`Platform::offers_paused`): the tray's items are drawn
+	/// again, whatever a click on them showed, and the Games tab with them.
+	pub(crate) fn offers_repaint(&mut self) {
+		self.offering.tray = None;
 		self.show_games();
 	}
 
@@ -607,28 +634,16 @@ impl Helper {
 	}
 
 	/// The pause `kind` names set (`none`, `hour`, `four_hours`, `night`, `game` or `resumed`: the Games tab's, the
-	/// tray's and a pump's Pause menu's, `Helper::pause_offers`), its items in the tray drawn again, or why none was,
+	/// tray's and a pump's Pause menu's, `Desk::pause_offers`), its items in the tray drawn again, or why none was,
 	/// nothing changed: no offers on this computer, no watched game running for `game`, or no such pause.
 	pub(crate) fn offers_paused(&mut self, kind: &str) -> Result<(), String> {
-		let t = self.tunables().ok_or("no offers on this computer")?;
 		let now = lan::now_ms().div_euclid(1_000);
-		let pause = match kind {
-			"none" => Pause::None,
-			"hour" => Pause::Until { at: now + t.hour_s },
-			"four_hours" => Pause::Until { at: now + t.four_hours_s },
-			"night" => Pause::Until { at: Zone::new(local_offset_at).next_game_day(now) },
-			"game" => {
-				let lists = self.games.as_ref().ok_or("no games on this computer")?.lists(&self.settings.games);
-				Pause::WhileRunning { game: self.running_game(&lists).ok_or("no watched game runs")?.id }
-			}
-			"resumed" => Pause::UntilResumed,
-			_ => return Err(format!("no pause {kind}")),
-		};
+		let pause = pause_of(kind, self.desk.p.games.as_ref(), &self.desk.settings.games, now)?;
 		log::info!("offers: the pause {kind}");
-		self.settings.offers.pause = pause;
+		self.desk.settings.offers.pause = pause;
 		// the tray's items are drawn again, whatever a click on them showed
 		self.offering.tray = None;
-		self.save_settings();
+		self.desk.save_settings();
 		Ok(())
 	}
 }

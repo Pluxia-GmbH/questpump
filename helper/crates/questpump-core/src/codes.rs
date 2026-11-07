@@ -210,6 +210,13 @@ pub mod answer {
 	pub const NOT_ALL_OUT: u8 = 2;
 }
 
+/// Who ran an app pump (`ns.Enum.by`, docs/plan.md slice 63), in its offered pump row's answer bits ([`flags::answer`],
+/// which no pump row used): [`by::BROWSER`] a browser's, whose rows carry the phone's bit beside the app's, so every
+/// Saga says "in a browser"; 0 any other. The game reads the pump as the phone's.
+pub mod by {
+	pub const BROWSER: u8 = 1;
+}
+
 /// A hold's answer to "Could you have held longer?" (`ns.Enum.longer`, slice 52), in its hold row's `reps` (0 not
 /// asked): asked after a fresh hold near its goal on a ladder of the Stamina Ledger (`ns.HoldAsk`,
 /// `library::hold_goal`).

@@ -1683,6 +1683,14 @@ local function buildLoad(parent)
 	F.kg = kg
 end
 
+-- "Don't know the weight": the weight box emptied, so the set counts its reps alone (Panel.LoadValue); - or + brings
+-- the planned weight back (Panel.StepLoad).
+function Panel.ClearLoad()
+	if not F.kg:IsShown() then return end
+	F.kg:ClearFocus()
+	F.kg:SetText("") -- its OnTextChanged redraws the preview and the view
+end
+
 -- The weight's - and +, the weight box's one rule on every surface (ns.LoadStep).
 function Panel.StepLoad(dir)
 	local slot = Lc.Slot()
@@ -2213,6 +2221,10 @@ local function buildResult()
 	v.load = CreateFrame("Frame", nil, col)
 	v.load:SetSize(LEFT_W, Kit.BUTTON_H)
 	buildLoad(col)
+	-- under it while it holds a weight, grey: "Don't know the weight" (David, 2026-11-06: "there should be a "dont know
+	-- weight" option here"), which empties it (Panel.ClearLoad)
+	v.kgNoneRow = answerRow(col, LEFT_W)
+	v.kgNone = answerButton(v.kgNoneRow, L["ui.result.kgNone"], function() Panel.ClearLoad() end)
 	-- the live preview under the dial once a number is in ("23 reps: +40 XP, new record")
 	v.preview = text(col, "bodyWhite", "CENTER", LEFT_W)
 	-- a counted set's form (slice 42, 2026-10-16; David: "The count in a time is not accurate enough and individual"):
@@ -3057,12 +3069,18 @@ local function layResult(v)
 		local really, form = v.really:IsShown(), state == "form"
 		local answers = not form and not really and centreButtons(v.answers, { v.empty, v.couldNot })
 		centreButtons(v.reallyRow, { v.reallyYes, v.reallyChange })
+		-- "Don't know the weight" while the box holds a weight and "Is that right?" does not ask (Change it answers it);
+		-- its row keeps its room under the weight box while it hides, so no answer under it moves into its place under a
+		-- second click
+		v.kgNone:SetShown(F.kg:IsShown() and not really and Panel.LoadValue() ~= nil)
+		centreButtons(v.kgNoneRow, { v.kgNone })
 		return math.max(top + v.sideH, Kit.Stack(v.left, top, {
 			{ v.dialRoom, 0, x = (LEFT_W - v.dialRoom:GetWidth()) / 2 }, { v.cleanLabel, 4, show = form },
 			{ v.cap, 6, show = v.cap:GetText() ~= "" },
 			{ v.preview, 10, show = not really and v.preview:GetText() ~= "" }, { v.really, 10, show = really },
 			{ v.reallyRow, 8, show = really }, { v.load, 12, show = F.kg:IsShown() },
-			{ v.forms, 16, show = form and not really }, { v.answers, 16, show = answers } }))
+			{ v.kgNoneRow, 6, show = F.kg:IsShown() and not really }, { v.forms, 16, show = form and not really },
+			{ v.answers, 16, show = answers } }))
 	elseif state == "whole" then
 		return Kit.Stack(v.left, top, { { v.whole, 0, x = (TM.TEXT - WHOLE_W) / 2 } })
 	elseif state == "mark" then
@@ -3770,6 +3788,7 @@ local function renderResult(p, slot)
 	local loaded = typing and not slot.practice and ns.Loaded(slot.move) ~= nil
 	placeLoad(v, slot, loaded)
 	v.load:SetShown(loaded)
+	if not loaded then v.kgNoneRow:Hide() end -- layResult shows it in the count's step
 	for _, part in ipairs({ v.preview, v.really, v.reallyRow }) do part:SetShown(typing) end
 	v.answers:SetShown(typing and not form)
 	for _, part in ipairs({ v.cleanLabel, v.forms }) do part:SetShown(form) end

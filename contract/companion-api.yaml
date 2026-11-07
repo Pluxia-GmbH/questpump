@@ -1147,7 +1147,10 @@ components:
         with exactly one device's bit, bit 7 (phone), bit 4 (watch, slice 31: the watch writes the bit as it keeps the
         row, and the phone stamps such a row with bit 11 alone) or bit 12 (computer, slice 35: a row of a pump the
         desktop app ran, which the helper keeps itself and a phone sends back only as its copy brought it, stamped with
-        bit 11 alone). A row's identity is its text and `n`, the n-th copy of that
+        bit 11 alone); a browser's row (slice 63, play.questpump.com, reaching a phone through the account) carries bit
+        7 as a phone's does, and its pump's offered row names the browser in bits 14-15 (`codes.by` of
+        `contract/fixtures/rows.json`, which no pump row used), so the Sagas say "in a browser" and the game reads it as
+        the phone's. A row's identity is its text and `n`, the n-th copy of that
         text among the device's rows, so a row sent again is kept once and two rows alike (the same second) stay two:
         the rule the addon's merge, the backup and the helper's take-in already count by. The helper drops a row that
         does not read, names a character, lacks the app bit, names no device or more than one (11|7|12 would be a

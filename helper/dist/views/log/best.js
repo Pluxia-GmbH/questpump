@@ -1,5 +1,5 @@
 // The best-day moment on the computer (the Saga, 2026-10-15; board A-Best; docs/ui.md, "The Saga"; the phones'
-// log.best), from the `log` topic's `best` (desk/log.rs: today first became a best day, the moment has not shown on
+// log.best), from the `log` topic's `best` (questpump-desk/src/log.rs: today first became a best day, the moment has not shown on
 // this computer this game day and no felt-unwell lock holds): as the window comes forward (its open, once the first
 // five minutes' cover is laid, its focus, and its showing where that comes after the focus) or a pump on this computer
 // ends (its cover goes, after its Result; the log built at its end too; one the tray or the card started as well since

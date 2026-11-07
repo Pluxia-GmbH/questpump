@@ -2,7 +2,7 @@
 //! computer has no haptics; docs/plan.md slice 35, "Sound and voice"). Every sound and line plays from Rust on the output
 //! the player picks (its id in settings.json; while it is not connected, the system's own and a note on the Sound and
 //! voice page), so a headset left on the desk swallows nothing and a window the game covers keeps its voice:
-//! - a cue (`Helper::cue`, DESK-PUMP's schedule; the page's kit and the match card through `sound.event` and
+//! - a cue (`Desk::cue`, DESK-PUMP's schedule; the page's kit and the match card through `sound.event` and
 //!   `offer_sound`) names a feedback event of `contract/design/tokens.json`, whose desktop column gives its sound (one
 //!   of `contract/design/sound/sounds.json`, the `.ogg` tools/sound.py writes, bundled as `resources/sounds/`) and its
 //!   voice line where it is one take (`side.switch`); a family (`cadence.*`, `count.*`) is the schedule's to pick, by
@@ -18,15 +18,16 @@
 //!   speaks a live region there;
 //! - the rep count (`count.<n>` on a running set of reps' beat, DESK-PUMP's) is heard only with the sounds, the voice
 //!   and "Count reps aloud" on, and never goes to the live region: while a screen reader takes the lines it is skipped
-//!   (`Helper::counts_on`), since a number every second or two would pile up there. Those three switches alone decide
-//!   whether Big view shows the reps counted and the count step starts from them (`Helper::counts_chosen`), so a
+//!   (`Desk::counts_on`), since a number every second or two would pile up there. Those three switches alone decide
+//!   whether Big view shows the reps counted and the count step starts from them (`Desk::counts_chosen`), so a
 //!   screen reader or a skipped count never hides the number;
 //! - a move's guide (Ready's "Read How and Tips aloud", DESK-PUMP's schedule) reads the game's own takes of the move's
 //!   How and Tips from the QuestPump addon of the install the app follows (`Media/Voice/guide/`, which the app bundles
 //!   none of), each only where that install's VoiceClips.lua holds its id with the hash of the words the app shows and
-//!   its file is there, timed by that install's own length of it (`guide_read`), on a player of its own beside the
-//!   line's: a line stops none of its takes, nor does a hush; it plays at the voice's level whatever the switches say
-//!   (the player asked for it) and never goes to the live region;
+//!   its file is there (the take of the line whose words it says where the install shares one, `ns.VoiceFiles`), timed
+//!   by that install's own length of it (`guide_read`), on a player of its own beside the line's: a line stops none of
+//!   its takes, nor does a hush; it plays at the voice's level whatever the switches say (the player asked for it) and
+//!   never goes to the live region;
 //! - the volume is the master level times the sounds' or the voice's (`settings.sound.levels`, 0 to 100 %, 100 as
 //!   recorded and the default; 2026-10-23, David: "proper sound settings like volume level (like any game)"), each
 //!   level on an even scale of 40 dB (`gain`), set on a sound or a take as it starts and on those playing as a level
@@ -35,15 +36,11 @@
 //!
 //! One thread owns the output: it opens the sink at the first sound and drops it once nothing has played for `IDLE`,
 //! so an idle app holds no audio stream, and it publishes the `menu.sound` topic (the switches, the levels, the outputs,
-//! the pick and its note). The page's intents are `sound.*`:
-//! `{"type":"sound.on"|"sound.voice"|"sound.callouts"|"sound.count"|"sound.voice_offers", "on": bool}`,
-//! `{"type":"sound.level", "channel": "master"|"sounds"|"voice", "percent": 0-100}` (the level kept),
+//! the pick and its note). The page's switches, levels, test and the kit's feedback events are the desk's intents
+//! (`questpump_desk::audio`'s doc: `Desk::sound_intent`, which keeps them and asks `Platform::sound_changed` and
+//! `Platform::sound_test`, here `Job::Settings` and `Job::Test`); the app's own (`OWN`) are
 //! `{"type":"sound.output", "id": string|null, "name": string}` (null: the system's output; the pick plays the test on
-//! it, opened anew where it was not connected),
-//! `{"type":"sound.picked"}` (the first pump's "Speakers or headset?" kept as it is), `{"type":"sound.test",
-//! "channel"?: "master"|"sounds"|"voice"}` (the test, or a level's part of it: the master's the whole test and the
-//! default, the sounds' the bell, the voice's the line; the page asks a level's once it has rested),
-//! `{"type":"sound.look"}` (list the outputs again) and `{"type":"sound.event", "event": <a feedback event>}`.
+//! it, opened anew where it was not connected) and `{"type":"sound.look"}` (list the outputs again).
 //! `menu.sound` is `{"sound": bool, "voice": bool, "callouts": bool, "count": bool, "voice_offers": bool, "levels":
 //! {"master", "sounds", "voice"} (each 0-100), "outputs": [{"id", "name", "default": bool}], "output": id|null, "gone":
 //! name|null, "looked": bool}`; whether a screen reader runs is the `shell` topic's `reader` alone (one owner a fact),
@@ -55,17 +52,19 @@ mod system;
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::sync::mpsc::{self, RecvTimeoutError};
-use std::sync::{Arc, LazyLock};
 use std::time::{Duration, Instant, SystemTime};
 
+use questpump_desk::Platform as _;
+use questpump_desk::audio::{CLIPS, Channel, FEEDBACK};
+use questpump_desk::platform::{GuideTake, GuideTakes};
 use rodio::Player;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::Value;
 use tauri::{AppHandle, Manager as _};
 
 use super::Intent;
-use super::seams::{Cue, GuideTake, GuideTakes};
 use crate::runtime::Helper;
 use crate::settings::{Levels, Output, SoundSettings};
 use crate::ui::{self, Announce};
@@ -78,6 +77,12 @@ pub(crate) const NOTICES: &str = include_str!("../../notices/audio.txt");
 
 /// The topic of the Sound and voice page.
 const TOPIC: &str = "menu.sound";
+/// The Sound and voice page's intents the app answers itself (picking an output); the rest of `sound.*` are the desk's
+/// (`Desk::sound_intent`).
+pub(crate) const OWN: [&str; 2] = ["sound.output", "sound.look"];
+/// The bundle's folder of voice takes in its `resources/`, `<id>.ogg` each: the addon's own `Media/Voice/` takes
+/// (`tauri.conf.json`'s resources), which a first install of the addon takes too (`crate::addon`).
+pub(crate) const VOICE: &str = "voice";
 
 /// How long the output stays open after the last sound ended.
 const IDLE: Duration = Duration::from_secs(3);
@@ -117,85 +122,12 @@ fn gain(level: u8) -> f32 {
 		}
 	}
 }
-
-/// A level of the Sound and voice page (`sound.level`'s `channel`), and the part of the test it plays.
-#[derive(Clone, Copy)]
-enum Channel {
-	Master,
-	Sounds,
-	Voice,
-}
-
-impl Channel {
-	fn named(name: &str) -> Option<Self> {
-		match name {
-			"master" => Some(Self::Master),
-			"sounds" => Some(Self::Sounds),
-			"voice" => Some(Self::Voice),
-			_ => None,
-		}
-	}
-
-	fn level(self, levels: &mut Levels) -> &mut u8 {
-		match self {
-			Self::Master => &mut levels.master,
-			Self::Sounds => &mut levels.sounds,
-			Self::Voice => &mut levels.voice,
-		}
-	}
-}
-
-/// A feedback event's desktop column (`contract/design/tokens.json` `feedback.<event>.desktop`).
-#[derive(Deserialize, Debug, Default)]
-struct Column {
-	sound: Option<String>,
-	voice: Option<String>,
-}
-
-/// The feedback events' desktop columns by event, built in; a table that does not read leaves every event silent.
-static FEEDBACK: LazyLock<HashMap<String, Column>> = LazyLock::new(|| {
-	#[derive(Deserialize)]
-	struct Event {
-		desktop: Column,
-	}
-	#[derive(Deserialize)]
-	struct Tokens {
-		feedback: HashMap<String, Value>,
-	}
-	let tokens: Option<Tokens> = serde_json::from_str(include_str!("../../../../contract/design/tokens.json")).ok();
-	tokens
-		.map(|t| {
-			t.feedback
-				.into_iter()
-				.filter_map(|(name, event)| Some((name, serde_json::from_value::<Event>(event).ok()?.desktop)))
-				.collect()
-		})
-		.unwrap_or_default()
-});
-
-/// A voice line's receipt: the words it says, their djb2 hash (as VoiceClips.lua keeps it) and its take's length in
-/// seconds.
-#[derive(Deserialize)]
-struct Clip {
-	text: String,
-	#[serde(default)]
-	hash: u64,
-	#[serde(default)]
-	seconds: f64,
-}
-
-/// The voice's lines by their VoiceClips.lua id, with the words each says and its length (`tools/voice/clips.json`,
-/// which the takes are recorded from), built in: the ids a take may be asked for, the words the live region gets in a
-/// take's place while a screen reader hears the lines, and how long a line lasts before a callout follows it.
-static CLIPS: LazyLock<HashMap<String, Clip>> =
-	LazyLock::new(|| serde_json::from_str(include_str!("../../../../tools/voice/clips.json")).unwrap_or_default());
-
 /// A move's guide's parts in the order the voice reads them (Speech.lua `GUIDE`), each line a take
 /// `guide/<part>.<key>[.<gear>].<n>`.
 const GUIDE: [&str; 2] = ["how", "tips"];
 
 /// The guide's `["guide/…"] = <value>,` lines of a table of an install's VoiceClips.lua (`ns.<table> = {` to its `}`),
-/// each its id and its value's text.
+/// each its id and its value's text (a string's with its quotes).
 fn guide_lines<'a>(text: &'a str, table: &str) -> impl Iterator<Item = (&'a str, &'a str)> {
 	let head = format!("ns.{table} = {{");
 	text.lines()
@@ -207,21 +139,34 @@ fn guide_lines<'a>(text: &'a str, table: &str) -> impl Iterator<Item = (&'a str,
 		.map(|(id, value)| (id, value.trim_end_matches(',')))
 }
 
-/// The guide's takes in an install's VoiceClips.lua: each id's hash (`ns.VoiceClips`) and its take's length in seconds
-/// (`ns.VoiceSeconds`, by which the game times its guide: Speech.lua), a take with both alone.
+/// The guide's takes in an install's VoiceClips.lua: each id's hash (`ns.VoiceClips`), its take's length in seconds
+/// (`ns.VoiceSeconds`, by which the game times its guide: Speech.lua), a take with both alone, and the line whose take
+/// it plays where it says that line's words (`ns.VoiceFiles`, one take a sentence since 2026-11-05; an addon from
+/// before has no such table, and each line plays its own).
 fn guide_takes(text: &str) -> HashMap<String, Take> {
 	let seconds: HashMap<&str, f64> =
 		guide_lines(text, "VoiceSeconds").filter_map(|(id, value)| Some((id, value.parse().ok()?))).collect();
+	let files: HashMap<&str, &str> = guide_lines(text, "VoiceFiles")
+		.filter_map(|(id, value)| Some((id, value.strip_prefix('"')?.strip_suffix('"')?)))
+		.collect();
 	guide_lines(text, "VoiceClips")
-		.filter_map(|(id, value)| Some((id.to_owned(), Take { hash: value.parse().ok()?, seconds: *seconds.get(id)? })))
+		.filter_map(|(id, value)| {
+			let take = Take {
+				hash: value.parse().ok()?,
+				seconds: *seconds.get(id)?,
+				file: files.get(id).map(|file| (*file).to_owned()),
+			};
+			Some((id.to_owned(), take))
+		})
 		.collect()
 }
 
-/// A take of an install's guide: the djb2 hash of the words it says and its length in seconds.
-#[derive(Clone, Copy)]
+/// A take of an install's guide: the djb2 hash of the words it says, its length in seconds and the line whose take it
+/// plays where it shares one (`guide_takes`).
 struct Take {
 	hash: u64,
 	seconds: f64,
+	file: Option<String>,
 }
 
 /// An install's VoiceClips.lua as last read: its file, its modified time and its guide's takes (`guide_takes`; none
@@ -232,17 +177,12 @@ struct Installed {
 	takes: HashMap<String, Take>,
 }
 
-/// A feedback event's name as the table holds it, for a cue (none for an event it lacks).
-fn event(name: &str) -> Option<&'static str> {
-	FEEDBACK.get_key_value(name).map(|(name, _)| name.as_str())
-}
-
 /// The loop's handle on the audio thread.
 pub(crate) struct Audio {
 	jobs: mpsc::Sender<Job>,
 	/// The live region's last line.
 	announced: u64,
-	/// The followed install's VoiceClips.lua, read again once it changes (`Helper::guide_read`).
+	/// The followed install's VoiceClips.lua, read again once it changes (`guide_read`).
 	installed: Option<Installed>,
 }
 
@@ -263,7 +203,7 @@ enum Job {
 	Picked,
 	/// The output failed (unplugged, the system took it): it opens again at the next sound.
 	Lost,
-	/// The line playing stops (`Helper::hush`).
+	/// The line playing stops (`Desk::hush`).
 	Hush,
 	/// A take of a move's guide by its file, on the guide's player, the guide's take before stopping.
 	Guide(PathBuf),
@@ -313,75 +253,65 @@ impl Audio {
 		// the thread lives as long as the app; a send that fails finds it gone at the quit
 		let _ = self.jobs.send(job);
 	}
-}
 
-impl Helper {
-	/// Plays a cue of the pump's sound and voice (`seams::Cue`): an event's sound and its one take, a line, words.
-	pub(super) fn play_cue(&mut self, cue: Cue) {
-		match cue {
-			Cue::Event(name) => {
-				let Some(column) = FEEDBACK.get(name) else {
-					log::warn!("sound: no feedback event {name}");
-					return;
-				};
-				if let Some(sound) = &column.sound
-					&& self.settings.sound.on
-				{
-					self.audio.send(Job::Sound(sound.clone()));
-				}
-				// a family (`count.*`) is the schedule's to pick, as a line of its own
-				if let Some(line) = column.voice.as_deref().filter(|v| !v.ends_with(".*")) {
-					self.voice_line(line.to_owned());
-				}
-			}
-			Cue::Line(id) => self.voice_line(id),
-		}
+	/// A sound by its sounds.json id (`Platform::play_sound`: the switches said yes).
+	pub(crate) fn sound(&self, id: &str) {
+		self.send(Job::Sound(id.to_owned()));
 	}
 
-	/// The card's one soft sound and, for a match's card (`line`) with the voice on for offers, its take "Match over."
-	/// (never the live region: the card is no page a screen reader reads, and the offer stands on Pump home where it
-	/// does); a reminder's card plays the sound alone.
-	pub(super) fn play_offer(&mut self, line: bool) {
-		if self.settings.sound.on
-			&& let Some(sound) = FEEDBACK.get(OFFER_EVENT).and_then(|c| c.sound.clone())
-		{
-			self.audio.send(Job::Sound(sound));
-		}
-		if line && self.settings.sound.voice_offers {
-			self.audio.send(Job::Take(OFFER_LINE.to_owned()));
-		}
+	/// A take by its VoiceClips.lua id, the line before stopping (`Platform::play_take`).
+	pub(crate) fn take(&self, id: &str) {
+		self.send(Job::Take(id.to_owned()));
 	}
 
-	/// The answer to `/qp ping`, the take "QuestPump here.", whatever the switches say: the player sent the signal to
-	/// hear it (the Computer page's screen line shows it too). The levels still set how loud.
-	pub(crate) fn play_ping(&self) {
-		self.audio.send(Job::Take(PING_LINE.to_owned()));
+	/// Stops the line playing (`Desk::hush`).
+	pub(crate) fn hush(&self) {
+		self.send(Job::Hush);
 	}
 
-	/// A take by its id: to the live region while the screen reader hears it (`reader_hears`), else the voice when it
-	/// is on, a move's guide held while it plays (`guide_hold`). An id the voice does not know says nothing.
-	fn voice_line(&mut self, id: String) {
-		let Some((words, seconds)) = CLIPS.get(&id).map(|clip| (clip.text.clone(), clip.seconds)) else {
-			log::warn!("sound: no voice line {id}");
-			return;
-		};
-		if self.reader_hears() {
-			self.announce(words);
-		} else if self.settings.sound.voice {
-			self.guide_hold(&id, seconds);
-			self.audio.send(Job::Take(id));
-		}
+	/// Keeps the output open while a pump runs (`Desk::hold_sound`).
+	pub(crate) fn hold(&self, on: bool) {
+		self.send(Job::Hold(on));
+	}
+
+	/// Plays at the switches, the levels and the pick kept (`Platform::sound_changed`).
+	pub(crate) fn settings(&self, settings: SoundSettings) {
+		self.send(Job::Settings(settings));
+	}
+
+	/// Plays the page's test, or a level's part of it (`Platform::sound_test`).
+	pub(crate) fn test(&self, channel: Channel) {
+		self.send(Job::Test(channel));
+	}
+
+	/// Plays a take of a move's guide (`guide_read`'s file) on the guide's own player, stopping its take before.
+	pub(crate) fn guide(&self, file: PathBuf) {
+		self.send(Job::Guide(file));
+	}
+
+	/// Stops the guide's take.
+	pub(crate) fn guide_stop(&self) {
+		self.send(Job::GuideStop);
+	}
+
+	/// A line for the page's one polite live region (the `shell` topic's `announce`), while the screen reader hears it
+	/// (`reader_hears`).
+	pub(crate) fn announce(&mut self, app: &AppHandle, text: String) {
+		self.announced += 1;
+		let seq = self.announced;
+		ui::update(app, |v| v.shell.announce = Some(Announce { text, seq }));
 	}
 
 	/// The takes of move `key`'s guide (Speech.lua `GuideTakes`): How's, then Tips' from where `tips` says, each part
 	/// the implement's own (`gear`) where the voice has it, each take from the QuestPump addon of the install the app
-	/// follows, timed by that install's own length of it, and only where that install's VoiceClips.lua holds its id with
-	/// the hash of the words the app shows (`tools/voice/clips.json`, the words of `contract/moves.json`) and its file is
-	/// there, so an addon of another version never reads other words; a part stops at its first take without them, as
-	/// the game's stops at the first id it lacks, so the voice skips no step the screen shows; none without such an
-	/// install.
-	pub(super) fn guide_read(&mut self, key: &str, gear: Option<&str>) -> GuideTakes {
-		let Some(addon) = self.followed.as_ref().map(|addons| addons.join("QuestPump")) else {
+	/// follows (`followed`, its AddOns folder), timed by that install's own length of it, and only where that install's
+	/// VoiceClips.lua holds its id with the hash of the words the app shows (`tools/voice/clips.json`, the words of
+	/// `contract/moves.json`) and its file is there (the take of the line whose words it says where that install shares
+	/// one, else its own), so an addon of another version never reads other words; a part stops at its first take
+	/// without them, as the game's stops at the first id it lacks, so the voice skips no step the screen shows; none
+	/// without such an install.
+	pub(crate) fn guide_read(&mut self, followed: Option<&Path>, key: &str, gear: Option<&str>) -> GuideTakes {
+		let Some(addon) = followed.map(|addons| addons.join("QuestPump")) else {
 			return GuideTakes::default();
 		};
 		let Some(installed) = self.installed_guide(&addon.join("VoiceClips.lua")) else {
@@ -400,7 +330,10 @@ impl Helper {
 				let id = format!("{base}.{n}");
 				let Some(clip) = CLIPS.get(&id) else { break };
 				let Some(take) = installed.get(&id).filter(|take| take.hash == clip.hash) else { break };
-				let Some(file) = id.strip_prefix("guide/").map(|file| voice.join(format!("{file}.ogg"))) else { break };
+				let shared = take.file.as_deref().unwrap_or(&id);
+				let Some(file) = shared.strip_prefix("guide/").map(|file| voice.join(format!("{file}.ogg"))) else {
+					break;
+				};
 				if !file.is_file() {
 					break;
 				}
@@ -417,7 +350,7 @@ impl Helper {
 	/// none where it is not there.
 	fn installed_guide(&mut self, file: &Path) -> Option<&HashMap<String, Take>> {
 		let modified = std::fs::metadata(file).and_then(|m| m.modified()).ok()?;
-		if !self.audio.installed.as_ref().is_some_and(|i| i.file == file && i.modified == modified) {
+		if !self.installed.as_ref().is_some_and(|i| i.file == file && i.modified == modified) {
 			let takes = std::fs::read_to_string(file).map_or_else(
 				|e| {
 					log::warn!("sound: {}: {e}", file.display());
@@ -425,99 +358,55 @@ impl Helper {
 				},
 				|text| guide_takes(&text),
 			);
-			self.audio.installed = Some(Installed { file: file.to_owned(), modified, takes });
+			self.installed = Some(Installed { file: file.to_owned(), modified, takes });
 		}
-		self.audio.installed.as_ref().map(|i| &i.takes)
+		self.installed.as_ref().map(|i| &i.takes)
+	}
+}
+
+/// The `shell` topic's `output_picked`: whether the player chose an output yet, which the first pump's "Speakers or
+/// headset?" asks until then.
+pub(crate) fn show_picked(app: &AppHandle, picked: bool) {
+	ui::update(app, |v| v.shell.output_picked = picked);
+}
+
+/// A screen reader runs and the main window has the keyboard's focus (the `shell` topic's `focused`, Rust's
+/// `WindowEvent::Focused`, which a hidden, minimized or closed window has lost): only then does the page's live region
+/// reach the player (`Platform::reader_hears`).
+pub(crate) fn reader_hears(app: &AppHandle) -> bool {
+	screen_reader() && app.state::<ui::Shared>().view.lock().is_ok_and(|v| v.shell.focused)
+}
+
+impl Helper {
+	/// The card's one soft sound and, for a match's card (`line`) with the voice on for offers, its take "Match over."
+	/// (never the live region: the card is no page a screen reader reads, and the offer stands on Pump home where it
+	/// does); a reminder's card plays the sound alone.
+	pub(super) fn play_offer(&mut self, line: bool) {
+		if self.desk.settings.sound.on
+			&& let Some(sound) = FEEDBACK.get(OFFER_EVENT).and_then(|c| c.sound.clone())
+		{
+			self.desk.p.audio.send(Job::Sound(sound));
+		}
+		if line && self.desk.settings.sound.voice_offers {
+			self.desk.p.audio.send(Job::Take(OFFER_LINE.to_owned()));
+		}
 	}
 
-	/// Plays a take of a move's guide (`guide_read`'s file) on the guide's own player, stopping its take before.
-	pub(super) fn play_guide(&self, file: PathBuf) {
-		self.audio.send(Job::Guide(file));
-	}
-
-	/// Stops the guide's take.
-	pub(super) fn stop_guide(&self) {
-		self.audio.send(Job::GuideStop);
-	}
-
-	/// A take's length in seconds (its receipt's), none for a line with no take.
-	pub(super) fn take_length(id: &str) -> Option<f64> {
-		CLIPS.get(id).map(|clip| clip.seconds)
-	}
-
-	/// The Sound and voice page's Callouts switch: a move's callout follows its line (the voice's switch and a screen
-	/// reader still decide whether a line is heard, `voice_line`).
-	pub(super) fn callouts_wanted(&self) -> bool {
-		self.settings.sound.callouts
-	}
-
-	/// The player's switches let the voice count reps (`Helper::counts_chosen`): the sounds, the voice and "Count reps
-	/// aloud" on, whether or not a count is heard now.
-	pub(super) fn count_switched(&self) -> bool {
-		let s = &self.settings.sound;
-		s.on && s.voice && s.count
-	}
-
-	/// The rep count goes to the voice now (`Helper::counts_on`; at the voice's level, a silent one playing nothing):
-	/// the player's switches let the voice count (`count_switched`), and no screen reader takes the voice's lines
-	/// (`reader_hears`), since a count never goes to the live region.
-	pub(super) fn counts_wanted(&self) -> bool {
-		self.count_switched() && !self.reader_hears()
-	}
-
-	/// A screen reader runs and the main window has the keyboard's focus (the `shell` topic's `focused`, Rust's
-	/// `WindowEvent::Focused`, which a hidden, minimized or closed window has lost): only then does the page's live
-	/// region reach the player.
-	fn reader_hears(&self) -> bool {
-		screen_reader() && self.app.state::<ui::Shared>().view.lock().is_ok_and(|v| v.shell.focused)
-	}
-
-	/// Stops the line playing (`Helper::hush`).
-	pub(super) fn hush_voice(&self) {
-		self.audio.send(Job::Hush);
-	}
-
-	/// Keeps the output open while a pump runs (`Helper::hold_sound`).
-	pub(super) fn hold_output(&self, on: bool) {
-		self.audio.send(Job::Hold(on));
-	}
-
-	fn announce(&mut self, text: String) {
-		self.audio.announced += 1;
-		let seq = self.audio.announced;
-		ui::update(&self.app, |v| v.shell.announce = Some(Announce { text, seq }));
+	/// The answer to `/qp ping`, the take "QuestPump here.", whatever the switches say: the player sent the signal to
+	/// hear it (the Computer page's screen line shows it too). The levels still set how loud.
+	pub(crate) fn play_ping(&self) {
+		self.desk.p.audio.send(Job::Take(PING_LINE.to_owned()));
 	}
 
 	/// The start's part of the sound: whether the player chose an output yet.
 	pub(crate) fn sound_start(&self) {
-		let picked = self.settings.sound.output_picked;
-		ui::update(&self.app, |v| v.shell.output_picked = picked);
+		show_picked(&self.app, self.desk.settings.sound.output_picked);
 	}
 
-	/// The Sound and voice page's intents and the kit's feedback events (`sound.*`, the module doc).
+	/// The Sound and voice page's own intents on the computer (`sound.output`, `sound.look`: the module doc); its
+	/// switches, levels, test and the kit's events are the desk's (`OWN`, `Desk::sound_intent`).
 	pub(crate) fn sound_intent(&mut self, intent: &Intent) -> Result<(), String> {
-		let switch = || intent.arg("on").and_then(Value::as_bool).ok_or_else(|| format!("{} takes on", intent.kind()));
-		let mut picked = false;
 		match intent.kind() {
-			"sound.on" => self.settings.sound.on = switch()?,
-			"sound.voice" => self.settings.sound.voice = switch()?,
-			"sound.callouts" => self.settings.sound.callouts = switch()?,
-			"sound.count" => self.settings.sound.count = switch()?,
-			"sound.voice_offers" => self.settings.sound.voice_offers = switch()?,
-			"sound.level" => {
-				let channel = intent
-					.arg("channel")
-					.and_then(Value::as_str)
-					.and_then(Channel::named)
-					.ok_or("sound.level takes a channel: master, sounds or voice")?;
-				let percent = intent
-					.arg("percent")
-					.and_then(Value::as_u64)
-					.and_then(|p| u8::try_from(p).ok())
-					.filter(|p| *p <= 100)
-					.ok_or("sound.level takes a percent from 0 to 100")?;
-				*channel.level(&mut self.settings.sound.levels) = percent;
-			}
 			"sound.output" => {
 				let output = match intent.arg("id") {
 					Some(Value::Null) | None => None,
@@ -527,42 +416,20 @@ impl Helper {
 					}
 					Some(_) => return Err("sound.output takes an id or null".to_owned()),
 				};
-				self.settings.sound.output = output;
-				self.settings.sound.output_picked = true;
-				picked = true;
-			}
-			"sound.picked" => self.settings.sound.output_picked = true,
-			"sound.test" => {
-				let channel = match intent.arg("channel") {
-					None | Some(Value::Null) => Channel::Master,
-					Some(name) => name
-						.as_str()
-						.and_then(Channel::named)
-						.ok_or("sound.test takes a channel: master, sounds or voice")?,
-				};
-				self.audio.send(Job::Test(channel));
-				return Ok(());
+				self.desk.settings.sound.output = output;
+				self.desk.settings.sound.output_picked = true;
+				self.desk.save_settings();
+				self.desk.p.sound_changed(&self.desk.settings.sound);
+				self.desk.p.audio.send(Job::Picked);
+				self.desk.p.audio.test(Channel::Master);
+				Ok(())
 			}
 			"sound.look" => {
-				self.audio.send(Job::Look);
-				return Ok(());
+				self.desk.p.audio.send(Job::Look);
+				Ok(())
 			}
-			"sound.event" => {
-				let name = intent.arg("event").and_then(Value::as_str).ok_or("sound.event takes an event")?;
-				let event = event(name).ok_or_else(|| format!("sound.event: no feedback event {name}"))?;
-				self.cue(Cue::Event(event));
-				return Ok(());
-			}
-			_ => return Err(intent.unknown()),
+			_ => Err(intent.unknown()),
 		}
-		self.save_settings();
-		self.audio.send(Job::Settings(self.settings.sound.clone()));
-		self.sound_start();
-		if picked {
-			self.audio.send(Job::Picked);
-			self.audio.send(Job::Test(Channel::Master));
-		}
-		Ok(())
 	}
 }
 
@@ -737,7 +604,7 @@ impl Thread {
 		if volume <= 0.0 {
 			return;
 		}
-		let file = self.resources.as_ref().map(|dir| dir.join("voice").join(format!("{id}.ogg")));
+		let file = self.resources.as_ref().map(|dir| dir.join(VOICE).join(format!("{id}.ogg")));
 		if let Some(Ok(file)) = file.as_deref().map(std::fs::File::open) {
 			self.voice = self.player(file, delay, volume, id);
 		} else {

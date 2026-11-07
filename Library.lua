@@ -7,7 +7,8 @@
 -- walk, 205, the vest march, 220, the backpack march, and 240, the power march; merged into another move on
 -- 2026-10-04: 3, 4, 5, 139, 140, 160, 167, 168, 181, 205, 220, 226, 233 and 240, ns.Merged below; 2026-10-26: 16, the
 -- wall sit at 135°, David: "I also feel we can remove the shallow wall sit as first. the quarter one as first is enough
--- no?", whose ladder starts at the quarter sit since, ns.Shifted below); the string keys are for ns.L only (move.<key>,
+-- no?", whose ladder starts at the quarter sit since, ns.Shifted below; 2026-11-06: 228-232, 313 and 401, the towel
+-- rows over a door, ns.Merged below); the string keys are for ns.L only (move.<key>,
 -- .setup, .cue, .stop) and outlive a new name (backpack_row is the one-arm row with any weight).
 -- Every move is tagged from a closed vocabulary (tools/lint.lua checks it), so the engine acts on tags, never on names:
 --
@@ -27,8 +28,8 @@
 --           20 handstand, 21 L-sit, 22 planche, 23 power (slice 22), 24 sit-up (2026-10-17);
 --           rung: its place on that ladder, or on its region's ladder scale for a move off the ladders; anchor: the
 --           move whose record (a pose's mark) decides the rung
--- regress, progress, twin   move ids; twin: the substitute when the move needs floor, space, a stable chair, a table,
---           the towel and door (2026-10-28) or equipment (an anchor that needs one of the first five has one wherever
+-- regress, progress, twin   move ids; twin: the substitute when the move needs floor, space, a stable chair, a table
+--           or equipment (an anchor that needs one of the first four has one wherever
 --           its ladder holds a move without them at or under its rung: tools/lint.lua), the rung's own move without
 --           them first where one exists
 --           (2026-10-01), then the stand-ins from below, which stand for the rung but never climb to it or from it
@@ -593,23 +594,21 @@ ns.Library = {
 		checks = { { ladder = LAD.push, step = 6, count = 12 } },
 		pain = { "wrist", "elbow", "shoulder", "knee" }, hrAfter = true, mp = { Ch, Tr }, ms = { Sh, Ab } }),
 
-	-- The row (the pull ladder until 2026-10-04), by the load an arm takes (2026-10-04; the towel's hold and its
-	-- shoulder-blade pull held rungs 4 and 5 until then, lighter an arm than the rungs below them): both arms on the
+	-- The row (the pull ladder until 2026-10-04), by the load an arm takes (2026-10-04): both arms on the
 	-- doorframe, one arm with a weight in the hand (any heavy object, 5-15 kg to start and more once 20 reps come; the
-	-- backpack, chair and dumbbell rows are this one move since then, ns.Merged), both arms under a sturdy table, on a
-	-- bath towel over the top of a door or on rings, or one arm on the doorframe with the toes a foot's length back
+	-- backpack, chair and dumbbell rows are this one move since then, ns.Merged), both arms under a sturdy table or on
+	-- rings, or one arm on the doorframe with the toes a foot's length back
 	-- (the strap lean-back loads 53 % of the body at 45 degrees, Melrose and Dawes 2015, so about a quarter on each
 	-- arm), one arm on the doorframe (a one-arm lean takes the whole load: at a 25-30 degree lean about 31-39 % of the
-	-- body), one arm with the toes at its base and a slow lowering; then one arm on the towel, lowering first, or under
-	-- the table with the heels up, a backpack on the chest and a hold at the top. The slow lowering of the weighted row
+	-- body), one arm with the toes at its base and a slow lowering; then under the table or on rings with the heels up,
+	-- a backpack on the chest and a hold at the top. The slow lowering of the weighted row
 	-- and the holds and shoulder-blade pulls are variants, never a rung: tempo alone climbs nothing.
-	-- The towel rows need the Towel and door box since 2026-10-28 (David: "That seems a bit complicated. I mean we can
-	-- have it if people say they have towels and we need to properly explain in the how to. Otherwise research a
-	-- different excercise to replace it with."): off for every player, the knot now over the top of a door the player
-	-- pushes open, as the door anchors of TRX, Gaiam and inSPORTline go for that door, where it sat behind the door by
-	-- the top hinge; a doorknob anchors nothing (no maker does; docs/research/towel-door-rows-2026-10-28.md). Without
-	-- the towel and door or a table the row ends at rung 5, the steep one-arm doorframe row (a bar or rings alone too:
-	-- their moves start at rung 9): nothing else at home carries rungs 6-8's 40-50 % of the body on one arm.
+	-- The towel rows over a door went on 2026-11-06 (Rapha: "too complicated noone will get it from this animation";
+	-- David kept them on 2026-10-28 only if the how-to explained them, docs/research/towel-door-rows-2026-10-28.md): the
+	-- knot that held them sat out of sight behind the door, the setup came back at every pump, and a room's door opens
+	-- the wrong way from inside. Their rows read as the moves that took their places (ns.Merged). Without a table or
+	-- rings the row ends at rung 5, the steep one-arm doorframe row (a bar alone too: its moves start at rung 9): nothing
+	-- else at home carries rungs 6-8's load.
 	[56] = move({ key = "doorframe_row", group = "pull", pattern = "pull", region = "pull", class = 1, dose = "rep",
 		ladder = 9, rung = 1, anchor = true, progress = 57, pain = { "elbow" }, mp = { UB, La }, ms = { Bi, Fa } }),
 	[58] = move({ key = "doorframe_iso", group = "pull", pattern = "iso", region = "pull", class = 1, dose = "hold",
@@ -620,10 +619,7 @@ ns.Library = {
 		ms = { Bi, Fa, Ob } }),
 	[61] = move({ key = "ytw_raise", group = "pull", pattern = "pull", region = "pull", class = 1, dose = "rep",
 		ladder = 9, rung = 2, flags = { "floor" }, mp = { UB }, ms = { Sh, Nk, LB } }),
-	[230] = move({ key = "towel_door_scap_pull", group = "pull", pattern = "pull", region = "pull", class = 2,
-		dose = "rep", ladder = 9, rung = 2, regress = 56, needs = { "door_towel" }, pain = { "shoulder" },
-		mp = { UB, La }, ms = { Nk, Fa } }),
-	-- The doorframe's shoulder-blade pull beside it (2026-10-28, the towel's for a setup without the towel): rung 1's
+	-- The doorframe's shoulder-blade pull (2026-10-28): rung 1's
 	-- grip and lean, the arms straight, the shoulder blades drawn back and down, then let slide forward; about a
 	-- quarter of the body in all at that lean (0.68 x tan of the lean, the model of the one-arm rows above).
 	[647] = move({ key = "doorframe_scap_pull", group = "pull", pattern = "pull", region = "pull", class = 1,
@@ -643,22 +639,16 @@ ns.Library = {
 		dose = "rep", ladder = 9, rung = 2, regress = 57, needs = { "table" }, support = "table",
 		pain = { "shoulder", "elbow" }, mp = { La, UB, Bi }, ms = { Sh, Nk, LB, Gl } }),
 	[59] = move({ key = "inverted_row", group = "pull", pattern = "pull", region = "pull", class = 2, dose = "rep",
-		ladder = 9, rung = 3, anchor = true, regress = 430, progress = 225, twin = 228, needs = { "table" },
+		ladder = 9, rung = 3, anchor = true, regress = 430, progress = 225, twin = 199, needs = { "table" },
 		support = "table", pain = { "shoulder", "elbow" }, mp = { La, UB, Bi }, ms = { Sh, Nk, LB, Gl } }),
-	[228] = move({ key = "towel_door_row", group = "pull", pattern = "pull", region = "pull", class = 2, dose = "rep",
-		ladder = 9, rung = 3, regress = 56, twin = 199, needs = { "door_towel" }, pain = { "elbow", "shoulder" },
-		theme = { "oar" }, mp = { La, UB }, ms = { Bi, Fa, Ab } }),
 	[60] = move({ key = "backpack_row_slow", group = "pull", pattern = "pull", region = "pull", class = 2,
 		dose = "rep", ladder = 9, rung = 3, regress = 57, side = true, pain = { "elbow" }, theme = { "oar" },
 		load = "total", kg = { 5, 15 }, holds = { "dumbbells", "kettlebell" }, mp = { La, UB }, ms = { Bi, Fa, Ob } }),
-	[229] = move({ key = "towel_door_hold", group = "pull", pattern = "iso", region = "pull", class = 2, dose = "hold",
-		ladder = 9, rung = 3, regress = 58, strainFree = true, needs = { "door_towel" }, pain = { "elbow", "shoulder" },
-		mp = { Fa, La }, ms = { UB, Bi } }),
-	-- The one-arm doorframe row with the toes a foot's length back (2026-10-28): rung 3's own move without a table, the
-	-- towel or rings, after them in the rung's chain, so a bare player climbs 3 to 5 on the doorframe. The toes set the
-	-- lean, about 15-20 degrees, so about 18-25 % of the body on the arm (0.68 x tan of the lean), the two-arm towel
-	-- row's share an arm (Melrose and Dawes 2015); the one-arm doorframe row's easier version. Its hold at the top, the
-	-- elbow back and the shoulder down, stands beside it in the towel hold's seconds, a side each.
+	-- The one-arm doorframe row with the toes a foot's length back (2026-10-28): rung 3's own move without a table or
+	-- rings, after them in the rung's chain, so a bare player climbs 3 to 5 on the doorframe. The toes set the lean,
+	-- about 15-20 degrees, so about 18-25 % of the body on the arm (0.68 x tan of the lean; Melrose and Dawes 2015); the
+	-- one-arm doorframe row's easier version. Its hold at the top, the elbow back and the shoulder down, stands beside
+	-- it in 10-45 s, a side each.
 	[648] = move({ key = "one_arm_doorframe_row_back", group = "pull", pattern = "pull", region = "pull", class = 2,
 		dose = "rep", ladder = 9, rung = 3, regress = 56, progress = 225, side = true, pain = { "elbow" },
 		theme = { "oar" }, mp = { La, UB }, ms = { Bi, Fa, Ob } }),
@@ -673,70 +663,51 @@ ns.Library = {
 	[62] = move({ key = "wall_angels", group = "pull", pattern = "mobility", class = 1, dose = "flow", secs = 45,
 		ladder = 15, rung = 1, anchor = true, goalSince = 1792195200, mp = { UB }, ms = { Sh, BREATH } }),
 	[225] = move({ key = "one_arm_doorframe_row", group = "pull", pattern = "pull", region = "pull", class = 2,
-		dose = "rep", ladder = 9, rung = 4, anchor = true, regress = 648, progress = 227, twin = 228, side = true,
+		dose = "rep", ladder = 9, rung = 4, anchor = true, regress = 648, progress = 227, twin = 199, side = true,
 		pain = { "elbow" }, theme = { "oar" }, mp = { La, UB }, ms = { Bi, Fa, Ob } }),
 	[227] = move({ key = "steep_doorframe_row", group = "pull", pattern = "pull", region = "pull", class = 2,
-		dose = "rep", ladder = 9, rung = 5, anchor = true, regress = 225, progress = 231, twin = 225, side = true,
+		dose = "rep", ladder = 9, rung = 5, anchor = true, regress = 225, progress = 650, twin = 225, side = true,
 		pain = { "elbow" }, theme = { "oar" }, mp = { La, UB }, ms = { Bi, Fa, Ob } }),
-	[231] = move({ key = "towel_door_lowering", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 6, anchor = true, regress = 227, progress = 232, twin = 650, side = true,
-		needs = { "door_towel" }, pain = { "elbow", "shoulder" }, mp = { La, Bi }, ms = { UB, Fa, Ab } }),
 	-- The table row with the heels up on a sofa, a bed or a chair without wheels (2026-10-28): the body flat, about
 	-- 73-76 % of the body on the hands, about 37 % an arm (Vural 2023, load cells on straps with the feet up,
-	-- https://pmc.ncbi.nlm.nih.gov/articles/PMC10516423/), rung 6's own move for a table without the towel; then a
+	-- https://pmc.ncbi.nlm.nih.gov/articles/PMC10516423/), rung 6's anchor since 2026-11-06; then a
 	-- backpack of 5-15 kg on the chest (rung 7; about 90 % of a chest-worn load reaches the hands, so 10 kg adds about
 	-- 6 % an arm at 75 kg) and a 2-s hold at the top with it (rung 8), the table's way to rung 9's archer row. Two-arm
-	-- rows: the same level by difficulty, under the one-arm towel rows' 44-53 % an arm, since a one-arm table row
-	-- hangs the whole body on one edge (the tipping case). A weighted vest carries the pack's load where there is one.
+	-- rows, since a one-arm table row hangs the whole body on one edge (the tipping case). A weighted vest carries the
+	-- pack's load where there is one.
 	[650] = move({ key = "table_row_feet_up", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 6, regress = 59, progress = 651, twin = 653, needs = { "table" },
+		dose = "rep", ladder = 9, rung = 6, anchor = true, regress = 59, progress = 651, twin = 653, needs = { "table" },
 		support = "table", pain = { "shoulder", "elbow" }, mp = { La, UB, Bi }, ms = { Sh, Nk, LB, Gl } }),
-	-- The one-arm towel row with the toes a foot's length back from the door beside the lowering (2026-10-12, the
-	-- ladder gaps): a one-arm pull up between the steep doorframe row's load and the towel's with the toes at the door,
-	-- where rung 6 only lowers (Overcoming Gravity's easier one-arm row before the full one; the feet's distance from
-	-- the anchor sets a suspension row's load).
-	[401] = move({ key = "towel_door_one_arm_row_back", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 6, regress = 227, side = true, needs = { "door_towel" },
-		pain = { "elbow", "shoulder" }, theme = { "oar" }, mp = { La, Bi }, ms = { UB, Fa, Ob } }),
-	[232] = move({ key = "towel_door_one_arm_row", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 7, anchor = true, regress = 401, twin = 651, side = true,
-		needs = { "door_towel" }, pain = { "elbow", "shoulder" }, theme = { "oar" }, mp = { La, Bi },
-		ms = { UB, Fa, Ob } }),
 	[651] = move({ key = "table_row_feet_up_pack", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 7, regress = 650, progress = 652, twin = 654, needs = { "table" },
+		dose = "rep", ladder = 9, rung = 7, anchor = true, regress = 650, progress = 652, twin = 654, needs = { "table" },
 		support = "table", pain = { "shoulder", "elbow" }, load = "total", kg = { 5, 15 }, holds = { "vest" },
 		mp = { La, UB, Bi }, ms = { Sh, Nk, LB, Gl } }),
-	-- The row past the towel's one-arm row (slice 22). With no equipment it ends at green, the steep one-arm doorframe
-	-- row (at blue, the one-arm towel row with a hold at the top, until the towel took a box on 2026-10-28); with the
-	-- towel and door it reaches blue. A sturdy table reaches purple with two hands on its edge (the archer row: a
+	-- The row past rung 7 (slice 22). With no equipment it ends at green, the steep one-arm doorframe row. A sturdy
+	-- table reaches purple with two hands on its edge (the archer row: a
 	-- one-arm row would hang the whole body on one edge, the tipping case), through its feet-up rows since 2026-10-28.
-	-- A bar or rings carry the front lever's path to orange from rung 9 (rungs 6-8 want the towel and door, a table or
-	-- rings since 2026-10-28): the tuck lever and its rows, the flat-back rows, the lever (straight arms under load:
+	-- A bar or rings carry the front lever's path to orange from rung 9 (rungs 6-8 want a table or rings since
+	-- 2026-10-28): the tuck lever and its rows, the flat-back rows, the lever (straight arms under load:
 	-- tendon-heavy). Since 2026-10-10 (the ladder rethink) the tuck lever's hold anchors
 	-- rung 9 with its row and the table's archer row beside it, and the holds Overcoming Gravity puts between the levels
 	-- (the flat-back tuck, level 5, before its rows; one leg out, level 7, before the lever) stand beside rungs 9 and 10
 	-- as the moves their climbs wait for.
-	[313] = move({ key = "towel_door_row_pause", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 8, anchor = true, regress = 232, twin = 652, side = true,
-		needs = { "door_towel" }, pain = { "elbow", "shoulder" }, theme = { "oar" }, mp = { La, Bi },
-		ms = { UB, Fa, Ob } }),
 	[652] = move({ key = "table_row_feet_up_pause", group = "pull", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 8, regress = 651, progress = 315, twin = 655, needs = { "table" },
+		dose = "rep", ladder = 9, rung = 8, anchor = true, regress = 651, progress = 315, twin = 655, needs = { "table" },
 		support = "table", pain = { "shoulder", "elbow" }, load = "total", kg = { 5, 15 }, holds = { "vest" },
 		mp = { La, UB, Bi }, ms = { Sh, Nk, LB, Gl } }),
-	-- The same three on rings or straps hung low (2026-10-28): rungs 6-8 for a player with rings and neither the towel
-	-- nor a table, who climbed through the towel's rows until they took a box. Vural 2023 measured these loads on
+	-- The same three on rings or straps hung low (2026-10-28): rungs 6-8 for a player with rings and no table. Vural
+	-- 2023 measured these loads on
 	-- straps (the ring row with the feet up, 73-76 % of the body); the pack and the pause as on the table, then the
 	-- tuck lean hang (rung 8's path) and the tuck lever's rows, which rings carry.
 	[653] = move({ key = "ring_row_feet_up", group = "rings", pattern = "pull", region = "pull", class = 3,
 		dose = "rep", ladder = 9, rung = 6, regress = 199, progress = 654, twin = 227, needs = { "rings" },
 		pain = { "shoulder", "elbow" }, mp = { La, UB, Bi }, ms = { Sh, Nk, LB, Gl } }),
 	[654] = move({ key = "ring_row_feet_up_pack", group = "rings", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 7, regress = 653, progress = 655, twin = 231, needs = { "rings" },
+		dose = "rep", ladder = 9, rung = 7, regress = 653, progress = 655, twin = 650, needs = { "rings" },
 		pain = { "shoulder", "elbow" }, load = "total", kg = { 5, 15 }, holds = { "vest" }, mp = { La, UB, Bi },
 		ms = { Sh, Nk, LB, Gl } }),
 	[655] = move({ key = "ring_row_feet_up_pause", group = "rings", pattern = "pull", region = "pull", class = 3,
-		dose = "rep", ladder = 9, rung = 8, regress = 654, progress = 314, twin = 232, needs = { "rings" },
+		dose = "rep", ladder = 9, rung = 8, regress = 654, progress = 314, twin = 651, needs = { "rings" },
 		pain = { "shoulder", "elbow" }, load = "total", kg = { 5, 15 }, holds = { "vest" }, mp = { La, UB, Bi },
 		ms = { Sh, Nk, LB, Gl } }),
 	-- The tuck lean-back hang beside it (2026-10-12, the ladder gaps): the hang, the straight-arm pull and the tuck that
@@ -2094,8 +2065,8 @@ ns.Library = {
 		checks = { { ladder = LAD.midsplit, step = 5, move = 440, mark = MARK.good } },
 		pain = { "wrist", "elbow", "shoulder", "hip", "knee" }, mp = { BALANCE }, ms = { Tr, Sh, Gl, Ha } }),
 
-	-- Equipment. The wall, a doorframe and the desk edge are assumed (a bath towel shut in a door too, until it took
-	-- the Towel and door box on 2026-10-28); everything below is a checkbox (/qp gear), each off by default.
+	-- Equipment. The wall, a doorframe and the desk edge are assumed; everything below is a checkbox (/qp gear), each
+	-- off by default.
 	-- Pull-up bar: the pull-up ladder, every rung on the bar (the pull ladder's rungs 4-8 until 2026-10-04)
 	[64] = move({ key = "dead_hang", group = "bar", pattern = "iso", region = "pull", class = 1, dose = "hold",
 		ladder = 8, rung = 1, anchor = true, regress = 59, progress = 65, strainFree = true,
@@ -2109,10 +2080,10 @@ ns.Library = {
 	-- a band or the Stable chair box and a player with only a bar stopped at rung 3. The negative at any speed and the
 	-- assisted pull-up stay beside them as variants, each in its own window (Progress.lua `alt`).
 	[386] = move({ key = "flexed_arm_hang", group = "bar", pattern = "iso", region = "pull", class = 2, dose = "hold",
-		ladder = 8, rung = 3, anchor = true, regress = 228, progress = 387, flags = { "strain" },
+		ladder = 8, rung = 3, anchor = true, regress = 648, progress = 387, flags = { "strain" },
 		needs = { { "bar", "fixed_bar" } }, pain = { "elbow", "shoulder" }, mp = { La, Bi }, ms = { UB, Fa } }),
 	[66] = move({ key = "pullup_negative", group = "bar", pattern = "pull", region = "pull", class = 3, dose = "rep",
-		ladder = 8, rung = 3, regress = 228, progress = 387, flags = { "strain" },
+		ladder = 8, rung = 3, regress = 648, progress = 387, flags = { "strain" },
 		needs = { { "bar", "fixed_bar" } }, pain = { "elbow", "shoulder" }, mp = { La, Bi }, ms = { UB, Fa, Ab } }),
 	[387] = move({ key = "pullup_negative_slow", group = "bar", pattern = "pull", region = "pull", class = 3,
 		dose = "rep", ladder = 8, rung = 4, anchor = true, regress = 66, progress = 68, flags = { "strain" },
@@ -2331,13 +2302,13 @@ ns.Library = {
 	[186] = move({ key = "step_downs", group = "stairs", pattern = "squat", region = "legs", class = 2, dose = "rep",
 		ladder = 2, rung = 4, side = true, needs = { { "stairs", "step" } }, pain = { "knee" }, mp = { Qu },
 		ms = { Gl, BALANCE } }),
-	-- Walking pad
+	-- Walking pad: twice a steady form's length (`span`, ns.CardioSeconds; Rapha, 2026-11-06), 40-90 s
 	[187] = move({ key = "pad_easy", group = "pad", pattern = "cardio", class = 1, dose = "cardio", road = "gear",
-		ladder = 6, rung = 1, needs = { "pad" }, theme = { "run" }, mp = { HEART }, ms = { Ca, Qu } }),
+		ladder = 6, rung = 1, span = 2, needs = { "pad" }, theme = { "run" }, mp = { HEART }, ms = { Ca, Qu } }),
 	[188] = move({ key = "pad_brisk", group = "pad", pattern = "cardio", class = 1, dose = "cardio", road = "gear",
-		ladder = 6, rung = 2, needs = { "pad" }, theme = { "run" }, mp = { HEART }, ms = { Ca, Qu, Gl } }),
+		ladder = 6, rung = 2, span = 2, needs = { "pad" }, theme = { "run" }, mp = { HEART }, ms = { Ca, Qu, Gl } }),
 	[189] = move({ key = "pad_fast", group = "pad", pattern = "cardio", class = 2, dose = "cardio", road = "gear",
-		ladder = 6, rung = 3, needs = { "pad" }, theme = { "run" }, mp = { HEART }, ms = { Ca, Qu, Gl } }),
+		ladder = 6, rung = 3, span = 2, needs = { "pad" }, theme = { "run" }, mp = { HEART }, ms = { Ca, Qu, Gl } }),
 	-- Step or box
 	[190] = move({ key = "step_ups", group = "step", pattern = "squat", region = "legs", class = 2, dose = "rep",
 		ladder = 2, rung = 3, side = true, needs = { "step" }, pain = { "knee" }, theme = { "climb" },
@@ -2382,9 +2353,9 @@ ns.Library = {
 		dose = "rep", ladder = 10, rung = 11, anchor = true, regress = 407, twin = 237,
 		flags = { "floor", "strain", "skill" }, needs = { "wheel" },
 		pain = { "back", "shoulder" }, mp = { Ab }, ms = { La, Sh, Ob } }),
-	-- Rings or a suspension trainer; the ring row stands for the row's rung 3 in its chain after the table and the
-	-- towel since 2026-10-28, so a player with rings and neither of them climbs that rung on the rings (and rungs 6-8
-	-- on its feet-up rows, 653-655)
+	-- Rings or a suspension trainer; the ring row stands for the row's rung 3 in its chain after the table since
+	-- 2026-10-28, so a player with rings and no table climbs that rung on the rings (and rungs 6-8 on its feet-up rows,
+	-- 653-655)
 	[199] = move({ key = "ring_row", group = "rings", pattern = "pull", region = "pull", class = 2, dose = "rep",
 		ladder = 9, rung = 3, twin = 648, needs = { "rings" }, pain = { "elbow", "shoulder" }, mp = { La, UB, Bi },
 		ms = { Sh, Nk } }),
@@ -2471,8 +2442,8 @@ ns.Library = {
 	[409] = move({ key = "vertical_flag", group = "pole", pattern = "core_anti_rot", region = "trunk", class = 3,
 		dose = "hold", facing = "side", ladder = 11, rung = 5, regress = 383, side = true,
 		flags = { "strain", "skill", "head_down" },
-		checks = { { any = { { ladder = LAD.pullup, step = 8, count = 8 }, { ladder = LAD.row, step = 8, move = 313,
-			count = 8 } } }, { ladder = LAD.push, step = 6 } },
+		checks = { { any = { { ladder = LAD.pullup, step = 8, count = 8 }, { ladder = LAD.row, step = 8, move = 652,
+			count = 8 }, { ladder = LAD.row, step = 8, move = 655, count = 8 } } }, { ladder = LAD.push, step = 6 } },
 		needs = { "pole" }, pain = { "shoulder", "elbow", "wrist" }, mp = { Ob, La }, ms = { Sh, Ab, Fa } }),
 	[326] = move({ key = "flag_tuck", group = "pole", pattern = "core_anti_rot", region = "trunk", class = 3,
 		dose = "hold", facing = "side", ladder = 11, rung = 6, anchor = true, regress = 409, side = true,
@@ -2502,9 +2473,13 @@ ns.Library = {
 -- the brisk march's rows read as shadow boxing (its place on the cardio ladder's rung 2), and the talking-pace cardio
 -- forms' as the hard form that took their place (the cross-knee drives, the quick steps, the step jacks, the brisk
 -- stairs, the backpack squat drives), so an unfinished one is paid and never waits for a move that is gone (David,
--- 2026-10-04)
+-- 2026-10-04); the towel rows over a door (2026-11-06) as the moves that held their rungs beside them: the doorframe's
+-- shoulder-blade pull (230), the inverted row its two-arm row stood in for (228), the one-arm doorframe hold (229, the
+-- rung's only hold) and the feet-up table row (231, 232, 313, 401), the unloaded one, so a loaded row's first set is a
+-- first max set at its weight and never one step past reps no pack carried
 ns.Merged = { [226] = 57, [167] = 57, [233] = 219, [140] = 219, [160] = 219, [168] = 219, [3] = 101, [4] = 291,
-	[5] = 95, [139] = 95, [181] = 182, [205] = 292, [220] = 293, [240] = 292 }
+	[5] = 95, [139] = 95, [181] = 182, [205] = 292, [220] = 293, [240] = 292, [230] = 647, [228] = 59, [229] = 649,
+	[231] = 650, [401] = 650, [232] = 650, [313] = 650 }
 
 -- The holds that switch sides since 2026-10-10 22:00 UTC, each side on its own clock (David, 2026-10-10: "the chest
 -- stretch in door frame is 45s but never told me to switch. fix and any others that have similar problems"): until
@@ -2534,14 +2509,12 @@ ns.ROADS = { "run", "strike", "jump", "floor", "standing", "gear" }
 -- shares (C.facing_share) are McGill's normal endurance times of each.
 ns.FACINGS = { "front", "side", "back" }
 
--- The equipment checkboxes, in the order /qp gear lists them (the two supports first, then the towel and door, then
--- the seventeen sets, the pole outdoors last: slice 22), the bar's with a box of its own for a fixed bar (2026-10-05:
+-- The equipment checkboxes, in the order /qp gear lists them (the two supports first, then the seventeen sets, the
+-- pole outdoors last: slice 22), the bar's with a box of its own for a fixed bar (2026-10-05:
 -- the bar's power moves never go on a doorway bar, and a fixed bar serves every bar move), one for parallettes or two
 -- stacks of books beside the ab wheel (2026-10-08: the raised L-sits, variants beside the floor's; no group of its
--- own), and one for a bath towel and a solid door the player pushes open (2026-10-28: the towel rows, off for every
--- player like the rest, where a towel shut in a door counted as assumed; a household piece beside the supports, in no
--- set and no group of its own).
-ns.Gear = { "stable_chair", "table", "door_towel", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell",
+-- own).
+ns.Gear = { "stable_chair", "table", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell",
 	"rope", "bike", "stairs", "pad", "step", "wheel", "parallettes", "rings", "vest", "ball", "roller", "backpack",
 	"pole" }
 
@@ -2550,7 +2523,7 @@ ns.Gear = { "stable_chair", "table", "door_towel", "bar", "fixed_bar", "bands", 
 -- setup and the Equipment page head each group with its caption (settings.gear.group.<key>); the apps open and close
 -- them (contract/sheet.json gear_groups, places.gear.group.<key>).
 ns.GearGroups = {
-	{ key = "home", gear = { "stable_chair", "table", "door_towel", "stairs", "backpack" } },
+	{ key = "home", gear = { "stable_chair", "table", "stairs", "backpack" } },
 	{ key = "bars", gear = { "bar", "fixed_bar", "parallettes", "rings", "pole" } },
 	{ key = "weights", gear = { "bands", "kettlebell", "dumbbells", "barbell", "vest" } },
 	{ key = "cardio", gear = { "rope", "bike", "pad", "step" } },

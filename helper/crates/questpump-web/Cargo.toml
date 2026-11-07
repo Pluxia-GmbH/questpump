@@ -1,7 +1,7 @@
 [package]
 name = "questpump-web"
 version = "0.1.0"
-description = "QuestPump in the browser (questpump.com/play): the addon's own engine on WebAssembly, for the page's Web Worker"
+description = "QuestPump in the browser (play.questpump.com): the engine and the desk on WebAssembly for its Worker"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -15,5 +15,9 @@ workspace = true
 # every dependency sits under that target and on the computer's targets the crate is an empty program, which keeps it
 # in the workspace (one Cargo.lock, cargo deny) without a C toolchain for the web in the desktop app's gates.
 [target.'cfg(target_os = "emscripten")'.dependencies]
+questpump-core = { path = "../questpump-core" }
+questpump-desk = { path = "../questpump-desk" }
 questpump-engine = { path = "../questpump-engine" }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+log = "0.4"

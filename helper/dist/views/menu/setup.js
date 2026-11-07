@@ -14,7 +14,7 @@
 // `games` topic). Your moves lists the groups and the moves the player left out of pumps, each with its switch (what it
 // does read after its name), a row switched staying on the page until the player leaves it, so a slip is undone in
 // place, and at its foot the Book row, which opens the Book's Moves. Every switch and the Segmented move when the topic
-// says the change holds, never before. From the `menu.setup` topic (helper/src-tauri/src/desk/menu_pages/setup.rs); the
+// says the change holds, never before. From the `menu.setup` topic (helper/crates/questpump-desk/src/menu_pages/setup.rs); the
 // engine's part (the pain flags, the focus, the start rungs, the equipment lines, what each piece would open) comes
 // once it answers, and Rust asks it again at every fold, merge of rows and change of profile.
 

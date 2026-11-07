@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 40, "pitch": 4},
   "working": ["upper_arm", "pauldron", "back", "chest"],
-  "ballistic": true,
+  "ballistic": ["pull", "turn_over"],
   "props": [{"kind": "bar", "f": 8, "u": 222, "ground": true}],
   "poses": {
     "hang": {
@@ -95,12 +95,12 @@
     {"to": "mid", "s": 0.3, "phase": "pull", "effort": 1.0, "ease": "linear"},
     {"to": "high", "s": 0.35, "phase": "pull", "effort": 1.0, "ease": "out"},
     {"to": "turn", "s": 0.35, "phase": "turn_over", "effort": 1.0},
-    {"to": "support", "s": 0.6, "phase": "press", "effort": 0.9},
+    {"to": "support", "s": 1.0, "phase": "press", "effort": 0.9},
     {"hold": 0.3, "phase": "lockout", "effort": 0.7},
-    {"to": "turn", "s": 1.0, "phase": "lower_slowly", "effort": 0.7},
-    {"to": "high", "s": 0.7, "phase": "lower_slowly", "effort": 0.6},
-    {"to": "mid", "s": 0.5, "phase": "lower_slowly", "effort": 0.5, "ease": "in"},
-    {"to": "hang", "s": 0.5, "phase": "lower_slowly", "effort": 0.5, "ease": "out"}
+    {"to": "turn", "s": 0.9, "phase": "lower_slowly", "effort": 0.7},
+    {"to": "high", "s": 0.9, "phase": "lower_slowly", "effort": 0.6},
+    {"to": "mid", "s": 0.85, "phase": "lower_slowly", "effort": 0.5, "ease": "in"},
+    {"to": "hang", "s": 0.85, "phase": "lower_slowly", "effort": 0.5, "ease": "out"}
   ],
   "key": "turn",
   "fault": {

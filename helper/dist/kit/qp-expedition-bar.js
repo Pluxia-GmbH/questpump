@@ -3,7 +3,7 @@
 // cool-down (shortFraction of a round's), one for each round planned: done goldLo, the one in play gold with StepsBar's
 // glow, the rest the track. Over it the stage in caps (Warm-up, Round 3 of 5,
 // Cool-down) and the clock mark with the minutes left (12:40 left: the length less the time since it began, ticking
-// each second while it shows; nothing once none is left). `trip` is the `pump` topic's `expedition` (desk/pump/
+// each second while it shows; nothing once none is left). `trip` is the `pump` topic's `expedition` (questpump-desk/src/pump/
 // expedition.rs `TripView`). Read as one element: "Round 3 of 5, 12 minutes left".
 
 import {t} from "../lib/copy.js";

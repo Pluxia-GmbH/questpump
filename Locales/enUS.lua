@@ -151,7 +151,6 @@ L["gear.off"] = "off"
 L["gear.none"] = "none"
 L["gear.stable_chair"] = "Stable chair (no wheels, or a sofa)"
 L["gear.table"] = "Sturdy table"
-L["gear.door_towel"] = "Towel and door"
 L["gear.bar"] = "Pull-up bar"
 L["gear.fixed_bar"] = "Fixed pull-up bar (not a doorway bar)"
 L["gear.bands"] = "Bands with a door anchor"
@@ -619,6 +618,8 @@ L["ui.result.kg"] = "kg"
 L["ui.result.kgEach"] = "kg each"
 L["ui.result.kgDown"] = "-"
 L["ui.result.kgUp"] = "+"
+-- under the weight box while it holds a weight: empties it, so the set counts its reps alone
+L["ui.result.kgNone"] = "Don't know the weight"
 L["ui.result.maxKg"] = "Max %d kg"
 L["ui.result.confirmKg"] = "%s kg is far above the %s kg planned. Is that right?"
 L["ui.result.nextLoad"] = "Next time: %s kg, %d+ reps"
@@ -2475,7 +2476,7 @@ guide("ytw_raise", {
 	"Keep your forehead on the towel so your neck stays long the whole time.",
 	"In the W, draw your elbows down towards your ribs as you lift.",
 })
--- The doorframe's shoulder-blade pull (2026-10-28), the towel's way without the towel and door
+-- The doorframe's shoulder-blade pull (2026-10-28)
 move("doorframe_scap_pull", "Doorframe shoulder-blade pull",
 	"Grip a solid doorframe at chest height, feet close to it.",
 	"Arms straight, squeeze your shoulder blades back, release. Breathe out as you squeeze.",
@@ -2598,7 +2599,6 @@ guide("chest_opener", {
 })
 L["move.chest_opener.mark"] = "Hands clasped, arms straight, hands a hand's width off your back, chest up."
 -- The one-arm doorframe row with the toes a foot back, and the one-arm row's hold (2026-10-28): rung 3 without a table
--- or the towel
 move("one_arm_doorframe_row_back", "One-arm doorframe row, feet back",
 	"One hand on a solid doorframe edge at chest height, toes a foot's length from its base.",
 	"Pull your chest to the frame on one arm. Count out loud, breathe out as you pull.",
@@ -2659,96 +2659,7 @@ guide("steep_doorframe_row", {
 	"Keep your body straight from heels to head, hips in line.",
 	"Rest the free hand on your belly, ready to grab the frame if your grip slips.",
 })
-move("towel_door_row", "Towel door row", "A knotted bath towel over the top of a solid door that you push to open.",
-	"Lean back on the towel, pull your chest to the door. Count out loud, breathe out up.",
-	"Stop when the door moves or your hips sag.")
-guide("towel_door_row", {
-	"Tie one big knot at one end of a bath towel.",
-	"Push the door open, lay the towel over its top: knot on the far side, the rest on yours.",
-	"Shut the door till it clicks, lock it, then pull the towel hard: the door must not move.",
-	"Grip the two bottom corners, toes at the door, lean back on straight arms, body straight.",
-	"Pull your chest to the door, breathing out, lower slowly. Each pull is one rep.",
-}, {
-	"The right door opens away from you: you push it open and its hinges are on the far side.",
-	"A thinner towel lets the door shut all the way. Use one with no holes or thin spots.",
-	"No lock? Ask the others at home not to open that door while you train.",
-})
-move("towel_door_hold", "Towel door row hold",
-	"A knotted bath towel over the top of a solid door that you push to open.",
-	"Pull your chest up to the towel and hold, elbows back. Count out loud, keep breathing.",
-	"Stop when the door moves or your shoulders shrug.")
-guide("towel_door_hold", {
-	"Lay the towel over the door's top, its end knot on the far side; shut and lock the door.",
-	"Pull the towel hard once: the door must not move.",
-	"Grip the two bottom corners, toes against the door, and lean back on straight arms.",
-	"Pull your chest up to your hands and hold there, elbows back and shoulders down.",
-	"Keep breathing slowly; the clock runs while your chest stays up.",
-}, {
-	"Set your toes against the door before the clock starts, so every hold is the same lean.",
-	"Squeeze your shoulder blades together as if holding a pencil between them.",
-	"Keep your hips up so your body stays one straight line.",
-})
-move("towel_door_scap_pull", "Towel door shoulder-blade pull",
-	"A knotted bath towel over the top of a solid door you push to open, your toes against it.",
-	"Arms straight, squeeze your shoulder blades back, release. Count out loud, breathe out.",
-	"Stop when your elbows bend or your shoulders shrug.")
-guide("towel_door_scap_pull", {
-	"Lay the towel over the door's top, its end knot on the far side; shut and lock the door.",
-	"Pull the towel hard once: the door must not move.",
-	"Grip the two bottom corners, toes against the door, and lean back far on straight arms.",
-	"Arms straight, squeeze your shoulder blades back and down, breathing out; hold a beat.",
-	"Let your shoulders slide forward again. Each squeeze counts as one rep.",
-}, {
-	"Think of putting your shoulder blades in your back pockets.",
-	"Never bend the elbows: the move is all in the shoulder blades.",
-	"Keep your toes against the door each set so the lean stays the same.",
-})
-move("towel_door_lowering", "One-arm towel door lowering",
-	"A knotted bath towel over the top of a solid door you push to open, your toes against it.",
-	"Pull up with both, lower on one arm in 3 s. Count out loud, breathe out as you pull.",
-	"Stop when you drop fast or the door moves. Count the weaker side.")
-guide("towel_door_lowering", {
-	"Lay the towel over the door's top, its end knot on the far side; shut and lock the door.",
-	"Pull the towel hard once: the door must not move.",
-	"Toes against the door, lean back far and pull your chest up with both arms, breathing out.",
-	"Let go with one hand and lower over three slow beats on the other arm.",
-	"Each slow lowering counts one rep; do one side, press Switch sides, then the other.",
-}, {
-	"Keep the free hand near the towel, ready to grab it again.",
-	"Fight for the slow count: the lowering is the strong part.",
-	"Keep your body straight; a sag means it is time to rest.",
-})
-move("towel_door_one_arm_row_back", "One-arm towel row, feet back",
-	"A knotted towel over the top of a solid door you push to open; toes a foot's length back.",
-	"Feet a foot back, pull your chest to the towel on one arm. Count out loud, breathe out up.",
-	"Stop when your hips twist or the door moves. Count the weaker side.")
-guide("towel_door_one_arm_row_back", {
-	"Lay the towel over the door's top, its end knot on the far side; shut and lock the door.",
-	"Pull the towel hard once: the door must not move.",
-	"Toes one foot's length from the door, hold the free end, and lean back on a straight arm.",
-	"Pull your chest up to your hand, breathing out, then lower with control.",
-	"Keep your hips square; do every rep on one side, then press Switch sides.",
-}, {
-	"Measure the gap once with your own foot and stand there every time.",
-	"Spread your feet a little wider than your hips to stop the twist.",
-	"Start each pull with the shoulder blade, then bend the elbow.",
-})
-move("towel_door_one_arm_row", "One-arm towel door row",
-	"A knotted bath towel over the top of a solid door that you push to open.",
-	"Lean back on one arm, pull your chest to the towel. Count out loud, breathe out up.",
-	"Stop when your hips twist or the door moves. Count the weaker side.")
-guide("towel_door_one_arm_row", {
-	"Lay the towel over the door's top, its end knot on the far side; shut and lock the door.",
-	"Pull the towel hard once: the door must not move.",
-	"Hold the towel's free end, toes against the door, and lean back on the straight arm.",
-	"Pull your chest up to your hand, breathing out, then lower with control.",
-	"Keep your hips square; do every rep on one side, then press Switch sides.",
-}, {
-	"Spread your feet a little wider than your hips to stop the twist.",
-	"Start each pull with the shoulder blade, then bend the elbow.",
-	"Keep your toes against the door each time so your record stays fair.",
-})
--- The table's rows with the heels up (2026-10-28): rung 6-8's way for a table without the towel and door
+-- The table's rows with the heels up (2026-10-28): rungs 6-8
 move("table_row_feet_up", "Table row, feet up",
 	"A heavy table on four legs; heels up on a sofa, a bed or a chair without wheels.",
 	"Heels up, body flat, pull your chest to the edge. Count out loud, breathe out up.",
@@ -2810,7 +2721,7 @@ implement("table_row_feet_up_pause", "vest",
 	"Pull your chest to the edge, breathing out, and hold it there for 2 s.",
 	"Lower until your arms are straight, then pull again. Count each rep out loud.",
 })
--- The same rows on rings hung low (2026-10-28): rungs 6-8 for rings without the towel and door or a table
+-- The same rows on rings hung low (2026-10-28): rungs 6-8 for rings without a table
 move("ring_row_feet_up", "Ring row, feet up",
 	"Rings or straps hung low; heels up on a sofa, a bed or a chair without wheels.",
 	"Heels up, body flat, pull your chest to your hands. Count out loud, breathe out up.",
@@ -6416,17 +6327,17 @@ guide("pike_fold_bed", {
 	"Stay with chest to knees until the deeper fold comes easily.",
 })
 L["move.pike_fold_bed.mark"] = "Face on the shins, knees straight."
-move("lying_hamstring", "Lying strap hamstring stretch", "Lie on your back on your bed with a towel, belt or strap.",
-	"Strap round one sole, that leg straight up, the other leg long. Breathe slowly.",
+move("lying_hamstring", "Lying towel hamstring stretch", "Lie on your back on your bed with a towel or a belt.",
+	"Towel round one sole, that leg straight up, the other leg long. Breathe slowly.",
 	"Ease off at a strong pull or any tingling down the leg; never bounce.")
 guide("lying_hamstring", {
 	"Lie on your back on your bed with both legs long.",
-	"Loop a towel, belt or strap round the sole of one foot and hold both ends.",
+	"Loop a towel or a belt round the sole of one foot and hold both ends.",
 	"Straighten that leg and draw it up until you feel a gentle pull behind the thigh.",
 	"Keep the other leg long on the bed and breathe slowly.",
 	"The clock times each side, then counts you in to switch.",
 }, {
-	"Walk your hands up the strap to bring the leg closer; keep your shoulders down.",
+	"Walk your hands up the towel to bring the leg closer; keep your shoulders down.",
 	"Keep the knee straight: a lower straight leg beats a higher bent one.",
 	"Relax your neck and shoulders on the bed.",
 })
@@ -6568,17 +6479,17 @@ guide("head_knee_hold", {
 	"Put a pillow under the bent knee if it does not reach the bed.",
 })
 L["move.head_knee_hold.mark"] = "Both hands round the foot, knee down, back long."
-move("lying_hamstring_deep", "Deep lying strap stretch", "Lie on your back on your bed with a towel, belt or strap.",
-	"Strap round one sole, that leg straight past upright, the other long. Breathe slowly.",
+move("lying_hamstring_deep", "Deep lying towel stretch", "Lie on your back on your bed with a towel or a belt.",
+	"Towel round one sole, that leg straight past upright, the other long. Breathe slowly.",
 	"Ease off at a strong pull or any tingling down the leg; never bounce.")
 guide("lying_hamstring_deep", {
 	"Lie on your back on your bed with both legs long.",
-	"Loop a towel, belt or strap round the sole of one foot and hold both ends.",
+	"Loop a towel or a belt round the sole of one foot and hold both ends.",
 	"Straighten that leg and draw it up past upright towards you.",
 	"Keep the other leg long on the bed and breathe slowly.",
 	"The clock times each side, then counts you in to switch.",
 }, {
-	"Walk your hands up the strap as the leg comes closer.",
+	"Walk your hands up the towel as the leg comes closer.",
 	"Keep the knee straight and your head on the bed.",
 	"Keep your low back resting on the bed.",
 })
@@ -6630,17 +6541,17 @@ guide("head_knee_chest", {
 	"Relax your shoulders and neck in the fold.",
 })
 L["move.head_knee_chest.mark"] = "Forehead to the knee, hands round the foot, knee down."
-move("lying_toes_to_chin", "Lying toes to chin", "Lie on your back on your bed with a towel, belt or strap.",
-	"Strap round one sole, draw the straight leg in, toes over your chin. Breathe slowly.",
+move("lying_toes_to_chin", "Lying toes to chin", "Lie on your back on your bed with a towel or a belt.",
+	"Towel round one sole, draw the straight leg in, toes over your chin. Breathe slowly.",
 	"Ease off at a strong pull or any tingling down the leg; never bounce.")
 guide("lying_toes_to_chin", {
 	"Lie on your back on your bed with both legs long.",
-	"Loop a towel, belt or strap round the sole of one foot and hold both ends.",
+	"Loop a towel or a belt round the sole of one foot and hold both ends.",
 	"Draw the straight leg towards you until the toes are over your chin.",
 	"Keep the knee straight and the other leg long, and breathe slowly.",
 	"The clock times each side, then counts you in to switch.",
 }, {
-	"Walk your hands up the strap as the leg comes closer.",
+	"Walk your hands up the towel as the leg comes closer.",
 	"Keep your head and shoulders resting on the bed.",
 	"Pull gently with your arms only to help, never to force the leg.",
 })
@@ -6702,7 +6613,7 @@ guide("lying_leg_to_face", {
 	"Keep the knee straight and the other leg long, and breathe slowly.",
 	"The clock times each side, then counts you in to switch.",
 }, {
-	"Use a strap round the sole until your hands reach the shin.",
+	"Use a towel round the sole until your hands reach the shin.",
 	"Keep your head and shoulders resting on the bed.",
 	"Pull gently with your arms only to help, never to force the leg.",
 })
@@ -8649,10 +8560,6 @@ move("one_arm_pullup", "One-arm pull-up", "A bar fixed firmly; one hand on the b
 	"Chin over the bar on one arm, lower slowly all the way. Count out loud, breathe out up.",
 	"Stop when you cannot lower slowly: step down. Count the weaker side.")
 -- The row to the front lever
-move("towel_door_row_pause", "One-arm towel row with a hold",
-	"A knotted bath towel over the top of a solid door that you push to open.",
-	"Lean back on one arm, pull to the towel, hold 3 seconds. Count out loud, breathe steadily.",
-	"Stop when your hips twist or the door moves. Count the weaker side.")
 move("tuck_lean_hang", "Tuck lean-back hang", "A fixed bar or rings; a stool to step down on.",
 	"Arms straight, knees to chest, back halfway to level. Count out loud, breathe.",
 	"Stop when your arms bend or your shoulders shrug.")
@@ -9137,17 +9044,6 @@ guide("one_arm_pullup", {
 	"Squeeze your legs together and brace your belly so your body does not spin.",
 	"Drive the elbow down towards your ribs, close to your side.",
 	"Keep the shoulder set at the bottom; never hang loose from one arm.",
-})
-guide("towel_door_row_pause", {
-	"Lay the towel over the door's top, its end knot on the far side; shut and lock the door.",
-	"Pull the towel hard once: the door must not move.",
-	"Hold the towel's free end, toes against the door, and lean back on the straight arm.",
-	"Pull your chest up to your hand in 1 s, breathing out, and hold it there for 3 s.",
-	"Lower with control, hips square; do every rep on one side, then press Switch sides.",
-}, {
-	"Say the three beats out loud at the top, which keeps you breathing.",
-	"In the hold keep your elbow close to your ribs and your shoulder low.",
-	"Keep your toes against the door each time so your record stays fair.",
 })
 guide("tuck_lean_hang", {
 	"Check the bar or rings are fixed firmly and set a stool below to step down on.",
@@ -11261,9 +11157,6 @@ L["settings.gear.stable_chair.tip"] = "A chair with no wheels, its back against 
 L["settings.gear.table.tip"] = "A heavy table on four legs that does not lift, slide or creak when you lean on its "
 	.. "edge and pull. Never glass, folding, a standing desk or one with monitors. You lie under it and pull your "
 	.. "chest to the edge."
-L["settings.gear.door_towel.tip"] = "A bath towel and a solid door that you push to open, its hinges on the far "
-	.. "side. Never glass, sliding or folding. For the towel rows, the towel knotted at one end and laid over the "
-	.. "door's top."
 L["settings.gear.bar.tip"] = "A pull-up bar fixed firmly, in a doorway or on a wall, with a stool to step down on. "
 	.. "For hangs, pull-ups, hanging knee raises and the front lever."
 L["settings.gear.fixed_bar.tip"] = "A bar bolted to a wall, a ceiling or a rack, with room above it. Never a "

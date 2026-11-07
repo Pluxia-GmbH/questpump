@@ -1,5 +1,5 @@
 // The streak page on the computer (slice 51; docs/ui.md, "Away Mode", the streak page; the phones' pump.streak), from
-// the StreakBoard and Hero's streak chip, drawn from the `streak` topic (helper/src-tauri/src/desk/streak.rs): the
+// the StreakBoard and Hero's streak chip, drawn from the `streak` topic (helper/crates/questpump-desk/src/streak.rs): the
 // days as the hero number (text, never gold) over Day streak and A quest a day. (the board's resting words while felt
 // unwell rests today), the standard-bearer at its key pose beside them in the colour
 // the game draws the character in (`book`'s tint); the month in WeekDots' month state under its name, an earlier and

@@ -21,13 +21,13 @@ use std::path::Path;
 
 use questpump_core::backup::{self, File, MAX_BYTES, Refusal};
 use questpump_core::body::PlaceSetup;
+use questpump_desk::facts::facts;
 use serde::Serialize;
 use tauri::{AppHandle, Manager as _};
 use tauri_plugin_dialog::DialogExt as _;
 
 use super::BACKUP;
 use crate::copy;
-use crate::desk::facts::facts;
 use crate::desk::windows::MAIN;
 use crate::desk::{DeskAsk, Intent};
 use crate::lan;
@@ -134,14 +134,14 @@ impl Helper {
 	/// The `backup` area's intents.
 	pub(crate) fn backup_intent(&mut self, intent: &Intent) -> Result<(), String> {
 		let kind = intent.kind();
-		if self.menu.backup.busy && kind != "backup.look" {
+		if self.backup.busy && kind != "backup.look" {
 			return Err(format!("{kind}: a backup file is under way"));
 		}
 		match kind {
 			"backup.look" => self.publish_backup(),
 			"backup.save" => self.backup_save(),
 			"backup.open" => {
-				if self.desk_pump_running() {
+				if self.desk.desk_pump_running() {
 					return Err("backup.open: a pump runs".to_owned());
 				}
 				self.backup_open();
@@ -153,11 +153,11 @@ impl Helper {
 
 	/// `menu.backup` as it stands.
 	pub(crate) fn publish_backup(&self) {
-		let state = &self.menu.backup;
+		let state = &self.backup;
 		let topic = Topic {
-			last: self.settings.desk.backup_at,
+			last: self.desk.settings.desk.backup_at,
 			busy: state.busy,
-			pump_on: self.desk_pump_running(),
+			pump_on: self.desk.desk_pump_running(),
 			outcome: state.outcome.as_ref(),
 		};
 		self.publish(BACKUP, &topic);
@@ -165,8 +165,9 @@ impl Helper {
 
 	/// This computer's book as a file, then the save dialog: the file is written where the player picks.
 	fn backup_save(&mut self) {
-		let people = self.session.people();
+		let people = self.desk.session.people();
 		let game: Vec<_> = self
+			.desk
 			.session
 			.store()
 			.records()
@@ -178,27 +179,27 @@ impl Helper {
 			})
 			.collect();
 		// the file keeps Home's setup, never the place in use: a restore gives it back to Home alone (slice 51)
-		let mut profile = self.engine_profile();
-		let home = self.home_setup();
+		let mut profile = self.desk.engine_profile();
+		let home = self.desk.home_setup();
 		(profile.gear, profile.floor, profile.space, profile.quiet) = (home.gear, home.floor, home.space, home.quiet);
 		let profile = serde_json::to_value(profile).unwrap_or_default();
 		let file = backup::book(
 			now().unix,
-			self.session.app_rows().records(),
+			self.desk.session.app_rows().records(),
 			&game,
-			self.session.sheet_log().records(),
+			self.desk.session.sheet_log().records(),
 			profile,
 		);
 		let bytes = match backup::encode(&file) {
 			Ok(bytes) => bytes,
 			Err(e) => {
 				log::warn!("backup: the file did not write: {e}");
-				self.menu.backup.said(|seq| Outcome::Refused { seq, why: Why::NotSaved });
+				self.backup.said(|seq| Outcome::Refused { seq, why: Why::NotSaved });
 				self.publish_backup();
 				return;
 			}
 		};
-		self.menu.backup.busy = true;
+		self.backup.busy = true;
 		self.publish_backup();
 		let name = format!("{}.json", copy::menu_backup_filename(&today()));
 		let handle = self.app.clone();
@@ -225,7 +226,7 @@ impl Helper {
 
 	/// The open dialog: the chosen file is read off the loop and comes back as `DeskAsk::Backup`.
 	fn backup_open(&mut self) {
-		self.menu.backup.busy = true;
+		self.backup.busy = true;
 		self.publish_backup();
 		let handle = self.app.clone();
 		let mut dialog = self.app.dialog().file().set_title(copy::menu_backup_restore()).add_filter("JSON", &["json"]);
@@ -243,24 +244,24 @@ impl Helper {
 
 	/// The dialog's outcome: a file written, a file read and taken in, or nothing.
 	pub(crate) fn on_backup(&mut self, picked: Picked) {
-		let state = &mut self.menu.backup;
+		let state = &mut self.backup;
 		state.busy = false;
 		match picked {
 			Picked::Cancelled => {}
 			Picked::Saved(Ok(())) => {
 				log::info!("backup: a backup file saved");
 				state.outcome = None;
-				self.settings.desk.backup_at = Some(lan::now_ms());
-				self.save_settings();
+				self.desk.settings.desk.backup_at = Some(lan::now_ms());
+				self.desk.save_settings();
 			}
 			Picked::Saved(Err(e)) => {
 				log::warn!("backup: {e}");
 				state.said(|seq| Outcome::Refused { seq, why: Why::NotSaved });
 			}
 			Picked::Opened(Err(why)) => state.said(|seq| Outcome::Refused { seq, why }),
-			Picked::Opened(Ok(_)) if self.desk_pump_running() => {
+			Picked::Opened(Ok(_)) if self.desk.desk_pump_running() => {
 				log::info!("backup: a file picked while a pump runs, not taken in");
-				self.menu.backup.said(|seq| Outcome::Refused { seq, why: Why::PumpOn });
+				self.backup.said(|seq| Outcome::Refused { seq, why: Why::PumpOn });
 			}
 			Picked::Opened(Ok(bytes)) => match backup::decode(&bytes) {
 				Ok(file) => self.restore(&file),
@@ -270,7 +271,7 @@ impl Helper {
 						Refusal::NotBackup => Why::NotBackup,
 					};
 					log::info!("backup: a file refused: {refusal}");
-					self.menu.backup.said(|seq| Outcome::Refused { seq, why });
+					self.backup.said(|seq| Outcome::Refused { seq, why });
 				}
 			},
 		}
@@ -281,15 +282,15 @@ impl Helper {
 	/// none of its own yet; a file whose rows the store could not all take says so, never "nothing new".
 	fn restore(&mut self, file: &File) {
 		let rows = file.app_rows();
-		let (taken, fx) = self.session.restore_app_rows(file.sender(), &rows, &now());
+		let (taken, fx) = self.desk.session.restore_app_rows(file.sender(), &rows, &now());
 		self.apply(fx);
 		let (mut settings, mut kept) = (false, false);
 		if let Some(place) = (file.device == backup::COMPUTER).then(|| file_place(file)).flatten()
-			&& !place.same(&self.home_setup())
+			&& !place.same(&self.desk.home_setup())
 		{
 			// none of its own yet: no device ever set Home, and this computer's own setup is still the default
-			if self.body.body.home.is_none() && self.home_setup() == PlaceSetup::default() {
-				self.set_home(place);
+			if self.desk.body.body.home.is_none() && self.desk.home_setup() == PlaceSetup::default() {
+				self.desk.set_home(place);
 				settings = true;
 			} else {
 				kept = true;
@@ -304,9 +305,9 @@ impl Helper {
 		);
 		if taken.unwritten {
 			log::warn!("backup: the store of app rows did not take every row of the file");
-			self.menu.backup.said(|seq| Outcome::Refused { seq, why: Why::NotKept });
+			self.backup.said(|seq| Outcome::Refused { seq, why: Why::NotKept });
 		} else {
-			self.menu.backup.said(|seq| Outcome::Restored { seq, rows: taken.kept, settings, kept });
+			self.backup.said(|seq| Outcome::Restored { seq, rows: taken.kept, settings, kept });
 		}
 	}
 }

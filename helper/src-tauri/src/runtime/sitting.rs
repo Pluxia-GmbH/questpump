@@ -9,17 +9,15 @@
 //! minutes, and the raw idle time tells a card's offer when the player left the desk) alike. Its start is the latest
 //! of the end of the input's latest pause, the newest performed move on any device among the rows the helper holds
 //! and, for the sitting cue alone (`Helper::sat_s`: an offer is a stand-up ask itself), the latest game offer on any
-//! device (`settings.offers.last_game_offer_at`); a match's warm move reads it without the offers (`Helper::seated_s`),
+//! device (`settings.offers.last_game_offer_at`); a match's warm move reads it without the offers (`Desk::seated_s`),
 //! so an offer let pass or put off stands nobody up. The game day's 04:00 bounds it only where the idle time never
 //! read. A quit keeps the pause's end and the last look a watched game counted at in settings.json
 //! (`settings.sitting`), and a start within `AWAY_S` of that quit (an update, Quit and reopen) takes them on.
 
-use questpump_core::codes::{kind, outcome};
 use questpump_core::session::Zone;
 use questpump_core::sitting::Sitting;
 
 use super::{Helper, local_offset_at};
-use crate::desk::facts::facts;
 use crate::games::procs::{self, Snapshot};
 use crate::settings::KeptClock;
 
@@ -62,52 +60,32 @@ impl Helper {
 	/// ran at the games' last look keeps the idle time fresh while a match runs (`Watcher::match_runs`) or its window is
 	/// in front in this look's snapshot, as long as the system's idle time is under `PLAYING_CAP_MS` (`Sitting::look`).
 	pub(super) fn sitting_look(&mut self, now: i64, snap: &Snapshot) {
-		let fresh = self.games.as_ref().is_some_and(|g| {
+		let fresh = self.desk.p.games.as_ref().is_some_and(|g| {
 			g.watcher.match_runs()
 				|| (!g.running().is_empty()
 					&& procs::foreground_pid()
 						.is_some_and(|front| g.running().iter().any(|id| g.pids(id, snap).contains(&front))))
 		});
-		self.sitting.look(now, input_idle_s(), fresh);
+		self.desk.p.sitting.look(now, input_idle_s(), fresh);
 	}
 
 	/// The seconds the sitting clock holds at unix second `now`, the sitting cue's: the latest game offer on any device
 	/// starts it again too.
 	pub(crate) fn sat_s(&self, now: i64) -> i64 {
-		self.sat_since(now, self.settings.offers.last_game_offer_at)
-	}
-
-	/// The seconds the player has sat at unix second `now`, a match's warm move's (slice 57's fix round): the sitting
-	/// clock without the offers, since the latest of the newest performed move on any device and the end of the latest
-	/// pause in this computer's input, so an offer the player let pass or put off stands nobody up.
-	pub(crate) fn seated_s(&self, now: i64) -> i64 {
-		self.sat_since(now, None)
+		self.sat_since(now, self.desk.settings.offers.last_game_offer_at)
 	}
 
 	/// The sitting clock at `now`, the latest game offer `last_offer` counted in.
 	fn sat_since(&self, now: i64, last_offer: Option<i64>) -> i64 {
 		let day = Zone::new(local_offset_at).game_day_start(now);
-		self.sitting.sat_s(now, self.last_move_at(), last_offer, day)
-	}
-
-	/// The newest performed move any device made, among the rows the helper holds (unix seconds).
-	pub(crate) fn last_move_at(&self) -> Option<i64> {
-		let f = facts();
-		self.session
-			.store()
-			.records()
-			.iter()
-			.chain(self.session.app_rows().records())
-			.map(questpump_core::protocol::RowRecord::row)
-			.filter(|row| kind::is_move(row.kind) && outcome::is_performed(row.outcome) && f.knows(row.move_id))
-			.map(|row| i64::from(row.ts))
-			.max()
+		self.desk.p.sitting.sat_s(now, self.desk.last_move_at(), last_offer, day)
 	}
 
 	/// The clock kept for the next start, as this process goes at unix second `now` (`wind_down`).
 	pub(super) fn sitting_keep(&mut self, now: i64) {
-		let game_seen = self.sitting.game_seen();
-		self.settings.sitting = self.sitting.kept().map(|since| KeptClock { since, game_seen, quit_at: now });
-		self.save_settings();
+		let game_seen = self.desk.p.sitting.game_seen();
+		self.desk.settings.sitting =
+			self.desk.p.sitting.kept().map(|since| KeptClock { since, game_seen, quit_at: now });
+		self.desk.save_settings();
 	}
 }

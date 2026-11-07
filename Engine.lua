@@ -44,10 +44,10 @@ end
 
 -- Cardio is never a record (David, 2026-09-22): a steady move's seconds come from the quest's active minutes, 20-30
 -- s, times M, the steady ledger's multiplier for its form in thousandths (ns.SteadyM, 1000-1500: 20-45 s; slice 52, the
--- cardio progression P until then).
-function ns.CardioSeconds(activeMinutes, M)
+-- cardio progression P until then), times the form's `span` (ns.Span: the pad walks' 2, 40-90 s).
+function ns.CardioSeconds(activeMinutes, M, span)
 	local base = math.min(C.cardio_cap_s, C.cardio_base_s + C.cardio_per_min_s * (activeMinutes or 0))
-	return math.floor((base * (M or C.ledger_m[1]) + 500) / 1000)
+	return math.floor((base * (M or C.ledger_m[1]) + 500) / 1000) * (span or 1)
 end
 
 -- An uncounted all-out window: a 10-s build on the same move, added to its time, then 20 s × M (David, 2026-09-23;
@@ -1150,12 +1150,13 @@ local function finisherSlot(ctx, q, questID, tier, roll, taken)
 		allout = true, eligible = eligible or 1 }
 end
 
--- Keep going (slice 52) on a steady move whose plan is under the full move (ns.FULL_MOVE_S, 45 s): its `keep`, the
+-- Keep going (slice 52) on a steady move whose plan is under its full move (ns.FullMove, 45 s): its `keep`, the
 -- seconds the clock may run on to once the player presses it in its last keep_going_s (Events.lua Lc.KeepGoing);
 -- never on an all-out window or a counted set, nor a match pump's warm move (the stand-up move's slot is built
 -- without a dose, ns.Compose), nor a Long Haul (chosenSlot takes it off).
 local function keepSlot(slot)
-	if not (slot.allout or slot.warm) and slot.seconds < ns.FULL_MOVE_S then slot.keep = ns.FULL_MOVE_S end
+	local full = ns.FullMove(slot.move)
+	if not (slot.allout or slot.warm) and slot.seconds < full then slot.keep = full end
 end
 
 -- Step jacks are always legal: the floor every filter falls back to, in place of the slot `cur`, on its quest and
@@ -1271,7 +1272,7 @@ end
 -- (ns.ResultRow) for the ledger (DB.lua steadyRow).
 local function asks(ctx, slot)
 	return not (ctx.paceAsked or slot.allout or slot.warm)
-		and ns.LedgerAsk(ctx.state, slot.move, slot.rung, slot.seconds or ns.FULL_MOVE_S, ctx.now, ctx.f)
+		and ns.LedgerAsk(ctx.state, slot.move, slot.rung, slot.seconds or ns.FullMove(slot.move), ctx.now, ctx.f)
 end
 
 local function paceSlot(ctx, slot)
@@ -1299,7 +1300,7 @@ local function dose(ctx, slot, activeSeconds)
 			slot.seconds = ns.AlloutSeconds(formM(ctx, slot.move))
 			countSet(slot)
 		else
-			slot.seconds = ns.CardioSeconds((activeSeconds or 0) / 60, formM(ctx, slot.move))
+			slot.seconds = ns.CardioSeconds((activeSeconds or 0) / 60, formM(ctx, slot.move), ns.Span(slot.move))
 			paceSlot(ctx, slot)
 			keepSlot(slot)
 		end
@@ -1382,10 +1383,10 @@ local function riderSlot(ctx, r, own)
 			dose(ctx, slot) -- the window at its form's own length today, from its go
 		else
 			-- a row owed before cardio went short and hard (2026-10-04) kept its old length, up to 270 s: it rides at no
-			-- more than today's longest for its form, cardio_cap_s × M
-			local mult = formM(ctx, r.move)
-			slot.seconds = r.seconds > 0 and math.min(r.seconds, ns.CardioSeconds(math.huge, mult))
-				or ns.CardioSeconds(0, mult)
+			-- more than today's longest for its form, cardio_cap_s × M × its span
+			local mult, span = formM(ctx, r.move), ns.Span(r.move)
+			slot.seconds = r.seconds > 0 and math.min(r.seconds, ns.CardioSeconds(math.huge, mult, span))
+				or ns.CardioSeconds(0, mult, span)
 			paceSlot(ctx, slot)
 			keepSlot(slot)
 		end
@@ -1899,13 +1900,15 @@ local function swapSlot(ctx, cur, c)
 	local slot = slotOf(c, cur.questID, cur.tier)
 	slot.owed = cur.owed
 	if slot.kind == K.cardio and cur.kind == K.cardio then
-		-- a cardio move keeps the time its quest's minutes gave, its pace ask and a match pump's warm move its easy
-		-- cadence (slice 48's double-check), a Long Haul its length (slice 55: its row the haul's, never the steady
-		-- ledger's), and an all-out window stays one (a closing one too), dosed by its own form: a counted set's 30 s,
-		-- any other the window's own length
+		-- a cardio move keeps the time its quest's minutes gave, at its own span, its pace ask and a match pump's warm
+		-- move its easy cadence (slice 48's double-check), a Long Haul its length (slice 55: its row the haul's, never
+		-- the steady ledger's), and an all-out window stays one (a closing one too), dosed by its own form: a counted
+		-- set's 30 s, any other the window's own length
 		slot.allout, slot.closing = cur.allout, cur.closing
 		if slot.allout then return dose(ctx, slot) end
-		slot.seconds, slot.pace, slot.keep, slot.warm, slot.haul = cur.seconds, cur.pace, cur.keep, cur.warm, cur.haul
+		slot.pace, slot.warm, slot.haul = cur.pace, cur.warm, cur.haul
+		slot.seconds = cur.haul and cur.seconds or math.floor(cur.seconds * ns.Span(slot.move) / ns.Span(cur.move))
+		slot.keep = cur.keep and ns.FullMove(slot.move)
 		return slot
 	end
 	-- a match pump's warm move stays one where its other move is easy too (a cardio move, a pose, a warm leg move:

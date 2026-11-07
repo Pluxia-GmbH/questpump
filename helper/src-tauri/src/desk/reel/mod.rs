@@ -41,14 +41,14 @@ use std::sync::{Arc, LazyLock, Mutex, MutexGuard};
 use std::time::{Duration, SystemTime};
 
 use anyhow::{Context as _, bail};
+use questpump_desk::facts::facts;
+use questpump_desk::saga::{Reel, ReelTune};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::{AppHandle, Manager as _};
 
 use super::Desk;
-use super::facts::facts;
 use super::figures::{self, MoveFilm};
-use super::saga::{Reel, ReelTune};
 use crate::lan;
 use crate::runtime::Helper;
 use compose::{Canvas, FilmCut, Knight, Layer, Look, Square};
@@ -482,7 +482,7 @@ impl Helper {
 	/// does not hold; else the reel being made is cancelled, this one's job starts on a blocking thread and its id comes
 	/// back.
 	pub(crate) fn reel_make(&mut self, body: &[u8]) -> Result<u64, String> {
-		if self.desk_pump_running() {
+		if self.desk.desk_pump_running() {
 			return Err("a pump runs".to_owned()); // copy-lint: not shown (a command's error)
 		}
 		let timing = *TIMING.as_ref().ok_or("the reel's tokens do not read")?;

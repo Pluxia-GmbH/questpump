@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 12, "pitch": 8},
   "working": ["abdomen", "back"],
-  "ballistic": true,
+  "ballistic": ["slam_down"],
   "props": [{"kind": "mat", "f0": -40, "f1": 78}],
   "items": [
     {
@@ -83,7 +83,7 @@
     {"to": "release", "s": 0.12, "ease": "linear", "phase": "slam_down", "effort": 1.0},
     {"to": "follow", "s": 0.24, "ease": "out", "phase": "slam_down", "effort": 0.9},
     {"hold": 0.15, "phase": "slam_down", "effort": 0.5},
-    {"to": "pick", "s": 0.4, "phase": "pick_up", "effort": 0.5},
+    {"to": "pick", "s": 0.8, "phase": "pick_up", "effort": 0.5},
     {"hold": 0.15, "phase": "pick_up", "effort": 0.4}
   ],
   "key": "overhead",

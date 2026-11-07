@@ -1127,7 +1127,7 @@ pub struct StepNeed {
 }
 
 /// An entry of contract/library.json's `needs`, `checks` or `opens` (slice 42): a step of another ladder, or a group
-/// done when any one of its steps is (`any`: the tuck flag's 8 pull-ups or 8 one-arm towel rows with a hold).
+/// done when any one of its steps is (`any`: the tuck flag's 8 pull-ups or 8 paused table or ring rows).
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum NeedEntry {

@@ -2281,22 +2281,29 @@ impl Session {
 		(taken, fx)
 	}
 
-	/// Keeps the rows of a pump the desktop app ran (docs/plan.md slice 35) as the computer's app rows: each stamped as
-	/// a phone stamps its own (`char` 0, the app bit beside the computer's), its copy number the first one of its text
-	/// the store of app rows does not hold yet (`AppRows::next_copy`), so a pump written in parts, a row at a time,
-	/// numbers its rows as one list would, and kept with the pump's id (`d-<uuid>`) and the lock it sets (a felt-unwell
-	/// stop, a pump row banked with the reason, locks every pump at once), with a `row` line (`source` app) and the
-	/// mirror due at once, as `take_app_rows` keeps a phone's. A row that is no app row once stamped (a reset row, one
-	/// with another device's bit) or is dated before the latest reset is not kept; one `app.jsonl` could not take is
-	/// kept all the same, since nothing sends it again (`AppRows::add_own`: the next write rewrites the file with it),
-	/// and its write error is in `Effects::store_errors`. The pump's offered row carries what the pump was (`what`)
-	/// where that names it (a move started from the Book, which the desktop's Saga titles as asked). Returns the number
-	/// of rows kept.
-	pub fn keep_computer(&mut self, pump: &str, what: Option<PumpKind>, rows: &[Row], now: &Now) -> (usize, Effects) {
+	/// Keeps the rows of a pump the desktop app ran (docs/plan.md slice 35; the desk core's, slice 63) as its own app
+	/// rows: each stamped as a phone stamps its own (`char` 0, the app bit beside `device`'s, the desktop app's
+	/// `Source::Computer`), its copy number the first one of its text the store of app rows does not hold yet
+	/// (`AppRows::next_copy`), so a pump written in parts, a row at a time, numbers its rows as one list would, and kept
+	/// with the pump's id (`d-<uuid>` on the computer) and the lock it sets (a felt-unwell stop, a pump row banked with
+	/// the reason, locks every pump at once), with a `row` line (`source` app) and the mirror due at once, as
+	/// `take_app_rows` keeps a phone's. A row that is no app row once stamped (a reset row, one with another device's
+	/// bit) or is dated before the latest reset is not kept; one `app.jsonl` could not take is kept all the same, since
+	/// nothing sends it again (`AppRows::add_own`: the next write rewrites the file with it), and its write error is in
+	/// `Effects::store_errors`. The pump's offered row carries what the pump was (`what`) where that names it (a move
+	/// started from the Book, which the desktop's Saga titles as asked). Returns the number of rows kept.
+	pub fn keep_computer(
+		&mut self,
+		device: Source,
+		pump: &str,
+		what: Option<PumpKind>,
+		rows: &[Row],
+		now: &Now,
+	) -> (usize, Effects) {
 		let mut fx = Effects::default();
 		let mut kept = 0;
 		for row in rows {
-			let row = Row { char: 0, flags: row.flags | flags::APP | flags::COMPUTER, ..*row };
+			let row = Row { char: 0, flags: row.flags | flags::APP | device.bit(), ..*row };
 			if !app_row(&row) {
 				continue;
 			}

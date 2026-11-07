@@ -46,7 +46,7 @@ ns.defaults = {
 	-- floor moves, room to move, not quiet, a chair on wheels, no equipment (David, 2026-09-21: "bodyweight-only
 	-- defaults for everyone"; the backpack was on by default until 2026-09-30, when a player without one still met its
 	-- row).
-	gear = {}, -- equipment keys (ns.Gear), stable_chair, table and door_towel (2026-10-28) included
+	gear = {}, -- equipment keys (ns.Gear), stable_chair and table included
 	-- Floor moves: hands, forearms or knees on the floor, or lying down, no mat needed. On by default since
 	-- 2026-10-04 (David: "Everyone has a floor and a mat is luxury"); off until then, when the game assumed a desk
 	-- and no mat. `floorChoice` marks a profile made or switched on since: its `floor` is the player's own
@@ -1189,7 +1189,8 @@ end
 -- going's) lowers the doubt by a sixth, at least 1, to its floor, and counts toward the ask's room (askDay, asks). A
 -- Yes on a move dosed at the player's step while the step's own M (ns.SteadyRung) stood at the top before it, on any
 -- form of the step's pool (so a setup that leaves no form of the step's own rung still climbs), that ran the full
--- move's ns.FULL_MOVE_S (by its dose, or Keep going's past it: a card's or an app pump's Start at the top M runs 30 s;
+-- move's ns.FULL_MOVE_S, times the row's span (ns.RowSpan, over which the ledger reads a row's seconds), by its dose or
+-- Keep going's past it (a card's or an app pump's Start at the top M runs 30 s;
 -- the double-check of slices 52-55, 2026-10-24) is a full move, once a session by the night rule, counted on the cardio
 -- state beside the clean days (`full`, fullTs; the row's `fullMove`, for ns.Progression and the Result's line); a stop
 -- leaves them as they are. `mHigh`, the best M in steps of 50, takes one step where a move dosed past it ran to its end
@@ -1233,8 +1234,10 @@ local function steadyRow(s, r, m)
 	elseif not top and L.bumpDay ~= day then -- finished, not asked: once a game day, so volume alone never inflates it
 		L.a, L.bumpDay = L.a + math.max(1, math.floor(g / 4)), day
 	end
+	local span = ns.RowSpan(r, m)
 	if yes then
-		local floor = ns.LN[math.max(1, math.min(#ns.LN, r.seconds))] + C.ledger_rung_ln * (m.rung - 1)
+		local kept = math.floor(r.seconds / span)
+		local floor = ns.LN[math.max(1, math.min(#ns.LN, kept))] + C.ledger_rung_ln * (m.rung - 1)
 		if answer == P.easily then floor = floor + C.ledger_easy_floor end
 		L.a = math.max(L.a, floor)
 	end
@@ -1244,7 +1247,7 @@ local function steadyRow(s, r, m)
 		L.d = math.max(C.ledger_doubt[2], L.d - math.max(1, math.floor(L.d / 6)))
 	end
 	local c = s.cardio
-	if yes and before == C.ledger_m[2] and r.rung == step and m.rung <= own and r.seconds >= ns.FULL_MOVE_S
+	if yes and before == C.ledger_m[2] and r.rung == step and m.rung <= own and r.seconds >= ns.FULL_MOVE_S * span
 		and (c.fullTs == nil or ns.NewSession(c.fullTs, r.ts)) then
 		c.full, c.fullTs, r.fullMove = c.full + 1, r.ts, true
 	end

@@ -1,7 +1,7 @@
 // A place's words on the computer (docs/plan.md slice 51, "Places"; contract/places.json): its name (the player's own,
 // else its template's words, places.template.<id>), its glyph's name for a screen reader (places.glyph.<the glyph less
 // place_>) and its meta line, the equipment's first three names and how many more (the phones' PlaceRow), from the
-// `places` topic (helper/src-tauri/src/desk/places.rs); and a time of the places' schedule (2026-11-03): its days as
+// `places` topic (helper/crates/questpump-desk/src/places.rs); and a time of the places' schedule (2026-11-03): its days as
 // its title in this computer's weekday names (format.js' LOCALE, Monday first, three or more in a row as a span), and
 // its span and place as its meta line.
 

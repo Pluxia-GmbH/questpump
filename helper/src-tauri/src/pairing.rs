@@ -7,7 +7,6 @@
 use std::net::IpAddr;
 
 use questpump_core::pair::{self, PairLink};
-use serde::Serialize;
 
 /// Interfaces that are never the home network: virtual machines' bridges, VPN tunnels (macOS names every one `utun`;
 /// Windows names them after the product), Apple's peer links.
@@ -192,13 +191,7 @@ impl Address {
 	}
 }
 
-/// A QR code's modules for the page: `width` modules a side, `modules` row by row from the top, `1` dark and `0`
-/// light, without the quiet zone (the `QrWell` draws four modules of it).
-#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
-pub struct Qr {
-	pub width: usize,
-	pub modules: String,
-}
+pub use questpump_desk::qr::{Qr, qr};
 
 /// The link and its QR code; none when the link does not fit a QR code.
 pub fn link_and_qr(host: IpAddr, key: [u8; 32], name: &str, mdns: Option<&str>, hid: [u8; 16]) -> (String, Option<Qr>) {
@@ -207,15 +200,6 @@ pub fn link_and_qr(host: IpAddr, key: [u8; 32], name: &str, mdns: Option<&str>, 
 	let url = link.to_url();
 	let qr = qr(&url);
 	(url, qr)
-}
-
-/// A QR code of `text` as the pages draw it (the pair link's; the sync's link and request codes, slice 60); none for
-/// text past a QR code's room.
-pub fn qr(text: &str) -> Option<Qr> {
-	qrcode::QrCode::new(text.as_bytes()).ok().map(|code| Qr {
-		width: code.width(),
-		modules: code.to_colors().iter().map(|c| if *c == qrcode::Color::Dark { '1' } else { '0' }).collect(),
-	})
 }
 
 #[cfg(test)]

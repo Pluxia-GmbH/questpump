@@ -280,7 +280,12 @@ qp-page.qp-pump {
 		grid-template-areas: "words figure" "words below";
 	}
 
-	/* its size taken from its cell alone, so its length never stretches the figure's row */
+	/* its size taken from its cell alone, so its length never stretches the figure's row. Its scrollbar shows only
+	   while the pointer is on the words or the keyboard's focus is in them, as the system's overlay scrollbars do, never
+	   a standing bar down the window's middle where a mouse makes macOS keep scrollbars (2026-11-06, David: "if the text
+	   on the side is too large it permanently shows a grey line in the middle"); while more lies below, the words fade
+	   out over their last space32, the cue the best-day page and the carousel give, the fade sliding off with the last
+	   space32 of scrolling (a scroll timeline acts only while the words overflow, so words that fit never fade) */
 	.qp-ready-words {
 		grid-area: words;
 		contain: size;
@@ -290,6 +295,19 @@ qp-page.qp-pump {
 		padding-inline: calc(max(0px, (100% - var(--qp-wide-column)) / 2) + var(--qp-layout-margin));
 		overflow-y: auto;
 		overscroll-behavior: contain;
+		scrollbar-color: transparent transparent;
+		-webkit-mask-image: linear-gradient(to top, transparent, #000 var(--qp-layout-space32));
+		mask-image: linear-gradient(to top, transparent, #000 var(--qp-layout-space32));
+		mask-size: 100% calc(100% + var(--qp-layout-space32));
+		mask-repeat: no-repeat;
+		mask-position: 0 0;
+		animation: qp-more-below linear both;
+		animation-timeline: scroll(self);
+		animation-range: calc(100% - var(--qp-layout-space32)) 100%;
+	}
+
+	.qp-ready-words:hover, .qp-ready-words:has(:focus-visible) {
+		scrollbar-color: var(--qp-color-text3) transparent;
 	}
 
 	.qp-ready .qp-ready-figure {
@@ -310,6 +328,18 @@ qp-page.qp-pump {
 	   body's height allows: at most twice figureHeightFraction of it wide, its stills then about that fraction high */
 	.qp-ready-below qp-move-figure-pair {
 		width: min(100%, calc(var(--qp-surface-pump-ready-figure-height-fraction) * 200cqh));
+	}
+}
+
+/* Ready's words' fade at their foot, on their own scroll: the mask a space32 taller than the words, its transparent
+   foot inside them while more lies below and pushed out under them at the end */
+@keyframes qp-more-below {
+	from {
+		mask-position: 0 calc(var(--qp-layout-space32) * -1);
+	}
+
+	to {
+		mask-position: 0 0;
 	}
 }
 
@@ -461,11 +491,23 @@ qp-card.qp-pump-calm {
 	outline: none;
 }
 
+/* the words' size, `bigViewLineFraction` of the window's shorter side: registered as a length, so it computes to px and
+   the name's fit (stages.js `fitName`) reads it as its least */
+@property --qp-big-line-size {
+	syntax: "<length>";
+	inherits: true;
+	initial-value: 0px;
+}
+
+:root {
+	--qp-big-line-size: calc(var(--qp-wide-big-view-line-fraction) * 100vmin);
+}
+
 .qp-big-line {
 	margin: 0;
 	max-width: 100%;
 	font: var(--qp-type-subtitle-font);
-	font-size: calc(var(--qp-wide-big-view-line-fraction) * 100vmin);
+	font-size: var(--qp-big-line-size);
 	line-height: 1.2;
 	color: var(--qp-color-text);
 	overflow-wrap: anywhere;
@@ -641,6 +683,8 @@ qp-card.qp-pump-calm {
 	padding-block: 2vh;
 }
 
+/* the rows read from their tile, as the Result's do: never the big column's centring, which set a move's name and its
+   XP adrift in the middle of their rows */
 .qp-saved-rows {
 	grid-area: dial;
 	align-self: center;
@@ -648,6 +692,7 @@ qp-card.qp-pump-calm {
 	flex-direction: column;
 	gap: 1vh;
 	min-width: 0;
+	text-align: start;
 }
 
 .qp-saved-rows[hidden], .qp-saved-rows-in .qp-big-dial, .qp-saved .qp-big-words {

@@ -17,8 +17,8 @@ info:
 
     - this file: the two routes, the targets and their addresses, what a click writes, what is never kept;
     - `site/report/src/index.js` and `site/report/wrangler.toml`: the routes `/get/*` and `/from/*` on the report
-      Worker (beside the coach report's, the feedback button's and the waitlist's), on `questpump.com` and, while the
-      Pages project serves it, `www.questpump.com` (the pages link them by a relative path), its Analytics Engine
+      Worker (beside the coach report's, the feedback button's and the waitlist's), on `questpump.com` (the pages link
+      them by a relative path; `www.questpump.com` sends every address to the apex with a 301), its Analytics Engine
       binding `CLICKS` (the dataset `questpump_clicks`) and its rate limit `CLICK_LIMIT`;
     - the site's pages (`site/src/`): every download and store button links `/get/<target>`, never an installer's or a
       store's own address;
@@ -37,21 +37,26 @@ info:
     `zip` to the add-on's zip, `QuestPump-addon.zip` (all four on the helper-updater release of the public repository,
     `https://github.com/Pluxia-GmbH/questpump/releases/download/helper-updater/`, under fixed names each new version
     replaces). `ios`, `android` and `phone` have no address until the phone apps are in the stores (the site's
-    `PHONES` switch, `site/src/launch.ts`), `curseforge` and `wago` none until the add-on's projects there exist, and
+    `PHONES` switch, `site/src/launch.ts`), `curseforge` to the add-on's CurseForge page,
+    `https://www.curseforge.com/wow/addons/questpump` (since 2026-11-06, its `CURSEFORGE` switch), `wago` none until
+    that listing has the add-on's file (its `WAGO` switch), and
     `discord` none until the community opens (the public release, docs/tasks.md); each goes to
     `https://questpump.com/start` until it has one. `phone` is
     the one button for either phone: once both stores have an address it reads the request's `User-Agent` only to pick
     the visitor's store (an iPhone or iPad the App Store, Android Google Play, anything else `/start`) and keeps nothing
-    of it. Any other target is a 404, counted nowhere.
+    of it; play.questpump.com's Menu opens it as Get QuestPump for your phone once `PHONES` is live (docs/plan.md slice
+    63), counted as any other click on it. Any other target is a 404, counted nowhere.
 
     **The sources.** `/from/<source>` takes a source of 1 to 40 lower-case letters, digits and hyphens (`reddit`,
-    `yt-launch`), counts it and sends the browser to the home page; any other path is a 404, counted nowhere.
+    `yt-launch`), counts it and sends the browser to the home page; any other path is a 404, counted nowhere. `play`
+    is play.questpump.com's own (docs/plan.md slice 63, the funnel of 2026-11-06): its "Get QuestPump for your computer"
+    opens `/from/play`, so the browser's last step counts as a source and lands on the home page, whose gold primary is
+    the visitor's own download.
 
     **What a click writes.** For a GET, one data point in Cloudflare Workers Analytics Engine, the dataset
     `questpump_clicks`: its index the target or the source (Analytics Engine's sampling key), and five blobs in this
     order: the kind (`get` or `from`); the target or the source; the referring page's path when the `Referer` names a
-    page of the site (`https://questpump.com`, or `https://www.questpump.com` while the Pages project serves it;
-    `/helper`, `/`; else empty), at most 200 characters; the visitor's country as Cloudflare's network reads it for the
+    page of the site (`https://questpump.com`; `/helper`, `/`; else empty), at most 200 characters; the visitor's country as Cloudflare's network reads it for the
     request (`request.cf.country`, two letters, `T1` for Tor; else empty); and the host of the `Referer`
     (`questpump.com`, `www.reddit.com`; else empty), at most 100 characters. Analytics Engine adds the time. No numbers
     (doubles). A HEAD answers as a GET does and writes nothing. At most 60 data points a minute are written in each
@@ -72,7 +77,6 @@ info:
 security: []
 servers:
   - url: https://questpump.com
-  - url: https://www.questpump.com
 paths:
   /get/{target}:
     parameters:

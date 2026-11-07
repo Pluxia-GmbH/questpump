@@ -12,10 +12,12 @@ A motion file names its poses and a timeline:
                "breaks": {"check": "offset", "joint": "ankle_near", "from": "toe_near", "axis": "u", "max": 2}},
      "targets": [{"at": "deep", "check": "height", "joint": "pelvis", "max": 40}, ...], "mirror": false}
 
-"working" names the armour parts whose runes light with the effort; "ballistic": true lifts a rep's phase bounds (a
-jump, a swing); "breathe": true cross-fades a hold's cells; "fast_phase" (0-1) narrows the pack's fast-phase allowance
-(`pack.REL`, 1: a stored frame stands in for the ticks up to one tick of motion away) for a move that is fast all
-through its loop (butt kicks), which the default leaves a few frames each held for several ticks; "eyes": "closed"
+"working" names the armour parts whose runes light with the effort; "ballistic" lists the phases a rep does
+explosively (a jump's dip, drive and flight, a landing, a swing, a strike), which the tempo check lifts from a rep's
+phase bounds while its other phases keep them (checks.py `check_tempo`); "breathe": true cross-fades a hold's cells;
+"fast_phase" (0-1) narrows the pack's fast-phase allowance (`pack.REL`, 1: a stored frame stands in for the ticks up to
+one tick of motion away) for a move that is fast all through its loop (butt kicks), which the default leaves a few
+frames each held for several ticks; "eyes": "closed"
 darkens the visor's light for the whole loop (a balance held with the eyes shut); "rep_ends" names the phases whose end
 finishes a rep where one loop shows more than one (a dead bug's two sides, a monster walk's two steps: each run of those
 phases ends a rep, the last at the loop's end; without it the loop is one rep, ended by the loop's end), which the voice
@@ -274,6 +276,11 @@ def validate(spec):
             raise MotionError(f"{move}: rep_ends must list phases of the timeline")
         if phases[-1] not in ends:
             raise MotionError(f"{move}: rep_ends must hold the last step's phase (the loop ends on a rep's end)")
+    explosive = spec.get("ballistic")
+    if explosive is not None:
+        phases = {st["phase"] for st in tl[1:]}
+        if not (isinstance(explosive, list) and explosive and all(p in phases for p in explosive)):
+            raise MotionError(f"{move}: ballistic must list phases of the timeline (the rep's explosive ones)")
     for i, t in enumerate(spec.get("targets", [])):
         validate_target(move, f"target {i}", t, ("at",))
         if t.get("at") not in poses and not isinstance(t.get("at"), (int, float)):

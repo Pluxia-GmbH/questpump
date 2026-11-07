@@ -1,14 +1,19 @@
 //! The addon from QuestPump on this computer (docs/companion.md, "The addon on this computer"; questpump-core `addon`
 //! holds the feed's rules, the zip's checks, the record and the swap): the release feed fetched off the loop on the
 //! updater's schedule (`feeds`: 10 s after the start, then hourly, sooner again after a failure) and when the loop asks
-//! (`Checks::now`: the game closed, a game without QuestPump found, the player's Add QuestPump to the game before a feed
-//! came), `addon.json` and `addon.json.sig` from the updater's own `helper-updater` release checked against the
+//! (`Checks::now`: the game closed, a game without QuestPump found, the player's Add QuestPump to the game before a
+//! feed came), `addon.json` and `addon.json.sig` from the updater's own `helper-updater` release checked against the
 //! updater's key (`update::pubkey`), each within `feeds::FILE_TIMEOUT`, the zip's address the same release's
-//! `QuestPump-addon.zip`; then, for the install the loop picked, the zip downloaded into the flavour's
-//! `Interface/.questpump-update/` (the same volume as AddOns, outside the folder the client walks) with no bound on the
-//! whole, only `feeds::READ_TIMEOUT` between its bytes, checked against the feed's size and sha256 as it comes, and
-//! unpacked there with every file checked (`addon::unpack`). The swap and the cleaning up run off the loop too (`swap`,
-//! `settle`), each reporting back; the loop decides when (`runtime/addon.rs`).
+//! `QuestPump-addon.zip`; then, for the install the loop picked, the feed's files staged in the flavour's
+//! `Interface/.questpump-update/new/` (the same volume as AddOns, outside the folder the client walks) file by file:
+//! each file this computer holds already by its sha256 (the install's own, the desktop app's voice takes), the rest out
+//! of the zip by byte ranges (its end, its central directory, then the spans that hold them; a request that breaks off
+//! is asked once more, `again`), and whenever that cannot finish (no 206, a range or a size that is not the feed's
+//! zip's, the zip replaced meanwhile, an entry that fails a check, a zip feature not read) the whole zip as before,
+//! checked against the feed's size and sha256 as it comes and unpacked there with every file checked (`addon::unpack`);
+//! every request with no bound on the whole, only `feeds::READ_TIMEOUT` between its bytes, and every staged file's size
+//! and sha256 the signed feed's. The swap and the cleaning up run off the loop too (`swap`, `settle`), each reporting
+//! back; the loop decides when (`runtime/addon.rs`).
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -19,7 +24,7 @@ use questpump_core::addon::{self, AddonError, Feed};
 use questpump_core::zip::ZipError;
 use sha2::{Digest as _, Sha256};
 use tauri::AppHandle;
-use tokio::io::AsyncWriteExt as _;
+use tokio::io::{AsyncWrite, AsyncWriteExt as _};
 use tokio::sync::mpsc;
 
 use crate::feeds::{self, Checks};
@@ -31,6 +36,10 @@ const MAX_FEED: u64 = 16 << 20;
 const FEED: &str = "addon.json";
 const SIG: &str = "addon.json.sig";
 const ZIP: &str = "QuestPump-addon.zip";
+/// The staging folder's file that holds the span of the zip fetched last (`by_ranges`).
+const PART: &str = "QuestPump-addon.part";
+/// The longest central directory the zip may have (6,775 entries took 651,563 bytes in 1.0.0).
+const MAX_DIRECTORY: u64 = 16 << 20;
 
 /// What the addon's tasks report to the loop.
 pub enum News {
@@ -140,17 +149,20 @@ pub fn look(addons: PathBuf, epoch: u64, news: mpsc::UnboundedSender<News>) {
 	});
 }
 
-/// Stages the feed's zip for `addons`: a swap cut short before is put right first (`addon::recover`; a first install
-/// whose QuestPump that puts back stops there), then the zip comes into the staging folder and is unpacked there,
-/// every check made.
-pub fn stage(addons: PathBuf, feed: Feed, first: bool, news: mpsc::UnboundedSender<News>) {
+/// Stages the feed for `addons`: a swap cut short before is put right first (`addon::recover`; a first install whose
+/// QuestPump that puts back stops there), then the feed's files come into the staging folder file by file (`staged`),
+/// every check made. `voice` is the desktop app's own folder of the addon's voice takes.
+pub fn stage(addons: PathBuf, feed: Feed, first: bool, voice: Option<PathBuf>, news: mpsc::UnboundedSender<News>) {
 	tauri::async_runtime::spawn(async move {
-		let result = staged(&addons, &feed, first).await.map_err(|e| Failure::of(&e));
+		let result = staged(&addons, &feed, first, voice).await.map_err(|e| Failure::of(&e));
 		let _ = news.send(News::Staged { addons, result });
 	});
 }
 
-async fn staged(addons: &Path, feed: &Feed, first: bool) -> anyhow::Result<Option<PathBuf>> {
+/// The feed's files into the staging folder's `new/`: those this computer holds already (`addon::take_local`), then
+/// the rest out of the zip by byte ranges (`by_ranges`), else, when that cannot finish, the whole zip as before
+/// (`whole`); the TOC's version checked last.
+async fn staged(addons: &Path, feed: &Feed, first: bool, voice: Option<PathBuf>) -> anyhow::Result<Option<PathBuf>> {
 	let staging = addon::staging(addons).context("the game folder has no Interface folder")?;
 	let (at, from) = (addons.to_path_buf(), staging.clone());
 	let back = tokio::task::spawn_blocking(move || addon::recover(&at, &from)).await??;
@@ -161,17 +173,158 @@ async fn staged(addons: &Path, feed: &Feed, first: bool) -> anyhow::Result<Optio
 		}
 	}
 	tokio::fs::create_dir_all(&staging).await.with_context(|| staging.display().to_string())?;
-	let zip = staging.join(ZIP);
-	download(feed, &zip).await?;
-	let (from, into, feed) = (zip.clone(), staging.join(addon::NEW), feed.clone());
-	tokio::task::spawn_blocking(move || addon::unpack(&from, &feed, &into)).await??;
-	let _ = tokio::fs::remove_file(&zip).await;
+	let into = staging.join(addon::NEW);
+	let (local, at, to) = (feed.clone(), addons.to_path_buf(), into.clone());
+	let wanted = tokio::task::spawn_blocking(move || addon::take_local(&local, &at, voice.as_deref(), &to)).await??;
+	let (all, here) = (feed.files.len(), feed.files.len() - wanted.len());
+	log::info!("addon: {}: {here} of its {all} files from this computer", feed.version);
+	let client = client()?;
+	if !wanted.is_empty()
+		&& let Err(e) = by_ranges(&client, feed, &wanted, &staging).await
+	{
+		log::warn!("addon: {}: file by file did not finish ({e:#}): the whole zip instead", feed.version);
+		whole(&client, feed, &staging).await?;
+		return Ok(Some(staging));
+	}
+	let (checked, to) = (feed.clone(), into);
+	tokio::task::spawn_blocking(move || addon::check_version(&to, &checked)).await??;
 	Ok(Some(staging))
 }
 
+/// The files `wanted` out of the feed's zip by byte ranges into the staging folder's `new/`: the zip's end and central
+/// directory first (`zip::directory`, `zip::entries`), every entry checked against the feed as `unpack` checks them
+/// (`addon::plan`), then each span into `PART` and unpacked out of it (`addon::unpack_span`), every file's sha256 the
+/// feed's.
+async fn by_ranges(
+	client: &reqwest::Client,
+	feed: &Feed,
+	wanted: &[addon::FeedFile],
+	staging: &Path,
+) -> anyhow::Result<()> {
+	let mut zip = Ranges { client, zip: &feed.zip, answered: false, etag: None };
+	let size = feed.zip.size;
+	let tail_at = size.saturating_sub(questpump_core::zip::TAIL as u64);
+	let tail = zip.bytes(tail_at, size).await?;
+	let directory = questpump_core::zip::directory(&tail, tail_at)?;
+	anyhow::ensure!(directory.size <= MAX_DIRECTORY, "a central directory of {} bytes", directory.size);
+	let central = zip.bytes(directory.offset, directory.offset + directory.size).await?;
+	let entries = questpump_core::zip::entries(&central, directory.count)?;
+	let plan = addon::plan(&entries, directory.offset, feed, wanted)?;
+	let (files, bytes, requests) = (plan.files(), plan.bytes(), plan.spans().len());
+	let read = tail.len() + central.len();
+	log::info!(
+		"addon: {}: {files} files to fetch, {bytes} bytes in {requests} requests after {read} of the zip's directory",
+		feed.version
+	);
+	let into = staging.join(addon::NEW);
+	let plan = Arc::new(plan);
+	let part = staging.join(PART);
+	for (i, span) in plan.spans().iter().enumerate() {
+		zip.file(span.start, span.end, &part).await?;
+		let (from, plan, to) = (part.clone(), Arc::clone(&plan), into.clone());
+		tokio::task::spawn_blocking(move || addon::unpack_span(&from, &plan.spans()[i], &to)).await??;
+	}
+	// one left goes with the staging folder after the swap (`addon::recover`)
+	let _ = tokio::fs::remove_file(&part).await;
+	Ok(())
+}
+
+/// The feed's zip read by byte ranges. Every request goes to its address on `github.com`, which sends it on to the
+/// asset's signed address in GitHub's storage, resolved anew each time, so none outlives its signature; the answer
+/// must be 206 with exactly the range asked of a file of the feed's size, from the file the first answer came from
+/// (its `ETag`), so a zip replaced on the release meanwhile fails and the staging takes the whole zip instead (whose
+/// sha256 then decides).
+struct Ranges<'a> {
+	client: &'a reqwest::Client,
+	zip: &'a addon::Zip,
+	/// Whether an answer came, and the first one's `ETag` (none where it had none).
+	answered: bool,
+	etag: Option<reqwest::header::HeaderValue>,
+}
+
+impl Ranges<'_> {
+	/// The zip's bytes `start..end`, asked once more when the first request breaks off (`again`).
+	async fn bytes(&mut self, start: u64, end: u64) -> anyhow::Result<Vec<u8>> {
+		let mut retried = false;
+		loop {
+			let mut out = Vec::new();
+			match self.fetch(start, end, &mut out).await {
+				Err(e) if again(&e, &mut retried) => {}
+				done => return done.map(|()| out),
+			}
+		}
+	}
+
+	/// The zip's bytes `start..end` into the file `to`, made anew, asked once more when the first request breaks off
+	/// (`again`).
+	async fn file(&mut self, start: u64, end: u64, to: &Path) -> anyhow::Result<()> {
+		let mut retried = false;
+		loop {
+			let mut file = tokio::fs::File::create(to).await.with_context(|| to.display().to_string())?;
+			let done = self.fetch(start, end, &mut file).await;
+			file.flush().await?;
+			match done {
+				Err(e) if again(&e, &mut retried) => {}
+				done => return done,
+			}
+		}
+	}
+
+	/// The zip's bytes `start..end` into `out`.
+	async fn fetch(&mut self, start: u64, end: u64, out: &mut (impl AsyncWrite + Unpin)) -> anyhow::Result<()> {
+		use reqwest::header::{CONTENT_RANGE, ETAG, RANGE};
+		anyhow::ensure!(start < end && end <= self.zip.size, "bytes {start}..{end} of a zip of {}", self.zip.size);
+		let last = end - 1;
+		let mut response = self.client.get(&self.zip.url).header(RANGE, format!("bytes={start}-{last}")).send().await?;
+		let status = response.status();
+		anyhow::ensure!(status == reqwest::StatusCode::PARTIAL_CONTENT, "{start}-{last}: answered {status}, not 206");
+		let range = response.headers().get(CONTENT_RANGE).and_then(|v| v.to_str().ok()).unwrap_or_default();
+		let size = self.zip.size;
+		anyhow::ensure!(range == format!("bytes {start}-{last}/{size}"), "asked {start}-{last}/{size}, came {range:?}");
+		let etag = response.headers().get(ETAG).cloned();
+		if !std::mem::replace(&mut self.answered, true) {
+			self.etag.clone_from(&etag);
+		}
+		anyhow::ensure!(self.etag == etag, "the zip changed on the release (its ETag)");
+		let want = end - start;
+		let mut got = 0_u64;
+		while let Some(chunk) = response.chunk().await? {
+			got += chunk.len() as u64;
+			anyhow::ensure!(got <= want, "{start}-{last}: more than the {want} bytes asked");
+			out.write_all(&chunk).await?;
+		}
+		anyhow::ensure!(got == want, "{start}-{last}: came {got} of its {want} bytes");
+		Ok(())
+	}
+}
+
+/// Whether a failed range request is asked once more: only when the connection broke off (a `reqwest` error: a reset,
+/// a timeout) and it has not been asked again yet, since every failure ends in the whole zip, 272 MB for 1.0.0. An
+/// answer that came but fails a check (its status, range, `ETag` or length) is not asked again.
+fn again(e: &anyhow::Error, retried: &mut bool) -> bool {
+	if *retried || e.downcast_ref::<reqwest::Error>().is_none() {
+		return false;
+	}
+	*retried = true;
+	log::info!("addon: a range request broke off ({e:#}); asking once more");
+	true
+}
+
+/// The whole zip into the staging folder and unpacked into its `new/` (`addon::unpack`, every check made), as before
+/// the files came one by one.
+async fn whole(client: &reqwest::Client, feed: &Feed, staging: &Path) -> anyhow::Result<()> {
+	// the span the ranged path fetched last, if any: the disk room for the zip
+	let _ = tokio::fs::remove_file(staging.join(PART)).await;
+	let zip = staging.join(ZIP);
+	download(client, feed, &zip).await?;
+	let (from, into, feed) = (zip.clone(), staging.join(addon::NEW), feed.clone());
+	tokio::task::spawn_blocking(move || addon::unpack(&from, &feed, &into)).await??;
+	let _ = tokio::fs::remove_file(&zip).await;
+	Ok(())
+}
+
 /// The zip into `to`, no more bytes than the feed says, its sha256 the feed's.
-async fn download(feed: &Feed, to: &Path) -> anyhow::Result<()> {
-	let client = client()?;
+async fn download(client: &reqwest::Client, feed: &Feed, to: &Path) -> anyhow::Result<()> {
 	let mut response = client.get(&feed.zip.url).send().await?.error_for_status()?;
 	let mut file = tokio::fs::File::create(to).await.with_context(|| to.display().to_string())?;
 	let mut hasher = Sha256::new();

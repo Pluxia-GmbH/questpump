@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.1] - 2026-11-07
+
+### Added
+
+- "Don't know the weight" under the weight box when you count a move done with a weight. One click saves your reps
+  without a weight.
+
+### Changed
+
+- Quick, brisk and fast walks on the pad run twice as long, 40 to 90 seconds.
+- The strict burpee and 12 more moves go at a pace you can follow with good form.
+- The lying towel stretches name a towel or a belt in every line. You never needed a strap.
+- QuestPump on your computer updates the add-on file by file, so an update fetches only the files that changed.
+- A smaller download. Lines with the same words share one voice clip, and every clip is packed smaller with the same
+  sound. QuestPump on your computer fetches the move films once, the first time it runs.
+
+### Removed
+
+- The towel rows and the Towel and door box. Sets you did on them count as the rows beside them.
+
+### Fixed
+
+- On your computer, the count's buttons stay in view at any window size, the XP bar after a run of app pumps shows all
+  their XP, and move names no longer break at a hyphen.
+
 ## [1.0.0] - 2026-11-05
 
 ### Added

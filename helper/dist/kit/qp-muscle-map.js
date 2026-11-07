@@ -10,7 +10,7 @@
 import {BODY} from "../art/body.js";
 import {KitElement, define, emit, qualityName, token} from "./element.js";
 
-// questpump.com/play asks Trusted Types for every HTML sink (web/worker.js's CSP, docs/plan.md slice 63), and this is
+// play.questpump.com asks Trusted Types for every HTML sink (web/worker.js's CSP, docs/plan.md slice 63), and this is
 // one of the page's two that write markup: the body map's own, tools/bodymap.py's, which this policy alone passes on.
 // A browser or webview without Trusted Types takes the markup as it is.
 const POLICY = globalThis.trustedTypes?.createPolicy("qp-muscle-map", {createHTML: (markup) => markup});

@@ -146,26 +146,24 @@ ns.Ladders = {
 			step = 5 },
 		{ lo = 15, hi = 75, step = 6 }, { lo = 20, hi = 90, step = 7 } } },
 	-- The pull ladder split on 2026-10-04: the bar path (a bar for every move, from the dead hang to the one-arm
-	-- pull-up) and the row (the doorframe, a weight in one hand, the table and a towel shut in a door, in the order of
-	-- the load an arm takes, to blue: its rung 4 counts the one-arm doorframe row's reps where it timed the towel's
-	-- hold; a table to purple; a bar or rings to the front lever), each old rung on its old step. The pull-up's rung 3
+	-- pull-up) and the row (the doorframe, a weight in one hand and the table, in the order of the load an arm takes; a
+	-- table to purple; a bar or rings to the front lever), each old rung on its old step. The pull-up's rung 3
 	-- holds the flexed-arm hang and rung 4 the 5-s lowering since 2026-10-10 (the ladder rethink: the bar alone climbs
 	-- to the pull-up), the negative and the assisted pull-up beside them in their old windows; the row's rung 9 the
 	-- tuck lever's hold, its row and the table's archer row in reps beside it. The ladder gaps' moves keep windows of
 	-- their own (2026-10-12): the half pull-up's reps beside the lowering, the one-arm lock-off's seconds a side beside
-	-- the archer, the feet-back towel row's reps a side beside the towel lowering, the tuck lean-back hang's seconds
-	-- beside the towel row with a hold. Since 2026-10-13 (the readiness check) the table row with the knees bent beside
+	-- the archer, the tuck lean-back hang's seconds beside rung 8's row. Since 2026-10-13 (the readiness check) the
+	-- table row with the knees bent beside
 	-- the one-arm row (a setup without a table climbs by the days alone), and the half-lay front lever's seconds beside
 	-- the one-leg lever, the two levers 3-15 s. Since 2026-10-14 the table row's 3-s lowering with the knees bent beside
-	-- them, 3-12 (about 5.5 s a rep); since 2026-10-16 the towel row's hold at the top 10-45 s beside the table row, the
-	-- negative required after the flexed-arm hang, and the tuck lever's moves on the bar waiting for 8 pull-ups (their
-	-- checks, Library.lua: the table's archer row climbs to the step without a bar, ns.CanRungUp). Since 2026-10-28 the
-	-- towel's moves need the Towel and door box (Library.lua): the one-arm doorframe row with the toes a foot back
-	-- stands for rung 3 after the table, the towel and the rings in the rung's window (a side each), so the pull-up's
-	-- 10 rows of step 3 come on the doorframe too, its hold at the top beside it in the towel hold's 10-45 s; the
-	-- feet-up table rows, and after them the same rows on rings, stand for rungs 6-8 in their rungs' windows, the
-	-- backpack's at 15 kg to climb (ns.LoadClimbs); the feet-back towel row's stage of rung 6 is skipped where the box is
-	-- off, and without the towel, a table or rings the row tops out at rung 5 (rungs 6-7 hold no bar move).
+	-- them, 3-12 (about 5.5 s a rep); since 2026-10-16 the negative required after the flexed-arm hang, and the tuck
+	-- lever's moves on the bar waiting for 8 pull-ups (their checks, Library.lua: the table's archer row climbs to the
+	-- step without a bar, ns.CanRungUp). Since 2026-10-28 the one-arm doorframe row with the toes a foot back stands for
+	-- rung 3 after the table and the rings in the rung's window (a side each), so the pull-up's 10 rows of step 3 come on
+	-- the doorframe too, its hold at the top beside it in 10-45 s; the feet-up table rows, and after them the same rows
+	-- on rings, stand for rungs 6-8 in their rungs' windows, the backpack's at 15 kg to climb (ns.LoadClimbs), the
+	-- anchors since the towel rows went on 2026-11-06, and without a table or rings the row tops out at rung 5 (rungs
+	-- 6-7 hold no bar move).
 	[8] = { key = "pullup", stat = "strength", region = "pull", rungs = { { lo = 10, hi = 60, step = 4 },
 		{ lo = 5, hi = 15, step = 5 },
 		{ lo = 5, hi = 40, alt = { [66] = { lo = 3, hi = 6 } }, path = { { ids = { 66 }, opens = "main" } }, step = 6,
@@ -181,11 +179,10 @@ ns.Ladders = {
 		{ lo = 10, hi = 35, alt = { [58] = { lo = 20, hi = 60 } }, step = 1 },
 		{ lo = 10, hi = 20, alt = { [430] = { lo = 8, hi = 30 }, [432] = { lo = 3, hi = 12 } },
 			path = { { ids = { 432 }, opens = "step" }, { ids = { 430 } } }, step = 2 },
-		{ lo = 5, hi = 30, alt = { [60] = { lo = 5, hi = 15 }, [229] = { lo = 10, hi = 45 }, [649] = { lo = 10, hi = 45 } },
-			step = 3 },
+		{ lo = 5, hi = 30, alt = { [60] = { lo = 5, hi = 15 }, [649] = { lo = 10, hi = 45 } }, step = 3 },
 		{ lo = 8, hi = 25, step = 4 },
 		{ lo = 4, hi = 15, step = 5 },
-		{ lo = 3, hi = 10, alt = { [401] = { lo = 4, hi = 20 } }, path = { { ids = { 401 }, opens = "step" } }, step = 6 },
+		{ lo = 3, hi = 10, step = 6 },
 		{ lo = 3, hi = 12, step = 7 },
 		{ lo = 4, hi = 12, alt = { [402] = { lo = 5, hi = 30 } }, path = { { ids = { 402 }, opens = "main" } }, step = 8 },
 		{ lo = 5, hi = 30, alt = { [314] = { lo = 4, hi = 12 }, [315] = { lo = 4, hi = 12 }, [389] = { lo = 5, hi = 20 } },
@@ -202,8 +199,8 @@ ns.Ladders = {
 	-- the hanging knee raise 6-15 (3 x 10-12 strict before straight legs), the inchworm 4-10, the Pallof press 8-15 a
 	-- side, the short and the wall rollouts 8-25, the ball chop 8-15 a side, the roller dead bug 8-20, the ring fallout
 	-- 5-15. The flags press on the low arm and pull on the high one, which nothing on the side ladder trains: their first
-	-- rung waits for the pull-up (or, for a pole and no bar, the towel row with a hold, which needs the Towel and door
-	-- box since 2026-10-28) and the push-up done (`needs`, 2026-10-09; the `any` since 2026-10-16). The clutch flag
+	-- rung waits for the pull-up (or, for a pole and no bar, rung 8's row on the table or the rings) and the push-up
+	-- done (`needs`, 2026-10-09; the `any` since 2026-10-16). The clutch flag
 	-- stands beside the Copenhagen raises in seconds, and the straddle flag's rung went in under the human flag at the
 	-- top (2026-10-10, the ladder rethink).
 	-- The desk planks switch sides (2026-10-10), so where they are dosed their windows are each side's: half the
@@ -243,8 +240,8 @@ ns.Ladders = {
 			[409] = { lo = 5, hi = 30 } }, path = { { ids = { 383 }, opens = "step" }, { ids = { 409 } } }, step = 9 },
 		{ lo = 3, hi = 25, step = 10,
 			needs = { { any = { { ladder = LAD.pullup, step = 8, count = 8 },
-				{ ladder = LAD.row, step = 8, move = 313, count = 8 }, { ladder = LAD.row, step = 8, move = 652, count = 8 },
-				{ ladder = LAD.row, step = 8, move = 655, count = 8 } } }, { ladder = LAD.push, step = 6 } } },
+				{ ladder = LAD.row, step = 8, move = 652, count = 8 }, { ladder = LAD.row, step = 8, move = 655, count = 8 } } },
+				{ ladder = LAD.push, step = 6 } } },
 		{ lo = 3, hi = 20, step = 11 }, { lo = 3, hi = 15, step = 12 }, { lo = 2, hi = 7, step = 13 } } },
 	-- The stretching and yoga families (slice 21): one rung a colour, its anchor standing where the pose allows (a
 	-- setup with floor moves off, the default until 2026-10-04, starts every family too), the floor and space poses at
@@ -3481,6 +3478,24 @@ end
 -- runs to: a full move (DB.lua steadyRow) runs them, by its dose or Keep going's.
 ns.FULL_MOVE_S = math.floor(C.cardio_cap_s * C.ledger_m[2] / 1000)
 
+-- A steady form's `span`, how many times the plain steady length it runs (a pad walk's 2; Rapha, 2026-11-06). The
+-- ledger measures the plain length, so its seconds are a row's over its span and its full move the plain one's span
+-- times over.
+function ns.Span(id)
+	local m = ns.Library[id]
+	return m and m.span or 1
+end
+
+-- The full move of form `id`: what a full quest at the top M runs it for, and what Keep going runs it on to.
+function ns.FullMove(id)
+	return ns.FULL_MOVE_S * ns.Span(id)
+end
+
+-- The span of steady row `r` of form `m`: 1 on a row from before the form ran longer (ledger_span_ts).
+function ns.RowSpan(r, m)
+	return r.ts >= C.ledger_span_ts and m.span or 1
+end
+
 -- The rung of a cardio step's own steady forms (slice 52: the steady pool and its cadence line top at rung 6, so from
 -- step 8 a timed step's own forms are rung 6's): the rung whose M a full move and the pace ask's full-move reason
 -- read, the card's Pace and the ledger's prior.
@@ -3586,7 +3601,7 @@ function ns.LedgerAsk(state, move, rung, seconds, now, f)
 	if d >= C.ledger_ask_doubt[1] then return true end
 	local step = ns.Rung(state, ns.CARDIO)
 	local own = ns.SteadyRung(step)
-	if rung == step and seconds >= ns.FULL_MOVE_S and ns.Library[move].rung <= own and not ns.CountedRung(step, f)
+	if rung == step and seconds >= ns.FullMove(move) and ns.Library[move].rung <= own and not ns.CountedRung(step, f)
 		and ns.SteadyMOf(a, d, own) == C.ledger_m[2] then
 		local have, need = ns.UnlockProgress(state, ns.CARDIO, f)
 		if have < need and ns.DayIn(state, ns.CARDIO, now, f) == nil then return true end

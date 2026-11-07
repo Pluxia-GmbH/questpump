@@ -1,6 +1,6 @@
 // A chapter as the Saga draws it (the Saga, 2026-10-15; docs/ui.md, "The Saga"; board A-Day; the phones' LogTab and
 // LogDay), one builder for today's on the Saga's root and an earlier day's on its page (desk.log.day), from a day of
-// the `log` topic (desk/saga.rs `SagaDay`): the hero (the chapter's SlantTag and the date, the day's moves in numSaga
+// the `log` topic (questpump-desk/src/saga.rs `SagaDay`): the hero (the chapter's SlantTag and the date, the day's moves in numSaga
 // with Moves beside it, Move for 1, and the day's word under it, the knight of the move that stands for the day cut out
 // beside the number's foot under those words and inside the hero, the line of its unlock or its record under the
 // number, kept left of the knight), the tile Your day with the plan's legend (the DayStrip over the KindBar),

@@ -1,7 +1,7 @@
 # The desktop helper (docs/plan.md slice 5; rules: .claude/skills/rust-helper): questpump-core holds every rule and
 # decoder with no platform code, questpump-helper is the Tauri tray shell with the capture backends.
 [workspace]
-members = ["crates/questpump-core", "crates/questpump-engine", "crates/questpump-web", "src-tauri"]
+members = ["crates/questpump-core", "crates/questpump-desk", "crates/questpump-engine", "crates/questpump-web", "src-tauri"]
 resolver = "3"
 
 [workspace.package]

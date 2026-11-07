@@ -65,6 +65,14 @@ export function registered(id) {
 	return factories.has(id);
 }
 
+/** Keeps only the views of `ids`, every other factory dropped: the browser's views/index.js keeps the views it shows,
+ * since the modules it imports register some it does not (the desktop app's This computer, Phones, Games). */
+export function keepViews(ids) {
+	for (const id of [...factories.keys()]) {
+		if (!ids.has(id)) factories.delete(id);
+	}
+}
+
 function make(id, params) {
 	const factory = factories.get(id);
 	if (!factory) throw new Error(`router: no view ${id}`);
@@ -364,7 +372,11 @@ function arrive(to) {
 export function startRouter(rootHost) {
 	host = rootHost;
 	host.ensure();
-	for (const r of ROOTS) stacks[r].push(place(make(r), host.stacks[r]));
+	// a root no view registered (the browser has no Games) has no tab
+	for (const r of ROOTS) {
+		if (registered(r)) stacks[r].push(place(make(r), host.stacks[r]));
+		else host.bar.drop(r);
+	}
 	// the control a click (or a key's) presses is the opener of the page it opens, kept until the click's handlers ran
 	document.addEventListener("click", (e) => {
 		pressed = controlOf(e.target);
@@ -381,7 +393,7 @@ export function startRouter(rootHost) {
 		seen("menu");
 	});
 	host.addEventListener("qp-back", () => back());
-	takeFrame({tab: choose, find});
+	takeFrame({tab: choose, find, has: registered});
 	// a window opening or closing over the page: the View menu's tabs follow (`tellTabs`)
 	new MutationObserver((records) => {
 		if (records.some((r) => r.target.localName === "dialog")) tellTabs();

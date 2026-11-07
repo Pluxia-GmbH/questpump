@@ -26,7 +26,8 @@
     "setup.screen",
     "system",
     "watch.start",
-    "desk.share"
+    "desk.share",
+    "desk.play.key"
    ],
    "max": 12,
    "note": "The app's name: under its icon, in the system's settings, as the watch's start screen title and in its widget, on a shared record's card and as the wordmark on the phone's first start. Never translated.",
@@ -1561,7 +1562,8 @@
     "places.edit",
     "menu.restore",
     "desk.menu.restore",
-    "menu.linkdevice"
+    "menu.linkdevice",
+    "desk.play.key"
    ]
   },
   "common.move.fallback": {
@@ -1648,7 +1650,8 @@
    "screens": [
     "setup.pairing",
     "setup.local_network",
-    "pro.purchase"
+    "pro.purchase",
+    "desk.play.state"
    ],
    "note": "Button: tries the same thing once more."
   },
@@ -3889,6 +3892,16 @@
     "desk.menu.does"
    ],
    "note": "Caps label on What QuestPump does on this computer."
+  },
+  "desk.menu.email.browser": {
+   "text": "browser",
+   "screens": [
+    "desk.menu.email"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "The {device} of \"Open your progress on this {device}\" and \"Sign out on this {device}?\" in a browser (play.questpump.com, docs/plan.md slice 63); desk.menu.email.computer in the desktop app."
   },
   "desk.menu.email.computer": {
    "text": "computer",
@@ -8865,7 +8878,7 @@
     "desk.book",
     "desk.book.ladder"
    ],
-   "note": "A need row of a step's card whose need is an any group (slice 42): its alternatives joined, each in ladders.tree.chip's words (Pull-up · step 8 · Strength, or One-arm towel row · step 8 · Strength); done when one is."
+   "note": "A need row of a step's card whose need is an any group (slice 42): its alternatives joined, each in ladders.tree.chip's words (Pull-up · step 8 · Strength, or Paused table row, feet up · step 8 · Strength); done when one is."
   },
   "ladders.card.now": {
    "text": "You can do now",
@@ -13504,6 +13517,17 @@
    ],
    "note": "In a pump's line in the Log, right after its time (or after where it came from: in the game · on the watch), and on its page: the pump, or a move of it, ran on the watch."
   },
+  "log.source.web": {
+   "text": "in a browser",
+   "screens": [
+    "desk.log",
+    "desk.log.pump",
+    "log.day",
+    "log.pump",
+    "log.tab"
+   ],
+   "note": "In a pump's line in the Log, right after its time, and on its page: the player did the pump in QuestPump in a web browser, at play.questpump.com (its rows read as the phone's in the game). Says a browser, never this or your browser: a row never says which browser it was."
+  },
   "log.today": {
    "text": "Today",
    "screens": [
@@ -13637,7 +13661,8 @@
    },
    "screens": [
     "desk.menu.about",
-    "menu.about"
+    "menu.about",
+    "desk.welcome.experience"
    ],
    "legal": true,
    "note": "Legal text (the product-safety contact). {address} is the support mail address, contact@questpump.com, shown as a mail link."
@@ -13673,7 +13698,8 @@
    "text": "QuestPump by Pluxia GmbH, c/⁠o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Switzerland.",
    "screens": [
     "desk.menu.about",
-    "menu.about"
+    "menu.about",
+    "desk.welcome.experience"
    ],
    "legal": true,
    "note": "The maker's name and postal address as the imprint states them: keep the names and the address as they are."
@@ -14220,7 +14246,15 @@
     "menu.email",
     "desk.menu.email"
    ],
-   "note": "The confirmation of Remove email: {address} is the linked address, or menu.email.linked's words on a device that did not type it. Its action is menu.sync.remove; the account and its progress stay."
+   "note": "The confirmation of Remove email: {address} is the linked address; menu.email.remove.unknown where this device does not know it. Its action is menu.sync.remove; the account and its progress stay."
+  },
+  "menu.email.remove.unknown": {
+   "text": "Remove the linked email?",
+   "screens": [
+    "menu.email",
+    "desk.menu.email"
+   ],
+   "note": "The confirmation of Remove email where this device does not know the linked address (another device linked it, or this one joined the account by a code); menu.email.remove.title where it does. Its action is menu.sync.remove; the account and its progress stay."
   },
   "menu.email.send": {
    "text": "Send code",
@@ -14703,7 +14737,7 @@
    "screens": [
     "menu.linkdevice"
    ],
-   "note": "menu.link.confirm.title's {device} for a request code in the https form, which questpump.com/play shows (slice 63)."
+   "note": "menu.link.confirm.title's {device} for a request code in the https form, which play.questpump.com shows (slice 63)."
   },
   "menu.link.confirm.computer": {
    "text": "a computer",
@@ -14778,7 +14812,8 @@
     "menu.linkdevice",
     "desk.menu.linkdevice",
     "desk.menu.email",
-    "desk.menu.restore"
+    "desk.menu.restore",
+    "desk.play.key"
    ],
    "note": "Button in the place of a code that opens the progress. Phones: on Link a device when a link opened the page (questpump://linkdevice, a browser's request code), it shows this device's link code, which a link never shows by itself. Computer: Link a device's QR, Email's request code, the restore code and the one typed to restore; the press keeps the window out of screen captures, then shows the code."
   },
@@ -15096,21 +15131,26 @@
    "text": "Copied",
    "screens": [
     "menu.restore",
-    "desk.menu.restore"
+    "desk.menu.restore",
+    "desk.play.key",
+    "desk.menu.linkdevice"
    ]
   },
   "menu.restore.copy": {
    "text": "Copy",
    "screens": [
     "menu.restore",
-    "desk.menu.restore"
+    "desk.menu.restore",
+    "desk.play.key",
+    "desk.menu.linkdevice"
    ]
   },
   "menu.restore.line": {
    "text": "Anyone with this code can open your progress. Keep it somewhere safe.",
    "screens": [
     "menu.restore",
-    "desk.menu.restore"
+    "desk.menu.restore",
+    "desk.play.key"
    ]
   },
   "menu.restore.notfound": {
@@ -15397,7 +15437,9 @@
     "setup.pairing",
     "pump.tab",
     "menu.linkdevice",
-    "desk.menu.pro"
+    "desk.menu.pro",
+    "desk.home",
+    "desk.pump.done"
    ]
   },
   "menu.sync.rekey": {
@@ -15444,13 +15486,18 @@
   "menu.sync.save.action": {
    "text": "Add email",
    "screens": [
-    "pump.tab"
+    "pump.tab",
+    "desk.home"
    ]
   },
   "menu.sync.save.title": {
    "text": "Save your progress",
    "screens": [
-    "pump.tab"
+    "pump.tab",
+    "desk.home",
+    "desk.pump.done",
+    "desk.menu.email",
+    "desk.menu.backup"
    ]
   },
   "menu.sync.syncing": {
@@ -16113,7 +16160,8 @@
     "desk.places.edit",
     "desk.places.place",
     "places.edit",
-    "places.place"
+    "places.place",
+    "desk.menu"
    ],
    "platforms": [
     "android",
@@ -16979,12 +17027,150 @@
    ],
    "note": "The heading of the places window: where the player trains, each place with its own equipment and switches."
   },
-  "play.notready": {
-   "text": "QuestPump in your browser is not ready yet.",
+  "play.again": {
+   "text": "Start again",
    "screens": [
-    "desk.play.notready"
+    "desk.play.state"
    ],
-   "note": "The one heading questpump.com/play shows before the browser's QuestPump goes live (docs/plan.md slice 63): nothing works there yet, and nothing is saved."
+   "platforms": [
+    "web"
+   ],
+   "note": "play.removed's button: opens QuestPump in this browser again, as a new guest."
+  },
+  "play.key.title": {
+   "text": "Keep your key",
+   "screens": [
+    "desk.play.key"
+   ],
+   "note": "The heading of Save your progress's last step in a browser (docs/plan.md slice 63): the restore code, which brings the progress back on any device, with Copy and Save in your password manager."
+  },
+  "play.othertab": {
+   "text": "QuestPump is open in another tab.",
+   "screens": [
+    "desk.play.state"
+   ],
+   "note": "The one heading play.questpump.com shows in a second tab while another tab holds QuestPump (navigator.locks; slice 63, \"Leaving\"), and during a wipe while another tab still holds the data (IndexedDB's blocked past a second); the page starts by itself once that tab is gone."
+  },
+  "play.passwords": {
+   "text": "Save in your password manager",
+   "screens": [
+    "desk.play.key"
+   ],
+   "note": "Keep your key's button: the browser offers to keep the restore code in its password manager, under the linked email."
+  },
+  "play.phoneapp": {
+   "text": "Get QuestPump for your phone",
+   "screens": [
+    "desk.menu"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "The browser Menu's row after setup.add.get while the phone apps are in the stores (the build's PHONES, docs/plan.md slice 63): opens the site's /get/phone in a new tab, which sends the visitor to their phone's store."
+  },
+  "play.removed": {
+   "text": "This browser was removed from your account.",
+   "screens": [
+    "desk.play.state"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "The state screen after another device removed this browser from its account, or the account got a new key while this browser was away (docs/plan.md slice 63, \"Leaving\"): the browser forgot the account and deleted its copy of the progress, which stays in the account. Its button, play.again, opens QuestPump as a new guest."
+  },
+  "play.signout.anyway": {
+   "text": "Sign out anyway",
+   "screens": [
+    "desk.menu.email"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "Button under play.signout.unsent: signs out now, and the progress that has not reached the account goes with this browser's copy."
+  },
+  "play.signout.body": {
+   "text": "Your progress stays in your account. This browser forgets it.",
+   "screens": [
+    "desk.menu.email"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "Sign out's question in a browser (docs/plan.md slice 63, \"Leaving\"): signing out deletes this browser's copy of the progress, which stays in the account."
+  },
+  "play.signout.stay": {
+   "text": "Stay signed in",
+   "screens": [
+    "desk.menu.email"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "Button under play.signout.unsent: keeps this browser in the account, so its newest progress goes there later."
+  },
+  "play.signout.unsent": {
+   "text": "Some of your newest progress has not reached your account yet.",
+   "screens": [
+    "desk.menu.email"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "Sign out in a browser while rows it made could not go to the account (no answer, the account full, 30 s gone by): signing out would delete them with the rest of this browser's copy. Over play.signout.anyway and play.signout.stay."
+  },
+  "play.sync.this": {
+   "text": "This browser",
+   "screens": [
+    "desk.menu.backup"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "This browser's own row in the Sync card's Devices (docs/plan.md slice 63); desk.menu.sync.this in the desktop app."
+  },
+  "play.unsaved": {
+   "text": "Not saved",
+   "screens": [
+    "desk.home"
+   ],
+   "note": "Pump home's status Chip in the browser (slice 63, \"Save your progress\") from the first pump's Result until the progress is saved in an account: this browser alone holds it. A click opens Save your progress (the Email page)."
+  },
+  "play.unsupported": {
+   "text": "QuestPump does not run in this browser. Open it in a newer browser.",
+   "screens": [
+    "desk.play.state"
+   ],
+   "note": "The one heading play.questpump.com shows in a browser QuestPump cannot run in: one without WebAssembly exceptions or Ogg Vorbis (Safari before 18.4; docs/plan.md slice 63, \"The browser's limits\"). No button."
+  },
+  "play.wipe": {
+   "text": "Delete progress in this browser",
+   "screens": [
+    "desk.menu"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "The last row of a guest's Menu in a browser (docs/plan.md slice 63, \"Leaving\"): deletes the pumps and the setup this browser keeps, after play.wipe.title."
+  },
+  "play.wipe.failed": {
+   "text": "This browser could not delete its copy of your progress.",
+   "screens": [
+    "desk.play.state"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "The state screen when the browser refused three times to delete QuestPump's data after a sign-out, a removal or Delete progress in this browser (IndexedDB's error). Its button, common.tryagain, starts the page, which tries again."
+  },
+  "play.wipe.title": {
+   "text": "Delete progress in this browser?",
+   "screens": [
+    "desk.menu"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "The question before a guest's Delete progress in this browser; its button is places.delete."
   },
   "privacy.accept": {
    "text": "Accept all",
@@ -17826,6 +18012,16 @@
    ],
    "note": "Label of the weight box on a move with a weight in each hand: the kilograms of one of them.",
    "max": 12
+  },
+  "pump.count.kg.unknown": {
+   "text": "Don't know the weight",
+   "screens": [
+    "desk.pump.count",
+    "pump.count",
+    "watch.count"
+   ],
+   "note": "Button under the weight box of a move done with a weight, on the screen that asks for the count: empties the box, so the set is saved with its reps alone and no weight. It hides while the box is empty; − or + brings the planned weight back.",
+   "max": 22
   },
   "pump.count.none": {
    "text": "Not counted",
@@ -22805,7 +23001,9 @@
     "menu.helper",
     "menu.settings",
     "offers.computer",
-    "setup.screen"
+    "setup.screen",
+    "desk.play.key",
+    "desk.menu"
    ],
    "note": "Step 1 of 2 on Add the game. A tap sends the web address of QuestPump for the computer to the player's computer (the phone's share sheet). QuestPump is the app's name."
   },
@@ -23503,7 +23701,8 @@
   "setup.welcome.played": {
    "text": "I played before",
    "screens": [
-    "setup.screen"
+    "setup.screen",
+    "desk.welcome"
    ]
   },
   "setup.welcome.start": {
@@ -25189,7 +25388,7 @@
    "note": "A game move's result on the watch: its goal ({goal}, like 16+), and that the count is typed in the game."
   },
   "watch.result.join": {
-   "text": "{first} · {second}",
+   "text": "{first} · {second}",
    "args": {
     "first": "string",
     "second": "string"
@@ -25200,7 +25399,7 @@
     "watch.summary"
    ],
    "max": 8,
-   "note": "Joins two parts of one line (+45 XP · +1 Strength; Unlocked: Archer push-up · Rare; Count every rep · 16+). Keep the middle dot or use your language's list separator."
+   "note": "Joins two parts of one line (+45 XP · +1 Strength; Unlocked: Archer push-up · Rare; Count every rep · 16+). Keep the middle dot or use your language's list separator; the space before the dot is a no-break space, so a wrapped line ends with the dot and never starts with it."
   },
   "watch.result.level": {
    "text": "Level {level}",

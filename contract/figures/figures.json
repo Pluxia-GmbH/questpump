@@ -54,7 +54,7 @@
   "films/ball_chop.mp4": "e4a8ca4bc4df42702af5f88545eac02ff42143b7f08d7a33acef5ca295be65c1",
   "films/ball_goblet_squat.mp4": "1e1e16bcbe0f0c5ecadc4cddf92dd4a2f6e990e23b0186ad477a740ffd15dad3",
   "films/ball_overhead_carry.mp4": "9c84a75b99f32ab6d7c6bf54e2ff05071c72f3ceecbc4f55243c6a0392a09f45",
-  "films/ball_slam.mp4": "946bee92caafb0a9016ace750a4e1007ff5f2bbae115f4cab63082915fcccd91",
+  "films/ball_slam.mp4": "79c8752d772cc843042f7a186079deaedd0b6f9bf4ce41d6dfded79cceb1e53b",
   "films/band_curl.mp4": "c15595ae89b737438cd8d9b17b8e682f755d7ea62800d8108db466dd761f4f57",
   "films/band_good_morning.mp4": "d2fd44d181bf0ac47430fd966d378614dcbfc50e04a05e03e55ef5c6610cb08c",
   "films/band_row.mp4": "4d3256595569aaaa7ee1a4f7bba80600e15f27df638e24dc5564a6201d443ed9",
@@ -87,8 +87,8 @@
   "films/box_pistol.mp4": "13c1bc261af2e6260406adca52726a03eb56ef9da51973b2093fd5417ddee800",
   "films/bulgarian.mp4": "31aa6090dc4f6127efa50d3eb4879d6a7e496d4d9cce77c66d101a9603f83bba",
   "films/burpee.mp4": "3805a6ecacb52d3f49dc62538f235c588d04171060e35abc2d1e3ed108670283",
-  "films/burpee_chest.mp4": "a6ba77ffb320eaafc88a77bb46a3feb629ac9494a27613bfd7fff4ad7700902a",
-  "films/burpee_strict.mp4": "b90bd622f3f009b0cbd3d4789a697552b9704c1c75f836712ff1ea041429c2f1",
+  "films/burpee_chest.mp4": "e9f438da9d431d4f4850ee2740ec66c594e95649fe4793f83d72ce537fe2a9cc",
+  "films/burpee_strict.mp4": "bd086804e0eccc70117c67b0f83aad239987dd72ae37ad1ebefa21ced2f3c66e",
   "films/burpee_tuck.mp4": "c2a5b16f15ddbe7c4017b0023e521dffe55838ffddbdaf96c142ba2b70a06cda",
   "films/butt_kicks.mp4": "d8d7d7be68870ce1e5fe9dcfcc193107ef53a082e4bd4660c6df859b0c9d8ae3",
   "films/butterfly.mp4": "ba6f7626d47d96b0a2b6fc2ead906c0beb5dd156eb7ff39314d81ffa7defc6c7",
@@ -114,7 +114,7 @@
   "films/chest_to_knees_bed.mp4": "6cd5b51c9586b2128b1ad75710962f3d59cb2c72f723373586f017f5a35f96e3",
   "films/chest_to_knees_press.mp4": "70e868e2dea0116af43def8a150d16a81e530f70b9d4ce6a0789c45bc5adf2ff",
   "films/childs_pose.mp4": "1b7ceb543ac3cc2500497be493d3d996b9c7d17cbebcca150f967e13b4c7bf12",
-  "films/clap_pushup.mp4": "83460c14cffa99dcf957a216c0687a0eba711ea9d643c83879170883159dd6f1",
+  "films/clap_pushup.mp4": "bb2e7d723c24c6a27d1a980a7b3c1bea7ebe72ef750a87f2ac901090fd056987",
   "films/close_pushup.mp4": "ae60840c18923b76347bc04d49460e14187d3f0a49e6e88d4136ef020d4dcd40",
   "films/clutch_flag.mp4": "16f99ee312dd9d0a2425f328091372f44591cdfbfede071eaa2edef502466ebf",
   "films/cobra.mp4": "216c542c5880babdf1991a2972dece2bec32b7cdf9e25597508ed2efb864dea6",
@@ -188,7 +188,7 @@
   "films/eagle_towel.mp4": "26142431c09768bb876624659744571d6e02053e9c79b92b3134d563b222993b",
   "films/easy_twist.mp4": "31ca3f71ac9f99a275a58fd5b66360c91cd6c1f3ee86e42bf40c3b5067e4dd10",
   "films/explosive_pullup.mp4": "d0380621fa5c816d670dc6ea47b34028e34687504cef47d8986a1ba2051653d0",
-  "films/explosive_pushup.mp4": "66395eef4a264b1c47e5754e87291577e75b9f3dfe38404cbedff0474332d586",
+  "films/explosive_pushup.mp4": "ab06f67c58d3dc952a48f28eda0cb630ad532d6a0625beacffcf9e89b4411a23",
   "films/face_pull.mp4": "fdfdfc5506b1be232b02cdfd725d14d62ab1751ae87320b4f4e6e00b6c9c07b3",
   "films/face_to_shins.mp4": "ab9ac683fb14fad74161c0caafaf39ac2d3538d375525c1ae7521ba87af75ef7",
   "films/fast_feet.mp4": "a40b6bd2e3201890160617f67a2331e53c270cfb6a73ceec0be299db86bd23b1",
@@ -213,7 +213,7 @@
   "films/forehead_to_knees.mp4": "59ff4dda9e6cf2995a2254dcfa564f24ca3bc778bb3806dfbaf27da8c8eb8302",
   "films/forward_fold.mp4": "b79d32b3ca093cf76d6b90821386ff01b84aa777ab0ae148856cba3aefa8a5a2",
   "films/frog_chest.mp4": "f68786f183b69842bad677fb28c6a5141af1a231909537305cc89c2f7336957e",
-  "films/frog_jumps.mp4": "1dac8656c304f0c52198faef44659bb3db61b991b9ddd5492639bd451f2b46f3",
+  "films/frog_jumps.mp4": "90c7159f7699f3d28d87130e2d2d69a91624c2fb404e4342011444b6e69c38e5",
   "films/frog_pose.mp4": "f47f1f89b5d69491b45bbfb7ec32e2440f4725a5abaac20ec4d1837c8da2ae9f",
   "films/frog_stand.mp4": "e6602f44d72577f19138d0a9f97a9bf57635bdf8cc0c656ba2082f66277f5045",
   "films/frog_stand_books.mp4": "d6efa3d67639d5e09b3a1500b8ad3cb37944b188bcc4526ce179514c3f87f825",
@@ -275,8 +275,8 @@
   "films/kb_halo.mp4": "1aeee9fbc1d3938bd4c42a1f9a0721a4e60a324abf853e74d7bbd7817fa7db00",
   "films/kb_suitcase_carry.dumbbells.mp4": "9f969be3d03ca2a038d061da6a75dbfafa41bd5c0ce82a93707792e15cc03573",
   "films/kb_suitcase_carry.mp4": "0501dd2377f9b16434eae95aa80ca028c9ad5b5668498a2645d661687fbe62a4",
-  "films/kb_swing.mp4": "b91db17bcc1e1869ed99e46633e3b9ba8e9d13ff8ce0693e3b9441201059a25d",
-  "films/knee_clap_pushup.mp4": "717662b92749f70d7c3ec6e447d2cc3d3bf293b9366ade2254da15b43ad1c9ce",
+  "films/kb_swing.mp4": "34fa252572be163cfc13eaa6ed2e8e3e20933f3d26149c7d69c9796a3743c14e",
+  "films/knee_clap_pushup.mp4": "cfb70ab307f9aadbc66cc3944039d01309b087ff4a51f69dbac0cd2207c65a9c",
   "films/knee_drive.mp4": "7da5486f5946b7ca1cc7a9a78c7a47c26a26f56e2c12cf91bd88da52219d9df3",
   "films/knee_hug_stand.mp4": "bf9341853c22c2a195e0c2bf49545ad889c888b225baf5212f2c99b531e6b848",
   "films/knee_out_hold.mp4": "296601e848e1175d254618e7be716a5dec3e55579287bf85441f722e98c845be",
@@ -331,9 +331,9 @@
   "films/middle_split_press.mp4": "73dcdbf9e5431797dbfb67896d3046a03c7d5814ad3f093ac6ddc272d2e4f84e",
   "films/monster_walk.mp4": "71328e8dcfbe642b2151b8404f79a9220885f244f44358823bad42539e437659",
   "films/mountain_climbers.mp4": "493745dc3780578e714cb909e67c6f5c42a5ae6f1ef66b1b6c0b0038304e7f41",
-  "films/muscle_up.mp4": "0db167e8833f69d470fff83a5e4289f9cb24b64f8d391758419ea9d32587e902",
-  "films/muscle_up_jump.mp4": "23ae7028284bf0af37065c8368ec9f40e73cf5787851ec07bee1cc95bd003090",
-  "films/muscle_up_negative.mp4": "080f65847812641985f4e4a1d630affbd6380e9817cc15d31e32c8450f5f08d3",
+  "films/muscle_up.mp4": "379cd2cc54ef8b6c3049d5ac707df59a0f6be3af10f0b5e5324a704273fa360e",
+  "films/muscle_up_jump.mp4": "b51e9f62d18da2fb42fc11f590075e78f31a3de69efcf72866f1665c257f1763",
+  "films/muscle_up_negative.mp4": "60762e1e3eb6ef5e90327de621baab52e244d6dd10671e35440322c153588298",
   "films/narrow_squat.mp4": "c5473fa253e73f6e80777c6546c178c1c1874fe4ff118831fc4ab588e4b6b58e",
   "films/negative_pushup.mp4": "7ce1cdaa4d065034d38f69c4dd77f0e565adbcd3e6f0db4fe4a14cf34e6afc29",
   "films/ninety_ninety.mp4": "13d5de2f1c57991da1a05cc358e3e92190bd278f764906ac490848e05c4c55d7",
@@ -504,9 +504,9 @@
   "films/sprawl.mp4": "17a294737474b123477fbdd241e7bf712eadaefc262d6f965358237a200106b2",
   "films/sprawl_strike.mp4": "d6a9676b48754da48bd9228370ec771c627a202301e3cac8e5cad8fa651986cc",
   "films/sprint.mp4": "3247a89bd2af294bbbe8e1562a21476a7e942bd9c394692661a4948ed3159f63",
-  "films/squat_jump.mp4": "a583e383220ef72c60d3be991794794c07f2253059336b6a078a09eff12a35a3",
+  "films/squat_jump.mp4": "0e4b2b6accbd1fba4ed4a34e2be410c03f3fc859510a0019deba3d55e4f3150b",
   "films/squat_prayer_twist.mp4": "578fa0294abe0fd949ae09a615f535964811e7d8d667fe89e7a5dfdbd68e8071",
-  "films/squat_punch.mp4": "88655e8c82d069180c0c06d4a4f702b93bfb41a26b4dfd4554fef7686a503441",
+  "films/squat_punch.mp4": "6561b123950329a408b518e7a512529fe61a56e66f5c8ce9df640b06aa67f2f2",
   "films/squat_reach.mp4": "0ea52a18b776da1587508716d36ebab6507b50e1c007b4e22968ec2885199eb5",
   "films/squat_thrusts.mp4": "4496fcaa103431f711b462f8ec711ac318922d52c748de0837622b4721999f07",
   "films/squat_twist_wall.mp4": "a2c6b21940e626ce38b65f628561be1d4419d5e13b3e4b73951f4d3f5d730033",
@@ -558,13 +558,6 @@
   "films/tiptoe_eagle.mp4": "76225e0da0d4f8292f596136b32cb7936a84392b67029e5c277b55470296bce8",
   "films/tiptoe_tree.mp4": "0383759a859550eec26973e902413f3d5e93a6c10cd3e4ee1b8ec68ea0c61972",
   "films/toe_hold_fold.mp4": "35a7927b0737000594c85c4fe8f579c40ae377bd03d2ee3422b9cba3e0c3bfa3",
-  "films/towel_door_hold.mp4": "b710c79b0c89900f41ceca72d8883126c2d785eea6647d853551275a75ee4e3b",
-  "films/towel_door_lowering.mp4": "599ab3fb49cf9ddc1d81a6ca2ab8d68afeaec78034d33ffc9e6ad15849ea427c",
-  "films/towel_door_one_arm_row.mp4": "40f869bd0e22badbb7b6feae8366d43876fb62a08cdf803c215286f1dc2e929e",
-  "films/towel_door_one_arm_row_back.mp4": "ae75fe044d1d9599c6e659cf35abe60502627da546e43c9d58fd85050df3c782",
-  "films/towel_door_row.mp4": "7dd44c455bc3eec70c6a1b476057fee53e635d75c20d3177fff6efdc7c416f43",
-  "films/towel_door_row_pause.mp4": "b509e7fcad878e6825ffe98ecc076b0efb3c5a4f86b86a02ad1a78af1e2e0487",
-  "films/towel_door_scap_pull.mp4": "fd9c293ea482ff649552d950ebd278333686cfe69664ad077db0778ceaf7aef8",
   "films/towel_eyes_closed.mp4": "fc3b48bc730122cbea7c8edf0d4d106a4850b58783dc2b3cb463934e079266ac",
   "films/towel_reach.mp4": "42210aa6f0e1ef7afd1918cf097839df16baa021b0f0dfb8c50f5369f4b3f33a",
   "films/towel_stand.mp4": "0ac8541b807a8e9ce56816a69b1dbf8885054a250ae8dbe443b1b4e48a22465a",
@@ -573,7 +566,7 @@
   "films/tree_pose.mp4": "7e40f891e086caaa4bfdedca65f4b344cbe0ec91adfff79f46959a1c5de2ddb9",
   "films/tuck_fl_row.mp4": "2a0cf32680cf4e6f415181b1c44f274c09d6534e079937ee1afbd16b5522409d",
   "films/tuck_front_lever.mp4": "d18ba342cc46b4a821caeac3e81e428077606471dd4a3b20d627f527e48c8620",
-  "films/tuck_jump.mp4": "7023629de432882ddb5de45ab45d2364008d1a35b0a464f337c9289ba2190a20",
+  "films/tuck_jump.mp4": "26baf796e3f412620f11d8b1f5f3c5dbb975846ef7ee5802a51c01cabe884b8d",
   "films/tuck_jump_rally.mp4": "2ab5b0b2d0441da1829ab41115b6f895773dd2205a3a5f0aa7621a5c289dc17e",
   "films/tuck_lean_hang.mp4": "a6504c12de7a53a98c0e23a3910472ea65690e8ff6ea4a7ee21c6fb55deae09b",
   "films/tuck_planche.mp4": "2988763528d8e85c2871bee9aed2c0487f8fae9c3e79b13ec9215f100c79ed66",
@@ -660,7 +653,7 @@
   "loops/ball_chop.mp4": "ba983f663ee018e200eb6b78730ce750402966e352f1a3f024068c56b1a42dc4",
   "loops/ball_goblet_squat.mp4": "395130f9c6f203d869b0b2f0725afd7d58316abae52302e9baf465595e3066e0",
   "loops/ball_overhead_carry.mp4": "4cf84f518220c8ed7c98704a25f2156d55492eb8a2a23b436bd9326d91be6977",
-  "loops/ball_slam.mp4": "7d6988ddb908e863a8f7c6d762315b0f9522e809722f680edf4fd4c15a981b8e",
+  "loops/ball_slam.mp4": "19b993b992ae11f908d45205dbeb7b3147617d46526e294fe19c38bbe773ab12",
   "loops/band_curl.mp4": "5a39c71076aadc572848378e5b2852483cdcf6d14a40a7c480587dd854d76beb",
   "loops/band_good_morning.mp4": "350ae8fe721b338c807933da22ed3c113678eb446e00e905f4f76d53a75d8ae3",
   "loops/band_row.mp4": "1353482ee326560cabf02d4afef9dbbc458df65f148a320aa4cfd3da38b5b681",
@@ -693,8 +686,8 @@
   "loops/box_pistol.mp4": "4cc66c7d748a0158ba2baf09f5879d733bae69bc9762f31210a6e79df30a5537",
   "loops/bulgarian.mp4": "2bb263d3680b4ad345ecf9f269db5c12c515fd22b1317e1026fb0224cb9a6cd9",
   "loops/burpee.mp4": "8b8790d7c4e3c6682926a4b6ccb0254759466297ad43250c4b185eb98873b9b7",
-  "loops/burpee_chest.mp4": "2126cacb82a46a2558bc1d02590e67ef2993d78e88930d700d1a3de18bae8ae4",
-  "loops/burpee_strict.mp4": "22bfbb5dcaae811d43e480e4d95a61243808e2a0aef07f11f39c88be1c441912",
+  "loops/burpee_chest.mp4": "6df95e3c73bd1c2bafe4f54c9f44e2f38842d8023cfd875ea2be8ea4eea83082",
+  "loops/burpee_strict.mp4": "5b00c00090a22f779886d2ac185a4f49857cbf5a57bf6c1be56ae1dbe3a539f0",
   "loops/burpee_tuck.mp4": "482d632780291fdf233d09eed333427979f9aee0960dd4c2256facf023e79b4a",
   "loops/butt_kicks.mp4": "7a1c34d30253990cb077297f431ef0343279ea3eecfe6fa3162a1f90baee449d",
   "loops/butterfly.mp4": "09e5c92c868a42ee947d348ac5d2700628f47efc9fd943e38f86a5fecbbbc99a",
@@ -720,7 +713,7 @@
   "loops/chest_to_knees_bed.mp4": "8dccbeeb2e6bd8fb071c517e43aca7485f6a56f3a7bfac33a6bd57d7bf1b67c9",
   "loops/chest_to_knees_press.mp4": "acff6f21a347fb19699c7dcd925a6f652608c9ab880bf4f5b0d2e0f652d3abff",
   "loops/childs_pose.mp4": "9fd32fbb93b773eb018d601d4e29e24d9ecd9644ade24d5cd0ec10663455fcb7",
-  "loops/clap_pushup.mp4": "22b9ff39ecdec5ad8165d2f5ce41d8cfb53b4ca7b4851c8e8f82fb7262afef4c",
+  "loops/clap_pushup.mp4": "728f96f29ee835e3b47f994ef6afdc6d8924c8e84ecddc5985b8298b44f24a88",
   "loops/close_pushup.mp4": "cc732c86aa6c4c891027fe9bec09700232f408ae911502869108fe6a449e7442",
   "loops/clutch_flag.mp4": "1186f53a32f1b1e7df835c94086b6c1966defedfcf63a7064dfac3a5d6c671dc",
   "loops/cobra.mp4": "d173ad5c78af229ad83b96e12fd97bfae6e166ba86caf7bc4839b44a906ed8a6",
@@ -794,7 +787,7 @@
   "loops/eagle_towel.mp4": "11cbc6af7a6eb44761103a3bd08adcf448b4d0e98d825b34f61f202f5729e731",
   "loops/easy_twist.mp4": "89c1f0903c3f34454dd50de10a24a100e6f04e9fb762ce3a98f563f0b6a63b27",
   "loops/explosive_pullup.mp4": "f18d94b8da09ad38f8834772b6d9ea27a2303c2c02c772a72381ffe7bbcca67b",
-  "loops/explosive_pushup.mp4": "aef9ea22de3c33590ca781d1597016c7b49d133c815e9c4293e11128b816fb2a",
+  "loops/explosive_pushup.mp4": "387bb43839263909f68b65e65d1a1ab923eb8c934941512ae0909b89d17f6257",
   "loops/face_pull.mp4": "e7d8e7ada4dbab37e5d522390d619fe0e2583ae3f3fd6a513d371af69e26e7e1",
   "loops/face_to_shins.mp4": "4be6ccb1f17b505c199fdc513a3cbcfcca0af28b34042ef50e2a7091278b8b33",
   "loops/fast_feet.mp4": "4a2797577e54b927afc2ea553fe98cb5296b6e7a7a3c0bd2593470694b5155b8",
@@ -819,7 +812,7 @@
   "loops/forehead_to_knees.mp4": "8236ecb98216ddeacc3a93d2906d53ae1fd280caf5798a4c6bbfb4040d578be4",
   "loops/forward_fold.mp4": "c0085eca28be8e01f1678be2d8de18a17fa447fca278a3d19a826afaa1bb5d4f",
   "loops/frog_chest.mp4": "4fea2f6cda9267419a75c790404cc2da0035f8b3a9fc258a6d0cba6eaafd3cda",
-  "loops/frog_jumps.mp4": "92fa7384504e2686e7417ba73c7cedfe97d9700881c6a2b4774cadfefa387c07",
+  "loops/frog_jumps.mp4": "9ddd17598fd01867f9573ea07785f2dc2d81867a1ca248608f108174d3b2d28c",
   "loops/frog_pose.mp4": "e6339134f98e004f079c52ed3bd0a41e0e6dc4a0f2f2ed45d4a1f40eef35b416",
   "loops/frog_stand.mp4": "e2c11a6631effab4c82ddda2b6f6083fb56004de16d7e0adf39099c8bd709cc4",
   "loops/frog_stand_books.mp4": "14663d606558d40e65a855075f71e9c2a3530c1c2246ec65b2efe6d5416b2708",
@@ -881,8 +874,8 @@
   "loops/kb_halo.mp4": "d91107bfd6ba016e46715c2d9200958b7d3eb75d78a274eb5f9f4f09a44ef5e9",
   "loops/kb_suitcase_carry.dumbbells.mp4": "8f45b9e04191cd693a9d969c62f94654c7a6d38915d7013dc3faf4f2c1dc0c18",
   "loops/kb_suitcase_carry.mp4": "1dd9fb58390cecfa09e2c6c1123a0b6b70a772d7207e6459581c7d542b91d8c4",
-  "loops/kb_swing.mp4": "5522edb8d905a9e9ee3ea6333e646fc0c07ac5ce2e0b90044cb465cac251f430",
-  "loops/knee_clap_pushup.mp4": "0793f7c017a2fb657a65073ad21757907b31cdd85cc8c82695034986b567b265",
+  "loops/kb_swing.mp4": "dd679f4d15584fb15ad85b7083ec3692763eb96bcfbf05a88db13dfe68384772",
+  "loops/knee_clap_pushup.mp4": "664e5f82830ef4d804f770adda0ffd96c0947b9a651885b2611787e24ecfebe3",
   "loops/knee_drive.mp4": "4e6b71156c0323d28bc5aab291881b5a548906bca56d740b786a15f1eea4bc87",
   "loops/knee_hug_stand.mp4": "4594213bcf3e35b22ee393eb10283f09de7ae350499379309ff0b054d684abb9",
   "loops/knee_out_hold.mp4": "836979d681cb1fb56d27bb9df45dbcc12081efc114c0f950dd96210338cc4d16",
@@ -937,9 +930,9 @@
   "loops/middle_split_press.mp4": "a53b9a44d3bebfc3c1e3991483b0de5eb66533db03ddf5b5690221801b751886",
   "loops/monster_walk.mp4": "a6bb445392af6696cebbd862fcb7f7fa90c8a4dabab7daffc7c46801683e819b",
   "loops/mountain_climbers.mp4": "847fc0a1bada527f5fd021c5e6f2df23d01b2498c0c48bd5a0a03b5ee329e392",
-  "loops/muscle_up.mp4": "84d4a2382f7186cc06887857130bc9122e5db34348a75a27c1b9aeff9a77eaa7",
-  "loops/muscle_up_jump.mp4": "09a440e73b932fec2645e0d8007d8342ef4048e838b0223095eeef4bbbbce3a5",
-  "loops/muscle_up_negative.mp4": "ece02c5874841f4803501988e67563c710de59cefadd7c26758f93d8c451ce01",
+  "loops/muscle_up.mp4": "4fa58c9e807e762c8be91f978ed53eda206328aed876bddee9e96fc5328ce622",
+  "loops/muscle_up_jump.mp4": "386bea94e49d28fd9f841f5ec2c3e7987d86ea1183fb0425529d427b5a50a33c",
+  "loops/muscle_up_negative.mp4": "098167b737f4b35db9954a3e54a5687b296241a68324cda5fce3bc2c89316289",
   "loops/narrow_squat.mp4": "50d61ee51cbb04da6541495fd1c1a6a88ca347c2debb748f992391bab314cae9",
   "loops/negative_pushup.mp4": "0024fb9b1d7b8e5ae1c0919a759aff7678ebd90905eb21f9d5fbbbd6e22e3a96",
   "loops/ninety_ninety.mp4": "b9cbb46c1a5043487fb50e8a20a8bb852dd118d72e3170c5c541a4654f914bf2",
@@ -1110,9 +1103,9 @@
   "loops/sprawl.mp4": "67dba6101380c5db838a979eda53568b0d0e2c89d641d742485bbba7794a0169",
   "loops/sprawl_strike.mp4": "00013b44bdbc380c82a47b7c027bffb9fc9122e89d76707587fbd98d467b0167",
   "loops/sprint.mp4": "194aa5440e2e82ba8e34eeb54cf312b57c3f39a3923315bba5dd4c66e20f6276",
-  "loops/squat_jump.mp4": "6f7c6f07c08e359cebab2dbe00166b6f1149e3fd8ff60962f1e78d90569d6de9",
+  "loops/squat_jump.mp4": "d80cbb4e9c440d9f3d7cf49b780586f6e2b60a755e7c7b2e0e37624fe514455b",
   "loops/squat_prayer_twist.mp4": "d43724a2b7ad6088e666266c3d194e399195116aff0838e52cfef78b37376872",
-  "loops/squat_punch.mp4": "d1c051b4fcd48236ebed132fd81f0a37d49add5d45f6e17e00fba2e41cc3c0d4",
+  "loops/squat_punch.mp4": "81aef7de4988fefa39e8d862504c9dfcba93ba0a7ff1aa178d42e936bea1ee3b",
   "loops/squat_reach.mp4": "80e491d8414ee1a5ede050c5226ae4e0cff04c72a7c8a02280406f6a2fb6e91e",
   "loops/squat_thrusts.mp4": "216746047c3dfa6e2aa7a8b05ccdc46eeffb3a02ff2b56df547b4aa83cae39bd",
   "loops/squat_twist_wall.mp4": "48ca48bfb4a4749b748134649e961116049abd47db9a902ac888b9cdd31e3521",
@@ -1164,13 +1157,6 @@
   "loops/tiptoe_eagle.mp4": "dd251ae7e1c7d71ede7fd1c60299f37a878eef51d23b2b75487279d04113b5c5",
   "loops/tiptoe_tree.mp4": "ce296adcb65fdfe1340c5e24ba64a5582be97e90f4dc62fa562e74bf4c383778",
   "loops/toe_hold_fold.mp4": "93e323e830a6cb23d47af56b5fa5ff4b38327c111d240ee60cad7a26b520c5c4",
-  "loops/towel_door_hold.mp4": "5d280959321f1f15bc8da5aac6b525c13668e94e05ec2d51e527f78c86c8b4c7",
-  "loops/towel_door_lowering.mp4": "7a02b7c63d5bbd0927367ad21767b1e191e44210cc66ce7d8948cdba44ef069e",
-  "loops/towel_door_one_arm_row.mp4": "51a2d7618040c908aa84e3457ac2fcf9ffb40fa15fd9443fda584005adb0ff02",
-  "loops/towel_door_one_arm_row_back.mp4": "99cd01505c4a9795746ee78240d1aef7130aa0a1125f40ecf2239df7fb21eb28",
-  "loops/towel_door_row.mp4": "c7116183686a999ba9083ac2cb348de8b549a4f25d1597cbc14e038cadd59dab",
-  "loops/towel_door_row_pause.mp4": "61ca0614ccb37415ac9262f40b3893f1c6ee02d248c28d00548a64626122c689",
-  "loops/towel_door_scap_pull.mp4": "b3ea160570c26808e35a3d87ff646da91c3072fbe2faf933cefaa7c58fae066b",
   "loops/towel_eyes_closed.mp4": "34046e25eaa3b007ce880e9d6b3eb22004ab10fc09aea9044162720285e04612",
   "loops/towel_reach.mp4": "5c08afd4f15d8d45930b0e5408a1679588a0025f0a785bbbeab4d11e81f8d5a2",
   "loops/towel_stand.mp4": "6fad6ccd2d37304c88bdb47e100a0e942ca46bfe32af362d992d2b7a36ab0413",
@@ -1179,7 +1165,7 @@
   "loops/tree_pose.mp4": "519f41aa9a0dd140aae6a24aa37de06e818a5de6c1c2ce90f0a16a722e23c775",
   "loops/tuck_fl_row.mp4": "4d780cebefe33de410d157aa2a62f3ba34bc4c6eeeeca5c117eb0c6620ff0a32",
   "loops/tuck_front_lever.mp4": "d5b75c2fdfa92ef44fed22ad5e8316816ff12509e045231964230c9dfeb1e95e",
-  "loops/tuck_jump.mp4": "d64cb22d07824012106338f3d5a1deb1ebcbf98bf8aa5fe95079e3917f7c417b",
+  "loops/tuck_jump.mp4": "2cef97d027bedfb79785a91c322d53bb145f72823de19ec93e52c6e075da74a9",
   "loops/tuck_jump_rally.mp4": "5f984d75ae0d1253542316a1b8bf985fdf88f5c6b269945b92c20055cffedcbe",
   "loops/tuck_lean_hang.mp4": "486792cc66a348aa18b1b17419bbde2f53d22f27eeb23a89c95248a4e2ef5427",
   "loops/tuck_planche.mp4": "d54734a73f08a7b911ab0a4f6016c0865794866d853af8c2acd4d677537d7888",
@@ -1367,14 +1353,14 @@
   "pairs/burpee.fault.t.png": "6b52c45a734ace310990ba9d3d6247b956212c275fa051866413786b00f317b4",
   "pairs/burpee.key.png": "24caf2053be83548952e023302c6e2ff4ab1c348e54c25cc9f14b5730f9af9b8",
   "pairs/burpee.key.t.png": "54fdd291ff0f5a302c37887da78524d5b6361058fd0a07ff12a7c854db3bf480",
-  "pairs/burpee_chest.fault.png": "b260cadbc619597cf18ef9aee5fe9cb1e255a57b2150c5df4a6fa1e4be837cd8",
-  "pairs/burpee_chest.fault.t.png": "51b19ea3aed3e087613a8165848ab4332381fdbd0af9b1bfd16fbfc766b12d29",
-  "pairs/burpee_chest.key.png": "9bb09da43d4647c54f53c95874acd3caf0cf1e42faf44e31c629b06cb67b19f4",
-  "pairs/burpee_chest.key.t.png": "9bd77ac987b6d321aaae5e1e760ca49f8bac3ec0164d6bbd877ace92250d0e30",
-  "pairs/burpee_strict.fault.png": "b260cadbc619597cf18ef9aee5fe9cb1e255a57b2150c5df4a6fa1e4be837cd8",
-  "pairs/burpee_strict.fault.t.png": "51b19ea3aed3e087613a8165848ab4332381fdbd0af9b1bfd16fbfc766b12d29",
-  "pairs/burpee_strict.key.png": "9bb09da43d4647c54f53c95874acd3caf0cf1e42faf44e31c629b06cb67b19f4",
-  "pairs/burpee_strict.key.t.png": "9bd77ac987b6d321aaae5e1e760ca49f8bac3ec0164d6bbd877ace92250d0e30",
+  "pairs/burpee_chest.fault.png": "9655bb6e022b5d30a5eb62b647606e9021f662b138396a31450623a4e9742239",
+  "pairs/burpee_chest.fault.t.png": "215c6f4be3b0dc8ada1698327ed96e010d3f37ef9e428db3fc2f3671b1e65158",
+  "pairs/burpee_chest.key.png": "527cc5a4ee1c2272b5ee3233f751e8f5b62215366a1aac631b7d4cd9de515ebb",
+  "pairs/burpee_chest.key.t.png": "90ab9378d54e94c4223f2960b292c4670616c50b93a82575a467e23525a368b5",
+  "pairs/burpee_strict.fault.png": "9655bb6e022b5d30a5eb62b647606e9021f662b138396a31450623a4e9742239",
+  "pairs/burpee_strict.fault.t.png": "215c6f4be3b0dc8ada1698327ed96e010d3f37ef9e428db3fc2f3671b1e65158",
+  "pairs/burpee_strict.key.png": "527cc5a4ee1c2272b5ee3233f751e8f5b62215366a1aac631b7d4cd9de515ebb",
+  "pairs/burpee_strict.key.t.png": "90ab9378d54e94c4223f2960b292c4670616c50b93a82575a467e23525a368b5",
   "pairs/calf_stretch.fault.png": "bbf263ffad0085d4ffec27d316c22efd6c4690c117a759c0b2c3f40a6a981de8",
   "pairs/calf_stretch.fault.t.png": "7c2f5f7c43f97276671f1dbff4f8a8690fa1becb6c7f45e4491be10cc94040e4",
   "pairs/calf_stretch.key.png": "c124f1246cec5cb0e2dc78f0b9679e1d060c8fbf6cbf7e196f5627dd4e787c66",
@@ -1447,10 +1433,10 @@
   "pairs/chest_to_knees_press.fault.t.png": "9be3a9cd029ddb4a507646582b4746c609cd63059ac49611c1411892ebd8b08a",
   "pairs/chest_to_knees_press.key.png": "233de1c01dcc691926dea78f0bbb8e5facaad3fd0f71a97f0d8a8b28fc3fa8d2",
   "pairs/chest_to_knees_press.key.t.png": "d58d81400782c754621ba4db605ac9c9853850e589321ed7a09c2603fc825e22",
-  "pairs/clap_pushup.fault.png": "7e26af86e28d5d4e4fe0c9ddd7472101dd3aa21fcb0d0da812de5f14d170cc65",
-  "pairs/clap_pushup.fault.t.png": "8ba272d3a4cf4028e993df1479c5279850998c88034c4029030b9f9e6b340865",
-  "pairs/clap_pushup.key.png": "4209ec59af1eeb95f3d49ed1a45c343069dea49b8268bf3c749619ff464315d9",
-  "pairs/clap_pushup.key.t.png": "4cebbd416cf17266c68aa19aeca130c6f53bf80a099037c255ca7aef2631be3a",
+  "pairs/clap_pushup.fault.png": "7db7462bed2be8b9896b3f7e74c4d3b679f5983ad000bebb4998bfc20aac1c40",
+  "pairs/clap_pushup.fault.t.png": "b34d5b92d637d8305297648972970fc56a03e620201f9f32864b489b2ef189b0",
+  "pairs/clap_pushup.key.png": "10f18bcf07e024b2ee19010c196ae2db973db5ec2e6fdd10cf17227959a4b2ec",
+  "pairs/clap_pushup.key.t.png": "cc8fc08a614a4c2cd275aa91769e2e6b3d8e4bd4e943ab79bafd7002e27c9815",
   "pairs/close_pushup.fault.png": "cdf75ddda6838f47b054af5928d112550f6482437a56c00f075b24121dad209b",
   "pairs/close_pushup.fault.t.png": "0cd4dfbcbd7b3a6f2346f3c0b040a1d0cee418d8f5441a70910b563525ac44e1",
   "pairs/close_pushup.key.png": "b65b779f065dce89611555134a04354bbbeb9503003fd42fbfb7178f3d86cb7b",
@@ -1619,10 +1605,10 @@
   "pairs/explosive_pullup.fault.t.png": "a7287ad9bd6d17ae59d78b09be849d673fdd7cbb13a846cf44136bc3787c75a8",
   "pairs/explosive_pullup.key.png": "d76dc0167341e1a153854ea096376a9e2c7802abd648a05cf173613e9baa4625",
   "pairs/explosive_pullup.key.t.png": "f9d6261f2909a2fa601798747a98f9a70f01be73c4ddf1ff6c49abf0441ea143",
-  "pairs/explosive_pushup.fault.png": "805bc16a1266fd2b13c51bcd6c1e0d315e2059815823c996a5081390bc659ced",
-  "pairs/explosive_pushup.fault.t.png": "a67e31e8071e6d7600304663cb493a775e6abd2a21bb9e5d58f612a00c2504a2",
-  "pairs/explosive_pushup.key.png": "c8abff337eab110b211e4579891e746df85c38e26d5f9ebe4d05025a1636291c",
-  "pairs/explosive_pushup.key.t.png": "9a5f584682d4c03b101463c7f0f3ed4a543f067abd7e64a95676690fc68c20c6",
+  "pairs/explosive_pushup.fault.png": "54aeb4b2cbfe06e6c2ca212f09d552b6fb70c9a038a1165846962895813db780",
+  "pairs/explosive_pushup.fault.t.png": "cda54f988f10d67cc731d09873c7b96411436491499de565454dfdf06499fc2d",
+  "pairs/explosive_pushup.key.png": "ab34a95538c5c53a647339a314540d388dade9ce1f7d3ecdad564788b1ed625a",
+  "pairs/explosive_pushup.key.t.png": "13b20175664721a81d8fd14647d608b745c107dd206c921cd1e99a2aab002aa0",
   "pairs/face_to_shins.fault.png": "3306d10469fa9f75b91eadd5e654bac30912b2026677a46a855e771594a08862",
   "pairs/face_to_shins.fault.t.png": "6c023f92509b1712b11843d82bb553e18795542fd088b41e1c2d65942015c248",
   "pairs/face_to_shins.key.png": "91f91f0f0d31df2adc94c6b23d135e37ebc808944f8238f22d2030a5f947dd48",
@@ -1843,14 +1829,14 @@
   "pairs/kb_halo.fault.t.png": "69f10d39aa8e78a15fe04524546c419a0e2fcedb537b4ab3f13474523d0c3776",
   "pairs/kb_halo.key.png": "57f9789a510c16368457d21454b8f7ceafdb0690827a8c09ee8842c646a819d5",
   "pairs/kb_halo.key.t.png": "fa942536753e7a8c7b6d97f390a2a9e631edfc2eeaf17af3540b1e0606b74948",
-  "pairs/kb_swing.fault.png": "29fa1173b12e626ae197fee6c45175373108a6d1ab5f44d291c05e5808404fac",
-  "pairs/kb_swing.fault.t.png": "9ad1a23a8da74fbce5fa81722fab50ab0205c043c307a5b51cdd966477510e50",
-  "pairs/kb_swing.key.png": "cde4a4b7514a0c812259a90d5d55fe2b0299c215c2c043585e066872fe6634ad",
-  "pairs/kb_swing.key.t.png": "5b87424ebfd00b177c5ed012241e3956c6fb03b991d8e93930dfcea489c209a0",
+  "pairs/kb_swing.fault.png": "622eaf0092fa545d947100129126bc4048ecb10bb4c1d9570ecbd5dc9c84e01f",
+  "pairs/kb_swing.fault.t.png": "875b1ad43e6a87ff57029d14ccb1b83b4b02f73ebb9b2f9093df175d351274b9",
+  "pairs/kb_swing.key.png": "cea90f8368788fd6bbf72e07bee226046fd38db14541129786f49dab37ab3588",
+  "pairs/kb_swing.key.t.png": "ed679f08f2407283b61f4acc2c2ccca918bde4b125816b4f40baadb28f879a7e",
   "pairs/knee_clap_pushup.fault.png": "708f8a50921a25e4345ebbc06b64d36e79e727004f0c74675dbecd8bd6994936",
   "pairs/knee_clap_pushup.fault.t.png": "03846cdd0d5cd1218eb9add399020fcb9685937ef378ec4dcfcf00db0de296fd",
-  "pairs/knee_clap_pushup.key.png": "57b7ff74dc341d8bf7b3fe81ae5a4230eb5977f95cadb16090f6c1c088241efb",
-  "pairs/knee_clap_pushup.key.t.png": "15ea226330eebdc77731990eecaee0160878191373ab76c8b2989e84c09de969",
+  "pairs/knee_clap_pushup.key.png": "1538c1537a39c7c804bec7f0f32d43c39976c108d875d38653ad03608fe87f62",
+  "pairs/knee_clap_pushup.key.t.png": "1e1ffe9ed7f9cac4a9246bb3b6fe15af78e64cfb682d793641903dea1a55085b",
   "pairs/knee_hug_stand.fault.png": "fe89f664cbe9daada086a3bd96f7ebf49087f062c29b95029e7cb5f8aff2353a",
   "pairs/knee_hug_stand.fault.t.png": "95f6ff2181484a9fd246fb13b220060c60dbb2f8d154e8ba68de228da6fee2fe",
   "pairs/knee_hug_stand.key.png": "c488d236827e5961639dd1085c66526a9541117fcb1985a91010bd729bec81bf",
@@ -1987,18 +1973,18 @@
   "pairs/mountain_climbers.fault.t.png": "86a22fb892358a61f1c4939309b9920329b3a3e16b822906de36fceee69228b9",
   "pairs/mountain_climbers.key.png": "a57d3d5d6b92ee7511d2dd5d29d70f9fa0ddfe7fb748b6bdbe7f5e7e25c985dc",
   "pairs/mountain_climbers.key.t.png": "ec470e3931ede2382397cf9c1963dcdd735281fddabcf7049fab1a647e0c5f38",
-  "pairs/muscle_up.fault.png": "69209eb3c7d059ce3e5194c4e351ef3e18df4c8fc059eb62811eac8e0e945d1b",
-  "pairs/muscle_up.fault.t.png": "b275b7c579dce48d538c2ee6014a4c95066efc6c03d20296767a8f817f58ae87",
-  "pairs/muscle_up.key.png": "ea57c442aa404b3d90ed830b6d47f378d572b4ea1cc80851f44327f614f235f9",
-  "pairs/muscle_up.key.t.png": "f80c3e7bfa9b6e5ed55e2ccc8c95498bc05e2705a790a0387124949a8300faa4",
+  "pairs/muscle_up.fault.png": "d5c076350b3875706cbd13cfc6189e252764251a49bb79dc731960c41c385a74",
+  "pairs/muscle_up.fault.t.png": "30f39ffc91510dfed7651feae8048851a1cde62ac14022185460a9c8638f2fa2",
+  "pairs/muscle_up.key.png": "c25d53d64eea5bf032b1b1af471961566ff3af9a1f65838a1f56ccc2ad826381",
+  "pairs/muscle_up.key.t.png": "3a45e2601e0069d9e77bb6a8619b14ffae8791b70709388081f7eb8ead918c2a",
   "pairs/muscle_up_jump.fault.png": "7035b4d9774d7300dddf81097edd180de7c76f6ee15a88db4d3a0509def6a747",
   "pairs/muscle_up_jump.fault.t.png": "7971a4f77a0983ea0de731728ac04fe84d9cb75b0041a51f45cac15893d5d568",
-  "pairs/muscle_up_jump.key.png": "4081a040f9e30ef1449bbbdd413d114180da877ea79ac6c706d20e8e9c1dddb0",
-  "pairs/muscle_up_jump.key.t.png": "126048c7a29241c9a154cacc95a1fb3f736c712c3bbbc7bd27c341f844045038",
+  "pairs/muscle_up_jump.key.png": "708a50738908d863aad40b23f86adb1034a81e786befad8951c84a81f4506d1b",
+  "pairs/muscle_up_jump.key.t.png": "7043969608088ac83b8306fd2acbfb1db4f9fd1f7e1150d8e87f8645c7f8e793",
   "pairs/muscle_up_negative.fault.png": "6a27805e2e76e7a0af8c9f6a4099de00f216347b795f3140cdb43a18cb349a69",
   "pairs/muscle_up_negative.fault.t.png": "015e9b2755845bfee5a46bf583b9fc2bf56ae8af09da254cd51cd236b0e0f5e8",
-  "pairs/muscle_up_negative.key.png": "8279fe59a603569b213179505936fa51f0dbe1e1d6a015f3f724122642c9dc0d",
-  "pairs/muscle_up_negative.key.t.png": "8de5b3d2ce9a24c10de22eb8f0a4ff89951e1c36fa7d9e644b3e181450034183",
+  "pairs/muscle_up_negative.key.png": "cd26b69c8d13de52663b2674a3cb9480fa75f6b9bc081998b4fd28ee1e6725f3",
+  "pairs/muscle_up_negative.key.t.png": "918f7a7309a85465e9703e55bc15299c698256c3b73ec56befe7eb223f7645a6",
   "pairs/narrow_squat.fault.png": "04cb0a88bb6e9a9ce4e231488280bb0d6a5f083861c00ce6507751d61da4e797",
   "pairs/narrow_squat.fault.t.png": "695b9476dd98edb3495d76535c19cd4f83c0d6641e217914e9206c36a933a582",
   "pairs/narrow_squat.key.png": "18affa99830bce09a39f778f9d8a15e58d1a9e73019a1abb5383d023fd12cfdf",
@@ -2579,30 +2565,6 @@
   "pairs/toe_hold_fold.fault.t.png": "d914e826a5128d3c8c08fba07c175f4f288101ff42f5a541bfe63ee6061075aa",
   "pairs/toe_hold_fold.key.png": "f4aa7001dfb87ef7f5bb7f3a0a9d3c36e7706bda17edc2084528b2b369b986a4",
   "pairs/toe_hold_fold.key.t.png": "726c62a47c62fbc750a5b776af8f008d8c768cd035f7b7c1410d1e2780516ab0",
-  "pairs/towel_door_hold.fault.png": "bb5064d0143e0806ef4d38cf5cd94d722919835ff6cdfc6b0fcdbbd733048184",
-  "pairs/towel_door_hold.fault.t.png": "b98cd900f9d466fdc5f5c1cde1e6b9d5007ca44ec5f886ccfd30938ac66c1f6a",
-  "pairs/towel_door_hold.key.png": "80f051a96c53e6931df4713e51ebdb9a30c5fcd1019c4db891c148a0fcae48cc",
-  "pairs/towel_door_hold.key.t.png": "3829d1fc1926a53528f1fce7519ff47ffd9af4f0474b7bd2f6bb2756118530ec",
-  "pairs/towel_door_lowering.fault.png": "fce589ff9d1847cf4ab093352a48229686d72a326a19393e577f18a79f9d191d",
-  "pairs/towel_door_lowering.fault.t.png": "0c0d2884b868cd9b88c1ec07a3c367d9b1601133a9a60d520dc0dcbd3b3c6c0d",
-  "pairs/towel_door_lowering.key.png": "700fda00cc4a5b2132522cbe5e3469fb2866cf3c27272af6c27e322ce006f36c",
-  "pairs/towel_door_lowering.key.t.png": "e65608a0fa5d1552879f181ed57d43782286b1ec2ee3a09bcaf5bee58433d44a",
-  "pairs/towel_door_one_arm_row.fault.png": "068eda32aea4903c5ae42c88d01f22093213de04093fb9f7041a43ce90ca9af9",
-  "pairs/towel_door_one_arm_row.fault.t.png": "948423c56be7f1c43a5d03db25401011cd1472f83b42928a35eeb9b1fe03efea",
-  "pairs/towel_door_one_arm_row.key.png": "611c112bb3440627d0227469fbe1e176c7a58adf5987bea50b13c1026feb3c06",
-  "pairs/towel_door_one_arm_row.key.t.png": "4ba196e9cd5c6dc09d05eedb617c754a57950f072770e550305096084de8b69c",
-  "pairs/towel_door_one_arm_row_back.fault.png": "3c0e2cb136747367adec011824df7ad6de630f6a6f81a321f35e171937e701f3",
-  "pairs/towel_door_one_arm_row_back.fault.t.png": "e731109855bc4afe9e7ccaa4a6bcb318325c933cc08c768d31509223d8759ac5",
-  "pairs/towel_door_one_arm_row_back.key.png": "d769c0b01ca0845fb885c8dc09c5b88f45fa3d876f0ad5e83ad02631e027f96c",
-  "pairs/towel_door_one_arm_row_back.key.t.png": "9e7e63fc36b55359e3b5cdbea784bcf1b98cf1290fa1a9c98267f46d46d7b003",
-  "pairs/towel_door_row_pause.fault.png": "068eda32aea4903c5ae42c88d01f22093213de04093fb9f7041a43ce90ca9af9",
-  "pairs/towel_door_row_pause.fault.t.png": "948423c56be7f1c43a5d03db25401011cd1472f83b42928a35eeb9b1fe03efea",
-  "pairs/towel_door_row_pause.key.png": "611c112bb3440627d0227469fbe1e176c7a58adf5987bea50b13c1026feb3c06",
-  "pairs/towel_door_row_pause.key.t.png": "4ba196e9cd5c6dc09d05eedb617c754a57950f072770e550305096084de8b69c",
-  "pairs/towel_door_scap_pull.fault.png": "92b1668d62dbeb45a052b7c3c063afa960264c8a7c7fedfff8b504b4acec287c",
-  "pairs/towel_door_scap_pull.fault.t.png": "52eeeb9ca2512c7fc40452fe1d99f7d16c45a28747fb24d032a1fb3df2cac56d",
-  "pairs/towel_door_scap_pull.key.png": "0b224f24d25b2c4aa37f163805b5a3a34b6c18e38af087ee6fe6bca91e37659c",
-  "pairs/towel_door_scap_pull.key.t.png": "addafd013d7a3b087b8521f0cb53ece3ade46fbb60cedf9cb76db0480541cc96",
   "pairs/towel_stand.fault.png": "d21fdea13c6ec61de1f2bc084b0fa8fbb9ed9a22a3f9220e4960c962e9704a0a",
   "pairs/towel_stand.fault.t.png": "df2db33db5ed0193cf3ec7bb2c5379ebfa2483e3e558b65cf357b00d7b2c0308",
   "pairs/towel_stand.key.png": "aa0e309f272493825a3bc6b4141362790897e721e06f78da1de33fff46e8b22b",
@@ -2849,8 +2811,8 @@
   "stills/ball_goblet_squat.t.png": "ae37b8c872f1c41f7ad3153a5f0c79dbe9c8ce11725609bcd532933e8fa5ebf6",
   "stills/ball_overhead_carry.png": "9992c01ee48725ba9eceeee2f5cb46a90af37c557d135bdc9db4341e04bfc041",
   "stills/ball_overhead_carry.t.png": "6d3324f70ce345325d49735018e4f06e680618dbccfe317d61289dbb24c322fa",
-  "stills/ball_slam.png": "f93cfdb536c1543839ded352805d46e5973c6630d67fd0ecbd535ace656c7edb",
-  "stills/ball_slam.t.png": "68bb74cc33a34e124297821311fb3ab2380e60bdbfb6f665da7f09b770c972db",
+  "stills/ball_slam.png": "0fb948590db2fa411868f973039113548c5f6af5f8f1c2d17d64e7e1b12230dd",
+  "stills/ball_slam.t.png": "2d25d64fd9dde4f01af7c9d8d6eaeddbee9bd3fe4dcd5594feee7a8365fd26b8",
   "stills/band_curl.png": "96f6e18187dc2a417dd48bc9e796b5ee09bf02e8add2d9bb32673e54203f8b2e",
   "stills/band_curl.t.png": "99612a574f36d4a826d6e4effb464d1cc836c31324c6b414eb3e897d7f4d75e5",
   "stills/band_good_morning.png": "6d8a5cea99165976320cbf57214dbcb4a3ad240aecfeaa6946e83e616d9bdbd2",
@@ -2915,10 +2877,10 @@
   "stills/bulgarian.t.png": "66a7db92e43bbc25d2282ae79a2aca47f780876d1c712d3041602f249d84f5b8",
   "stills/burpee.png": "4bab724217ccc837230cf48fd8ff6531534f33fb253871b5107f3442363457aa",
   "stills/burpee.t.png": "67d88ad7fadfb7f756efdf1596b083d2e814a78b9b20f0d0e47dcc45572c45fb",
-  "stills/burpee_chest.png": "05250cc6db6acd290b1e080614ec5f17ead99b9beaa70de91990a94c26974c96",
-  "stills/burpee_chest.t.png": "556592a5298a236db3c645f9498e3ec3831b36cf337fcdd0989bdcce2ef879ea",
-  "stills/burpee_strict.png": "29e8d27cabca78b4388f83ac15d057da01028192fe5ca9c236113400f01dbc60",
-  "stills/burpee_strict.t.png": "e30061e3de6ebea965bdb0980928cee948b6ca6d8acb05a5fbab40fd29587ab0",
+  "stills/burpee_chest.png": "1b8539532eca91e7b195455af414c0763334270650898095656c88c25ee638e7",
+  "stills/burpee_chest.t.png": "0820dcc16474bc6d511d746f82b986ee80eec61a6a90dd1ff4e55bc85e7b16f9",
+  "stills/burpee_strict.png": "bf2c91b388a7ccc9c72b6f288b1064c474fd76c7569f70516968a352ffd3157d",
+  "stills/burpee_strict.t.png": "ca21e941918e2b1eee24fccaf3aaae67fc93bca4e4d3415c3af1b38149ee587c",
   "stills/burpee_tuck.png": "99f7818fb4caba070f96a9cf5db28c98195657ba0ec7e11e33a819ff399a1ec1",
   "stills/burpee_tuck.t.png": "c37b8f32d94f222f7f619146eec07f2254a711edc11f5a9d1c927e924ea0abfa",
   "stills/butt_kicks.png": "08f8b08c1e93a423428a90129635c939fc079226cae389c2e9575e3e8b1d07c6",
@@ -2969,8 +2931,8 @@
   "stills/chest_to_knees_press.t.png": "40931bfb9fda4e08f4e4121a287745f73247d16675c97afe87674794ce0e5bd0",
   "stills/childs_pose.png": "69c5ffb93d9084f7cc615c2f655f79d86daa9bb557bdb59efe9c6def97f38710",
   "stills/childs_pose.t.png": "173ba61d952b84422894ee0241c5d49adba2b6f7798c2ea78ddf67ed58343471",
-  "stills/clap_pushup.png": "3799bff558307bf3fc46a72a5066d50e6e56dff7b27792599991f6a3f7b1ff01",
-  "stills/clap_pushup.t.png": "b873ee125a188c6902d8d80039e41171552cf39f02d6bf5b908e63eeb5bc243c",
+  "stills/clap_pushup.png": "26802f4e7478b43b28001a96a7db2685e94a1e63b94b1886c29acd8171840735",
+  "stills/clap_pushup.t.png": "ff1af7cdeaca4f670ebaf05a416c0e45a9513925f08976adce64287c464170f1",
   "stills/close_pushup.png": "b22ce77df12a320386318ac5c60d86fed3e90c13ac0dfee6a22132c031a3d55e",
   "stills/close_pushup.t.png": "65740a041b66d39ecfa5513705e2ab234a9e56d6c69ea3ed54a391a692bddacf",
   "stills/clutch_flag.png": "16cf3b45ac1c31a463849fd5a9e38a47159cba01802fdb02ca722394bde6fbe5",
@@ -3117,8 +3079,8 @@
   "stills/easy_twist.t.png": "054c1bdf6a029705eb0939d21567adc10f26808aa5740e4da65393d919629d33",
   "stills/explosive_pullup.png": "8668f59bcf5e4ec3d9218943df21d896a9bf624e0c74b1575b0eb2310987ce42",
   "stills/explosive_pullup.t.png": "f2efdd1192469096788527dc3e7a71d1247fb6190dba41549925dbeae5deab62",
-  "stills/explosive_pushup.png": "3e9b852a5a3560d8a5c524d5c1b8936b21820fd78df1083baef75dc68a3fbdca",
-  "stills/explosive_pushup.t.png": "08d7128a368ed441c440d594e16a43cd48205bafb3f15011310fc3d22381d1b3",
+  "stills/explosive_pushup.png": "af72274f2b5824d967f62bc2d6913e56fdaf6fd9b7468e626894d202d0c71dfd",
+  "stills/explosive_pushup.t.png": "2109bac908ce312df8dd802904361394ad046b5580c73aad2d58c55d45d3fa8c",
   "stills/face_pull.png": "3a8b1b0ad7131cf01c6006b5be245f85720258306ea3bba7cb0a0cdcd13af225",
   "stills/face_pull.t.png": "6a1c33332704796633e9c87053dbce986c38bb96c1206734e251e75e43f3467c",
   "stills/face_to_shins.png": "01f54dbdf7a31427fd34377d9c529b784f35cfc8232f7f7093af4794be8ec080",
@@ -3167,8 +3129,8 @@
   "stills/forward_fold.t.png": "b428c6df3d94f0ed3b041b7d38b1abc5cd3224c114298d88de84b4169453550c",
   "stills/frog_chest.png": "2af3429acde2e06360ae3f2a267f40734401d62a0ea78ba9680ead5ce24a4fc9",
   "stills/frog_chest.t.png": "07c4117c27491533c39d472794f103f9fc18007b55ac272704d7089ef284d131",
-  "stills/frog_jumps.png": "0cdb2ec4fb798f5073951eb1a2135ef68d71d9d276dc90746ad07db76364c67d",
-  "stills/frog_jumps.t.png": "58b4e9921a46cb6e34e887d9943fd088f286bfd5f719a113b5c5a1797e225b0a",
+  "stills/frog_jumps.png": "7402aeb3b71058aaeb5313028d4e37064ee885e7d0007b469841fa537180aa71",
+  "stills/frog_jumps.t.png": "767177decab240118136f52349b953f6ea68c2cd30c1dc3ff11f20082e1e9136",
   "stills/frog_pose.png": "cd2a4e12ca907bd910ca2d1615d0128b698ca0ee5f9610c505d2445f97b6f5e1",
   "stills/frog_pose.t.png": "7ce7ad8788bb8620062faef9dba91fd623443ab0242d49b5c612dbfa456355fe",
   "stills/frog_stand.png": "34d1f84f953dd06e530a8f86005ab0d6218f2ce85661c9c3f03b9381b78daa53",
@@ -3291,10 +3253,10 @@
   "stills/kb_suitcase_carry.dumbbells.t.png": "f5c3c6a8676d526efa28d92a5bc8f732d90515908ae33bb77287d6acf7774fb8",
   "stills/kb_suitcase_carry.png": "121b613b361256fb5282e8314246fb2bc3ffd98019ad92ea696ff7724fdca733",
   "stills/kb_suitcase_carry.t.png": "4022b335d69c6c3d6dbefaa21e0d350113409552ae389a8b2edf51bacb27a6b5",
-  "stills/kb_swing.png": "964f4ce0e6b7d5ad520aee63552ba5b003a35c0adc5a093bfd79cfc14eca6281",
-  "stills/kb_swing.t.png": "f5819d7e5cd37bf13e06f1b230913b7c2dc7c45da3ee8ecfbd763cee5df6c90e",
-  "stills/knee_clap_pushup.png": "add397bd3be4e0c81799361fa64e37420bea3c0b86e0abd747a20885369aeb8e",
-  "stills/knee_clap_pushup.t.png": "afe0f312d0a0da80574888ecb4a063f823cb04c878671a1366dd2a1bc4cc9e1c",
+  "stills/kb_swing.png": "7047265e999562430b6a7eb8d84f6e852eea7445bacd700613db041c16482ccb",
+  "stills/kb_swing.t.png": "cfab4e838f59d32d7069ab987a91687cdfceca62e78ccb608c8cd8cd927b3df8",
+  "stills/knee_clap_pushup.png": "24d79ec9c022d8f78e9513002d62854753636263d6f46f53f9a58d89611ca7f8",
+  "stills/knee_clap_pushup.t.png": "785a6be392ea74a6f4d2de8ca9418e5728915e0439824ede7a3c785ef98602b6",
   "stills/knee_drive.png": "b56a4ab7c5cb4ea3e2a9fd5e109b801bc3d692a53c955e814b96e9111c3cee77",
   "stills/knee_drive.t.png": "e7f96cb93355b94878c7ab215e83414f47ac88a48b965a2f4886236bd9984cea",
   "stills/knee_hug_stand.png": "4802b0481e05e132b6a28b62c5cd4b4c8ce72adf9b038b58d0c277c6414f94c8",
@@ -3403,12 +3365,12 @@
   "stills/monster_walk.t.png": "0e1162d67d039301067e20be142f7db28cb524e212bd4b32a8d7f065dfabb6d9",
   "stills/mountain_climbers.png": "3f3acb5240b19f180520570069df730efed150870e8b5b719c6adacc2dafc971",
   "stills/mountain_climbers.t.png": "8885b4ebfe4d5564400740f891f8a245e591480aa9bf5907119b72bb7dc61b8b",
-  "stills/muscle_up.png": "cd6df478e5f09000a999167642e4ba7a4fb50b6dd72db7f0f12c1eec4fb60fd8",
-  "stills/muscle_up.t.png": "a626fe7e8373aaf23cebb12384abdb7a1242798d47818f59e428ce20ae716928",
-  "stills/muscle_up_jump.png": "62f892202a839ea41f9b1c29d78590d1f662b5ed1ecb29c2d3db86829d17ad2c",
-  "stills/muscle_up_jump.t.png": "4c959c0ec61d74fdf81e5919a2ecf94e6949551457f6baa917242af9476e2e97",
-  "stills/muscle_up_negative.png": "5e4b8e5ef800d06dbc3172cc97a143027ea6041d22ea5ccb62c5e524635e984b",
-  "stills/muscle_up_negative.t.png": "7e2194990cb8a8f60374695e0c80ba232b401a29c06d709c8d598ffb157473d4",
+  "stills/muscle_up.png": "db0a66e96f15f4d90944c846a3473d78e9649fcdd8862b8b9d5a7b7ac7466116",
+  "stills/muscle_up.t.png": "306b6e79eca45f85285ed41fc0748db0d43370e4792bf9fc345f1ac135314b85",
+  "stills/muscle_up_jump.png": "6f2c13cffc65b0f9c61845aa0bc593ce71b3a3b57178cbee37b4f7b7961848f7",
+  "stills/muscle_up_jump.t.png": "ecc7d25f80016804856d1d1ef7185d913da2ba65a93a7016ae45642747e4003a",
+  "stills/muscle_up_negative.png": "30fdb8b48e7be5e313a13e9696dff905190b5704fe49383f99a121465b73da53",
+  "stills/muscle_up_negative.t.png": "ad02890e624fce577f5db0c7524a9dadb53e14f4c5ad8a309834a24fc72db6ec",
   "stills/narrow_squat.png": "c6d0acb20c3a0a1a51f55b3d965ff29d5145993b41d4f2e935a81980740ebf1a",
   "stills/narrow_squat.t.png": "c2dae5c1cce59330661923e097b2d7822864e9291e47152aaa4ecef00b938ce4",
   "stills/negative_pushup.png": "7bddfa3fc6d32cdfc6020f40d503a7314891c8a58179f11837558672e4c796c0",
@@ -3749,12 +3711,12 @@
   "stills/sprawl_strike.t.png": "ed67583c3aac6c8e8f6b716e86a7618ffd90ffb90d475e527055cb7fe456fa13",
   "stills/sprint.png": "3f1c0f3dd9a239d1eb69f57415d158e3ac13d7bc037e6425caf6cf0f945e5d00",
   "stills/sprint.t.png": "b146566e8720cf194860412c6440569a9ba978367973064b23f9b448d57aab59",
-  "stills/squat_jump.png": "45e6ae7a32952c5278ddea39513658f72eafde8348b975da947e3b873961cdf5",
-  "stills/squat_jump.t.png": "1d26c4cdf0f8e9f6b72a0087818213e931262854bebe2e28cb19a7517301186f",
+  "stills/squat_jump.png": "2eba91ad78a8e9be8271eb74df9e1bf6092ee998184789e9c3b1bfc91199c21e",
+  "stills/squat_jump.t.png": "232b9598c3175be2a758e219ba5c4538eac39c6f21c4f9529eebc7626e550381",
   "stills/squat_prayer_twist.png": "1b8b6036bbdd6a03c1f052ccd4d8e789b61b26eeac31599e350a46191bb4ab21",
   "stills/squat_prayer_twist.t.png": "05e51ca8c4ca8885cc98588841f20dc4af380913e5b19c520ff96d4a1587a327",
-  "stills/squat_punch.png": "4bc5d2c725e03833fa7c666d3ac81c62a59fe78f8040eba052fa2a1ac4528d06",
-  "stills/squat_punch.t.png": "4c4461455867a9a9470aa5dc373db8dd7fdd66bfd3353d4913517ac182f9c808",
+  "stills/squat_punch.png": "6b5e339d352ef00b75bc92cb7362f5c50d8d059b99d3689ecd9c7766d942f053",
+  "stills/squat_punch.t.png": "4ebb9e7241b5c3e61909f9a6d9ee31fb9484768fdda3ed4ca36ad144b33ac374",
   "stills/squat_reach.png": "e74d0b8b0b5c239517d8e20801a89966b35a9ba8d69166883c2d2bdc8e64ff8c",
   "stills/squat_reach.t.png": "0c2ec71cc491c22f705ed5b8774053314ca75c62131cc2095d818924a256918c",
   "stills/squat_thrusts.png": "99362b2f7acaa650e86004444bd700c92f0fe9ca10eab8d5a46ccc010e6bface",
@@ -3859,20 +3821,6 @@
   "stills/tiptoe_tree.t.png": "dde8b2f9ccdcb9192c26f1d7f5c6f1090b247af615d79e7415beacc1cd2e1a8a",
   "stills/toe_hold_fold.png": "b2799c21f3f5e39174d7bd8f5a061dba4832959bf6722257568357f33d054499",
   "stills/toe_hold_fold.t.png": "67147bf11fc6099676183357ed536302b6edc1e5cee9ceac39118e2d8b0c2450",
-  "stills/towel_door_hold.png": "2b9da06cc65bcfdb0862ff655365d442334f6e6743e41a8aa3fbf6b15390f0d7",
-  "stills/towel_door_hold.t.png": "028eae038f7e5664721e478e6da3bdc3862fcde740cbdb7b70223b2193413042",
-  "stills/towel_door_lowering.png": "7a2877659f6d29e02e5f1396d80b5b8e2e50534dd80120b9f073f4b0f3438ce1",
-  "stills/towel_door_lowering.t.png": "a50311104d54e75973c8376584d92dad63c3d234567949361e611bd328936bb1",
-  "stills/towel_door_one_arm_row.png": "56e0de062ce21ed3b3a128168bb46c943f35307b4dd09fc630580ea8f959e904",
-  "stills/towel_door_one_arm_row.t.png": "e826e6b22b7847b280a373ff76a5c9209f48f912bdb98bc337bc9e0b2d22e682",
-  "stills/towel_door_one_arm_row_back.png": "ff2c571ab0c017eb89720bef62ef11f339974729b27028c8e901f6f0132d5c02",
-  "stills/towel_door_one_arm_row_back.t.png": "59a69a0fab4632e7176b7eb8ed93378191efaf93042203ba2e12506eeac0f190",
-  "stills/towel_door_row.png": "543c6b74c4f3e99ad135ccb9048fa7a70ec4be6d8116da52824507b499de66a4",
-  "stills/towel_door_row.t.png": "d0b1a514895fea84908eba9a6a49bdc6ddc5ec142a5e32dfe9cf141c11ab6114",
-  "stills/towel_door_row_pause.png": "d4698b4ed3d2aa312106c1cdd7a8b81d1dbf01343e636513b706e7aa92a59cc1",
-  "stills/towel_door_row_pause.t.png": "db8f62e9985624ffd3cd56d87596d59e81e4d1b83eeec2ccb993c8c9cef9a81f",
-  "stills/towel_door_scap_pull.png": "7d766882cc53d9fd92197d02419d7282970e4f64c5ac16cce388e73675b8a81a",
-  "stills/towel_door_scap_pull.t.png": "ca04bee873403d00270fe19c992ee218a4978bf2445be9a4d4e960ac3b225c0c",
   "stills/towel_eyes_closed.png": "433a3929ff116cf095cb46bbc2f6ad800402fcf04924e6212d32b9302e8e76de",
   "stills/towel_eyes_closed.t.png": "e908a5282c823d482bd5e564f0fa77ea7b346b2d5b7afc12b6a98cf5aaca1052",
   "stills/towel_reach.png": "071f00ffb55f33a7b73d39db9184e53e098cebd9e4c62b61adc11aae747a47ed",
@@ -3889,8 +3837,8 @@
   "stills/tuck_fl_row.t.png": "edf04af62f8f2ca3cdb837ed7891639cae0941c7df3e77334b8a0d87c45c80b8",
   "stills/tuck_front_lever.png": "06cad4364d2229b0acce8ec00ebc9fd954a88e3b97c71869f69ead1530adf548",
   "stills/tuck_front_lever.t.png": "df01ea62229c9e9e48a5c9c1a094b16ce845c300edba3c9eb491a2faff931ead",
-  "stills/tuck_jump.png": "af2420de6414c5161eea1fa0ea9c340d357be813ac03003e531c3bae30daa6c6",
-  "stills/tuck_jump.t.png": "b2596dc5a7c71394ef8970b2bd906ea472ff67edd62f5a1a322c05c02c9e2811",
+  "stills/tuck_jump.png": "648822bf1011f6a51bf5b4f9e768467cf3c3db3b15996643499ac724f939895a",
+  "stills/tuck_jump.t.png": "ab94c2fc35db5f0ce38ebc3d64b45788d862dffca91c72f0e153fe83af081917",
   "stills/tuck_jump_rally.png": "490952072505d0f076156627d7914030db66386fb9cbb613416c9db227d97398",
   "stills/tuck_jump_rally.t.png": "c8736e25ee5d92a9da518fc39389fbf5e63b41fe7c6e1ee668a24e0b04b494e0",
   "stills/tuck_lean_hang.png": "d3cc21dc4db8e2212cefecd3cc651e4c5330845c7e8129c55214432258a04ab8",
@@ -4006,7 +3954,7 @@
   "side": 480,
   "tint": 512
  },
- "films_digest": "8b2867d330b195ca",
+ "films_digest": "7d0565009d438b06",
  "moves": {
   "adv_tuck_fl_row": {
    "fault": "back_rounds",
@@ -4375,13 +4323,13 @@
   },
   "burpee_chest": {
    "fault": "hips_sag",
-   "key": 0.8167,
+   "key": 0.85,
    "mirror": false,
    "owner": "burpee_chest"
   },
   "burpee_strict": {
    "fault": "hips_sag",
-   "key": 0.8167,
+   "key": 1.45,
    "mirror": false,
    "owner": "burpee_strict"
   },
@@ -4530,7 +4478,7 @@
   },
   "clap_pushup": {
    "fault": "hips_sag",
-   "key": 0.5833,
+   "key": 0.6167,
    "mirror": false,
    "owner": "clap_pushup"
   },
@@ -4946,7 +4894,7 @@
   },
   "explosive_pushup": {
    "fault": "hips_sag",
-   "key": 0.5333,
+   "key": 0.6,
    "mirror": false,
    "owner": "explosive_pushup"
   },
@@ -5449,7 +5397,7 @@
   },
   "knee_clap_pushup": {
    "fault": "hips_sag",
-   "key": 0.5833,
+   "key": 0.6833,
    "mirror": false,
    "owner": "knee_clap_pushup"
   },
@@ -5762,7 +5710,7 @@
   },
   "muscle_up": {
    "fault": "one_elbow_first",
-   "key": 1.4167,
+   "key": 1.45,
    "mirror": false,
    "owner": "muscle_up"
   },
@@ -5774,7 +5722,7 @@
   },
   "muscle_up_negative": {
    "fault": "one_elbow_first",
-   "key": 4.4833,
+   "key": 3.9333,
    "mirror": false,
    "owner": "muscle_up_negative"
   },
@@ -6759,9 +6707,9 @@
   },
   "squat_punch": {
    "counts": [
-    2.9667
+    3.0333
    ],
-   "key": 2.45,
+   "key": 2.5167,
    "mirror": false,
    "owner": "squat_punch"
   },
@@ -7050,47 +6998,6 @@
    "key": 4.5,
    "mirror": false,
    "owner": "toe_hold_fold"
-  },
-  "towel_door_hold": {
-   "fault": "hips_sag",
-   "key": 2.7833,
-   "mirror": false,
-   "owner": "towel_door_hold"
-  },
-  "towel_door_lowering": {
-   "fault": "hips_sag",
-   "key": 2.1,
-   "mirror": false,
-   "owner": "towel_door_lowering"
-  },
-  "towel_door_one_arm_row": {
-   "fault": "hips_twist",
-   "key": 1.0,
-   "mirror": false,
-   "owner": "towel_door_one_arm_row"
-  },
-  "towel_door_one_arm_row_back": {
-   "fault": "hips_twist",
-   "key": 1.1333,
-   "mirror": false,
-   "owner": "towel_door_one_arm_row_back"
-  },
-  "towel_door_row": {
-   "key": 1.0,
-   "mirror": false,
-   "owner": "towel_door_row"
-  },
-  "towel_door_row_pause": {
-   "fault": "hips_twist",
-   "key": 1.0,
-   "mirror": false,
-   "owner": "towel_door_row_pause"
-  },
-  "towel_door_scap_pull": {
-   "fault": "elbows_bend",
-   "key": 1.0667,
-   "mirror": false,
-   "owner": "towel_door_scap_pull"
   },
   "towel_eyes_closed": {
    "key": 5.6,
@@ -8057,11 +7964,11 @@
     0.9958
    ],
    "fade": [
-    0.2,
+    0.2021,
     0.8021,
     1.0
    ],
-   "loop": 2.1333,
+   "loop": 2.5333,
    "tile": [
     0.0,
     0.0,
@@ -8684,11 +8591,11 @@
     0.9833
    ],
    "fade": [
-    0.0229,
+    null,
     null,
     1.0
    ],
-   "loop": 3.2333,
+   "loop": 3.2667,
    "tile": [
     0.0,
     0.0,
@@ -8703,11 +8610,11 @@
     0.9833
    ],
    "fade": [
-    0.0229,
+    null,
     null,
     1.0
    ],
-   "loop": 3.5667,
+   "loop": 5.7333,
    "tile": [
     0.0,
     0.0,
@@ -9201,7 +9108,7 @@
     null,
     null
    ],
-   "loop": 1.7333,
+   "loop": 1.7667,
    "tile": [
     0.0,
     0.0,
@@ -10598,8 +10505,8 @@
   "explosive_pushup": {
    "box": [
     0.0,
-    0.2146,
-    0.9833,
+    0.2125,
+    0.9854,
     0.7917
    ],
    "fade": [
@@ -10607,7 +10514,7 @@
     null,
     0.8042
    ],
-   "loop": 1.4333,
+   "loop": 1.7333,
    "tile": [
     0.0,
     0.0,
@@ -11082,7 +10989,7 @@
     null,
     null
    ],
-   "loop": 3.9333,
+   "loop": 4.6,
    "tile": [
     0.0,
     0.0,
@@ -12250,17 +12157,17 @@
   },
   "kb_swing": {
    "box": [
-    0.1542,
+    0.1521,
     0.0146,
-    0.8396,
-    0.9458
+    0.8458,
+    0.9479
    ],
    "fade": [
     null,
     null,
     null
    ],
-   "loop": 1.3333,
+   "loop": 1.6,
    "tile": [
     0.0,
     0.0,
@@ -12277,9 +12184,9 @@
    "fade": [
     0.0,
     1.0,
-    0.8333
+    null
    ],
-   "loop": 1.7333,
+   "loop": 1.8333,
    "tile": [
     0.0,
     0.0,
@@ -13315,7 +13222,7 @@
   "muscle_up": {
    "box": [
     0.3354,
-    0.0187,
+    0.0167,
     0.6708,
     1.0
    ],
@@ -13324,11 +13231,11 @@
     null,
     1.0
    ],
-   "loop": 5.0,
+   "loop": 6.2,
    "tile": [
-    0.0104,
-    0.027,
-    0.9729
+    0.0083,
+    0.0291,
+    0.9708
    ]
   },
   "muscle_up_jump": {
@@ -13343,18 +13250,18 @@
     null,
     null
    ],
-   "loop": 4.2,
+   "loop": 4.6,
    "tile": [
-    0.0375,
-    0.0791,
-    0.9208
+    0.0333,
+    0.075,
+    0.925
    ]
   },
   "muscle_up_negative": {
    "box": [
     0.2875,
-    0.0187,
-    0.7063,
+    0.0208,
+    0.7083,
     1.0
    ],
    "fade": [
@@ -13362,7 +13269,7 @@
     null,
     null
    ],
-   "loop": 7.3333,
+   "loop": 8.0,
    "tile": [
     0.0333,
     0.075,
@@ -16604,14 +16511,14 @@
     0.2396,
     0.0125,
     0.7562,
-    0.9437
+    0.9458
    ],
    "fade": [
     null,
     null,
     null
    ],
-   "loop": 2.6333,
+   "loop": 3.0333,
    "tile": [
     0.0,
     0.0,
@@ -16649,7 +16556,7 @@
     null,
     null
    ],
-   "loop": 5.6667,
+   "loop": 5.8333,
    "tile": [
     0.0,
     0.0,
@@ -17625,139 +17532,6 @@
     0.5875
    ]
   },
-  "towel_door_hold": {
-   "box": [
-    0.1375,
-    0.0,
-    0.8792,
-    0.9833
-   ],
-   "fade": [
-    null,
-    0.8833,
-    1.0
-   ],
-   "loop": 10.8,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
-  "towel_door_lowering": {
-   "box": [
-    0.1375,
-    0.0,
-    0.8792,
-    0.9875
-   ],
-   "fade": [
-    null,
-    null,
-    1.0
-   ],
-   "loop": 5.2667,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
-  "towel_door_one_arm_row": {
-   "box": [
-    0.1646,
-    0.0,
-    0.85,
-    0.9833
-   ],
-   "fade": [
-    null,
-    0.8542,
-    1.0
-   ],
-   "loop": 2.7333,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
-  "towel_door_one_arm_row_back": {
-   "box": [
-    0.1562,
-    0.0,
-    0.8583,
-    0.9812
-   ],
-   "fade": [
-    null,
-    null,
-    1.0
-   ],
-   "loop": 2.7333,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
-  "towel_door_row": {
-   "box": [
-    0.1521,
-    0.0,
-    0.8646,
-    0.9854
-   ],
-   "fade": [
-    null,
-    0.8667,
-    1.0
-   ],
-   "loop": 2.7333,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
-  "towel_door_row_pause": {
-   "box": [
-    0.1646,
-    0.0,
-    0.85,
-    0.9812
-   ],
-   "fade": [
-    null,
-    null,
-    1.0
-   ],
-   "loop": 5.7333,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
-  "towel_door_scap_pull": {
-   "box": [
-    0.125,
-    0.0,
-    0.8917,
-    0.9854
-   ],
-   "fade": [
-    null,
-    0.8917,
-    1.0
-   ],
-   "loop": 2.5333,
-   "tile": [
-    0.0,
-    0.0,
-    1.0
-   ]
-  },
   "towel_eyes_closed": {
    "box": [
     0.2917,
@@ -17922,7 +17696,7 @@
     null,
     null
    ],
-   "loop": 2.3333,
+   "loop": 2.7333,
    "tile": [
     0.0,
     0.0,

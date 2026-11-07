@@ -3,7 +3,7 @@
 //! The panic hook, installed first in `run()`, writes each panic's report into the data folder (`crashes/`, one file a
 //! panic, at most `crash::OUTBOX_MAX` a run) with `std::fs` before anything else, then logs one line, then hands the
 //! panic on to the hook it replaced (the standard library's); it calls nothing that can panic itself. A panic the
-//! engine's door catches on purpose (`caught`, `desk/engine.rs`) is logged and never becomes a report, since the app
+//! engine's door catches on purpose (`caught`, `questpump-desk/src/engine.rs`) is logged and never becomes a report, since the app
 //! goes on, and a panic that cannot unwind right after a report on its thread (the abort a panic in a system callback
 //! ends in) writes none. At the next start `found` reads those files and the system's own reports of a crash of this
 //! program newer than the last one handled: on macOS each `<process name>-*.ips` in `~/Library/Logs/DiagnosticReports`,

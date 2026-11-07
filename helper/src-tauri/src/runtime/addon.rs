@@ -19,14 +19,15 @@
 //!   number is the feed's first interface (Forever's), else one whose number the feed lists, of those the running
 //!   client's, else the preferred one (`install::preferred`: Forever's live install, never its beta beside it); with
 //!   none, the folder the player picks (the folder picker opens).
-//! - **Updates**: a managed install whose version is older than the feed's is staged by itself (the zip downloaded and
-//!   unpacked beside AddOns while the game may run) and swapped in once the game is closed and no pump runs on this
-//!   computer (`addon_held`, checked again right before the swap's first rename), before any update of QuestPump
-//!   itself (`addon_busy` holds that one, the cleaning up after a swap included); an install another updater made shows
-//!   Update now on This computer, which makes it managed. An update staged for an install another updater took over
-//!   meanwhile is dropped, and no swap writes an install without a record unless it is a first install or the player
-//!   asked. A failed version is not tried again by itself until the next check of the feed, and This computer offers
-//!   Update now beside the failure; a refused write on Windows shows This computer's grant card (`runtime/folder.rs`).
+//! - **Updates**: a managed install whose version is older than the feed's is staged by itself (the feed's files staged
+//!   beside AddOns file by file while the game may run, `crate::addon`) and swapped in once the game is closed and no
+//!   pump runs on this computer (`addon_held`, checked again right before the swap's first rename), before any update
+//!   of QuestPump itself (`addon_busy` holds that one, the cleaning up after a swap included); an install another
+//!   updater made shows Update now on This computer, which makes it managed. An update staged for an install another
+//!   updater took over meanwhile is dropped, and no swap writes an install without a record unless it is a first
+//!   install or the player asked. A failed version is not tried again by itself until the next check of the feed, and
+//!   This computer offers Update now beside the failure; a refused write on Windows shows This computer's grant card
+//!   (`runtime/folder.rs`).
 //! - **A swap cut short** (a quit, a crash, a power cut) leaves the staging folder: at the start and at every look while
 //!   no job runs, the staging folder of a recorded install or of the game on this computer is put right first
 //!   (`addon::recover`, a `Settling` job), so the addon a swap moved out is back before the game or the player needs it.
@@ -39,12 +40,14 @@ use std::time::Instant;
 
 use questpump_core::addon::{self as rules, Feed, Record, Tree};
 use questpump_core::mirror;
+use questpump_desk::platform::FoundGame;
 use serde::{Deserialize, Serialize};
+use tauri::Manager as _;
 use tokio::sync::mpsc;
 
 use super::Helper;
 use crate::addon::{self, Failure, News};
-use crate::desk::seams::FoundGame;
+use crate::desk::audio;
 use crate::feeds::Checks;
 use crate::install;
 use crate::ui::{self, AddonLine, AddonOffer, AddonView};
@@ -70,7 +73,7 @@ enum Owner {
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Job {
 	Idle,
-	/// The zip coming and being unpacked for this install.
+	/// The feed's files coming into the staging folder for this install (`crate::addon::stage`).
 	Staging {
 		addons: PathBuf,
 		feed: Box<Feed>,
@@ -281,7 +284,7 @@ impl Helper {
 		if self.addon.feed.as_ref().is_none_or(|kept| kept.version != feed.version) {
 			log::info!("addon: the feed offers {} (phones in the stores: {})", feed.version, feed.phone_apps);
 		}
-		let p = &mut self.settings.pairing;
+		let p = &mut self.desk.settings.pairing;
 		let said = (p.addon_latest.clone(), p.addon_out, p.phone_apps);
 		p.addon_latest = Some(feed.version.clone());
 		p.addon_out = feed.out_at();
@@ -290,12 +293,12 @@ impl Helper {
 		self.addon.feed = Some(feed);
 		self.addon.failed = None;
 		if changed {
-			self.save_settings();
+			self.desk.save_settings();
 			self.due_by(Instant::now());
 			// the phone's step shows or hides with `phone_apps`
-			self.welcome_found();
+			self.desk.welcome_found();
 		}
-		if let Some(followed) = self.followed.clone()
+		if let Some(followed) = self.desk.p.followed.clone()
 			&& self.addon.read_under.get(&followed) != self.addon.feed.as_ref().map(|f| &f.version)
 		{
 			self.look_at(followed);
@@ -360,16 +363,16 @@ impl Helper {
 
 	/// The pairing block says who manages the install the mirror goes into; a change goes into the next mirror.
 	fn state_owner(&mut self) {
-		let Some(followed) = self.followed.clone() else { return };
+		let Some(followed) = self.desk.p.followed.clone() else { return };
 		let Some(owner) = self.addon.owners.get(&followed).copied() else {
 			self.look_at(followed);
 			return;
 		};
 		self.addon.stated = Some(followed);
 		let by = Some(if owner == Owner::Helper { BY_HELPER } else { BY_OTHER }.to_owned());
-		if self.settings.pairing.addon_by != by {
-			self.settings.pairing.addon_by = by;
-			self.save_settings();
+		if self.desk.settings.pairing.addon_by != by {
+			self.desk.settings.pairing.addon_by = by;
+			self.desk.save_settings();
 			self.due_by(Instant::now());
 		}
 	}
@@ -378,10 +381,10 @@ impl Helper {
 	/// swap in, and the line.
 	pub(super) fn addon_look(&mut self) {
 		self.addon.held.store(self.addon_held(), Ordering::Relaxed);
-		if self.addon.added_while.is_some() && self.game.as_ref().map(|g| g.pid) != self.addon.added_while {
+		if self.addon.added_while.is_some() && self.desk.p.game.as_ref().map(|g| g.pid) != self.addon.added_while {
 			self.addon.added_while = None;
 		}
-		if self.followed != self.addon.stated {
+		if self.desk.p.followed != self.addon.stated {
 			self.state_owner();
 		}
 		self.settle_due();
@@ -399,7 +402,7 @@ impl Helper {
 	/// What holds a staged update back: the game runs (the client reads the addon's files, its figures on demand), or
 	/// a pump runs on this computer (it plays the voice from the game folder).
 	fn addon_held(&self) -> bool {
-		self.game.is_some() || self.desk_pump_running()
+		self.desk.p.game.is_some() || self.desk.desk_pump_running()
 	}
 
 	/// An addon job is under way, its cleaning up included: QuestPump's own update waits for it (`runtime/updates.rs`).
@@ -408,9 +411,9 @@ impl Helper {
 	}
 
 	/// The followed install's version is older than the feed's and it is the helper's to update (managed, or the
-	/// player's Update now), and the version did not just fail there: its zip is staged.
+	/// player's Update now), and the version did not just fail there: its files are staged (`crate::addon::stage`).
 	fn stage_due(&mut self) {
-		let (Some(feed), Some(followed)) = (self.addon.feed.clone(), self.followed.clone()) else { return };
+		let (Some(feed), Some(followed)) = (self.addon.feed.clone(), self.desk.p.followed.clone()) else { return };
 		let asked = self.addon.asked == Some(Asked::Update(followed.clone()));
 		let managed = self.addon.owners.get(&followed) == Some(&Owner::Helper);
 		if !(asked || managed) {
@@ -436,7 +439,9 @@ impl Helper {
 		log::info!("addon: {} for {}: downloading", feed.version, addons.display());
 		self.addon.failed = None;
 		self.addon.set_job(Job::Staging { addons: addons.clone(), feed: Box::new(feed.clone()), first });
-		addon::stage(addons, feed, first, self.addon.news_tx.clone());
+		// the desktop app's own copies of the addon's voice takes, which a first install need not fetch
+		let voice = self.app.path().resource_dir().ok().map(|dir| dir.join("resources").join(audio::VOICE));
+		addon::stage(addons, feed, first, voice, self.addon.news_tx.clone());
 	}
 
 	/// The player's Update now for `addons` stands (it is managed from its swap on).
@@ -542,7 +547,7 @@ impl Helper {
 		self.save_records();
 		self.addon.owners.insert(addons.to_path_buf(), Owner::Helper);
 		self.addon.stated = None; // stated again at the next look, once the install is followed
-		if let Some(game) = self.game.as_ref().filter(|g| g.addons == addons) {
+		if let Some(game) = self.desk.p.game.as_ref().filter(|g| g.addons == addons) {
 			self.addon.added_while = Some(game.pid);
 		}
 		// QuestPump found in the folder at the next look: the mirror, the folder's line, the welcome's game
@@ -579,9 +584,9 @@ impl Helper {
 			return;
 		}
 		let known = (self.addon.records.iter().map(|r| r.addons.clone()))
-			.chain(self.followed.clone())
-			.chain(self.without_addon.clone())
-			.chain(self.settings.addons.clone());
+			.chain(self.desk.p.followed.clone())
+			.chain(self.desk.p.without_addon.clone())
+			.chain(self.desk.settings.addons.clone());
 		let found = known
 			.filter(|a| !self.addon.unsettled.contains(a))
 			.find(|a| rules::staging(a).is_some_and(|staging| std::fs::symlink_metadata(staging).is_ok()));
@@ -659,7 +664,7 @@ impl Helper {
 				self.add_first();
 			}
 			FoundGame::Found | FoundGame::Running => {
-				let Some(followed) = self.followed.clone() else { return };
+				let Some(followed) = self.desk.p.followed.clone() else { return };
 				if self.addon.owners.get(&followed) == Some(&Owner::Linked) {
 					return;
 				}
@@ -697,7 +702,7 @@ impl Helper {
 	/// another number the feed lists; of them the running client's, else the preferred one (`install::preferred`:
 	/// Forever's live install, never its beta beside it, which runs the same interface), else the first known.
 	fn first_target(&self, interfaces: &[u32]) -> Option<PathBuf> {
-		let picked = self.without_addon.as_ref().filter(|a| {
+		let picked = self.desk.p.without_addon.as_ref().filter(|a| {
 			self.without_addon_picked
 				&& install::is_game(a)
 				&& !install::holds_questpump(a)
@@ -706,9 +711,9 @@ impl Helper {
 		if let Some(picked) = picked {
 			return Some(picked.clone());
 		}
-		let running = self.game.as_ref().map(|g| &g.addons);
+		let running = self.desk.p.game.as_ref().map(|g| &g.addons);
 		let mut known: Vec<PathBuf> = Vec::new();
-		for addons in self.without_addon.iter().chain(running).cloned().chain(install::games()) {
+		for addons in self.desk.p.without_addon.iter().chain(running).cloned().chain(install::games()) {
 			if install::is_game(&addons) && !install::holds_questpump(&addons) && !known.contains(&addons) {
 				known.push(addons);
 			}
@@ -739,12 +744,6 @@ impl Helper {
 		}
 	}
 
-	/// The phone's step shows in the desktop app's own screens: the verified feed does not say the phone apps are
-	/// still out of the stores (none yet: as before).
-	pub(crate) fn phones_offered(&self) -> bool {
-		self.settings.pairing.phone_apps != Some(false)
-	}
-
 	/// The addon's offer and line, for This computer, the welcome and Pump home's card.
 	pub(crate) fn addon_view(&self) -> AddonView {
 		let busy = self.addon.job != Job::Idle;
@@ -762,7 +761,7 @@ impl Helper {
 				AddonView { offer: (!busy).then_some(AddonOffer::Add), line }
 			}
 			FoundGame::Found | FoundGame::Running => {
-				let Some(followed) = &self.followed else { return AddonView::default() };
+				let Some(followed) = &self.desk.p.followed else { return AddonView::default() };
 				self.installed_view(followed)
 			}
 		}

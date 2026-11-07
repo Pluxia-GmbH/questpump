@@ -13,7 +13,9 @@
 // questpump.com's Pro page in the browser while it sells Pro and first asks to turn Sync on while it is off, else that
 // Pro comes with QuestPump Pro in the app on the phone, and Pair your phone while none is; Manage Pro, Paddle's portal,
 // for Pro bought on questpump.com; no price on the computer, from the `menu.pro` topic, runtime/pro.rs). From the
-// `menu.about` topic (helper/src-tauri/src/desk/menu_pages/about.rs), asked again as a page opens.
+// `menu.about` topic (questpump-desk `menu_pages::about`, with the desktop app's own parts from
+// helper/src-tauri/src/desk/menu_pages/about.rs), asked again as a page opens. In the browser (docs/plan.md slice 63)
+// Safety and about without How the heart-rate check works (no heart rate there) and Riot's line (no Riot game).
 
 import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
@@ -39,15 +41,17 @@ function external(heading, glyph, name) {
 
 register("desk.menu.about", () => {
 	const view = page({heading: t("menu.about.row")});
+	const web = get("shell")?.platform === "web";
 	const safety = h("qp-row", {heading: t("menu.safety.title"), glyph: "mark_heart",
 		"on:click": () => push("desk.menu.safety")});
-	const heart = h("qp-row", {heading: t("menu.heart.row"), glyph: "mark_heart", "on:click": () => push(HEART)});
+	const heart = web ? null
+		: h("qp-row", {heading: t("menu.heart.row"), glyph: "mark_heart", "on:click": () => push(HEART)});
 	const contact = words("", "body");
 	const version = h("p", {class: "qp-type-meta qp-centre"});
 	view.body.append(h("qp-card", {rows: true}, safety, heart),
 		h("qp-section-label", {label: t("menu.about.header")}),
 		h("qp-card", {class: "qp-stack-small"}, words(t("menu.about.publisher"), "body"),
-			secondary(t("menu.about.medical")), contact, words(t("about.riot"), "meta")),
+			secondary(t("menu.about.medical")), contact, web ? null : words(t("about.riot"), "meta")),
 		h("qp-card", {rows: true}, external(t("menu.privacy"), "mark_lock", "privacy"),
 			external(t("menu.about.imprint"), "action_book", "imprint"),
 			external(t("menu.about.security"), "rating_defense", "security")),

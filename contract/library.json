@@ -150,6 +150,7 @@
     "ledger_plays": 8,
     "ledger_prior_s": 36,
     "ledger_rung_ln": 30,
+    "ledger_span_ts": 1793988000,
     "level_cap": 60,
     "link_gap_min": 60,
     "link_late_min": 10,
@@ -1155,10 +1156,6 @@
         },
         {
           "alt": {
-            "229": {
-              "hi": 45,
-              "lo": 10
-            },
             "60": {
               "hi": 15,
               "lo": 5
@@ -1183,20 +1180,8 @@
           "step": 5
         },
         {
-          "alt": {
-            "401": {
-              "hi": 20,
-              "lo": 4
-            }
-          },
           "hi": 10,
           "lo": 3,
-          "path": [
-            {
-              "ids": [401],
-              "opens": "step"
-            }
-          ],
           "step": 6
         },
         {
@@ -1611,12 +1596,6 @@
                 {
                   "count": 8,
                   "ladder": 8,
-                  "step": 8
-                },
-                {
-                  "count": 8,
-                  "ladder": 9,
-                  "move": 313,
                   "step": 8
                 },
                 {
@@ -2570,10 +2549,17 @@
     "205": 292,
     "220": 293,
     "226": 57,
+    "228": 59,
+    "229": 649,
+    "230": 647,
+    "231": 650,
+    "232": 650,
     "233": 219,
     "240": 292,
     "3": 101,
+    "313": 650,
     "4": 291,
+    "401": 650,
     "5": 95
   },
   "moves": {
@@ -3943,6 +3929,7 @@
       "pattern": "cardio",
       "road": "gear",
       "rung": 1,
+      "span": 2,
       "theme": ["run"]
     },
     "188": {
@@ -3960,6 +3947,7 @@
       "pattern": "cardio",
       "road": "gear",
       "rung": 2,
+      "span": 2,
       "theme": ["run"]
     },
     "189": {
@@ -3977,6 +3965,7 @@
       "pattern": "cardio",
       "road": "gear",
       "rung": 3,
+      "span": 2,
       "theme": ["run"]
     },
     "19": {
@@ -4688,7 +4677,7 @@
       "rung": 4,
       "side": true,
       "theme": ["oar"],
-      "twin": 228
+      "twin": 199
     },
     "227": {
       "anchor": true,
@@ -4711,43 +4700,6 @@
       "theme": ["oar"],
       "twin": 225
     },
-    "228": {
-      "block": "strength",
-      "class": 2,
-      "dose": "rep",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_row",
-      "ladder": 9,
-      "mp": [11, 10],
-      "ms": [3, 4, 5],
-      "needs": ["door_towel"],
-      "pain": ["elbow", "shoulder"],
-      "pattern": "pull",
-      "region": "pull",
-      "regress": 56,
-      "rung": 3,
-      "theme": ["oar"],
-      "twin": 199
-    },
-    "229": {
-      "block": "strength",
-      "class": 2,
-      "dose": "hold",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_hold",
-      "ladder": 9,
-      "mp": [4, 11],
-      "ms": [10, 3],
-      "needs": ["door_towel"],
-      "pain": ["elbow", "shoulder"],
-      "pattern": "iso",
-      "region": "pull",
-      "regress": 58,
-      "rung": 3,
-      "theme": []
-    },
     "23": {
       "anchor": true,
       "block": "strength",
@@ -4767,66 +4719,6 @@
       "rung": 7,
       "side": true,
       "theme": []
-    },
-    "230": {
-      "block": "strength",
-      "class": 2,
-      "dose": "rep",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_scap_pull",
-      "ladder": 9,
-      "mp": [10, 11],
-      "ms": [9, 4],
-      "needs": ["door_towel"],
-      "pain": ["shoulder"],
-      "pattern": "pull",
-      "region": "pull",
-      "regress": 56,
-      "rung": 2,
-      "theme": []
-    },
-    "231": {
-      "anchor": true,
-      "block": "strength",
-      "class": 3,
-      "dose": "rep",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_lowering",
-      "ladder": 9,
-      "mp": [11, 3],
-      "ms": [10, 4, 5],
-      "needs": ["door_towel"],
-      "pain": ["elbow", "shoulder"],
-      "pattern": "pull",
-      "region": "pull",
-      "regress": 227,
-      "rung": 6,
-      "side": true,
-      "theme": [],
-      "twin": 650
-    },
-    "232": {
-      "anchor": true,
-      "block": "strength",
-      "class": 3,
-      "dose": "rep",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_one_arm_row",
-      "ladder": 9,
-      "mp": [11, 3],
-      "ms": [10, 4, 6],
-      "needs": ["door_towel"],
-      "pain": ["elbow", "shoulder"],
-      "pattern": "pull",
-      "region": "pull",
-      "regress": 401,
-      "rung": 7,
-      "side": true,
-      "theme": ["oar"],
-      "twin": 651
     },
     "234": {
       "block": "strength",
@@ -6483,27 +6375,6 @@
       "side": true,
       "theme": []
     },
-    "313": {
-      "anchor": true,
-      "block": "strength",
-      "class": 3,
-      "dose": "rep",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_row_pause",
-      "ladder": 9,
-      "mp": [11, 3],
-      "ms": [10, 4, 6],
-      "needs": ["door_towel"],
-      "pain": ["elbow", "shoulder"],
-      "pattern": "pull",
-      "region": "pull",
-      "regress": 232,
-      "rung": 8,
-      "side": true,
-      "theme": ["oar"],
-      "twin": 652
-    },
     "314": {
       "block": "strength",
       "checks": [
@@ -8116,7 +7987,7 @@
       "pain": ["elbow", "shoulder"],
       "pattern": "iso",
       "region": "pull",
-      "regress": 228,
+      "regress": 648,
       "rung": 3,
       "theme": []
     },
@@ -8447,25 +8318,6 @@
       "side": true,
       "theme": []
     },
-    "401": {
-      "block": "strength",
-      "class": 3,
-      "dose": "rep",
-      "flags": [],
-      "group": "pull",
-      "key": "towel_door_one_arm_row_back",
-      "ladder": 9,
-      "mp": [11, 3],
-      "ms": [10, 4, 6],
-      "needs": ["door_towel"],
-      "pain": ["elbow", "shoulder"],
-      "pattern": "pull",
-      "region": "pull",
-      "regress": 227,
-      "rung": 6,
-      "side": true,
-      "theme": ["oar"]
-    },
     "402": {
       "block": "strength",
       "class": 3,
@@ -8628,7 +8480,13 @@
             {
               "count": 8,
               "ladder": 9,
-              "move": 313,
+              "move": 652,
+              "step": 8
+            },
+            {
+              "count": 8,
+              "ladder": 9,
+              "move": 655,
               "step": 8
             }
           ]
@@ -12261,7 +12119,7 @@
       "regress": 430,
       "rung": 3,
       "theme": [],
-      "twin": 228
+      "twin": 199
     },
     "590": {
       "block": "yoga",
@@ -13386,6 +13244,7 @@
       "theme": []
     },
     "650": {
+      "anchor": true,
       "block": "strength",
       "class": 3,
       "dose": "rep",
@@ -13405,6 +13264,7 @@
       "twin": 653
     },
     "651": {
+      "anchor": true,
       "block": "strength",
       "class": 3,
       "dose": "rep",
@@ -13427,6 +13287,7 @@
       "twin": 654
     },
     "652": {
+      "anchor": true,
       "block": "strength",
       "class": 3,
       "dose": "rep",
@@ -13487,7 +13348,7 @@
       "regress": 653,
       "rung": 7,
       "theme": [],
-      "twin": 231
+      "twin": 650
     },
     "655": {
       "block": "strength",
@@ -13509,7 +13370,7 @@
       "regress": 654,
       "rung": 8,
       "theme": [],
-      "twin": 232
+      "twin": 651
     },
     "66": {
       "block": "strength",
@@ -13527,7 +13388,7 @@
       "pain": ["elbow", "shoulder"],
       "pattern": "pull",
       "region": "pull",
-      "regress": 228,
+      "regress": 648,
       "rung": 3,
       "theme": []
     },

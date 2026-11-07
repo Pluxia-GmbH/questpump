@@ -41,7 +41,7 @@ impl Helper {
 	/// In the start, after the crash sweep: the privacy page waits for the first main window while a switch is not
 	/// answered, and the switch goes to the Menu.
 	pub(super) fn usage_start(&mut self) {
-		let (crash, usage) = (self.settings.crash.choice.send, self.settings.usage.send);
+		let (crash, usage) = (self.desk.settings.crash.choice.send, self.desk.settings.usage.send);
 		match usage {
 			Some(on) => log::info!("usage: Usage statistics {}, the player's answer", if on { "on" } else { "off" }),
 			None if self.region == Region::OptIn => {
@@ -81,8 +81,8 @@ impl Helper {
 	/// the words' version: off empties the counts' outbox and their kept days at once; on counts from now on.
 	pub(crate) fn usage_answer(&mut self, on: bool) {
 		let was = self.usage_on();
-		self.settings.usage.answer(on, now().unix);
-		self.save_settings();
+		self.desk.settings.usage.answer(on, now().unix);
+		self.desk.save_settings();
 		log::info!("usage: Usage statistics {}, the player's answer", if on { "on" } else { "off" });
 		match (was, on) {
 			(_, false) => self.counts_off(),
@@ -95,7 +95,7 @@ impl Helper {
 
 	/// Both switches answered (here, on the crash page or in the Menu): the privacy page asks no more.
 	pub(crate) fn privacy_settled(&self) {
-		if self.settings.crash.choice.send.is_some() && self.settings.usage.send.is_some() {
+		if self.desk.settings.crash.choice.send.is_some() && self.desk.settings.usage.send.is_some() {
 			self.app.state::<Desk>().privacy_page.store(false, Ordering::Relaxed);
 		}
 	}

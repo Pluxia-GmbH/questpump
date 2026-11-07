@@ -13,12 +13,12 @@
 // Start, grown out of the tile and shrinking back into it as the player closes it (slice 46). After the words or the
 // filter rest, a screen reader hears how many moves are left. A redraw keeps the focus on the row, the chip or the tile
 // it was on (its window, once closed, gives it back to the tile). A move started from a card or a window returns there
-// once its pump has gone (`resume`, the router's at the cover's end). From `book` and `book.words` (desk/book.rs) and the
+// once its pump has gone (`resume`, the router's at the cover's end). From `book` and `book.words` (questpump-desk/src/book.rs) and the
 // `pump` topic.
 import {t} from "../../lib/copy.js";
 import {announce, keepFocus} from "../../lib/focus.js";
 import {push, register} from "../../lib/router.js";
-import {h, styled} from "../../kit/element.js";
+import {h, styled, wordsWhole} from "../../kit/element.js";
 import {page, watch} from "../page.js";
 import {goLink, openCardWindow, openMoveWindow, startMove} from "./card.js";
 import {
@@ -58,9 +58,7 @@ export function progressBar(fill) {
 
 /** A move's name over its tile in a ladder's row: a hyphenated word (push-up, One-arm) never breaks at its hyphen. */
 function overName(text, at) {
-	return h("span", {class: "qp-type-body-strong qp-duo-name", "data-at": at},
-		text.split(" ").flatMap((word, i) => [i ? " " : "", word.includes("-") ? h("span", {class: "qp-nowrap", text: word})
-			: word]));
+	return h("span", {class: "qp-type-body-strong qp-duo-name", "data-at": at}, wordsWhole(text));
 }
 
 /** A ladder's row (Rapha, 2026-11-04, the exploration Ladder Row; surface.LadderRow): a column at each end, the

@@ -137,3 +137,16 @@ paths = [
 ]
 regexTarget = "match"
 regexes = ['''^login \(''']
+
+# The SEO plan's embedded pump clips (2026-11-05: 1 brave-search-api-key hit): the page
+# docs/research/seo-content-plan-2026-11-05.html carries the two MP4s of docs/marketing/pump-clip as base64, because
+# Safari lets a page opened from disk read no other folder, and one run of those video bytes reads as a Brave Search
+# key. Only that run, in that file, is quiet; a clip cut again brings new bytes, and a hit in them fails until it is
+# checked and listed here.
+[[allowlists]]
+description = "Video bytes in the SEO plan's embedded clips"
+targetRules = ["brave-search-api-key"]
+condition = "AND"
+paths = ['''^docs/research/seo-content-plan-2026-11-05\.html$''']
+regexTarget = "secret"
+regexes = ['''^BSAq27RM0v8i9XIOECdrNSxxr9kR4wEymkNO$''']

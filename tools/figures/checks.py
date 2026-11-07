@@ -27,10 +27,10 @@ looking, not only by number.
              ring straps is a support too, as a bar is
   limbs      a thigh, shin, upper arm, forearm or the spine passes through a prop between its joints (a bone whose end
              is a declared contact may rest on it)
-  tempo      a controlled rep's moving phase outside 0.8-4 s, any step under 0.1 s, a loop outside 0.5-12 s (a flow's
-             up to 20 s: one round of a sun salutation) or one that does not end where it
-             starts, a move contract/moves.json lacks; an extra (motion.py, `extra`) has no dose, and its name is no
-             library move's
+  tempo      a rep's moving phase outside 0.8-4 s but the explosive phases its `ballistic` names, `ballistic` on a
+             move that is no rep, any step under 0.1 s, a loop outside 0.5-12 s (a flow's up to 20 s: one round of a
+             sun salutation) or one that does not end where it starts, a move contract/moves.json lacks; an extra
+             (motion.py, `extra`) has no dose, and its name is no library move's
   entry      a hold that starts at its key pose (less than ENTRY_CM from it at every joint) or a pose (a flow) whose loop
              never leaves its key pose by that much: the figure shows the way into its position
   targets    the move's own targets (`"targets"` in the motion file): a joint's height, a joint angle (in the side
@@ -715,9 +715,11 @@ def phase_spans(steps):
 
 
 def check_tempo(spec, track):
-    """A controlled rep's moving phases last 0.8-4 s each (the plan's 0.8-2 s, stretched for the tempo and
-    lowering moves); a ballistic rep's or a cardio move's steps at least 0.1 s; every loop 0.5-12 s (a flow's up to
-    20 s) and closed."""
+    """A rep's moving phases last 0.8-4 s each (the plan's 0.8-2 s, stretched for the tempo and lowering moves), but
+    the explosive phases its `ballistic` names: the voice counts a rep set at the figure's pace (Speech.lua, the rep
+    count), so every phase the player does with control runs at a pace they can follow (David, 2026-11-06, on the
+    strict burpee, whose `"ballistic": true` lifted its lowering and push-up too: "too fast for a human to follow
+    with good form"); every step at least 0.1 s; every loop 0.5-12 s (a flow's up to 20 s) and closed."""
     out = []
     d = dose(spec["move"])
     if spec.get("extra"):
@@ -727,11 +729,14 @@ def check_tempo(spec, track):
         d = None
     elif d is None:
         out.append(f"tempo: {spec['move']} is not in contract/moves.json")
-    if d == "rep" and not spec.get("ballistic"):
+    explosive = set(spec.get("ballistic", ()))
+    if explosive and d != "rep":
+        out.append(f"tempo: ballistic lifts a rep's explosive phases from its bounds, and {spec['move']} is no rep")
+    if d == "rep":
         for ph, s in phase_spans(spec["timeline"][1:]):
-            if not PHASE_S[0] <= s <= PHASE_S[1]:
-                out.append(f"tempo: phase {ph} lasts {s:.2f} s (a controlled rep's phases take "
-                           f"{PHASE_S[0]}-{PHASE_S[1]} s)")
+            if ph not in explosive and not PHASE_S[0] <= s <= PHASE_S[1]:
+                out.append(f"tempo: phase {ph} lasts {s:.2f} s (a rep's controlled phases take "
+                           f"{PHASE_S[0]}-{PHASE_S[1]} s; an explosive one is named in ballistic)")
     for i, st in enumerate(spec["timeline"][1:], 1):
         if "to" in st and st["s"] < STEP_MIN:
             out.append(f"tempo: step {i} lasts {st['s']} s (at least {STEP_MIN})")
@@ -904,8 +909,9 @@ def variant_problems(spec, ref_spec):
         if ph not in names:
             out.append(f"variant: {spec['move']} retimes phase {ph}, which is not one run of ticks in "
                        f"{ref_spec['move']}")
-        elif dose(spec["move"]) == "rep" and not PHASE_S[0] <= s <= PHASE_S[1]:
-            out.append(f"variant: phase {ph} lasts {s} s (a controlled rep's phases take {PHASE_S[0]}-{PHASE_S[1]} s)")
+        elif (dose(spec["move"]) == "rep" and ph not in ref_spec.get("ballistic", ())
+              and not PHASE_S[0] <= s <= PHASE_S[1]):
+            out.append(f"variant: phase {ph} lasts {s} s (a rep's controlled phases take {PHASE_S[0]}-{PHASE_S[1]} s)")
     pause = spec.get("pause")
     if pause:
         if pause["phase"] not in names:

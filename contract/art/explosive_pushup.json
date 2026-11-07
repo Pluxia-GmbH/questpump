@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 24, "pitch": 14},
   "working": ["chest", "upper_arm"],
-  "ballistic": true,
+  "ballistic": ["push_up", "hands_off", "land_softly"],
   "props": [{"kind": "mat", "f0": -66, "f1": 114}],
   "poses": {
     "top": {
@@ -30,10 +30,10 @@
   "timeline": [
     {"pose": "bottom"},
     {"hold": 0.15, "phase": "bottom", "effort": 0.8},
-    {"to": "top", "s": 0.22, "ease": "in", "phase": "push_up", "effort": 1.0},
-    {"to": "air", "s": 0.14, "ease": "out", "phase": "hands_off", "effort": 1.0, "dynamic": true},
-    {"to": "catch", "s": 0.16, "ease": "in", "phase": "land_softly", "effort": 0.8, "dynamic": true},
-    {"to": "bottom", "s": 0.75, "phase": "lower", "effort": 0.6}
+    {"to": "top", "s": 0.25, "ease": "in", "phase": "push_up", "effort": 1.0},
+    {"to": "air", "s": 0.19, "ease": "out", "phase": "hands_off", "effort": 1.0, "dynamic": true},
+    {"to": "catch", "s": 0.25, "ease": "in", "phase": "land_softly", "effort": 0.8, "dynamic": true},
+    {"to": "bottom", "s": 0.9, "phase": "lower", "effort": 0.6}
   ],
   "key": "air",
   "fault": {

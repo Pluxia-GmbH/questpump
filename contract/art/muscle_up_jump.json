@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 40, "pitch": 4},
   "working": ["upper_arm", "pauldron", "back", "chest"],
-  "ballistic": true,
+  "ballistic": ["quarter_down", "jump", "turn_over"],
   "props": [{"kind": "bar", "f": 8, "u": 186, "ground": true}, {"kind": "step", "f0": -48, "f1": 18, "u": 60}],
   "poses": {
     "stand": {
@@ -112,7 +112,7 @@
     {"to": "push", "s": 0.12, "phase": "jump", "effort": 1.0, "dynamic": true, "ease": "in"},
     {"to": "high", "s": 0.22, "phase": "jump", "effort": 1.0, "dynamic": true, "ease": "out"},
     {"to": "turn", "s": 0.3, "phase": "turn_over", "effort": 1.0},
-    {"to": "support", "s": 0.6, "phase": "press", "effort": 0.9},
+    {"to": "support", "s": 1.0, "phase": "press", "effort": 0.9},
     {"hold": 0.3, "phase": "lockout", "effort": 0.7},
     {"to": "turn", "s": 1.0, "phase": "lower_slowly", "effort": 0.7},
     {"to": "stand", "s": 1.0, "phase": "land_softly", "effort": 0.5, "dynamic": true}

@@ -1,6 +1,6 @@
 // The first five minutes on the computer (docs/ui.md, "The first five minutes"; the phones' first start): a new player,
 // no account and no sign-up. Rust decides from what QuestPump found on the computer (its stores, the game, the paired
-// phone; helper/src-tauri/src/desk/menu_pages/welcome.rs): the `welcome` topic names a step only for a new player and
+// phone; helper/crates/questpump-desk/src/menu_pages/welcome.rs): the `welcome` topic names a step only for a new player and
 // only once the stores are read, and a returning player's first open ends the flow with `toast`, where the progress
 // came from, which the kit's Toast says once over the window as it stands (never over a pump), with where QuestPump
 // waits, then `welcome.toasted`. While a step stands, the welcome covers the window as the phones' first start replaces
@@ -16,12 +16,12 @@
 // the player pumps in a window before the first own pump on a computer that never asked it (the `pump` topic's
 // `place`).
 
-import {call, intent, subscribe} from "../../lib/bridge.js";
+import {call, get, intent, subscribe} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {focusView} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
 import {mounted} from "../../lib/keys.js";
-import {cover, register, uncover} from "../../lib/router.js";
+import {cover, over, register, uncover} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {addonLine, folderNote, gameLine, gameStep} from "../menu/computer.js";
 import {pairWindow} from "../menu/phones.js";
@@ -175,9 +175,11 @@ function placeRows(w) {
 	const room = h("qp-row", {heading: t("desk.place.floor"), glyph: "mark_dash", trailing: "checked"});
 	const word = w.words?.switches?.quiet?.name;
 	const hush = word ? h("qp-row", {heading: word, glyph: "reward_familiarity", trailing: "toggle"}) : null;
-	const count = h("qp-row", {heading: t("menu.repcount"), glyph: "mark_clock", trailing: "toggle"});
+	// shown once the Sound and voice page's topic stands, whose area answers `sound.count`
+	const count = h("qp-row", {heading: t("menu.repcount"), glyph: "mark_clock", trailing: "toggle", hidden: true});
 	count.addEventListener("qp-change", (e) => intent("sound.count", {on: e.detail}).catch(console.error));
 	const watching = subscribe("menu.sound", (s) => {
+		count.hidden = false;
 		count.checked = s.count;
 	});
 	const draw = () => {
@@ -348,9 +350,26 @@ function foundCard() {
 	};
 }
 
-/** The welcome: the figure, the wordmark, what QuestPump found on this computer, and Start. */
+/** In the browser (its `play` topic; docs/plan.md slice 63, "The first visit"): the welcome's I played before, which
+ * opens the Email page's sign-in over the welcome (Back returns to its steps; a join ends the first five minutes on
+ * Keep your key, web/views/index.js); How hard's safety note with the maker and the contact (the `menu.about`
+ * topic's); and no Done step, the first visit ending on Pump home. The desktop app publishes no `play` topic. */
+function browser() {
+	return get("play") ?? null;
+}
+
+/** The welcome: the figure, the wordmark, what QuestPump found on this computer (in the browser I played before
+ * instead), and Start. */
 function welcomeStep() {
 	const start = button("qp-primary-button", t("setup.welcome.start"), ask("welcome.start"));
+	if (browser()) {
+		const played = button("qp-quiet-button", t("setup.welcome.played"), () => over("desk.menu.email"));
+		return {primary: start, parts: [
+			h("qp-figure-stage", {class: "qp-welcome-figure", move: FIGURE, calm: true}),
+			h("div", {class: "qp-welcome-words"}, h("h1", {class: "qp-type-wordmark", text: t("app.name")})),
+			h("div", {class: "qp-foot"}, start, played),
+		]};
+	}
 	const here = foundCard();
 	return {primary: start, update: here.update, stop: here.stop, parts: [
 		h("qp-figure-stage", {class: "qp-welcome-figure", move: FIGURE, calm: true}),
@@ -374,10 +393,15 @@ function experienceStep(w) {
 	});
 	const go = button("qp-primary-button", t("setup.experience.continue"), () => intent("welcome.experience",
 		{answer: chosen}).catch(console.error));
+	const about = browser() ? get("menu.about") : null;
+	const safety = about ? h("qp-card", {class: "qp-stack-small"}, words(about.safety, "body"),
+		words(t("menu.about.publisher"), "meta"),
+		words(t("menu.about.contact", {address: about.contact}), "meta")) : null;
 	return {primary: go, bar: backBar(), parts: [
 		h("qp-figure-stage", {class: "qp-welcome-figure qp-small", move: FIGURE, calm: true}),
 		h("div", {class: "qp-welcome-words"}, h("h2", {class: "qp-type-heading", text: w.words.experience.title})),
 		h("qp-card", {rows: true}, ...rows),
+		...[safety].filter(Boolean),
 		h("div", {class: "qp-foot"}, go),
 	]};
 }
@@ -439,6 +463,10 @@ function heroStep() {
  * the stores (the Phones page's own words and code, over this page). */
 function doneStep() {
 	const done = button("qp-primary-button", t("common.done"), ask("welcome.done"));
+	if (browser()) {
+		ask("welcome.done")();
+		return {primary: done, parts: [h("div", {class: "qp-foot"}, done)]};
+	}
 	const pair = button("qp-quiet-button", t("desk.menu.phones.pair"), pairPhone);
 	return {primary: done, update: (w) => {
 		pair.hidden = Boolean(w.found.phone) || !w.phones;

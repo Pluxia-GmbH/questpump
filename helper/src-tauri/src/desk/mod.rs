@@ -1,8 +1,8 @@
 //! The desktop app QuestPump on this computer (docs/plan.md slice 35; docs/ui.md, "The desktop app"): its main window,
 //! the macOS app menu, the tray, the window's place and the launch's reason, and the bridge between the page and the
 //! loop. Rust owns state and time; the page (`helper/dist/`) draws and sends intents. State goes out as topics through
-//! the publisher (`state.rs`): `shell` (the frame), `menu.computer`, `menu.phones`, `menu.devices` and `feedback` from
-//! the view (`ui.rs`), and each area's own (`home`, `pump`, `hero`, `book`, `log`, `card`, its Menu pages). An intent
+//! the publisher (`questpump_desk::publisher`): `shell` (the frame), `menu.computer`, `menu.phones`, `menu.devices` and
+//! `feedback` from the view (`ui.rs`), and each area's own (`home`, `pump`, `hero`, `book`, `log`, `card`, its Menu pages). An intent
 //! (`{"type": "<area>.<what>", ...}`) reaches the loop as a `DeskAsk` and its area's handler there, an `impl Helper`
 //! block in the area's own file (the runtime's `Helper` and its fields are `pub(crate)` for them). The addon's own
 //! engine answers through one ordered door (`engine.rs`), and what one area asks of another goes through its seam
@@ -16,51 +16,39 @@
 //! the crash reports' switch and page (topic `crash`, intents `crash.*`) are `runtime/crash.rs`'s, beside their outbox;
 //! Usage statistics and the privacy page (topic `usage`, intents `usage.*` and `privacy.done`) `runtime/usage.rs`'s,
 //! beside the anonymous counts; the sync's Sync card, Email, Restore code and Link a device (topics `menu.sync`,
-//! `menu.email`, `menu.restore`, `menu.linkdevice`, intents `sync.*`, `email.*`, `restore.*`) `runtime/sync.rs`'s,
-//! beside the sync itself (slice 60).
+//! `menu.email`, `menu.restore`, `menu.linkdevice`, intents `sync.*`, `email.*`, `restore.*`) `questpump-desk`'s
+//! `sync`, beside the sync itself (slice 60).
 
 pub(crate) mod audio;
 pub(crate) mod awake;
-pub(crate) mod book;
 pub(crate) mod card;
 pub(crate) mod commands;
-pub(crate) mod engine;
-pub(crate) mod facts;
 pub(crate) mod figures;
-pub(crate) mod hero;
-pub(crate) mod history;
-pub(crate) mod home;
 pub(crate) mod launch;
-pub(crate) mod log;
 #[cfg(target_os = "macos")]
 pub(crate) mod menu;
 pub(crate) mod menu_pages;
 pub(crate) mod offers;
 pub(crate) mod place;
-pub(crate) mod places;
-pub(crate) mod pump;
-pub(crate) mod recent;
 pub(crate) mod reel;
 pub(crate) mod reminders;
-pub(crate) mod saga;
 pub(crate) mod seams;
+pub(crate) mod shell;
 pub(crate) mod standing;
-pub(crate) mod state;
-pub(crate) mod streak;
 pub(crate) mod tray;
 pub(crate) mod windows;
 
 use std::sync::Mutex;
 use std::sync::atomic::AtomicBool;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
-use serde_json::Value;
+pub(crate) use questpump_desk::Intent;
+use questpump_desk::publisher::Publisher;
+use questpump_desk::settings::Place;
 use tokio::sync::oneshot;
 
 use crate::lan;
 use crate::runtime::Helper;
-use place::Place;
-use state::Publisher;
 
 /// The topics the view publishes (`ui::update`).
 pub(crate) const SHELL: &str = "shell";
@@ -121,47 +109,6 @@ pub(crate) enum DeskAsk {
 	Gone,
 }
 
-/// An intent from the page: its type (`<area>.<what>`) and its other fields.
-#[derive(Debug)]
-pub(crate) struct Intent {
-	kind: String,
-	args: serde_json::Map<String, Value>,
-}
-
-impl Intent {
-	/// Reads `{"type": "<area>.<what>", ...}`.
-	///
-	/// # Errors
-	/// The value is no object, or its type is no `<area>.<what>`.
-	pub(crate) fn from_value(value: Value) -> Result<Self, String> {
-		let Value::Object(mut args) = value else { return Err("an intent is an object".to_owned()) };
-		let Some(Value::String(kind)) = args.remove("type") else { return Err("an intent names its type".to_owned()) };
-		if !kind.split_once('.').is_some_and(|(area, what)| !area.is_empty() && !what.is_empty()) {
-			return Err(format!("{kind}: an intent's type is <area>.<what>"));
-		}
-		Ok(Self { kind, args })
-	}
-
-	/// The area that handles it (`pump` of `pump.quick`).
-	pub(crate) fn area(&self) -> &str {
-		self.kind.split_once('.').map_or("", |(area, _)| area)
-	}
-
-	pub(crate) fn kind(&self) -> &str {
-		&self.kind
-	}
-
-	/// A field's value.
-	pub(crate) fn arg(&self, name: &str) -> Option<&Value> {
-		self.args.get(name)
-	}
-
-	/// An intent this area has no handler for.
-	pub(crate) fn unknown(&self) -> String {
-		format!("{}: no such intent", self.kind) // copy-lint: not shown (an intent's error)
-	}
-}
-
 impl Helper {
 	/// The desktop app's asks: each intent to its area's handler.
 	pub(crate) fn on_desk(&mut self, ask: DeskAsk) {
@@ -169,8 +116,7 @@ impl Helper {
 			DeskAsk::Intent { intent, done } => {
 				let outcome = self.intent(&intent);
 				if let Err(e) = &outcome {
-					// the log crate's (this module's `log` is the Log's page)
-					::log::warn!("desk: {e}");
+					log::warn!("desk: {e}");
 				}
 				let _ = done.send(outcome);
 			}
@@ -178,49 +124,49 @@ impl Helper {
 			DeskAsk::Zoom(step) => self.zoom(step),
 			DeskAsk::Place(place) => self.keep_place(Some(place)),
 			DeskAsk::Backup(picked) => self.on_backup(picked),
-			DeskAsk::Films => self.log_publish(),
+			DeskAsk::Films => self.desk.log_publish(),
 			DeskAsk::Gone => {
-				self.book_pages_gone();
-				self.sync_pages_gone();
-				self.pumps.window(false, lan::now_ms());
+				self.desk.book_pages_gone();
+				self.desk.sync_pages_gone();
+				self.desk.pumps.window(false, lan::now_ms());
 			}
 			DeskAsk::Reel { body, done } => {
 				let outcome = self.reel_make(&body);
 				if let Err(e) = &outcome {
-					::log::warn!("reel: {e}");
+					log::warn!("reel: {e}");
 				}
 				let _ = done.send(outcome);
 			}
 		}
 	}
 
-	/// An intent to its area's handler (one line per area): the page's, the tray's, and one area's asking another's (the
-	/// card's Start asks the pump's `pump.start`).
+	/// An intent to its area's handler (one line per area; the desk's areas through `Desk::intent`): the page's, the
+	/// tray's, and one area's asking another's (the card's Start asks the pump's `pump.start`); what the desk asked of
+	/// the app meanwhile runs after it (`drain`).
 	pub(crate) fn intent(&mut self, intent: &Intent) -> Result<(), String> {
-		match intent.area() {
+		let outcome = match intent.area() {
 			"view" => self.view_intent(intent),
 			"card" | "games" => self.offers_intent(intent),
 			"reminders" => self.reminders_intent(intent),
-			"sound" => self.sound_intent(intent),
-			"home" => self.home_intent(intent),
-			"hero" => self.hero_intent(intent),
-			"setup" => self.setup_intent(intent),
-			"places" => self.places_intent(intent),
-			"expedition" => self.expedition_intent(intent),
+			"sound" if audio::OWN.contains(&intent.kind()) => self.sound_intent(intent),
 			"backup" => self.backup_intent(intent),
 			"about" => self.about_intent(intent),
 			"pro" => self.pro_intent(intent),
-			"welcome" => self.welcome_intent(intent),
-			"book" | "share" => self.book_intent(intent),
 			"standing" => self.standing_intent(intent),
-			"log" => self.log_intent(intent),
-			"pump" => self.pump_intent(intent),
 			"crash" => self.crash_intent(intent),
 			"usage" | "privacy" => self.usage_intent(intent),
-			"sync" => self.sync_intent(intent),
-			"email" => self.email_intent(intent),
-			"restore" => self.restore_intent(intent),
+			area if questpump_desk::Desk::<shell::Shell>::takes(area) => self.desk.intent(intent),
 			_ => Err(intent.unknown()),
-		}
+		};
+		self.drain();
+		outcome
+	}
+}
+
+/// The loop's wait for the pump's next instant (`Desk::pump_wake`, unix ms): forever while none waits.
+pub(crate) async fn wake(at: Option<i64>) {
+	match at {
+		Some(at) => tokio::time::sleep(Duration::from_millis(u64::try_from(at - lan::now_ms()).unwrap_or(0))).await,
+		None => std::future::pending().await,
 	}
 }

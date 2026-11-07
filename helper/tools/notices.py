@@ -10,9 +10,15 @@ when that is the blank template; a permission notice from "Permission is hereby 
 around them (its copyright, a filled-in appendix) under its name. A crate without a licence file of its own is listed
 with its licence expression and its source.
 
-    python3 helper/tools/notices.py [--offline]           writes helper/notices/crates.txt
-    python3 helper/tools/notices.py --check [--offline]   fails when helper/notices/crates.txt is not what it would
-                                                          write (the helper's local gates, rust-helper step 2)
+The browser's build (docs/plan.md slice 63, play.questpump.com) gets its own, web/notices.txt, which web/build.mjs
+publishes beside the page: the crates questpump-web builds in for wasm32-unknown-emscripten, the same way, then the two
+parts of its WebAssembly that are no crate's licence file: Lua 5.1.5's own notice (the end of lua.h in lua-src's
+lua-5.1.5, which mlua-sys compiles in) and Emscripten's runtime's licence (helper/notices/emscripten.txt, a copy of
+emsdk 6.0.12's upstream/emscripten/LICENSE).
+
+    python3 helper/tools/notices.py [--offline]           writes helper/notices/crates.txt and web/notices.txt
+    python3 helper/tools/notices.py --check [--offline]   fails when either is not what it would write (the helper's
+                                                          local gates, rust-helper step 2)
 
 --offline reads only the crates' sources Cargo has on this computer already. Standard library only."""
 import json
@@ -24,6 +30,12 @@ import sys
 HELPER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HELPER, "notices", "crates.txt")
 APP = "questpump-helper"
+WEB_OUT = os.path.join(os.path.dirname(HELPER), "web", "notices.txt")
+WEB_APP = "questpump-web"
+WEB_TARGETS = ("wasm32-unknown-emscripten",)
+# the two parts of the browser's WebAssembly no crate's licence file covers
+LUA = ("lua-src", os.path.join("lua-5.1.5", "lua.h"), "Copyright (C) 1994-2012 Lua.org, PUC-Rio.")
+EMSCRIPTEN = os.path.join(HELPER, "notices", "emscripten.txt")
 # the macOS app on both architectures and Windows x64 (what helper-release.yml builds) and Windows arm64 (what
 # tools/windows-check.sh lints; helper.yml built its installer until 2026-10-09)
 TARGETS = ("aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-pc-windows-msvc", "aarch64-pc-windows-msvc")
@@ -46,13 +58,18 @@ HEAD = " ".join((
     "licence. Each text is here once, after the crates it covers and the lines of their own (a copyright, a notice).",
     "Written by helper/tools/notices.py: do not edit.",
 ))
+WEB_HEAD = " ".join((
+    "QuestPump in your browser (play.questpump.com) builds in these Rust crates (Cargo.lock; its WebAssembly), each",
+    "under its licence, then Lua 5.1.5 and Emscripten's runtime. Each text is here once, after the crates it covers",
+    "and the lines of their own (a copyright, a notice). Written by helper/tools/notices.py: do not edit.",
+))
 
 
-def metadata(offline):
+def metadata(offline, targets=TARGETS):
     """Cargo.lock's graph for the shipped targets."""
     command = ["cargo", "metadata", "--format-version", "1", "--locked"]
     command += ["--offline"] if offline else []
-    for target in TARGETS:
+    for target in targets:
         command += ["--filter-platform", target]
     done = subprocess.run(command, cwd=HELPER, capture_output=True, text=True)
     if done.returncode:
@@ -60,12 +77,12 @@ def metadata(offline):
     return json.loads(done.stdout)
 
 
-def shipped(meta):
-    """The packages the app builds in: questpump-helper's normal dependencies, all the way down, by name and version."""
+def shipped(meta, root=APP):
+    """The packages the app builds in: `root`'s normal dependencies, all the way down, by name and version."""
     packages = {p["id"]: p for p in meta["packages"]}
     nodes = {n["id"]: n for n in meta["resolve"]["nodes"]}
     members = set(meta["workspace_members"])
-    app = next(i for i in members if packages[i]["name"] == APP)
+    app = next(i for i in members if packages[i]["name"] == root)
     seen, todo = set(), [app]
     while todo:
         node = todo.pop()
@@ -163,7 +180,7 @@ def listed(label, names):
     return f"{label} {', '.join(names)}"
 
 
-def render(packages):
+def render(packages, head=HEAD):
     """crates.txt: each text with the crates it covers, the texts most crates share first; then the crates without a
     licence file."""
     groups = {}  # terms' key -> {"text", "crates", "own": {collapsed own lines -> (text, [crates])}}
@@ -184,7 +201,7 @@ def render(packages):
                 entry = group["own"].setdefault(collapsed(own), (own, []))
                 if name(package) not in entry[1]:
                     entry[1].append(name(package))
-    out = [HEAD]
+    out = [head]
     for group in sorted(groups.values(), key=lambda g: (-len(g["crates"]), g["crates"][0], g["text"])):
         part = [RULE, listed(f"{len(group['crates'])} {'crate' if len(group['crates']) == 1 else 'crates'}:",
                              group["crates"])]
@@ -201,25 +218,49 @@ def render(packages):
     return "\n\n".join(out) + "\n"
 
 
+def lua_notice(meta):
+    """Lua 5.1.5's own notice: the comment that ends lua.h in lua-src's sources, from its copyright line, as plain
+    lines."""
+    name, header, opening = LUA
+    package = next(p for p in meta["packages"] if p["name"] == name)
+    lines = read(os.path.join(os.path.dirname(package["manifest_path"]), header)).split("\n")
+    start = next(i for i, line in enumerate(lines) if opening in line)
+    end = next(i for i in range(start, len(lines)) if lines[i].startswith("*****"))
+    return trimmed(line[2:] if line.startswith("* ") else line.lstrip("*") for line in lines[start:end])
+
+
+def web_render(meta):
+    """web/notices.txt: questpump-web's crates as crates.txt words them, then Lua's notice and Emscripten's licence."""
+    crates = render(shipped(meta, WEB_APP), WEB_HEAD).rstrip("\n")
+    lua = "\n\n".join((RULE, "Lua 5.1.5 (lua-src's lua-5.1.5, compiled in by mlua-sys):", lua_notice(meta)))
+    emscripten = "\n\n".join((RULE, "Emscripten 6.0.12's runtime:", read(EMSCRIPTEN)))
+    return "\n\n".join((crates, lua, emscripten)) + "\n"
+
+
 def main(argv):
     unknown = [arg for arg in argv if arg not in ("--check", "--offline")]
     if unknown:
         sys.exit(f"notices.py: unknown arguments {' '.join(unknown)}; it takes --check and --offline")
-    text = render(shipped(metadata("--offline" in argv)))
-    rel = os.path.relpath(OUT, os.path.dirname(HELPER))
-    if "--check" in argv:
-        try:
-            with open(OUT, encoding="utf-8") as fh:
-                current = fh.read()
-        except FileNotFoundError:
-            current = None
-        if current != text:
-            sys.exit(f"{rel} is stale: run python3 helper/tools/notices.py and commit it")
-        return
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, "w", encoding="utf-8") as fh:
-        fh.write(text)
-    print(f"wrote {rel} ({len(text.encode('utf-8'))} bytes)")
+    offline = "--offline" in argv
+    outputs = (
+        (OUT, render(shipped(metadata(offline)))),
+        (WEB_OUT, web_render(metadata(offline, WEB_TARGETS))),
+    )
+    for out, text in outputs:
+        rel = os.path.relpath(out, os.path.dirname(HELPER))
+        if "--check" in argv:
+            try:
+                with open(out, encoding="utf-8") as fh:
+                    current = fh.read()
+            except FileNotFoundError:
+                current = None
+            if current != text:
+                sys.exit(f"{rel} is stale: run python3 helper/tools/notices.py and commit it")
+            continue
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with open(out, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print(f"wrote {rel} ({len(text.encode('utf-8'))} bytes)")
 
 
 if __name__ == "__main__":

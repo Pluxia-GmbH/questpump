@@ -73,7 +73,7 @@ impl Helper {
 	/// before).
 	pub(super) fn ble_word(&self) -> Option<Ble> {
 		let b = &self.ble_link;
-		if !self.settings.ble_link || b.failed.is_some() || self.secrets_unread() {
+		if !self.desk.settings.ble_link || b.failed.is_some() || self.secrets_unread() {
 			Some(Ble::Stopped)
 		} else if !b.unasked && (b.link.is_none() || b.said.is_none()) {
 			Some(Ble::Ask)
@@ -89,7 +89,7 @@ impl Helper {
 
 	/// What the hellos' proofs are keyed with: the current pairing code's hello key.
 	fn ble_hello_key(&self) -> HelloKey {
-		seal::hello_key(&self.settings.key)
+		seal::hello_key(&self.desk.settings.key)
 	}
 
 	/// Starts or stops the bridge as the switch, the pairing, the window and the grant now say, and shows the row;
@@ -102,10 +102,10 @@ impl Helper {
 		}
 		let b = &self.ble_link;
 		let pairable = b.shown.code || (b.shown.page && self.address.host.is_some());
-		let wanted = self.settings.ble_link
+		let wanted = self.desk.settings.ble_link
 			&& !self.secrets_unread()
 			&& b.failed.is_none()
-			&& (self.settings.pairing.phone.is_some() || pairable)
+			&& (self.desk.settings.pairing.phone.is_some() || pairable)
 			&& (b.shown.page || b.unasked);
 		match (wanted, b.link.is_some()) {
 			(true, false) if b.stopping.is_none() => {
@@ -164,9 +164,9 @@ impl Helper {
 	/// The Phones page's switch: on starts the link where it is wanted (and tries once more after it gave up), off
 	/// stops it.
 	pub(super) fn set_ble_link(&mut self, on: bool) {
-		if self.settings.ble_link != on {
-			self.settings.ble_link = on;
-			self.save_settings();
+		if self.desk.settings.ble_link != on {
+			self.desk.settings.ble_link = on;
+			self.desk.save_settings();
 		}
 		self.ble_link.failed = None;
 		self.ble_link_sync();
@@ -188,7 +188,7 @@ impl Helper {
 
 	/// A pump runs on the strip, or none does: the centrals' latency.
 	pub(super) fn ble_busy(&mut self) {
-		let busy = self.session.offered().is_some();
+		let busy = self.desk.session.offered().is_some();
 		if busy != self.ble_link.busy {
 			self.ble_link.busy = busy;
 			if let Some(link) = &self.ble_link.link {
@@ -216,14 +216,14 @@ impl Helper {
 	/// while the switch is off or the link serves with no phone linked by it, which the switch says alone); the pairing
 	/// code follows whether the link serves (`show_pair`: on Windows beside the firewall card).
 	fn ble_show(&mut self) {
-		let line = if !self.settings.ble_link {
+		let line = if !self.desk.settings.ble_link {
 			None
 		} else if let Some(lost) = self.ble_link.failed {
 			Some(if lost { BleLine::Lost } else { BleLine::Failed })
 		} else {
 			self.ble_word().and_then(|word| self.ble_line(word))
 		};
-		let row = BleRow { on: self.settings.ble_link, line };
+		let row = BleRow { on: self.desk.settings.ble_link, line };
 		let serves = self.ble_serves();
 		let (shown, then) = self.ble_link.row.take().unzip();
 		self.ble_link.row = Some((row.clone(), serves));
@@ -240,7 +240,7 @@ impl Helper {
 	fn ble_line(&self, word: Ble) -> Option<BleLine> {
 		Some(match word {
 			Ble::On => {
-				let phone = self.phone_name().filter(|_| self.queue.ble_linked(crate::lan::now_ms()))?;
+				let phone = self.desk.phone_name().filter(|_| self.queue.ble_linked(crate::lan::now_ms()))?;
 				BleLine::Linked { phone }
 			}
 			Ble::Ask => BleLine::Ask,

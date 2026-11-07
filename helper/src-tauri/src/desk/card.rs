@@ -76,7 +76,7 @@ const SCREEN_EVERY_S: i64 = 10;
 
 /// What the card shows (the `card` topic, null while no card shows): the offer's id (`m-test` for the test), the name
 /// the offer carries, the size its Segmented starts at (the offer's tier; none for the test, Balanced), whether every
-/// size takes the same moves (Moves per match at Light, `Helper::match_one_size`: no Segmented) and whether it is
+/// size takes the same moves (Moves per match at Light, `Desk::match_one_size`: no Segmented) and whether it is
 /// "Send a test offer"'s; or a reminder's (`remind`: its id `r-…`, no name or size).
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub(crate) struct CardView {
@@ -427,15 +427,15 @@ impl Helper {
 	/// Whether no card shows now, no offer goes out to the devices and the tray and the Now card offer none: what holds
 	/// the offers whatever runs here (`offers_held_apart`), or a pump runs on this computer (`desk_pump_running`).
 	pub(crate) fn offers_held(&self, now: i64) -> bool {
-		self.offers_held_apart(now) || self.desk_pump_running()
+		self.offers_held_apart(now) || self.desk.desk_pump_running()
 	}
 
 	/// What holds the offers back whatever runs on this computer, "Open the pump after each match" too: the
 	/// felt-unwell lock holds, the game asks the pumps (`wow_asks_pumps`), or a watched game is in a match.
 	fn offers_held_apart(&self, now: i64) -> bool {
-		self.session.locked_until(now).is_some()
-			|| self.wow_asks_pumps()
-			|| self.games.as_ref().is_some_and(|g| g.watcher.in_match())
+		self.desk.session.locked_until(now).is_some()
+			|| self.desk.wow_asks_pumps()
+			|| self.desk.p.games.as_ref().is_some_and(|g| g.watcher.in_match())
 	}
 
 	/// The card due at `now`, none while something holds the offers back: the standing offer's while its card's time
@@ -446,9 +446,9 @@ impl Helper {
 		if self.offers_held(now) {
 			return None;
 		}
-		let Some(offer) = self.standing.current() else { return self.reminder_view() };
-		(self.standing.card(now) && offer.look_until.is_none())
-			.then(|| CardView::of(offer, self.offer_one_size(Some(&offer.id))))
+		let Some(offer) = self.desk.p.standing.current() else { return self.reminder_view() };
+		(self.desk.p.standing.card(now) && offer.look_until.is_none())
+			.then(|| CardView::of(offer, self.desk.offer_one_size(Some(&offer.id))))
 	}
 
 	/// The card at a look: none while something holds the offers back; the test's while it lasts and no newer card is
@@ -489,7 +489,7 @@ impl Helper {
 			}
 			return;
 		}
-		let Some(games) = self.games.as_ref() else { return };
+		let Some(games) = self.desk.p.games.as_ref() else { return };
 		let game = self.offering.card.game_of(&due.id).map(str::to_owned);
 		let pids = game.as_deref().map(|game| games.pids(game, snap)).unwrap_or_default();
 		let area = pids.iter().find_map(|&pid| procs::window_monitor(pid));
@@ -516,7 +516,7 @@ impl Helper {
 	/// Each watched game that runs has its window's screen looked at, at most every `SCREEN_EVERY_S` (slice 48's
 	/// double-check): its offer's card, and the pump "Open the pump after each match" opens, go onto that screen.
 	pub(crate) fn screens_look(&mut self, snap: &Snapshot, now: i64) {
-		let Some(games) = self.games.as_ref() else { return };
+		let Some(games) = self.desk.p.games.as_ref() else { return };
 		for game in games.running() {
 			let last = self.offering.card.seen.get(game).copied();
 			if last.is_some_and(|seen| now - seen.at < SCREEN_EVERY_S) {
@@ -576,7 +576,7 @@ impl Helper {
 	/// # Errors
 	/// Why no test card shows: no offers on this computer, the offers held now (`offers_held`), nothing to name.
 	pub(crate) fn test_offer(&mut self) -> Result<(), String> {
-		let t = self.games.as_ref().map(Games::tunables).ok_or("no offers on this computer")?;
+		let t = self.desk.p.games.as_ref().map(Games::tunables).ok_or("no offers on this computer")?;
 		let now = lan::now_ms().div_euclid(1_000);
 		if self.offers_held(now) {
 			return Err("offers are held now".to_owned());
@@ -604,7 +604,7 @@ impl Helper {
 	/// this system runs, with no size chosen (slice 57: the sitting clock sizes nothing, and no match measured it).
 	fn test_view(&self) -> Option<CardView> {
 		let system = if cfg!(windows) { "windows" } else { "macos" };
-		let first = self.games.as_ref().and_then(|g| g.watched(&self.settings.games).into_iter().next());
+		let first = self.desk.p.games.as_ref().and_then(|g| g.watched(&self.desk.settings.games).into_iter().next());
 		let watched = first.or_else(|| {
 			computer_links()?
 				.iter()
@@ -615,7 +615,7 @@ impl Helper {
 			id: TEST.to_owned(),
 			name: watched.name().to_owned(),
 			tier: None,
-			one_size: self.match_one_size(),
+			one_size: self.desk.match_one_size(),
 			test: true,
 			remind: None,
 		})
@@ -662,12 +662,13 @@ impl Helper {
 	/// The standing offer's card's Later or ×: counted, its card closed, and the offer withdrawn on the devices when it
 	/// went out to them (`Standing::later`); it still stands on Pump home and in the tray.
 	fn offer_later(&mut self) {
-		let Some((id, link, out)) = self.standing.current().map(|o| (o.id.clone(), o.link, o.out_at.is_some())) else {
+		let Some((id, link, out)) = self.desk.p.standing.current().map(|o| (o.id.clone(), o.link, o.out_at.is_some()))
+		else {
 			return;
 		};
 		self.counts_offer(link, "dismissed");
-		let Some(t) = self.games.as_ref().map(Games::tunables) else { return };
-		if self.standing.later(t) {
+		let Some(t) = self.desk.p.games.as_ref().map(Games::tunables) else { return };
+		if self.desk.p.standing.later(t) {
 			if self.queue.withdraw(&id) {
 				log::info!("offer {id}: put off on the computer, withdrawn on the devices and off the link");
 			} else {
@@ -687,12 +688,12 @@ impl Helper {
 		let now = lan::now_ms().div_euclid(1_000);
 		if offer == TEST {
 			self.offering.card.test = None;
-		} else if let Some(o) = self.standing.current().filter(|o| o.id == offer) {
-			if o.out_at.is_none() && self.standing.card(now) {
+		} else if let Some(o) = self.desk.p.standing.current().filter(|o| o.id == offer) {
+			if o.out_at.is_none() && self.desk.p.standing.card(now) {
 				log::info!("offer {offer}: answered on the computer, not sent to the devices");
 			}
 			let link = o.link;
-			self.standing.close_card();
+			self.desk.p.standing.close_card();
 			if self.offering.card.started.as_deref() != Some(offer) {
 				self.offering.card.started = Some(offer.to_owned());
 				self.counts_offer(link, "started");
@@ -705,16 +706,18 @@ impl Helper {
 
 	/// The card an id names: the test's, the standing offer's or the standing reminder's (none: the standing offer).
 	fn card_offer(&self, asked: Option<&str>) -> Option<CardView> {
-		let of = |o: &Offer| CardView::of(o, self.offer_one_size(Some(&o.id)));
+		let of = |o: &Offer| CardView::of(o, self.desk.offer_one_size(Some(&o.id)));
 		match asked {
 			Some(TEST) => self.offering.card.test.as_ref().map(|test| test.view.clone()),
 			Some(id) => self
+				.desk
+				.p
 				.standing
 				.current()
 				.filter(|o| o.id == id)
 				.map(of)
 				.or_else(|| self.reminder_view().filter(|card| card.id == id)),
-			None => self.standing.current().map(of),
+			None => self.desk.p.standing.current().map(of),
 		}
 	}
 
@@ -748,10 +751,10 @@ impl Helper {
 	/// a catch-up's list, a Ready view, a Result; Rapha, 2026-10-28: "So should close catchup and jump into the new
 	/// pump no? for all games."); while a move runs the offer waits for it (`CardState::wait_pump`).
 	pub(crate) fn open_offer(&mut self, game: &str, now: i64) {
-		if self.settings.games.open_on_close_off || self.offers_held_apart(now) {
+		if self.desk.settings.games.open_on_close_off || self.offers_held_apart(now) {
 			return;
 		}
-		let Some(offer) = self.standing.current() else { return };
+		let Some(offer) = self.desk.p.standing.current() else { return };
 		if self.offering.card.game_of(&offer.id) != Some(game)
 			|| self.offering.card.opened.as_ref() == Some(&offer.id)
 			|| offer.look_until.is_some()
@@ -759,13 +762,13 @@ impl Helper {
 			return;
 		}
 		let id = offer.id.clone();
-		if !self.desk_pump_make_way() {
+		if !self.desk.desk_pump_make_way() {
 			log::info!("offer {id}: a move runs here; its pump opens once the pump is idle");
 			self.offering.card.wait_pump(&id);
 			return;
 		}
-		let Some(offer) = self.standing.current().filter(|o| o.id == id) else { return };
-		let view = CardView::of(offer, self.offer_one_size(Some(&offer.id)));
+		let Some(offer) = self.desk.p.standing.current().filter(|o| o.id == id) else { return };
+		let view = CardView::of(offer, self.desk.offer_one_size(Some(&offer.id)));
 		let screen =
 			self.offering.card.area_of(&view.id).and_then(|a| screens(&self.app).into_iter().find(|s| s.holds(&a)));
 		self.offering.card.opened = Some(view.id.clone());

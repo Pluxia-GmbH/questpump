@@ -3,7 +3,6 @@
   "view": "front",
   "camera": {"yaw": 14, "pitch": 6},
   "working": ["thigh", "shin", "pauldron"],
-  "ballistic": true,
   "fast_phase": 0.6,
   "poses": {
     "crouch": {

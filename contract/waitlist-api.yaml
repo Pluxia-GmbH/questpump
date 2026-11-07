@@ -30,12 +30,13 @@ info:
     at most 254 characters, required) and a hidden field, `website`, that a person never sees or reaches (out of
     sight, `aria-hidden`, `tabindex=-1`) and a bot fills; one gold primary sends it as
     `application/x-www-form-urlencoded`. The page runs no script, so the browser posts the form and follows the
-    answer's 303 to a result page. The form posts to the host its page came from, so the route takes both.
+    answer's 303 to a result page. The form posts to the host its page came from, the apex (`www.questpump.com` sends
+    every address there with a 301).
 
-    **The Worker.** A Cloudflare Worker on the routes `questpump.com/api/waitlist` and `www.questpump.com/api/waitlist`
+    **The Worker.** A Cloudflare Worker on the route `questpump.com/api/waitlist`
     (`site/report/`; deployed by the site's workflow; a Pages Function cannot hold the email binding). It answers 403
-    without reading the body unless the `Origin` header is exactly `https://questpump.com` or
-    `https://www.questpump.com` (a browser names the posting page's origin; a post with no `Origin`, or another one, is
+    without reading the body unless the `Origin` header is exactly `https://questpump.com` (a browser names the
+    posting page's origin; a post with no `Origin`, or another one, is
     no form of the site's), and 415 unless the media type is `application/x-www-form-urlencoded` (compared without
     case, its parameters such as `charset` ignored). It reads at most 1,024 bytes of body (413 past them), and reads
     exactly the two fields below, once each. A body that does not read, or an address that does not, sends the browser
@@ -63,7 +64,6 @@ info:
 security: []
 servers:
   - url: https://questpump.com
-  - url: https://www.questpump.com
 paths:
   /api/waitlist:
     post:
@@ -76,7 +76,7 @@ paths:
         - name: Origin
           in: header
           required: true
-          schema: { type: string, enum: ["https://questpump.com", "https://www.questpump.com"] }
+          schema: { type: string, enum: ["https://questpump.com"] }
       requestBody:
         required: true
         content:

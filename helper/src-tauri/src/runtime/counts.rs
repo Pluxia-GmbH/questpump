@@ -31,14 +31,15 @@ use questpump_core::outbox::Answer;
 use questpump_core::protocol::RowRecord;
 use questpump_core::row::Row;
 use questpump_core::telemetry::{self, Counts, DayTally, Facts, LinkBle, Point, Review, Source};
+use questpump_desk::facts::facts;
+use questpump_desk::history::{self, GameDay};
+use questpump_desk::pump::ran_here;
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::outbox::{Lane, News, Sender};
 use super::{Helper, ProState, install_key, now};
 use crate::bluetooth::{self, Kind};
-use crate::desk::facts::facts;
-use crate::desk::history::{self, GameDay};
-use crate::desk::pump::ran_here;
+use crate::desk::shell::{Out, Shell};
 use crate::settings::Loaded;
 
 /// The addon's first profile's name (DB.lua's), a key of an install's profiles.
@@ -68,7 +69,7 @@ impl CountsState {
 	pub(super) fn new(dir: &std::path::Path, client: Option<reqwest::Client>, news: UnboundedSender<News>) -> Self {
 		Self {
 			kept: Counts::default(),
-			days: GameDay::new(facts().constants().day_offset_h),
+			days: GameDay::new(facts().constants().day_offset_h, super::local_offset_at),
 			sender: Sender::new(dir, Lane::Counts, client, news),
 			today: None,
 			dirty: false,
@@ -103,7 +104,7 @@ fn made_here(r: &RowRecord) -> bool {
 impl Helper {
 	/// Usage statistics as it reads: the player's answer, else on outside an opt-in region.
 	pub(crate) fn usage_on(&self) -> bool {
-		self.settings.usage.reads(self.region)
+		self.desk.settings.usage.reads(self.region)
 	}
 
 	/// The game day of unix second `t` (04:00 local).
@@ -129,7 +130,7 @@ impl Helper {
 			Err(why) => log::warn!("{}: {why}; the counts start again", Counts::FILE),
 		}
 		let unix = now().unix;
-		let (game_rows, app_rows) = (self.session.store().rows(), self.session.app_rows().rows());
+		let (game_rows, app_rows) = (self.desk.session.store().rows(), self.desk.session.app_rows().rows());
 		let earliest = game_rows.iter().chain(&app_rows).map(|r| i64::from(r.ts)).min();
 		let desk_pumped = telemetry::first_pump(&self.counts_rows_of(Source::Desktop)).is_some();
 		let game_pumped = telemetry::first_pump(&self.counts_rows_of(Source::Game)).is_some();
@@ -188,8 +189,8 @@ impl Helper {
 		let kept = &mut self.counts.kept;
 		kept.sent_through = Some(kept.sent_through.map_or(today - 1, |s| s.max(today - 1)));
 		kept.seen = telemetry::Seen {
-			game: self.session.store().records().len(),
-			app: self.session.app_rows().records().len(),
+			game: self.desk.session.store().records().len(),
+			app: self.desk.session.app_rows().records().len(),
 		};
 		self.counts.today = Some(today);
 		self.counts_install(today);
@@ -249,7 +250,7 @@ impl Helper {
 			self.counts.dirty = true;
 			if source == Source::Game {
 				// the moves owed so far today, for the day's end, as each row the game writes moves them
-				let owed = u32::try_from(self.session.store().owed().len()).unwrap_or(u32::MAX);
+				let owed = u32::try_from(self.desk.session.store().owed().len()).unwrap_or(u32::MAX);
 				self.counts.kept.facts(Source::Game, today).owed = Some(owed);
 			}
 		}
@@ -395,12 +396,12 @@ impl Helper {
 
 	/// The capture as it stands while the game runs (`capture_day`: the day keeps the most telling state).
 	pub(crate) fn counts_capture(&mut self, state: &str) {
-		if self.game.is_none() {
+		if self.desk.p.game.is_none() {
 			return;
 		}
 		let os = if cfg!(windows) { "win" } else { "mac" };
 		// no stream started yet in this run: no backend
-		let backend = if self.sighting.backend.is_empty() { "none" } else { self.sighting.backend };
+		let backend = if self.desk.p.sighting.backend.is_empty() { "none" } else { self.desk.p.sighting.backend };
 		if let Some(facts) = self.counts_today(Source::Desktop) {
 			facts.capture(os, backend, state);
 		}
@@ -409,7 +410,7 @@ impl Helper {
 	/// The link as it stands (`link_day`, on the link's 5-s tick): `never` without a paired phone, `unreachable` while
 	/// the LAN API cannot listen, `ok` once a device linked, else `dropped`.
 	pub(crate) fn counts_link(&mut self) {
-		let state = if self.settings.pairing.phone.is_none() {
+		let state = if self.desk.settings.pairing.phone.is_none() {
 			"never"
 		} else if self.served.is_none() {
 			"unreachable"
@@ -431,7 +432,7 @@ impl Helper {
 	/// The Bluetooth link on a game day a phone is paired (`link_ble`, on the link's 5-s tick, slice 43): the helper
 	/// block's `ble` as it stands now, the day keeping the last word said.
 	pub(crate) fn counts_link_ble(&mut self, ble: Option<Ble>) {
-		if self.settings.pairing.phone.is_none() {
+		if self.desk.settings.pairing.phone.is_none() {
 			return;
 		}
 		let word = ble.map(Ble::word);
@@ -446,7 +447,7 @@ impl Helper {
 	/// A phone's or a watch's sync came on a transport while a phone is paired (`link_ble`'s `transport`, and `link`
 	/// `linked` once one came over Bluetooth): each transport once a day.
 	pub(crate) fn counts_transport(&mut self, transport: Transport) {
-		if self.settings.pairing.phone.is_none() {
+		if self.desk.settings.pairing.phone.is_none() {
 			return;
 		}
 		let seen = |day: &LinkBle| match transport {
@@ -479,19 +480,20 @@ impl Helper {
 	/// file (a save, the mirror, a restore) with an older move counts on no day. A store that shrank (a reset compacts
 	/// it) is looked at from where it stands.
 	pub(crate) fn counts_rows(&mut self) {
-		let (game_len, app_len) = (self.session.store().records().len(), self.session.app_rows().records().len());
+		let (game_len, app_len) =
+			(self.desk.session.store().records().len(), self.desk.session.app_rows().records().len());
 		let seen = self.counts.kept.seen;
 		if seen.game == game_len && seen.app == app_len {
 			return;
 		}
 		let today = self.counts_day(now().unix);
-		let records = self.session.store().records();
-		let apps = self.session.app_rows().records();
+		let records = self.desk.session.store().records();
+		let apps = self.desk.session.app_rows().records();
 		let taken: Vec<(Row, bool)> = records
 			.get(seen.game.min(game_len)..)
 			.unwrap_or_default()
 			.iter()
-			.chain(apps.get(seen.app.min(app_len)..).unwrap_or_default().iter().filter(|r| ran_here(r)))
+			.chain(apps.get(seen.app.min(app_len)..).unwrap_or_default().iter().filter(|r| ran_here::<Shell>(r)))
 			.map(|record| (record.row(), made_here(record)))
 			.collect();
 		self.counts.kept.seen = telemetry::Seen { game: game_len, app: app_len };
@@ -514,17 +516,17 @@ impl Helper {
 			}
 		}
 		if on {
-			let owed = u32::try_from(self.session.store().owed().len()).unwrap_or(u32::MAX);
+			let owed = u32::try_from(self.desk.session.store().owed().len()).unwrap_or(u32::MAX);
 			self.counts.kept.facts(Source::Game, today).owed = Some(owed);
 		}
 	}
 
 	/// Every row the stores hold of a source: the computer's own pumps and its catch-ups, or the game's.
 	fn counts_rows_of(&self, source: Source) -> Vec<Row> {
-		let game_rows = self.session.store().rows();
+		let game_rows = self.desk.session.store().rows();
 		match source {
 			Source::Desktop => {
-				let apps = self.session.app_rows().records().iter().filter(|r| ran_here(r));
+				let apps = self.desk.session.app_rows().records().iter().filter(|r| ran_here::<Shell>(r));
 				let mut rows: Vec<Row> = apps.map(RowRecord::row).collect();
 				rows.extend(game_rows.into_iter().filter(computer));
 				rows
@@ -562,10 +564,10 @@ impl Helper {
 			return;
 		}
 		self.counts.asking = true;
-		let game = !self.session.store().records().is_empty();
-		let (at, reset) = (now().unix, history::reset(self.logged_sheets()));
-		let save = if game { self.game_save_cbor(&self.session.sheet(at)) } else { None };
-		self.engine_call(
+		let game = !self.desk.session.store().records().is_empty();
+		let (at, reset) = (now().unix, history::reset(self.desk.logged_sheets()));
+		let save = if game { self.desk.game_save_cbor(&self.desk.session.sheet(at)) } else { None };
+		self.desk.engine_call(
 			move |e| {
 				if game && let Err(err) = e.game_save(save.as_deref()) {
 					log::warn!("counts: the game's save for its fold: {err}");
@@ -578,13 +580,16 @@ impl Helper {
 					focus,
 				})
 			},
-			|h, answer| {
-				h.counts.asking = false;
+			|desk, answer| {
 				let weekly = answer.unwrap_or_else(|e| {
 					log::warn!("counts: the engine's weekly numbers: {e}");
 					Weekly::default()
 				});
-				h.counts_batches(&weekly);
+				// the counts are the loop's: the batches go once the answer's turn ends (`Helper::drain`)
+				desk.p.out.push(Out::Then(Box::new(move |h: &mut Helper| {
+					h.counts.asking = false;
+					h.counts_batches(&weekly);
+				})));
 			},
 		);
 	}
@@ -622,7 +627,7 @@ impl Helper {
 			// where the player stands as it stands now, so with the last day alone, and only from a computer no
 			// phone was paired with that day (a paired phone sends its own: one player counts once a day)
 			let unpaired = facts.desktop.link.as_deref().is_none_or(|l| l == "never");
-			if Some(day) == last && facts.desktop.active && unpaired && self.settings.pairing.phone.is_none() {
+			if Some(day) == last && facts.desktop.active && unpaired && self.desk.settings.pairing.phone.is_none() {
 				desk.extend(self.desk_standing());
 			}
 			self.counts_keep(Source::Desktop, &name, &desk);
@@ -713,7 +718,7 @@ impl Helper {
 	/// This computer's setup (`setup_week`): the app's pumps at the balanced pace (an app pump's, apppump.lua), the
 	/// focus in force (`focus`, the engine's), the place's floor, room and quiet, and how much equipment it holds.
 	fn desk_setup(&self, focus: Option<u8>) -> Option<Point> {
-		let (_, place) = self.place_in_use();
+		let (_, place) = self.desk.place_in_use();
 		let focus = focus.and_then(|id| facts().focus(id)).map_or("unset", |f| f.key.as_str());
 		Point::new(
 			"setup_week",
@@ -732,9 +737,9 @@ impl Helper {
 	/// Where the player stands (`standing`, 2026-10-21; contract/standing-api.yaml): the best streak the streak page
 	/// shows and the highest colour on the Book's colours card, as they stand now; none before the Book's first answer.
 	fn desk_standing(&self) -> Option<Point> {
-		let top = self.book_top_colour()?.to_string();
+		let top = self.desk.book_top_colour()?.to_string();
 		let at = now().unix;
-		let best = self.board(&self.session.sheet(at), at).best;
+		let best = self.desk.board(&self.desk.session.sheet(at), at).best;
 		Point::new("standing", &[("streak_best", telemetry::streak_best(best)), ("colour_top", &top)], &[])
 	}
 
@@ -742,8 +747,8 @@ impl Helper {
 	/// it (its Default, or its only one), at the addon's defaults where it says nothing, and the focus of the game's
 	/// newest sheet; none without one.
 	fn game_setup(&self) -> Option<Point> {
-		let install = self.followed.as_deref().and_then(install_key)?;
-		let profiles = &self.session.people().installs.get(&install)?.profiles;
+		let install = self.desk.p.followed.as_deref().and_then(install_key)?;
+		let profiles = &self.desk.session.people().installs.get(&install)?.profiles;
 		let profile = profiles
 			.get(DEFAULT_PROFILE)
 			.or_else(|| (profiles.len() == 1).then(|| profiles.values().next()).flatten())?;
@@ -759,11 +764,12 @@ impl Helper {
 			_ => 0,
 		};
 		let focus = self
+			.desk
 			.session
 			.people()
 			.sheets
 			.values()
-			.filter_map(|sheet| crate::desk::hero::Summary::read(&questpump_core::blob::to_json(sheet)))
+			.filter_map(|sheet| questpump_desk::hero::Summary::read(&questpump_core::blob::to_json(sheet)))
 			.max_by_key(|s| s.at)
 			.and_then(|s| s.focus)
 			.and_then(|id| facts().focus(id))

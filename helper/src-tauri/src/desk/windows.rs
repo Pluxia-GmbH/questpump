@@ -15,6 +15,7 @@
 use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 
+use questpump_desk::settings::Place;
 use tauri::utils::config::WindowConfig;
 use tauri::{AppHandle, LogicalSize, Manager as _, Url, WebviewWindow, WebviewWindowBuilder, WindowEvent};
 
@@ -355,6 +356,16 @@ pub(crate) fn browser_keys_off(window: &WebviewWindow) {
 	}
 }
 
+/// The player's full-screen choice (`view.fullscreen`, Big view's toggle): the main window's own full screen, and the
+/// `shell` topic's `fullscreen`; the choice is kept in settings.json by the caller.
+pub(crate) fn full_view(app: &AppHandle, on: bool) -> Result<(), String> {
+	if let Some(window) = app.get_webview_window(MAIN) {
+		window.set_fullscreen(on).map_err(|e| e.to_string())?;
+	}
+	ui::update(app, |v| v.shell.fullscreen = on);
+	Ok(())
+}
+
 impl Helper {
 	/// The `view` area: the zoom (`{"type":"view.zoom","step":1|-1|0}`), Big view's full screen
 	/// (`{"type":"view.fullscreen","on":true}`) and whether the page's tabs can act (`{"type":"view.tabs","on":false}`
@@ -368,14 +379,11 @@ impl Helper {
 			}
 			"view.fullscreen" => {
 				let on = intent.arg("on").and_then(serde_json::Value::as_bool).ok_or("view.fullscreen takes on")?;
-				if let Some(window) = self.app.get_webview_window(MAIN) {
-					window.set_fullscreen(on).map_err(|e| e.to_string())?;
+				full_view(&self.app, on)?;
+				if self.desk.settings.fullscreen != on {
+					self.desk.settings.fullscreen = on;
+					self.desk.save_settings();
 				}
-				if self.settings.fullscreen != on {
-					self.settings.fullscreen = on;
-					self.save_settings();
-				}
-				ui::update(&self.app, |v| v.shell.fullscreen = on);
 			}
 			"view.tabs" => {
 				let on = intent.arg("on").and_then(serde_json::Value::as_bool).ok_or("view.tabs takes on")?;
@@ -397,7 +405,7 @@ impl Helper {
 	/// One step of the page's size (1 larger, -1 smaller, 0 back to 100 %), applied to the open window at `BASE` times
 	/// it and kept: the keys, the macOS View menu and the Menu's Size all come here.
 	pub(crate) fn zoom(&mut self, step: i8) {
-		let now = self.settings.zoom;
+		let now = self.desk.settings.zoom;
 		let at = ZOOMS.iter().position(|z| (z - now).abs() < 0.001).unwrap_or(2);
 		let zoom = match step {
 			0 => 1.0,
@@ -409,9 +417,9 @@ impl Helper {
 		{
 			log::warn!("zoom: {e}");
 		}
-		if (self.settings.zoom - zoom).abs() > f64::EPSILON {
-			self.settings.zoom = zoom;
-			self.save_settings();
+		if (self.desk.settings.zoom - zoom).abs() > f64::EPSILON {
+			self.desk.settings.zoom = zoom;
+			self.desk.save_settings();
 		}
 		ui::update(&self.app, |v| v.shell.zoom = zoom);
 	}
@@ -431,10 +439,10 @@ impl Helper {
 	}
 
 	/// The main window's place into settings.json (it settled, it closed, or QuestPump quits).
-	pub(crate) fn keep_place(&mut self, place: Option<super::place::Place>) {
-		if place.is_some() && self.settings.window != place {
-			self.settings.window = place;
-			self.save_settings();
+	pub(crate) fn keep_place(&mut self, place: Option<Place>) {
+		if place.is_some() && self.desk.settings.window != place {
+			self.desk.settings.window = place;
+			self.desk.save_settings();
 		}
 	}
 }

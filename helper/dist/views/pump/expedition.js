@@ -4,7 +4,7 @@
 // the expedition's Result's own parts around the pump's Result (desk.expedition.done: the standard-bearer, the line
 // under the Fanfare or the calm title of one ended part way, the MuscleMap's day variant, Share and Done, and the
 // Share window opening by itself on the expedition card as the reveal ends, its close landing on Pump home). The
-// `pump` topic's `expedition` (desk/pump/expedition.rs `TripView`) holds what they draw.
+// `pump` topic's `expedition` (questpump-desk/src/pump/expedition.rs `TripView`) holds what they draw.
 
 import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";

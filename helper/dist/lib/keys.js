@@ -16,9 +16,13 @@
 // performKeyEquivalent: a key the page takes, its default prevented, never reaches the menu), so a key and its menu
 // item act once. The web view scrolls only what holds the focus, and a pump's or a window's primary stands in a foot
 // outside the rows it closes: the arrows, PageUp, PageDown, Home and End move the region in front from there, so the
-// keyboard reads a pump's Result to its last row.
+// keyboard reads a pump's Result to its last row. In the browser (docs/plan.md slice 63) the browser keeps its own keys
+// (reload, print, find on the page, history, zoom), and Alt+1 to 4 choose the roots' tabs, since Cmd/Ctrl+1 to 5 are
+// the browser's own tabs: never while the focus is in a text box, where Option or Alt and a digit types a character on
+// many layouts (a British Mac's Option+3 "#", a German or Swiss Option+5 "["), and a digit whose root has no tab (the
+// browser has no Games) is left to the browser.
 
-import {intent} from "./bridge.js";
+import {get, intent} from "./bridge.js";
 import {topWindow} from "./focus.js";
 import {token} from "../kit/element.js";
 import {ROOTS} from "../kit/qp-root-host.js";
@@ -32,7 +36,9 @@ export function guardMs() {
 
 let current = null; // the view the keys go to
 let mountedAt = 0;
-let frame = null; // the main window's frame (the card's page has none): Cmd/Ctrl+1 to 5's `tab`, Cmd/Ctrl+F's `find`
+// the main window's frame (the card's page has none): Cmd/Ctrl+1 to 5's `tab` and `has` (a root with a tab in the
+// ActionBar), Cmd/Ctrl+F's `find`
+let frame = null;
 let taken = null; // the key the view took at its press, whose repeats do nothing else
 
 /** The web view's own steps: an arrow's in CSS px (Chromium's kPixelsPerLineStep), a page's as a share of the region
@@ -72,20 +78,29 @@ function typing(target) {
 		|| (target instanceof HTMLInputElement && !["checkbox", "radio", "button", "range"].includes(target.type));
 }
 
+/** Whether the page runs in a browser, which keeps its own keys. */
+function web() {
+	return get("shell")?.platform === "web";
+}
+
 function zoom(e) {
-	if (!(e.metaKey || e.ctrlKey) || e.altKey) return false;
+	if (!(e.metaKey || e.ctrlKey) || e.altKey || web()) return false;
 	const step = e.key === "=" || e.key === "+" ? 1 : e.key === "-" ? -1 : e.key === "0" ? 0 : null;
 	if (step === null) return false;
 	intent("view.zoom", {step}).catch(console.error);
 	return true;
 }
 
-/** The root Cmd/Ctrl+1 to 5 names, in the ActionBar's order: by the key's digit, else by its place on the keyboard (a
- * layout whose digits take Shift: AZERTY's 1 key gives "&"); none for another key. */
+/** The root Cmd/Ctrl+1 to 5 names (Alt+1 to 4 in the browser, never in a text box there), in the ActionBar's order: by
+ * the key's digit, else by its place on the keyboard (a layout whose digits take Shift: AZERTY's 1 key gives "&";
+ * macOS's Option gives "¡"); none for another key or a root with no tab. */
 function tabRoot(e) {
-	if (!(e.metaKey || e.ctrlKey) || e.altKey) return null;
+	const mod = web() ? e.altKey && !e.metaKey && !e.ctrlKey && !typing(e.target)
+		: (e.metaKey || e.ctrlKey) && !e.altKey;
+	if (!mod) return null;
 	const digit = /^[1-9]$/.test(e.key) ? e.key : /^Digit[1-9]$/.test(e.code) ? e.code.slice(-1) : null;
-	return digit ? ROOTS[Number(digit) - 1] ?? null : null;
+	const root = digit ? ROOTS[Number(digit) - 1] ?? null : null;
+	return root && frame.has(root) ? root : null;
 }
 
 /** A keyboard's browser keys (the "Browser control keys" of KeyboardEvent.key's values). */
@@ -95,6 +110,7 @@ const BROWSER_KEYS = new Set(["BrowserBack", "BrowserFavorites", "BrowserForward
 /** The web view's own keys that would reload, print, find on the page (F3, Shift+F3, Cmd/Ctrl+G and Shift with it)
  * or move in its history, and a keyboard's browser keys: QuestPump has none of those. */
 function browserKey(e) {
+	if (web()) return false;
 	const mod = e.metaKey || e.ctrlKey;
 	const key = e.key.toLowerCase();
 	return e.key === "F5" || e.key === "F3" || BROWSER_KEYS.has(e.key)

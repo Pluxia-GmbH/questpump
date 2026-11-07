@@ -9,12 +9,12 @@
 use std::collections::{HashMap, HashSet};
 
 use questpump_core::games::Watched;
+use questpump_desk::recent::WOW;
 use serde::Serialize;
 
 use super::icons::Source;
 use super::procs::Snapshot;
 use super::{Games, Status, fed, hears, watches};
-use crate::desk::recent::WOW;
 use crate::settings::GamesSettings;
 
 /// What a tile is: a named game (contract/links.json's), a found game (`detect.rs`), a program the player added.

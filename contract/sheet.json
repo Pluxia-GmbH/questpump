@@ -61,7 +61,6 @@
     "bar": "Pull-up bar",
     "barbell": "Barbell and rack",
     "bike": "Exercise bike",
-    "door_towel": "Towel and door",
     "dumbbells": "Dumbbells",
     "fixed_bar": "Fixed pull-up bar (not a doorway bar)",
     "floor": "Floor moves",
@@ -86,7 +85,7 @@
   },
   "gear_groups": [
     {
-      "gear": ["stable_chair", "table", "door_towel", "stairs", "backpack"],
+      "gear": ["stable_chair", "table", "stairs", "backpack"],
       "key": "home"
     },
     {
@@ -106,7 +105,7 @@
       "key": "core"
     }
   ],
-  "gear_order": ["stable_chair", "table", "door_towel", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell", "rope", "bike", "stairs", "pad", "step", "wheel", "parallettes", "rings", "vest", "ball", "roller", "backpack", "pole"],
+  "gear_order": ["stable_chair", "table", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell", "rope", "bike", "stairs", "pad", "step", "wheel", "parallettes", "rings", "vest", "ball", "roller", "backpack", "pole"],
   "gear_tips": {
     "backpack": "A backpack you load with books or water bottles, straps tight. For backpack squats, squat drives and suitcase carries. A kettlebell, dumbbells or a vest take its place in some moves when you have them.",
     "ball": "A medicine ball. Slams want a slam ball that does not bounce, chest passes one that bounces back off a solid wall. For squats, carries, chops, slams and passes.",
@@ -114,7 +113,6 @@
     "bar": "A pull-up bar fixed firmly, in a doorway or on a wall, with a stool to step down on. For hangs, pull-ups, hanging knee raises and the front lever.",
     "barbell": "A barbell with plates in a rack. Set the safeties and put the collars on. For light squats, deadlifts, overhead presses and the landmine press.",
     "bike": "An exercise bike, its seat at hip height and your feet secure on the pedals. For quick spins, hard rides and short sprints as cardio.",
-    "door_towel": "A bath towel and a solid door that you push to open, its hinges on the far side. Never glass, sliding or folding. For the towel rows, the towel knotted at one end and laid over the door's top.",
     "dumbbells": "A pair of dumbbells, light ones of 2-5 kg for raises to start. For goblet squats, lunges, curls, raises and carries. In rows, deadlifts and hip thrusts they take the place of a bag or a jug.",
     "fixed_bar": "A bar bolted to a wall, a ceiling or a rack, with room above it. Never a doorway bar. For muscle-ups, bar dips and fast pull-ups, and it counts for every pull-up bar move too.",
     "kettlebell": "A kettlebell, 8-16 kg to start. For swings, goblet squats, halos and carries. In rows, deadlifts and hip thrusts it takes the place of a bag or a jug.",

@@ -43,17 +43,16 @@
 use std::sync::atomic::AtomicBool;
 use std::time::{Duration, Instant};
 
-use questpump_core::link::Sheet;
 use questpump_core::offers::{self, Tunables};
 use questpump_core::session::Zone;
+use questpump_desk::facts::facts;
+use questpump_desk::home::Board;
 use serde::Serialize;
 use serde_json::{Value, json};
 use tauri::menu::MenuItem;
 use tauri::{AppHandle, Manager as _, Wry};
 
 use super::card::CardView;
-use super::facts::facts;
-use super::home::Board;
 use super::tray::TrayLines;
 use super::{Desk, Intent};
 use crate::copy;
@@ -200,14 +199,14 @@ impl Helper {
 	/// The offers' numbers, which hold the reminders' defaults (quiet hours, the cap); none when they did not build in,
 	/// and then no reminder comes.
 	fn remind_tunables(&self) -> Option<&'static Tunables> {
-		self.games.as_ref().map(Games::tunables)
+		self.desk.p.games.as_ref().map(Games::tunables)
 	}
 
-	/// The board Pump home just drew (`home_publish`), for the reminders and the tray's streak line; whether Hero shows
-	/// the game's sheet is asked only while today has no pump, the only time their words name it.
-	pub(crate) fn reminders_board(&mut self, sheet: &Sheet, board: Board) {
-		let game = !board.today && self.game_shown(sheet).is_some();
-		let seen = Seen { board, game, resting: sheet.locked_until.is_some() };
+	/// The board Pump home just drew (`home_publish`, `Platform::reminders_board`), for the reminders and the tray's
+	/// streak line: whether Hero shows the game's sheet (`game`, asked only while today has no pump, the only time their
+	/// words name it) and whether the felt-unwell lock holds (`resting`).
+	pub(crate) fn reminders_board(&mut self, board: Board, game: bool, resting: bool) {
+		let seen = Seen { board, game, resting };
 		let line = tray_line(&seen);
 		self.reminding.seen = Some(seen);
 		if self.reminding.tray.as_ref() == Some(&line) {
@@ -239,9 +238,12 @@ impl Helper {
 		let Some(card) = &self.reminding.card else { return };
 		let over = match card.view.remind {
 			Some(RemindView::Streak { .. }) => {
-				self.home.days.day.index(now) != card.day || self.reminding.seen.as_ref().is_none_or(|s| s.board.today)
+				self.desk.home.days.day.index(now) != card.day
+					|| self.reminding.seen.as_ref().is_none_or(|s| s.board.today)
 			}
-			_ => card.until.is_none_or(|until| now >= until) || self.last_move_at().is_some_and(|at| at >= card.at),
+			_ => {
+				card.until.is_none_or(|until| now >= until) || self.desk.last_move_at().is_some_and(|at| at >= card.at)
+			}
 		};
 		if over {
 			self.reminding.card = None;
@@ -251,7 +253,7 @@ impl Helper {
 	/// The streak reminder's time on the local date of `now`, else the day before where that is still to come (unix
 	/// seconds): the one of the current game day when its game day is today's.
 	fn streak_time(&self, now: i64) -> i64 {
-		let at = self.settings.reminders.streak_at.unwrap_or(facts().constants().remind_streak_min);
+		let at = self.desk.settings.reminders.streak_at.unwrap_or(facts().constants().remind_streak_min);
 		let today = now - (now + local_offset_at(now)).rem_euclid(DAY_S) + i64::from(at) * 60;
 		if today > now { today - DAY_S } else { today }
 	}
@@ -260,22 +262,22 @@ impl Helper {
 	/// game day, as the phones plan only the times still to come.
 	fn streak_armed(&mut self) {
 		let now = lan::now_ms().div_euclid(1_000);
-		let day = &self.home.days.day;
+		let day = &self.desk.home.days.day;
 		let today = day.index(now);
 		if day.index(self.streak_time(now)) == today {
-			self.settings.reminders.streak_day = Some(today);
+			self.desk.settings.reminders.streak_day = Some(today);
 		}
 	}
 
 	/// A reminder due at `now` stands, counted under the cap: the streak reminder first, then the sitting cue.
 	fn reminder_due(&mut self, now: i64, t: &Tunables) {
 		let start = Zone::new(local_offset_at).game_day_start(now);
-		let o = &self.settings.offers;
-		let paused_runs = self.games.as_ref().is_some_and(|g| g.paused_runs(&o.pause));
+		let o = &self.desk.settings.offers;
+		let paused_runs = self.desk.p.games.as_ref().is_some_and(|g| g.paused_runs(&o.pause));
 		let quiet = |at: i64| offers::quiet(minute_of_day(at), o.quiet(t));
 		let shown = o.shown_on(start);
-		if !self.engine_ready()
-			|| self.standing.current().is_some()
+		if !self.desk.engine_ready()
+			|| self.desk.p.standing.current().is_some()
 			|| self.offers_held(now)
 			|| o.pause.holds(now, "", paused_runs)
 			|| quiet(now)
@@ -284,12 +286,12 @@ impl Helper {
 			return;
 		}
 		let Some(seen) = self.reminding.seen.clone() else { return };
-		let r = &self.settings.reminders;
-		let day = &self.home.days.day;
+		let r = &self.desk.settings.reminders;
+		let day = &self.desk.home.days.day;
 		let today = day.index(now);
 		let at = self.streak_time(now);
 		let streak_open = r.streak_on && !seen.board.today && r.streak_day != Some(today);
-		let tapered = self.home.days.last_active().is_none_or(|last| tapered_day(today - last - 1));
+		let tapered = self.desk.home.days.last_active().is_none_or(|last| tapered_day(today - last - 1));
 		let due = streak_open && tapered && day.index(at) == today && !quiet(at);
 		let ran = self.reminding.run_long_enough();
 		if due && ran {
@@ -318,16 +320,16 @@ impl Helper {
 	fn reminder_show(&mut self, view: RemindView, day: i64, now: i64, until: Option<i64>, start: i64) {
 		let id = match view {
 			RemindView::Streak { .. } => {
-				self.settings.reminders.streak_day = Some(day);
+				self.desk.settings.reminders.streak_day = Some(day);
 				format!("r-streak-{day}")
 			}
 			RemindView::Sitting => {
-				self.settings.reminders.sitting_at = Some(now);
+				self.desk.settings.reminders.sitting_at = Some(now);
 				format!("r-sitting-{now}")
 			}
 		};
-		self.settings.offers.count(start);
-		self.save_settings();
+		self.desk.settings.offers.count(start);
+		self.desk.save_settings();
 		log::info!("reminder {id}: stands");
 		self.counts_feature("reminders");
 		let view = CardView { id, name: String::new(), tier: None, one_size: false, test: false, remind: Some(view) };
@@ -363,7 +365,7 @@ impl Helper {
 
 	/// The Result of a pump here was put away: "Remind me once a day?" is due, until it shows once.
 	pub(crate) fn reminder_offer_due(&mut self) {
-		let r = &self.settings.reminders;
+		let r = &self.desk.settings.reminders;
 		if !r.offered && !r.streak_on {
 			self.reminding.offer_due = true;
 			self.publish_reminders();
@@ -373,16 +375,16 @@ impl Helper {
 	/// The Reminders page's topic.
 	pub(crate) fn publish_reminders(&self) {
 		let Some(t) = self.remind_tunables() else { return };
-		let (r, o) = (&self.settings.reminders, &self.settings.offers);
+		let (r, o) = (&self.desk.settings.reminders, &self.desk.settings.offers);
 		let streak_at = r.streak_at.unwrap_or(facts().constants().remind_streak_min);
 		let now = lan::now_ms().div_euclid(1_000);
 		let offer = self.reminding.offer_due
 			&& !r.offered
 			&& !r.streak_on
-			&& self.settings.desk.onboarded
-			&& self.session.locked_until(now).is_none()
-			&& !self.desk_pump_running()
-			&& !self.desk_pump_starting();
+			&& self.desk.settings.desk.onboarded
+			&& self.desk.session.locked_until(now).is_none()
+			&& !self.desk.desk_pump_running()
+			&& !self.desk.desk_pump_starting();
 		self.app.state::<Desk>().publisher.publish(
 			REMINDERS,
 			&RemindersTopic {
@@ -405,9 +407,9 @@ impl Helper {
 		match intent.kind() {
 			"reminders.streak" => {
 				let on = on()?;
-				self.settings.reminders.streak_on = on;
+				self.desk.settings.reminders.streak_on = on;
 				if on {
-					self.settings.reminders.offered = true;
+					self.desk.settings.reminders.offered = true;
 					self.streak_armed();
 				}
 				log::info!("reminders: the streak reminder {}", if on { "on" } else { "off" });
@@ -419,12 +421,12 @@ impl Helper {
 					.and_then(|m| u16::try_from(m).ok())
 					.filter(|&m| i64::from(m) < DAY_S / 60)
 					.ok_or("reminders.time takes at, minutes after midnight")?;
-				self.settings.reminders.streak_at = Some(at);
+				self.desk.settings.reminders.streak_at = Some(at);
 				self.streak_armed();
 			}
 			"reminders.sitting" => {
 				let on = on()?;
-				self.settings.reminders.sitting_on = on;
+				self.desk.settings.reminders.sitting_on = on;
 				log::info!("reminders: the sitting cue {}", if on { "on" } else { "off" });
 			}
 			"reminders.quiet" => {
@@ -435,22 +437,22 @@ impl Helper {
 				let (Some(from), Some(to)) = (minute("from"), minute("to")) else {
 					return Err("reminders.quiet takes from and to".to_owned());
 				};
-				self.settings.offers.quiet_from_min = Some(from);
-				self.settings.offers.quiet_to_min = Some(to);
+				self.desk.settings.offers.quiet_from_min = Some(from);
+				self.desk.settings.offers.quiet_to_min = Some(to);
 			}
 			"reminders.cap" => {
 				let most = self.remind_tunables().ok_or("no reminders on this computer")?.cap_max;
 				let cap = intent.arg("cap").and_then(Value::as_u64).and_then(|c| u32::try_from(c).ok());
 				let cap = cap.filter(|c| (1..=most).contains(c));
-				self.settings.offers.cap = Some(cap.ok_or("reminders.cap takes a cap from 1 to remind_cap_max")?);
+				self.desk.settings.offers.cap = Some(cap.ok_or("reminders.cap takes a cap from 1 to remind_cap_max")?);
 			}
 			"reminders.offered" => {
-				self.settings.reminders.offered = true;
+				self.desk.settings.reminders.offered = true;
 				self.reminding.offer_due = false;
 			}
 			_ => return Err(intent.unknown()),
 		}
-		self.save_settings();
+		self.desk.save_settings();
 		self.publish_reminders();
 		Ok(())
 	}

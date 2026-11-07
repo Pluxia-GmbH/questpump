@@ -77,6 +77,11 @@ const LINK_PREFIX: &str = "questpump-link:1:";
 const REQUEST_WORD: &str = "req";
 /// The kind of this computer in the account (`Kind` of the contract).
 pub const DESKTOP: &str = "desktop";
+/// The kind of a browser at play.questpump.com in the account (docs/plan.md slice 63).
+pub const WEB: &str = "web";
+/// The page a browser's request code is a link to (docs/plan.md slice 63; contract/sync-api.yaml, "Linking a device by
+/// a code"): a phone's camera opens it in the phone app, and the fragment never reaches the server.
+const LINK_PAGE: &str = "https://questpump.com/link#";
 
 /// Crockford's base32 symbols, and its check symbols after them (the restore code).
 const CROCKFORD: &[u8; 32] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -305,6 +310,16 @@ impl LinkCode {
 			return Some(Self::Request { id: bytes(id)?, key });
 		}
 		Some(Self::Account { account: bytes(first)?, r: bytes(second)? })
+	}
+
+	/// The code as a browser shows it: a request as the link a phone's camera opens in the phone app,
+	/// `https://questpump.com/link#req.<r>.<P>`, which the phones read as they read the code; an account's code as it is.
+	#[must_use]
+	pub fn to_link(&self) -> String {
+		match self {
+			Self::Request { id, key } => format!("{LINK_PAGE}{REQUEST_WORD}.{}.{}", text(id), text(key)),
+			Self::Account { .. } => self.to_string(),
+		}
 	}
 }
 
@@ -654,6 +669,14 @@ pub struct Account {
 	/// generation past the one it was made from drops it, so an answer lost on the way never loses the account. It
 	/// stays through a removal and a join of the same account with the same R, never through another R or account.
 	pub next_r: Option<String>,
+	/// The account a browser's Save made (docs/plan.md slice 63), until an email holds it: a join of the email's own
+	/// account deletes it once its rows went there. Never set on the desktop app.
+	pub guest: bool,
+	/// The token of that account once a join of the email's own account left it: kept through every join, removal
+	/// and leaving of the account this device holds until its `DELETE /account` answered, so a run that ends first
+	/// deletes it at the next start; a browser's Sign out or wipe tries it once and drops it. A secret as the token
+	/// is, never set on the desktop app (whose secret store holds no such item).
+	pub throwaway: Option<String>,
 }
 
 impl Default for Account {
@@ -677,6 +700,8 @@ impl Default for Account {
 			device_secret: None,
 			key_kid: None,
 			next_r: None,
+			guest: false,
+			throwaway: None,
 		}
 	}
 }
@@ -726,6 +751,7 @@ impl Account {
 			address: self.address.take().filter(|_| email && same),
 			device_secret: self.device_secret.take(),
 			next_r: self.next_r.take().filter(|_| same_r),
+			throwaway: self.throwaway.take(),
 			..Self::default()
 		};
 		(self.account, self.r, self.device, self.token, self.email) =
@@ -735,7 +761,12 @@ impl Account {
 	/// The account deleted from this computer (`DELETE /account` answered 204): Sync off, the account, R and the
 	/// token gone, every row and this computer's own key kept; Sync turned on again starts a new account.
 	pub fn left(&mut self) {
-		*self = Self { on: false, device_secret: self.device_secret.take(), ..Self::default() };
+		*self = Self {
+			on: false,
+			device_secret: self.device_secret.take(),
+			throwaway: self.throwaway.take(),
+			..Self::default()
+		};
 	}
 
 	/// Out of the account but still holding it: signed out here (`DELETE /session` answered 204), removed by another
@@ -746,14 +777,20 @@ impl Account {
 	/// no longer opens tries next (its 204 may have been lost).
 	pub fn removed(&mut self) {
 		let (account, r, address) = (self.account.take(), self.r.take(), self.address.take());
-		let (device_secret, next_r) = (self.device_secret.take(), self.next_r.take());
-		*self = Self { on: false, account, r, address, device_secret, next_r, ..Self::default() };
+		let (device_secret, next_r, throwaway) = (self.device_secret.take(), self.next_r.take(), self.throwaway.take());
+		*self = Self { on: false, account, r, address, device_secret, next_r, throwaway, ..Self::default() };
 	}
 
 	/// The account is gone (`POST /session` answered 404 for the account this computer holds): forgotten with its R,
-	/// Sync's switch and this computer's own key kept, so a switch that is on makes a new account at once.
+	/// Sync's switch, this computer's own key and the token of an account a browser's Save made that is still to go
+	/// kept, so a switch that is on makes a new account at once.
 	pub fn gone(&mut self) {
-		*self = Self { on: self.on, device_secret: self.device_secret.take(), ..Self::default() };
+		*self = Self {
+			on: self.on,
+			device_secret: self.device_secret.take(),
+			throwaway: self.throwaway.take(),
+			..Self::default()
+		};
 	}
 
 	/// Whether this computer is in an account: it holds one and a token for it, whatever Sync's switch says.

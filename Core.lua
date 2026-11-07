@@ -57,6 +57,11 @@ ns.Enum = {
 	-- a rep or hold row's bits 14-15 (slice 48's double-check; ns.Answer, which no rep or hold row used): `set.warm` the
 	-- easy set of a match pump's warm move (Engine.lua dose), which the fold counts as no fresh set (DB.lua applyRow)
 	set = { warm = 1 },
+	-- an app pump's offered row's bits 14-15 (slice 63; ns.Answer, which no pump row used): `by.browser` a pump a
+	-- browser ran at play.questpump.com, whose rows carry the phone's bit beside the app's, so the Sagas of the desktop
+	-- app, the browser and the phones say "in a browser" (contract/fixtures/rows.json `codes.by`); 0 any other. No game
+	-- file reads it: the game reads the pump as the phone's (ns.Source)
+	by = { browser = 1 },
 	-- a hold row's reps (slice 52): the answer to "Could you have held longer?" after a fresh set near its goal on a
 	-- hold ladder of the Stamina Ledger (ns.HoldAsk), 0 not asked; the ask lists them in this order, keys 1-3 the codes
 	longer = { no = 1, little = 2, lot = 3 },
@@ -195,7 +200,8 @@ end
 
 -- A cardio move row's answer after the move, bits 14-15 (2026-10-16, slice 42; the strip carries the row's 16 bits):
 -- ns.Enum.answer on a counted set, ns.Enum.pace on a steady move; 0 none. A rep or hold row's are ns.Enum.set (slice
--- 48's double-check: a warm move's easy set). WithAnswer sets it in place of any.
+-- 48's double-check: a warm move's easy set), an app pump's offered row's ns.Enum.by (slice 63). WithAnswer sets it in
+-- place of any.
 local ANSWER = 2 ^ 14
 
 function ns.Answer(flags)

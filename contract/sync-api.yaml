@@ -8,8 +8,8 @@ info:
   description: |
     One sync for every device of a player and the optional email link (docs/plan.md slice 60, decided by David on
     2026-10-30; the research: docs/research/account-sync-2026-10-30.html), and since slice 64 the account's Pro. The
-    Worker `questpump-sync` serves it on questpump.com and www.questpump.com (`site/sync/`); the iPhone app, the
-    Android app, the desktop app and, since slice 63, a browser at questpump.com/play call it. The watches never call
+    Worker `questpump-sync` serves it on questpump.com (`site/sync/`); the iPhone app, the
+    Android app, the desktop app and, since slice 63, a browser at play.questpump.com call it. The watches never call
     it: they ride their phones. The game never calls it: it has no network, and the desktop app writes what it takes
     in into each install's mirror.
 
@@ -45,10 +45,15 @@ info:
     with a token that does not verify, or whose keys Google did not serve, is taken as one without, under the tighter
     limits below: App Check sets only the limits, never who may sync, so it never answers 401.
 
-    **Origins.** The apps, Paddle and Apple send no `Origin`; questpump.com/delete and a browser at questpump.com/play
-    send `https://questpump.com` or `https://www.questpump.com`, which every route takes as it takes none. A request
-    with any other `Origin` answers 403, but the live socket's upgrade, which a token alone opens. A browser is a device
-    of kind `web` with the desktop app's limits.
+    **Origins.** The apps, Paddle and Apple send no `Origin`; questpump.com/delete sends `https://questpump.com` and a
+    browser at play.questpump.com (slice 63, its own origin) `https://play.questpump.com`, which every route takes as it
+    takes none. The browser's calls are cross-origin, so for that origin alone every route answers CORS: a preflight
+    (`OPTIONS`) with 204, `Access-Control-Allow-Origin` its origin, `Access-Control-Allow-Methods` the route's methods,
+    `Access-Control-Allow-Headers: authorization, content-type` and `Access-Control-Max-Age: 7200`, and every answer to
+    it with `Access-Control-Allow-Origin` its origin and `Access-Control-Expose-Headers: retry-after` (a preflight from
+    any other origin answers 403). A request with any other `Origin` answers 403, the live socket's upgrade too (the
+    apps open it with none, the browser with its own). A browser is a device of kind `web` with the desktop app's
+    limits.
 
     **Limits.** Every route has a rate limit per address (an IPv6 address by its /64): 60 requests a minute with an App
     Check token, 20 without; the link answer's `GET`, which a computer without a token repeats every 2 s, is counted on
@@ -104,7 +109,8 @@ info:
 
     **Linking a device by a code.** A device with R shows `questpump-link:1:<account>:<R>` (both base64url without
     padding) as a QR; a phone scans it with the pairing's scanner. A device without R and without a camera (a computer)
-    makes a P-256 key pair for each request, its secret d kept on that device alone (a browser's non-extractable), and
+    makes a P-256 key pair for each request, its secret d kept on that device alone (a browser's in its Worker's memory
+    while the request stands, never written), and
     shows `questpump-link:1:req:<r>:<P>` (r 16 random bytes, P the public key in SEC1's compressed form, 33 bytes, both
     base64url without padding); a browser (docs/plan.md slice 63) shows the same request as a link,
     `https://questpump.com/link#req.<r>.<P>`, which a phone's camera opens in the phone app (the universal link and the
@@ -173,7 +179,8 @@ info:
       uncompressed (65 bytes); `mac` HMAC-SHA256 under HKDF-SHA256(R, salt empty, info `questpump sync device v1`, 32
       bytes) over 81 bytes, the device id's 16 then the key's 65, with no length or separator; `kid` R's kid; all three
       base64url without padding. Its secret stays on the device alone and never syncs (a keychain or keystore item of
-      that device only; a browser's non-extractable key), and the device keeps the same pair under each new R. The
+      that device only; a browser's in its data folder beside R, docs/plan.md slice 63, "Where the browser keeps its
+      secrets"), and the device keeps the same pair under each new R. The
       server checks that the key is a point of the curve and keeps the three beside the device in place of any before;
       it cannot check the MAC, which only a holder of R can make, and every device checks it before it wraps to the key.
       Once a rekey named the account's kid, a `kid` other than it answers 409 `kid`.
@@ -776,7 +783,9 @@ components:
       type: string
       enum: [ios, android, desktop, web]
       description: >-
-        The kinds the server takes; `web` a browser's, at questpump.com/play (slice 63). A device reads a kind it does
+        The kinds the server takes; `web` a browser's, at play.questpump.com (slice 63: its rows carry the phone's
+        bit 7 beside the app's, its pumps' offered rows `codes.by.browser` in bits 14-15, contract/fixtures/rows.json).
+        A device reads a kind it does
         not know (a newer client's) as a device of no known kind, listed and removable all the same, so a new kind
         never fails `GET /devices` or `POST /signin`.
     NewAccount:

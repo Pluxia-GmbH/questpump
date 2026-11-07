@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 34, "pitch": 8},
   "working": ["thigh"],
-  "ballistic": true,
+  "ballistic": ["punch_across"],
   "poses": {
     "tall": {
       "pelvis": [4, 94.6, 0],
@@ -37,13 +37,13 @@
     {"to": "squat", "s": 1.0, "phase": "squat", "effort": 0.5},
     {"hold": 0.15, "phase": "bottom", "effort": 0.7},
     {"to": "tall", "s": 0.8, "phase": "stand_up", "effort": 0.8},
-    {"to": "punch_far", "s": 0.22, "ease": "out", "phase": "punch_across", "effort": 1.0},
+    {"to": "punch_far", "s": 0.3, "ease": "out", "phase": "punch_across", "effort": 1.0},
     {"hold": 0.12, "phase": "punch_across", "effort": 1.0},
     {"to": "tall", "s": 0.45, "phase": "punch_across", "effort": 0.5},
     {"to": "squat", "s": 1.0, "phase": "squat", "effort": 0.5},
     {"hold": 0.15, "phase": "bottom", "effort": 0.7},
     {"to": "tall", "s": 0.8, "phase": "stand_up", "effort": 0.8},
-    {"to": "punch_near", "s": 0.22, "ease": "out", "phase": "punch_across", "effort": 1.0},
+    {"to": "punch_near", "s": 0.3, "ease": "out", "phase": "punch_across", "effort": 1.0},
     {"hold": 0.12, "phase": "punch_across", "effort": 1.0},
     {"to": "tall", "s": 0.45, "phase": "punch_across", "effort": 0.5}
   ],

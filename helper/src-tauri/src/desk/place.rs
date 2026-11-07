@@ -9,7 +9,7 @@
 //! window, or one in its own full screen, keeps the place it had before. No window-state plugin: it would show and
 //! focus a restored window, write only at the app's exit and keep its file in a second folder.
 
-use serde::{Deserialize, Serialize};
+use questpump_desk::settings::Place;
 use tauri::{AppHandle, LogicalPosition, Monitor, PhysicalPosition, Position, Runtime, WebviewWindow};
 
 /// A share of one side of a screen's work area, held between two sizes, in logical pixels.
@@ -44,22 +44,6 @@ const OLD: (f64, f64) = (520.0, 760.0);
 /// The least size, where the work area allows it.
 const MIN_WIDTH: f64 = 480.0;
 const MIN_HEIGHT: f64 = 600.0;
-
-/// Where the window stood: its outer position and its screen's position in the desktop's units, its inner size in
-/// logical pixels, its screen's name and whether it was maximized (the size and position then are the ones it had
-/// before).
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub(crate) struct Place {
-	pub(crate) x: i32,
-	pub(crate) y: i32,
-	pub(crate) width: f64,
-	pub(crate) height: f64,
-	/// The screen's name and position, which tell it apart from another of the same name.
-	pub(crate) monitor: Option<String>,
-	pub(crate) monitor_x: i32,
-	pub(crate) monitor_y: i32,
-	pub(crate) maximized: bool,
-}
 
 /// How a new window stands: its inner size, its outer position (none without any screen listed: the config's `center`)
 /// and whether it opens maximized.

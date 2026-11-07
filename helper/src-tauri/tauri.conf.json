@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "QuestPump",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "identifier": "ai.pluxia.questpump.bridge",
   "build": { "frontendDist": "../dist" },
   "app": {

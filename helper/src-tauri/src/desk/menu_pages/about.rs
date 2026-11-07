@@ -1,8 +1,7 @@
 //! QuestPump's group of the Menu on the computer (docs/ui.md, "The Menu on the computer" and "Pro on the computer"):
-//! Safety and about (who makes QuestPump and where, the not-a-medical-device line, the contact for questions and
-//! injuries, Riot's line, the privacy, imprint and security pages, the version), the safety note the apps' listings
-//! carry (the addon's own words, `contract/sheet.json`), How the heart-rate check works (the verdict rule in words, its
-//! numbers `questpump_core::verdict`'s own), what QuestPump does and does not do on this computer, the
+//! Safety and about and the safety note (the desk's, `questpump_desk::menu_pages::about`, which the browser shows too),
+//! How the heart-rate check works (the verdict rule in words, its numbers `questpump_core::verdict`'s own, in the same
+//! topic), with the desktop app's own parts: what QuestPump does and does not do on this computer, the
 //! Acknowledgements (`contract/design/acknowledgements.json`: the fonts and the sounds; the code the app builds in: the
 //! engine's `NOTICES` (Lua 5.1.5, mlua and lua-src), the sound's (`desk::audio::NOTICES`: Symphonia under the MPL 2.0)
 //! and every Rust crate's licence texts (`helper/notices/crates.txt`, written by `helper/tools/notices.py`)), and the
@@ -31,40 +30,20 @@
 //! credited sound pack's, in the system's browser).
 
 use std::path::PathBuf;
-use std::sync::LazyLock;
 
 use questpump_core::games::{Watched, computer_links};
-use questpump_core::{pair, verdict};
+use questpump_core::pair;
+use questpump_desk::menu_pages::about::{About, CREDITS, page_url};
 use serde::Serialize;
 use serde_json::Value;
 
-use super::{ABOUT, ACKNOWLEDGEMENTS};
+use super::ACKNOWLEDGEMENTS;
 use crate::desk::Intent;
-use crate::desk::facts::facts;
-use crate::runtime::{Helper, ProState};
-
-/// The site's pages Safety and about opens (`apple/iOS/Site.swift`'s and Android's twins) and the privacy page's parts
-/// the Menu's pages link to (a game without QuestPump gets the addon from QuestPump itself: `runtime/addon.rs`).
-const PAGES: [(&str, &str); 5] = [
-	("privacy", "https://questpump.com/privacy"),
-	// the privacy page's "How each is used": the policy's part on crash reports and usage statistics
-	("telemetry", "https://questpump.com/privacy#telemetry"),
-	// its "Sync between your devices", the Email page's Privacy row (slice 60)
-	("sync", "https://questpump.com/privacy#sync"),
-	("imprint", "https://questpump.com/imprint"),
-	("security", "https://questpump.com/security"),
-];
-/// Questions, problems and injuries to report: the imprint's address, the EU product-safety contact (GPSR Art. 19).
-const CONTACT: &str = "contact@questpump.com";
+use crate::runtime::Helper;
 
 /// The licence texts of every Rust crate the app builds in, grouped by text, as `helper/tools/notices.py` writes them
 /// from Cargo.lock (its `--check` fails in CI while they are stale).
 const CRATES: &str = include_str!("../../../../notices/crates.txt");
-
-/// The fonts, the sounds and the licences' texts as `tools/ledger.py` writes them for every app.
-static CREDITS: LazyLock<Value> = LazyLock::new(|| {
-	serde_json::from_str(include_str!("../../../../../contract/design/acknowledgements.json")).unwrap_or_default()
-});
 
 /// What QuestPump does on this computer.
 #[derive(Serialize)]
@@ -101,40 +80,6 @@ struct Does {
 	steam: Vec<String>,
 }
 
-/// The verdict rule's numbers How the heart-rate check works words (`views/menu/about.js`; the phones read their cores'
-/// `VerdictRule`), so the page never drifts from the rule.
-#[derive(Serialize)]
-struct Heart {
-	/// The seconds before the pump whose median heart rate is the baseline.
-	before: u16,
-	/// The seconds after a move's start in which the rise must show.
-	window: u16,
-	/// The rise in beats a minute a move of reps or a timed one needs, and the one a hold or a stretch needs.
-	reps: u16,
-	hold: u16,
-	/// The seconds after the set a move the hands hold up is judged on, with a watch.
-	after: u16,
-}
-
-#[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "the rule's windows are whole seconds")]
-const HEART: Heart = Heart {
-	before: verdict::BASELINE_S as u16,
-	window: verdict::WINDOW_S as u16,
-	reps: verdict::DYNAMIC_BPM,
-	hold: verdict::ISO_BPM,
-	after: verdict::AFTER_SET_S as u16,
-};
-
-#[derive(Serialize)]
-struct Topic<'a> {
-	version: &'static str,
-	pro: Option<ProState>,
-	safety: &'a str,
-	contact: &'static str,
-	heart: Heart,
-	does: Does,
-}
-
 #[derive(Serialize)]
 struct Credits<'a> {
 	fonts: &'a Value,
@@ -143,27 +88,6 @@ struct Credits<'a> {
 	engine: &'static str,
 	audio: &'static str,
 	crates: &'static str,
-}
-
-/// The address `about.open` names: one of the site's `PAGES` (`page`), or a credited sound pack's page (`asset`, its
-/// place in the Acknowledgements' list), never an address the page hands over.
-fn page_url(intent: &Intent) -> Result<&'static str, String> {
-	if let Some(asset) = intent.arg("asset").and_then(Value::as_u64) {
-		let at = usize::try_from(asset).map_err(|e| e.to_string())?;
-		return CREDITS
-			.get("assets")
-			.and_then(|assets| assets.get(at))
-			.and_then(|a| a.get("page"))
-			.and_then(Value::as_str)
-			.filter(|url| url.starts_with("https://"))
-			.ok_or_else(|| format!("about.open: no asset {at}"));
-	}
-	let page = intent.arg("page").and_then(Value::as_str).ok_or("about.open takes page or asset")?;
-	PAGES
-		.iter()
-		.find(|(name, _)| *name == page)
-		.map(|(_, url)| *url)
-		.ok_or_else(|| format!("about.open: no page {page}"))
 }
 
 /// Opens a page in the system's browser (also Pro's page's Get Pro and Manage Pro, `runtime/pro.rs`), and on macOS a
@@ -200,8 +124,8 @@ impl Helper {
 
 	/// `menu.about` as it stands: at the start, when Pro's state changes (`runtime/pro.rs`) and at the page's look.
 	pub(crate) fn publish_about(&self) {
-		let games = &self.settings.games;
-		let watched = self.games.as_ref().map(|g| g.watched(games)).unwrap_or_default();
+		let games = &self.desk.settings.games;
+		let watched = self.desk.p.games.as_ref().map(|g| g.watched(games)).unwrap_or_default();
 		let named = watched.iter().map(|w| w.name().to_owned()).collect();
 		let path = |p: &PathBuf| p.display().to_string();
 		// the named games watched (the Games tab's on tiles) whose feed QuestPump hears, by how it hears them (its
@@ -218,7 +142,7 @@ impl Helper {
 		};
 		let does = Does {
 			data: path(&self.dir),
-			mirror: self.followed.as_ref().map(|a| path(&a.join(questpump_core::mirror::FOLDER))),
+			mirror: self.desk.p.followed.as_ref().map(|a| path(&a.join(questpump_core::mirror::FOLDER))),
 			games: named,
 			files: games.written.iter().filter(|f| !f.shared).map(|f| path(&f.path)).collect(),
 			added: games.written.iter().filter(|f| f.shared).map(|f| path(&f.path)).collect(),
@@ -237,15 +161,8 @@ impl Helper {
 				.map(|w| w.name().to_owned())
 				.collect(),
 		};
-		let topic = Topic {
-			version: env!("CARGO_PKG_VERSION"),
-			pro: self.pro_state(),
-			safety: &facts().sheet.safety,
-			contact: CONTACT,
-			heart: HEART,
-			does,
-		};
-		self.publish(ABOUT, &topic);
+		let topic = About::new(env!("CARGO_PKG_VERSION"), self.pro_state(), Some(does));
+		self.publish(questpump_desk::menu_pages::about::ABOUT, &topic);
 	}
 
 	/// `menu.acknowledgements`, once at the start: what the app ships with and their makers.

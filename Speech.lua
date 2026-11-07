@@ -22,7 +22,8 @@ ns.Speech = Speech
 local PATH = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Voice\\"
 
 -- A move's guide, the parts the Ready view shows under How and Tips (Locales/enUS.lua, guide()), in
--- Media/Voice/guide/: each line of a part a take of its own, "<part>.<key>.<n>" (n its row on the card, from 1), cut
+-- Media/Voice/guide/: each line of a part a take of its own, "<part>.<key>.<n>" (n its row on the card, from 1), or the
+-- take of another guide line that says the same words (ns.VoiceFiles, VoiceClips.lua; 2026-11-05), cut
 -- from one recording of the part so the voice keeps its flow (tools/voice/voice.mjs; 2026-10-10, so a line said over
 -- the guide pauses it at a line and a pause resumes there); a part written for the implement that carries the move's
 -- load (Locales/enUS.lua implement(), 2026-10-09: the dumbbell's steps, not the bag's) has takes of its own,
@@ -163,9 +164,11 @@ local function nowPlaying(handle, id)
 end
 
 -- Plays a take on the Dialog channel (the player's voice volume): true and its handle, or false, nil and why the client
--- did not play it (a key of `speech.silent`'s reasons, or nil), logged.
+-- did not play it (a key of `speech.silent`'s reasons, or nil), logged. A guide's line that says another guide line's
+-- words plays that line's take (ns.VoiceFiles: one take a sentence since 2026-11-05, tools/voice/voice.mjs).
 local function play(id)
-	local willPlay, handle = PlaySoundFile(PATH .. (id:gsub("/", "\\")) .. ".ogg", "Dialog")
+	local file = ns.VoiceFiles[id] or id
+	local willPlay, handle = PlaySoundFile(PATH .. (file:gsub("/", "\\")) .. ".ogg", "Dialog")
 	if willPlay then return true, handle end
 	local why = Speech.Silence()
 	ns.Log("W", "voice %s did not play: %s", id, why or "the client refused the file")

@@ -1,5 +1,5 @@
 // The Saga on the computer (the Log's place under its players' name since 2026-10-15; docs/ui.md, "The Saga"; board
-// A-Day; the phones' LogTab), from `log` (desk/log.rs, desk/saga.rs) and `book.words` (the moves' words, the qualities,
+// A-Day; the phones' LogTab), from `log` (questpump-desk/src/log.rs, questpump-desk/src/saga.rs) and `book.words` (the moves' words, the qualities,
 // the muscles, the felt-unwell word) with the body's figure from `book`: the root's TopBar with the compact gold Share
 // today before the gear (the Share window on today's Saga card; none while today has no move), today's chapter
 // (views/log/chapter.js: the hero, its tiles and its pumps, each pump opening its page), with Pro "Your weeks" (each
@@ -96,6 +96,7 @@ const SOURCE = {
 	phone: () => t("log.source.phone"),
 	watch: () => t("log.source.watch"),
 	computer: () => t("log.source.computer"),
+	web: () => t("log.source.web"),
 };
 
 /** Where a pump came from, in the words' order: its source, then the watch or a computer where a catch-up ran there. */

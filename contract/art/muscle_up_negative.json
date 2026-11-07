@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 40, "pitch": 4},
   "working": ["upper_arm", "pauldron", "back", "chest"],
-  "ballistic": true,
+  "ballistic": ["quarter_down", "jump"],
   "props": [{"kind": "bar", "f": 8, "u": 186, "ground": true}, {"kind": "step", "f0": -48, "f1": 18, "u": 60}],
   "poses": {
     "stand": {
@@ -120,14 +120,14 @@
     {"to": "push", "s": 0.12, "phase": "jump", "effort": 0.9, "dynamic": true, "ease": "in"},
     {"to": "high", "s": 0.22, "phase": "jump", "effort": 0.9, "dynamic": true, "ease": "out"},
     {"to": "turn", "s": 0.25, "phase": "jump", "effort": 0.9, "dynamic": true},
-    {"to": "support", "s": 0.5, "phase": "press", "effort": 0.8},
+    {"to": "support", "s": 0.8, "phase": "press", "effort": 0.8},
     {"hold": 0.4, "phase": "lockout", "effort": 0.7},
-    {"to": "turn", "s": 2.4, "phase": "lower_slowly", "effort": 1.0},
-    {"to": "high", "s": 1.6, "phase": "lower_slowly", "effort": 0.9},
-    {"to": "touch", "s": 0.7, "phase": "land_softly", "effort": 0.6},
+    {"to": "turn", "s": 1.6, "phase": "lower_slowly", "effort": 1.0},
+    {"to": "high", "s": 2.35, "phase": "lower_slowly", "effort": 0.9},
+    {"to": "touch", "s": 1.1, "phase": "land_softly", "effort": 0.6},
     {"to": "stand", "s": 0.5, "phase": "land_softly", "effort": 0.5}
   ],
-  "key": 4.45,
+  "key": 3.98,
   "fault": {
     "pose": "wing",
     "caption": "one_elbow_first",

@@ -545,10 +545,6 @@ qp-card.qp-trains qp-muscle-map {
 	color: var(--qp-color-text2);
 }
 
-.qp-nowrap {
-	white-space: nowrap;
-}
-
 .qp-duo-ladder {
 	grid-area: lad;
 	align-self: end;

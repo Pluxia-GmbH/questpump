@@ -259,16 +259,8 @@ pub enum Ask {
 	Account { put: Option<(String, [u8; sync::ROOT])>, done: oneshot::Sender<Option<AccountState>> },
 }
 
-/// The desktop app's sync account as `/v1/account` answers it (slice 60): none of it while its Sync is off or it has
-/// no account yet.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct AccountState {
-	pub account: Option<String>,
-	pub r: Option<String>,
-	/// The account's devices, this computer among them.
-	pub devices: u32,
-	pub email: bool,
-}
+/// The desktop app's sync account as `/v1/account` answers it (slice 60), the desk's (`questpump_desk::sync`).
+pub use questpump_desk::sync::AccountState;
 
 /// What the loop answers a sync with, for every response of the exchange (plain ones too): what it took of this
 /// request. The offer facts the response carries are the loop's as the response leaves (`OfferFacts`).
@@ -279,7 +271,7 @@ pub struct SyncAnswer {
 	/// again.
 	pub rows_store: Option<String>,
 	/// The pump ids of the catch-ups among the request's new events whose moves the loop held for the game (while a
-	/// World of Warcraft client with QuestPump ran as it took them, `Helper::wow_with_addon`), kept with each taken
+	/// World of Warcraft client with QuestPump ran as it took them, `Desk::wow_with_addon`), kept with each taken
 	/// event (`Link::game_held`).
 	pub game_held: Vec<String>,
 }
@@ -296,7 +288,7 @@ pub struct OfferFacts {
 	pub offer_withdrawn: Vec<String>,
 	/// A game the player turned on in QuestPump on the computer is in a match (slice 35).
 	pub playing: bool,
-	/// An aim game with its arms rest on runs on the computer (slice 48's double-check, `Helper::arms_now`).
+	/// An aim game with its arms rest on runs on the computer (slice 48's double-check, `Desk::arms_now`).
 	pub arms: bool,
 	/// The latest game offer on any device, unix seconds (slice 35).
 	pub game_offer_at: Option<i64>,
@@ -325,7 +317,7 @@ type Told = (GameShown, Early);
 /// of the game.
 struct Shown {
 	helper: link::Helper,
-	/// A World of Warcraft client with QuestPump runs (`Helper::wow_with_addon`, through `Lan::set_game`): every sync
+	/// A World of Warcraft client with QuestPump runs (`Desk::wow_with_addon`, through `Lan::set_game`): every sync
 	/// response's `game_asks` as it leaves (slice 35), while which the devices offer no catch-up and no Skip.
 	asks: bool,
 	/// The offer facts as the loop last told them (`Lan::set_offers`).

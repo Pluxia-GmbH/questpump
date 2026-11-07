@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 16, "pitch": 8},
   "working": ["thigh", "shin"],
-  "ballistic": true,
+  "ballistic": ["jump_forward", "land_softly"],
   "poses": {
     "squat": {
       "pelvis": [-14, 48, 0],
@@ -88,12 +88,12 @@
     {"to": "air", "s": 0.26, "ease": "out", "phase": "jump_forward", "effort": 1.0},
     {"to": "land", "s": 0.28, "ease": "in", "phase": "land_softly", "effort": 0.8},
     {"to": "deep", "s": 0.3, "phase": "land_softly", "effort": 0.7},
-    {"to": "stand", "s": 0.6, "phase": "stand", "effort": 0.3},
+    {"to": "stand", "s": 1.0, "phase": "stand", "effort": 0.3},
     {"to": "step_back", "s": 0.3, "phase": "step_back", "effort": 0.2},
     {"to": "stepped", "s": 0.3, "phase": "step_back", "effort": 0.2},
     {"to": "step_back_2", "s": 0.3, "phase": "step_back", "effort": 0.2},
     {"to": "home", "s": 0.3, "phase": "step_back", "effort": 0.2},
-    {"to": "squat", "s": 0.7, "phase": "squat_deep", "effort": 0.5}
+    {"to": "squat", "s": 1.0, "phase": "squat_deep", "effort": 0.5}
   ],
   "key": "air"
 }

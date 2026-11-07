@@ -1,5 +1,5 @@
 // Hero on the computer (docs/ui.md, "Hero, the Book and the Log"; slice 30's Hero, iOS SheetTab, Android's twin), from
-// the `hero` topic (helper/src-tauri/src/desk/hero.rs): the header beside the Portrait (the name with its title in the
+// the `hero` topic (helper/crates/questpump-desk/src/hero.rs): the header beside the Portrait (the name with its title in the
 // game's grammar, on the app's own sheet with a title earned a button that opens the title window; the level line that
 // opens the level's page; the beast), the chips row (whose sheet it is, the game's with its age or the app's own pumps,
 // which opens This computer; the focus, which opens the focus window; the streak while one runs, which opens the
@@ -15,7 +15,7 @@
 import {intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {LOCALE, time} from "../../lib/format.js";
-import {openMenu, push, register} from "../../lib/router.js";
+import {openMenu, push, register, registered} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {reportButton} from "../menu/menu.js";
 import {page, watch, words} from "../page.js";
@@ -118,7 +118,10 @@ register("hero", () => {
 	const beast = words("", "meta");
 	const header = h("div", {class: "qp-hero-head"}, h("qp-portrait"),
 		h("div", {class: "qp-hero-lines"}, name, level.el, beast));
-	const source = h("qp-chip", {button: true, state: "source", "on:click": () => openMenu("desk.menu.computer")});
+	// where the sheet comes from, opening This computer where it stands (a plain chip in the browser, which has none)
+	const opens = registered("desk.menu.computer");
+	const source = h("qp-chip", {button: opens, state: "source",
+		"on:click": () => opens && openMenu("desk.menu.computer")});
 	const focus = h("qp-chip", {button: true, state: "focus"});
 	const streak = h("qp-chip", {button: true, state: "plain", glyph: "mark_check", hint: t("pump.streak.open"),
 		"on:click": () => push("desk.streak")});

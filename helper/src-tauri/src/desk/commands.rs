@@ -14,11 +14,11 @@
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use questpump_desk::publisher::{Boot, Msg, Sink};
 use tauri::ipc::{Channel, InvokeBody, Request};
 use tauri::{AppHandle, Manager as _, State, Webview};
 use tokio::sync::oneshot;
 
-use super::state::{Boot, Msg};
 use super::windows::MAIN;
 use super::{Desk, DeskAsk, Intent, reel};
 use crate::copy;
@@ -44,7 +44,17 @@ const IMAGE_NAME: &str = "x-qp-name";
 #[tauri::command]
 #[expect(clippy::needless_pass_by_value, reason = "Tauri hands a command its arguments by value")]
 pub fn desk_subscribe(on: Channel<Msg>, webview: Webview, desk: State<'_, Desk>) -> Boot {
-	desk.publisher.subscribe(webview.label(), on)
+	let id = on.id();
+	desk.publisher.subscribe(webview.label(), id, std::sync::Arc::new(Page(on)))
+}
+
+/// A webview's channel as the publisher's sink.
+struct Page(Channel<Msg>);
+
+impl Sink for Page {
+	fn send(&self, msg: Msg) -> bool {
+		self.0.send(msg).is_ok()
+	}
 }
 
 /// An intent (`{"type": "<area>.<what>", ...}`), answered once its area's handler took it.

@@ -38,8 +38,8 @@
 //! the grants it gives go into `pro.json` on the writer thread with the account's token from the sync server
 //! (`runtime/pro.rs`, slices 35 and 64). The addon's own engine
 //! folds every row once at the start, off the loop, and takes the rows from elsewhere after every change the session
-//! makes, behind one ordered door whose answers come back to the loop (`desk/engine.rs`, slice 35); a pump on the
-//! computer keeps its clock in the loop too, its next instant one more arm of the select (`desk/pump.rs`), and a pump
+//! makes, behind one ordered door whose answers come back to the loop (`questpump-desk/src/engine.rs`, slice 35); a pump on the
+//! computer keeps its clock in the loop too, its next instant one more arm of the select (`questpump-desk/src/pump.rs`), and a pump
 //! the game offers on the strip ends it. Every failure stops only its own part: the mirror, the pairing and the LAN API
 //! keep running without a capture, a strap, a pad, a game's feed or the engine.
 
@@ -60,13 +60,16 @@ use questpump_core::mirror::{self, Sight, State};
 use questpump_core::offers::{self, Standing};
 use questpump_core::pair;
 use questpump_core::proof::{Book, HrSource};
-use questpump_core::protocol::{Command, ErrorCode, Line, PadEventKind, SocketCommand};
+use questpump_core::protocol::{ErrorCode, Line, PadEventKind, SocketCommand};
 use questpump_core::session::{
 	BankPump, CatchupError, CatchupPump, Effects, MirrorDue, Now, PadDay, People, Session, Zone,
 };
 use questpump_core::sheets::{self, SheetLog};
 use questpump_core::store::Store;
 use questpump_core::strip::{DecodeError, SetupWord};
+use questpump_desk::engine::Door;
+use questpump_desk::platform::FoundGame;
+use questpump_engine::Clock;
 use tauri::{AppHandle, Manager as _};
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 
@@ -74,18 +77,14 @@ use crate::blelink::Heard;
 use crate::bluetooth::{self, Ble, Kind, PadCommand, Want};
 use crate::capture::{Capture, Event};
 use crate::desk::audio::Audio;
-use crate::desk::book::BookLog;
-use crate::desk::engine::Door;
-use crate::desk::home::Home;
 use crate::desk::launch::Launch;
-use crate::desk::menu_pages::MenuPages;
 use crate::desk::offers::Offering;
-use crate::desk::pump::{self, Pumps};
 use crate::desk::reminders::Reminding;
-use crate::desk::seams::FoundGame;
+use crate::desk::shell::{Out, Shell};
 use crate::desk::windows::{self as desk_windows, Landing};
+use crate::desk::{self, menu_pages};
 use crate::elevate::Outcome;
-use crate::game::{self, Game};
+use crate::game;
 use crate::games::procs::Snapshot;
 use crate::games::{self, Games};
 use crate::lan::{self, Ask, Lan, Links, SyncAnswer};
@@ -108,7 +107,7 @@ mod matches;
 mod outbox;
 mod pro;
 mod sitting;
-mod sync;
+pub(crate) mod sync;
 mod updates;
 mod usage;
 
@@ -119,8 +118,9 @@ use crash::Crash;
 use feedback::Feedback;
 use firewall::Firewall;
 use folder::Access;
-pub(crate) use pro::ProState;
-use sync::SyncState;
+pub(crate) use matches::arms_game;
+pub(crate) use pro::{Pro, ProState};
+use sync::SyncLink;
 
 const DEBOUNCE: Duration = Duration::from_secs(2);
 /// A batch that never pauses (a long hub) is written at the latest this long after its first row.
@@ -216,7 +216,7 @@ pub(crate) struct Swept {
 /// No data folder.
 pub(crate) fn sweep() -> anyhow::Result<Swept> {
 	let dir = data_dir()?;
-	let (mut settings, loaded, mut keeper) = Settings::load(&dir);
+	let (mut settings, loaded, mut keeper) = settings::load(&dir);
 	let asks = settings.crash.choice.send.is_none() || settings.usage.send.is_none();
 	let region = if asks && crate::crash::opt_in() { Region::OptIn } else { Region::Other };
 	let client = crate::feedback::client()
@@ -229,7 +229,7 @@ pub(crate) fn sweep() -> anyhow::Result<Swept> {
 	// the marks the sweep moved, kept before the rest of the start: a start that crashes before its own save never
 	// sends the same reports again; and the secrets out of the file into their store
 	if settings.crash != marks || keeper.moving() {
-		settings.save_now(&dir, &mut keeper);
+		settings::save_now(&settings, &dir, &mut keeper);
 	}
 	Ok(Swept { dir, settings, loaded, keeper, region, client, posts: (posts_tx, posts_rx), crash, crashed })
 }
@@ -379,7 +379,7 @@ pub(crate) struct Sighting {
 	/// When the strip last read, or the game started: a strip out of sight for a minute may be QuestPump turned off.
 	read_at: Option<Instant>,
 	/// A frame of the running client read since it started: QuestPump is on in it, so its strip out of sight later is
-	/// its window covered or a menu, never QuestPump turned off (`Helper::wow_unseen`), and this computer's state says
+	/// its window covered or a menu, never QuestPump turned off (`Desk::wow_unseen`), and this computer's state says
 	/// the game is out of view, never that QuestPump is waited for (`ui::RunningGame::read`). False again at a game
 	/// exit and for another client process (`Helper::on_game_tick`).
 	pub(crate) read: bool,
@@ -424,12 +424,11 @@ pub(crate) struct Served {
 }
 
 /// The loop's state; the desktop app's areas add their handlers as `impl Helper` blocks in `desk/`.
-#[expect(clippy::struct_excessive_bools, reason = "the loop's state: independent facts, never one state")]
 pub(crate) struct Helper {
 	pub(crate) app: AppHandle,
 	pub(crate) dir: PathBuf,
-	pub(crate) session: Session,
-	pub(crate) settings: Settings,
+	/// The desk: its areas' state, the stores and the settings, on the desktop app as its platform (`desk::shell`).
+	pub(crate) desk: questpump_desk::Desk<Shell>,
 	/// Whether this run's secrets reach the next start (`secrets::Keeper::run`): a run whose store could not be read
 	/// while settings.json held none (`RunSecrets::Unread`) shows no pairing code, answers no phone (no LAN listener, no
 	/// Bluetooth link) and refuses Sync and every way into an account (`Helper::secrets_unread`).
@@ -450,7 +449,6 @@ pub(crate) struct Helper {
 	pub(crate) advert: dnssd::Advert,
 	pub(crate) lines: broadcast::Sender<String>,
 	pub(crate) writes: std::sync::mpsc::Sender<Job>,
-	pub(crate) game: Option<Game>,
 	pub(crate) due: Option<Instant>,
 	/// When the helper's sign of life (`Alive.lua`) was last asked to be written, on the computer's clock: an `Instant`
 	/// stands still while a Mac sleeps, and the sign of life must be fresh at the first load after it wakes.
@@ -460,22 +458,8 @@ pub(crate) struct Helper {
 	/// The first row of the batch the debounce is waiting out.
 	pub(crate) batch_since: Option<Instant>,
 	pub(crate) held_until: Option<Instant>,
-	pub(crate) screen: Dot,
-	/// What the window's screen line knows beside the dot.
-	pub(crate) sighting: Sighting,
 	/// The capture stopped for want of the Screen Recording grant; the window asks for it once a device is paired.
 	pub(crate) grant_missing: bool,
-	/// The running game's folder when it holds QuestPump: the mirror and the sign of life go there, and a game without
-	/// it (another flavour beside the Forever install) gets neither.
-	pub(crate) game_addons: Option<PathBuf>,
-	/// The install the session follows (`addons`): a game folder with QuestPump, the running client's or the one found
-	/// or picked; none while none with QuestPump is known. The welcome's game, the grant and the pairing's next step read
-	/// it.
-	pub(crate) followed: Option<PathBuf>,
-	/// The game on this computer without QuestPump yet, while no install with it is known (`show_without_addon`): the
-	/// running client's, a folder the player picked (`without_addon_picked`), else the preferred of the one remembered
-	/// and the installs the Agent or the default folders know (`install::preferred`, `install::discover_game`).
-	pub(crate) without_addon: Option<PathBuf>,
 	/// `without_addon` is a folder the player picked (`runtime/folder.rs` `picked`): it stays while it is a game, and a
 	/// first install goes there first (`first_target`); one found is ranked again at each look.
 	pub(crate) without_addon_picked: bool,
@@ -485,9 +469,6 @@ pub(crate) struct Helper {
 	pub(crate) written: Option<PathBuf>,
 	/// The folders whose `State.lua` was taken in.
 	pub(crate) taken_in: HashSet<PathBuf>,
-	/// The stores hold what this computer has: the first mirror job took in the install the session follows, or found
-	/// none known (`stores_are_read`). The first five minutes decide nothing before (`desk::seams::Found::ready`).
-	pub(crate) stores_read: bool,
 	/// When each of the game's saves was read, so one the client writes again comes in at the next look.
 	pub(crate) saves_read: mirror::SavesRead,
 	/// The setup word the strip carried last, with its load (since 2026-10-13): the pairing's step reads it while that
@@ -548,36 +529,14 @@ pub(crate) struct Helper {
 	pub(crate) region: Region,
 	/// The anonymous counts: what is kept between batches, and their outbox.
 	pub(crate) counts: CountsState,
-	/// The games on the computer; none when the offers' numbers did not build in (logged at the start).
-	pub(crate) games: Option<Games>,
-	/// The match offer that stands on the computer.
-	pub(crate) standing: Standing,
 	/// The desktop's side of the offers: the card, the Games page's picker, the tray's offer items (slice 35).
 	pub(crate) offering: Offering,
 	/// The desktop's reminders: the one whose card stands, the offer, the tray's streak line.
 	pub(crate) reminding: Reminding,
-	/// The input's part of the sitting clock, which the sitting cue and the match offers share (slice 48).
-	pub(crate) sitting: questpump_core::sitting::Sitting,
-	/// The body every app device shares, and the game's Body switches as the strip last showed them (slice 35).
-	pub(crate) body: Kept,
-	/// The paired phones' Pro grants (slice 35).
-	pro: pro::Pro,
-	/// The addon's own engine behind its ordered door (slice 35).
-	pub(crate) engine: Door,
-	/// The desktop app's sound and voice on the picked output (slice 35).
-	pub(crate) audio: Audio,
-	/// Pump home's and Hero's state between looks (slice 35).
-	pub(crate) home: Home,
-	/// The desktop app's own Menu pages and the first five minutes (slice 35).
-	pub(crate) menu: MenuPages,
-	/// The desktop app's Book and Log (slice 35).
-	pub(crate) book_log: BookLog,
-	/// The pump on this computer (slice 35).
-	pub(crate) pumps: Pumps,
-	/// The sync every device of the player shares (slice 60; the account itself is in `settings.sync`).
-	pub(crate) sync: SyncState,
 	/// The addon in the game: its feed, the installs QuestPump made and what it does to them (`runtime/addon.rs`).
 	pub(crate) addon: AddonState,
+	/// The Backup and sync page's file part (`desk/menu_pages/backup.rs`).
+	pub(crate) backup: menu_pages::backup::State,
 }
 
 impl Helper {
@@ -585,9 +544,10 @@ impl Helper {
 	/// that ended.
 	async fn on_pair_tick(&mut self) {
 		self.address = find_address().await;
+		self.desk.p.sync.name.clone_from(&self.address.name);
 		self.serve_lan().await;
 		self.on_pro_tick();
-		self.log_day();
+		self.desk.log_day();
 		// the game day's turn sends the day before
 		self.counts_tick();
 		// a phone quiet for two weeks: the Phones page shows the code again
@@ -619,13 +579,13 @@ impl Helper {
 
 	/// A game runs whose folder holds no QuestPump: no strip can show there.
 	fn game_lacks_addon(&self) -> bool {
-		self.game.is_some() && self.game_addons.is_none()
+		self.desk.p.game.is_some() && self.desk.p.game_addons.is_none()
 	}
 
 	/// The sign of life again while the game runs, into the game's own folder: one the mirror has not reached yet (its
 	/// write there failed, or none was made) gets the mirror again instead, whose write brings the sign of life.
 	fn beat_for_game(&mut self) {
-		let Some(addons) = self.game_addons.clone() else { return };
+		let Some(addons) = self.desk.p.game_addons.clone() else { return };
 		if self.written.as_ref() == Some(&addons) {
 			self.beat();
 		} else {
@@ -650,32 +610,44 @@ impl Helper {
 		let _ = self.writes.send(Job::File { dir: self.dir.clone(), name, bytes });
 	}
 
-	pub(crate) fn save_settings(&self) {
-		match serde_json::to_value(&self.settings) {
-			Ok(file) => {
-				let _ = self.writes.send(Job::Settings { dir: self.dir.clone(), file });
-			}
-			Err(e) => log::warn!("{}: {e}", settings::FILE),
-		}
-	}
-
-	/// The body changed (a phone's change, this computer's, the game's): kept in `body.json`, and into the mirror soon,
-	/// whose `body` the game takes at its next load (one body everywhere, 2026-10-09).
-	pub(crate) fn save_body(&mut self) {
-		match self.body.to_json() {
-			Ok(bytes) => self.save_file(Kept::FILE, bytes),
-			Err(e) => log::warn!("{}: {e}", Kept::FILE),
-		}
-		self.due_soon();
-	}
-
+	/// The effects of rows the session took (`Effects`), wherever they came from: the desk takes them
+	/// (`questpump_desk::Desk::apply`), and what it asked of the loop runs after (`drain`).
 	pub(crate) fn apply(&mut self, fx: Effects) {
-		// rows or characters the stores took: the sync's next push looks (slice 60)
-		let stores_changed = fx.people_changed || fx.lines.iter().any(|l| matches!(l, Line::Row(_)));
-		// a pump the game offered on the strip ends the pump on this computer (one pump at a time)
-		if fx.commands.iter().any(|c| matches!(c, Command::PumpOffered { .. })) {
-			self.pump_game_offered();
+		self.desk.apply(fx);
+		self.drain();
+	}
+
+	/// What the desk asked that only the loop does (`desk::shell::Out`), in the order it was asked, until none is left
+	/// (what one of them asks the desk in turn included).
+	pub(crate) fn drain(&mut self) {
+		loop {
+			let out = std::mem::take(&mut self.desk.p.out);
+			if out.is_empty() {
+				return;
+			}
+			for item in out {
+				match item {
+					Out::Effects(fx) => self.apply_shell(*fx),
+					Out::MirrorSoon => self.due_soon(),
+					Out::Backup => self.publish_backup(),
+					Out::OffersPaused => self.offers_repaint(),
+					Out::OfferStarted(offer) => self.offer_answered(&offer),
+					Out::OfferTaken(offer) => self.offer_taken(&offer),
+					Out::Board { board, game, resting } => self.reminders_board(board, game, resting),
+					Out::ReminderOfferDue => self.reminder_offer_due(),
+					Out::TreeCard(refused) => self.counts_tree_card(refused.as_deref()),
+					Out::TreeStart(kind) => self.counts_tree_start(&kind),
+					Out::Then(then) => then(self),
+				}
+			}
 		}
+	}
+
+	/// The loop's part of the effects of rows the session took, after the desk took its own (the game's body, the
+	/// people's and the proof book's files, the engine, the pages, the sync's look): the lines to the socket, the
+	/// devices' commands, the logs, the game's feedback, a new load's saves, `/qp ping`, a suspend, the mirror's due
+	/// time, the counts.
+	fn apply_shell(&mut self, fx: Effects) {
 		for line in &fx.lines {
 			self.emit(line);
 		}
@@ -707,19 +679,6 @@ impl Helper {
 			// a pump runs: the Bluetooth link's centrals at low latency
 			self.ble_busy();
 		}
-		// the game's body (its Body switches and its Exercises page's list), repainted every few seconds and in every
-		// file taken in: a change the player made in the game, within the profile the strip paints or the file's newest
-		// character uses, joins the body every device shares, at the game's own time of it (else the helper's, the
-		// file's for a file)
-		if let Some(game) = &fx.game_body
-			&& self.body.game(&game.profile, &game.seen, game.at.unwrap_or_else(lan::now_ms))
-		{
-			log::info!("body: the game's body changed");
-			self.save_body();
-			self.profile_changed();
-			self.publish_setup();
-			self.publish_welcome();
-		}
 		if let Some(message) = &fx.feedback {
 			self.game_feedback(message);
 		}
@@ -731,21 +690,8 @@ impl Helper {
 			self.loaded_before = None;
 			// the client wrote its save between the two loads: the rows that never reached the strip come in (an
 			// import, a restore, a row still queued at the /reload), and reach the mirror of the load after
-			if let Some(addons) = self.game.as_ref().map(|g| g.addons.clone()) {
+			if let Some(addons) = self.desk.p.game.as_ref().map(|g| g.addons.clone()) {
 				self.take_in_saves(&addons);
-			}
-		}
-		if fx.people_changed {
-			let mut bytes = Vec::new();
-			match ciborium::into_writer(self.session.people(), &mut bytes) {
-				Ok(()) => self.save_file(People::FILE, bytes),
-				Err(e) => log::warn!("people.cbor: {e}"),
-			}
-		}
-		if fx.proof_changed {
-			match self.session.book().to_json() {
-				Ok(bytes) => self.save_file(Book::FILE, bytes),
-				Err(e) => log::warn!("{}: {e}", Book::FILE),
 			}
 		}
 		if fx.pinged {
@@ -765,39 +711,29 @@ impl Helper {
 			Some(MirrorDue::Soon) => self.due_soon(),
 			None => {}
 		}
-		// the rows the stores took from elsewhere reach the engine, in the order they came, and the counts look at them
-		self.engine_rows(fx.people_changed);
+		// the counts look at the rows the stores took
 		self.counts_rows();
-		self.home_rows();
-		self.book_log_rows(fx.people_changed);
-		// the lock and the owed moves the pump's gates read, and its pain flags asked again when the stores took rows
-		self.pump_refresh();
-		// what the stores now hold: a player with progress is never new
-		self.welcome_found();
-		if stores_changed {
-			self.sync_changed();
-		}
 	}
 
 	/// The capture's state on the tray and the screen reading's line, and as a `status` line whenever its word changes.
 	fn screen(&mut self, dot: Dot, line: Screen) {
-		if self.screen == dot && self.sighting.line == line {
+		if self.desk.p.screen == dot && self.desk.p.sighting.line == line {
 			return; // a strip out of sight arrives with every frame the capture reads
 		}
-		if status(dot) != status(self.screen) {
+		if status(dot) != status(self.desk.p.screen) {
 			self.emit(&Line::Status { screen: Some(status(dot).into()), hint: None, hr: None, pad: None });
 		}
 		// the pairing block says whether the helper reads the game (`sight`): the game reads it at its next load
-		if (dot == Dot::Stopped) != (self.screen == Dot::Stopped) && self.grant_wanted() {
+		if (dot == Dot::Stopped) != (self.desk.p.screen == Dot::Stopped) && self.grant_wanted() {
 			self.due_soon();
 		}
 		// each change of what the screen reading shows goes into the log: a strip never read is found from it
 		log::info!("screen: {line:?}");
 		self.counts_capture(capture_state(dot, &line));
-		self.screen = dot;
-		self.sighting.line = line.clone();
+		self.desk.p.screen = dot;
+		self.desk.p.sighting.line = line.clone();
 		let capture = self.capture_word();
-		let read = self.sighting.read;
+		let read = self.desk.p.sighting.read;
 		ui::update(&self.app, |v| {
 			v.shell.dot = dot;
 			v.computer.screen = line;
@@ -812,7 +748,7 @@ impl Helper {
 	/// The capture's state as the feedback form's diagnostics name it: the `status` line's word, or the `error` line's
 	/// `screen_permission` while the Screen Recording grant is missing.
 	fn capture_word(&self) -> &'static str {
-		if self.grant_missing { "screen_permission" } else { status(self.screen) }
+		if self.grant_missing { "screen_permission" } else { status(self.desk.p.screen) }
 	}
 
 	fn on_capture(&mut self, event: Event) {
@@ -828,24 +764,24 @@ impl Helper {
 				if let Some(word) = frame.setup() {
 					self.setup = Some((frame.load_id, word));
 				}
-				self.sighting.unreadable = None;
-				self.sighting.read_at = Some(Instant::now());
-				if !self.sighting.read {
+				self.desk.p.sighting.unreadable = None;
+				self.desk.p.sighting.read_at = Some(Instant::now());
+				if !self.desk.p.sighting.read {
 					// the game read in this run: the game and the app in use today
 					self.counts_active(questpump_core::telemetry::Source::Game);
 					self.counts_active(questpump_core::telemetry::Source::Desktop);
 				}
-				self.sighting.read = true;
+				self.desk.p.sighting.read = true;
 				self.screen(Dot::Live, Screen::Reading);
-				let fx = self.session.on_frame(&frame, shown, &now());
+				let fx = self.desk.session.on_frame(&frame, shown, &now());
 				self.apply(fx);
 			}
 			Event::NoStrip => {
-				self.session.lost_sight();
+				self.desk.session.lost_sight();
 				// a strip read within `OUT_AFTER` keeps Reading; the 2-s look ends it for a stream that sent this one
 				// frame and stopped (`on_game_tick`)
-				let reading = self.screen == Dot::Live && self.sighting.read_lately();
-				if !reading && !matches!(self.screen, Dot::Stopped | Dot::Off) && self.game.is_some() {
+				let reading = self.desk.p.screen == Dot::Live && self.desk.p.sighting.read_lately();
+				if !reading && !matches!(self.desk.p.screen, Dot::Stopped | Dot::Off) && self.desk.p.game.is_some() {
 					let line = self.out_of_sight();
 					self.screen(Dot::NoStrip, line);
 				}
@@ -854,30 +790,30 @@ impl Helper {
 				// the strip repaints every second, so a strip that does not read fails at least that often; a gap
 				// longer than two seconds after a lone failed capture starts the count again
 				let now = Instant::now();
-				let since = match self.sighting.unreadable {
+				let since = match self.desk.p.sighting.unreadable {
 					Some((first, last)) if now.duration_since(last) <= UNREADABLE_GAP => first,
 					_ => now,
 				};
-				self.sighting.unreadable = Some((since, now));
-				if now.duration_since(since) >= UNREADABLE_AFTER && self.game.is_some() {
+				self.desk.p.sighting.unreadable = Some((since, now));
+				if now.duration_since(since) >= UNREADABLE_AFTER && self.desk.p.game.is_some() {
 					self.unreadable(&why);
 				}
 			}
 			Event::Display { name, scale, hdr, backend } => {
 				log::info!("capture: {name}, {scale}x{}", if hdr { ", HDR" } else { "" });
-				self.sighting.hdr = hdr;
-				self.sighting.backend = backend;
-				self.session.lost_sight(); // a stream starting: its first frame shows a paint of any age
+				self.desk.p.sighting.hdr = hdr;
+				self.desk.p.sighting.backend = backend;
+				self.desk.session.lost_sight(); // a stream starting: its first frame shows a paint of any age
 				// a stream that starts again after a stop, or a strip that did not read: the new one is looked at afresh
-				self.sighting.unreadable = None;
-				if self.screen == Dot::Stopped && !self.grant_missing && self.game.is_some() {
+				self.desk.p.sighting.unreadable = None;
+				if self.desk.p.screen == Dot::Stopped && !self.grant_missing && self.desk.p.game.is_some() {
 					// a game read in this run is out of view until its next frame reads, one not read yet waited for
-					let line = if self.sighting.read { self.out_of_sight() } else { Screen::Waiting };
+					let line = if self.desk.p.sighting.read { self.out_of_sight() } else { Screen::Waiting };
 					self.screen(Dot::NoStrip, line);
 				}
 			}
 			Event::Error(code, detail) => {
-				self.session.lost_sight();
+				self.desk.session.lost_sight();
 				log::warn!("capture stopped ({code:?}): {detail}");
 				self.emit(&Line::Error { code, detail });
 				if code == ErrorCode::ScreenPermission {
@@ -904,13 +840,13 @@ impl Helper {
 		// a minute out of sight from a start that never read may be QuestPump turned off in the game; a game read in this
 		// run of the helper is out of view, however long (`Sighting::read`), so the window never asks after the AddOns
 		// list beside "The game is out of view"
-		if !self.sighting.read
-			&& !self.sighting.hdr
-			&& self.sighting.read_at.is_some_and(|t| t.elapsed() >= UNSEEN_AFTER)
+		if !self.desk.p.sighting.read
+			&& !self.desk.p.sighting.hdr
+			&& self.desk.p.sighting.read_at.is_some_and(|t| t.elapsed() >= UNSEEN_AFTER)
 		{
 			return Screen::Unseen;
 		}
-		Screen::Out { hdr: self.sighting.hdr }
+		Screen::Out { hdr: self.desk.p.sighting.hdr }
 	}
 
 	/// Anchored frames have not read for `UNREADABLE_AFTER`: the window says why and what to do, the tray turns red,
@@ -919,9 +855,9 @@ impl Helper {
 		let line = match why {
 			DecodeError::Version(v) if *v > STRIP_VERSION => Screen::Newer,
 			DecodeError::Version(_) => Screen::Older,
-			_ => Screen::Colours { hdr: self.sighting.hdr },
+			_ => Screen::Colours { hdr: self.desk.p.sighting.hdr },
 		};
-		if self.sighting.line != line {
+		if self.desk.p.sighting.line != line {
 			self.emit(&Line::Status { screen: None, hint: Some(why.to_string()), hr: None, pad: None });
 		}
 		self.screen(Dot::Stopped, line);
@@ -937,9 +873,9 @@ impl Helper {
 			SocketCommand::Restart => self.socket_quit(true),
 			SocketCommand::DisplayLag { ms } => {
 				log::info!("display lag: {ms} ms");
-				self.settings.display_lag_ms = ms;
-				self.session.set_display_lag(ms);
-				self.save_settings();
+				self.desk.settings.display_lag_ms = ms;
+				self.desk.session.set_display_lag(ms);
+				self.desk.save_settings();
 			}
 			// 0 or less is no speed to walk at (fitted into the pad's range it would start the belt at its slowest, and
 			// `pad.stop` is the stop): refused here, never sent; JSON carries no NaN or infinity
@@ -981,7 +917,7 @@ impl Helper {
 					continue;
 				}
 			}
-			let (paid, fx) = self.session.catch_up(&pump, t);
+			let (paid, fx) = self.desk.session.catch_up(&pump, t);
 			self.apply(fx);
 			match paid {
 				Ok(_) | Err(CatchupError::AlreadyPaid(_)) => {} // sent again to a helper that restarted meanwhile
@@ -1000,7 +936,7 @@ impl Helper {
 			log::info!("lan: skip {}: the game runs and asks its moves", link::pump_tag(&skip.id));
 			return Some(skip.id);
 		}
-		let (skipped, fx) = self.session.skip(&skip, t);
+		let (skipped, fx) = self.desk.session.skip(&skip, t);
 		self.apply(fx);
 		match skipped {
 			Ok(rows) => log::info!("lan: skip {}: {} unfinished moves skipped", link::pump_tag(&skip.id), rows.len()),
@@ -1014,7 +950,7 @@ impl Helper {
 	/// banked rows (`Session::bank`; one sent again is written once), written while a client with QuestPump runs too:
 	/// its moves are in no queue the game asks, and reach it at its next load through the mirror as every row here does.
 	fn device_bank(&mut self, bank: &BankPump, t: &Now) {
-		let (banked, fx) = self.session.bank(bank, t);
+		let (banked, fx) = self.desk.session.bank(bank, t);
 		self.apply(fx);
 		match banked {
 			Ok(rows) => log::info!("lan: bank {}: {} moves banked", link::pump_tag(&bank.id), rows.len()),
@@ -1046,21 +982,21 @@ impl Helper {
 				// no heart rate of its own
 				if device.is_watch() {
 					for sample in samples {
-						self.session.heart(HrSource::Watch, sample.sample_end, sample.bpm);
+						self.desk.session.heart(HrSource::Watch, sample.sample_end, sample.bpm);
 					}
 				}
 				let t = now();
 				// while a client with QuestPump runs it asks the owed moves itself on its next pump, and reads paid rows
-				// only at its next load: a catch-up pays none of them then (the desktop's own: `desk/pump.rs`
+				// only at its next load: a catch-up pays none of them then (the desktop's own: `questpump-desk/src/pump.rs`
 				// `pump_paid`), its felt-unwell stop still written, and the answer names it (`game_held`), so the device
 				// keeps them owed
-				let game_asks = self.wow_with_addon();
+				let game_asks = self.desk.wow_with_addon();
 				let game_held = self.device_events(device, events, game_asks, &t);
 				// the app's rows (slice 26), kept before the response confirms them; one kept already is confirmed again,
 				// and none while one could not be written
 				let mut unwritten = false;
 				if !rows.is_empty() {
-					let (taken, fx) = self.session.take_app_rows(device, &rows, &t);
+					let (taken, fx) = self.desk.session.take_app_rows(device, &rows, &t);
 					log::info!(
 						"lan: {}: {} app rows, {} new, {} dropped{}",
 						device.name(),
@@ -1079,7 +1015,7 @@ impl Helper {
 				}
 				// a device that holds the link without having heard the pump on offer (it took the link after another
 				// device, or started again mid-pump) gets it before this sync is answered, ahead of its countdown
-				if let Some(offer) = self.session.offered()
+				if let Some(offer) = self.desk.session.offered()
 					&& let Some(queued) = self.queue.reoffer(offer, lan::now_ms())
 				{
 					log::info!("lan: the pump on offer again for the device that holds the link (seq {})", queued.seq);
@@ -1090,7 +1026,7 @@ impl Helper {
 				if let Some(proof) = pro_proof.filter(|_| !self.unpaired.contains(&client)) {
 					self.take_pro(&client, device, &proof);
 				}
-				let rows_store = (!unwritten).then(|| self.session.app_rows().id());
+				let rows_store = (!unwritten).then(|| self.desk.session.app_rows().id());
 				// the offers' part: this one's latest game offer folded in, and the facts every response carries as it
 				// leaves told to the routes before this sync is answered (the ids taken, a watched game in a match, the
 				// arms, the lock)
@@ -1098,33 +1034,33 @@ impl Helper {
 				let _ = done.send(SyncAnswer { rows_store, game_held });
 			}
 			Ask::Body { body, done } => {
-				if self.body.take(&body) {
+				if self.desk.body.take(&body) {
 					log::info!("lan: body: a phone's later changes taken");
-					self.save_body();
-					self.profile_changed();
-					self.publish_setup();
-					self.publish_welcome();
+					self.desk.save_body();
+					self.desk.profile_changed();
+					self.desk.publish_setup();
+					self.desk.publish_welcome();
 				}
-				let _ = done.send(self.body.body.clone());
+				let _ = done.send(self.desk.body.body.clone());
 			}
 			Ask::Sheet { done } => {
-				let mut sheet = Sheet { game_asks: self.wow_with_addon(), ..self.session.sheet(now().unix) };
-				self.serve_shown(&mut sheet);
+				let mut sheet = Sheet { game_asks: self.desk.wow_with_addon(), ..self.desk.session.sheet(now().unix) };
+				self.desk.serve_shown(&mut sheet);
 				let _ = done.send(sheet);
 			}
 			Ask::History { after, proofs_since, size, done } => {
-				let _ = done.send(self.session.history(after, proofs_since, size));
+				let _ = done.send(self.desk.session.history(after, proofs_since, size));
 			}
 			Ask::Sheets { after, size, done } => {
-				let _ = done.send(self.session.sheet_log().page(after, size));
+				let _ = done.send(self.desk.session.sheet_log().page(after, size));
 			}
 			Ask::AppRows { after, size, done } => {
-				let _ = done.send(self.session.app_rows().page(after, size));
+				let _ = done.send(self.desk.session.app_rows().page(after, size));
 			}
 			Ask::Account { put: None, done } => {
-				let _ = done.send(Some(self.account_state()));
+				let _ = done.send(Some(self.desk.account_state()));
 			}
-			Ask::Account { put: Some((account, r)), done } => self.account_put(account, r, done),
+			Ask::Account { put: Some((account, r)), done } => self.desk.account_put(account, r, done),
 		}
 	}
 
@@ -1134,7 +1070,7 @@ impl Helper {
 	/// Unpair, and a watch while no phone is paired (its phone's Unpair ended its pairing too) or in the minute after an
 	/// Unpair (`unpaired_at`) name nothing and link nothing.
 	fn device_synced(&mut self, device: Device, client: &str) {
-		let p = &mut self.settings.pairing;
+		let p = &mut self.desk.settings.pairing;
 		let late_watch = device.is_watch() && self.unpaired_at.is_some_and(|at| now().unix - at < WATCH_LATE_S);
 		if self.unpaired.contains(client) || (device.is_watch() && p.phone.is_none()) || late_watch {
 			return;
@@ -1168,15 +1104,15 @@ impl Helper {
 		// the running game's load came before the pairing: it reads the pairing block at its next load, and until its
 		// strip says what it shows, the step is either (a game started later reads it at its first, from the mirror
 		// written before it starts)
-		if self.settings.pairing.phone.is_none()
-			&& let Some(game) = &self.game
+		if self.desk.settings.pairing.phone.is_none()
+			&& let Some(game) = &self.desk.p.game
 		{
 			self.loaded_before = Some(game.pid);
 		}
-		let p = &mut self.settings.pairing;
+		let p = &mut self.desk.settings.pairing;
 		p.phone = Some(device.name().to_owned());
 		p.phone_since = Some(now().unix);
-		self.settings.phone_name = Some(name);
+		self.desk.settings.phone_name = Some(name);
 		self.counts_pairing("phone", None);
 		// a pairing that ended unread is made again
 		ui::update(&self.app, |v| v.phones.unread = false);
@@ -1198,24 +1134,24 @@ impl Helper {
 
 	/// The pairing block names no phone, watch or link any more.
 	fn end_pairings(&mut self) {
-		let p = &mut self.settings.pairing;
+		let p = &mut self.desk.settings.pairing;
 		p.phone = None;
 		p.phone_since = None;
 		p.watch = None;
 		p.linked_at = None;
-		self.settings.phone_name = None;
+		self.desk.settings.phone_name = None;
 	}
 
 	/// The pairing block changed: saved, shown, and in the game at its next `/reload`; Pro's state on the computer
 	/// follows the paired phone, and the Bluetooth link runs while one is paired.
 	fn paired(&mut self) {
-		self.save_settings();
+		self.desk.save_settings();
 		self.ble_link_sync();
 		self.show_phone();
 		self.show_grant();
 		self.due_by(Instant::now());
 		self.pro_changed();
-		self.welcome_found();
+		self.desk.welcome_found();
 	}
 
 	/// The one step the pairing still asks of the player (`link::Step`, in every response's helper block since
@@ -1229,13 +1165,13 @@ impl Helper {
 		if self.sight() == Sight::NoGrant {
 			return Step::Grant;
 		}
-		if !self.wow_with_addon() {
+		if !self.desk.wow_with_addon() {
 			return Step::Done;
 		}
 		match self.setup_word() {
 			Some(word) if word.check_shown => Step::CheckAgain,
 			Some(word) if word.save_unread && !word.helper_seen => Step::Reload,
-			None if self.game.as_ref().is_some_and(|g| self.loaded_before == Some(g.pid)) => Step::Either,
+			None if self.desk.p.game.as_ref().is_some_and(|g| self.loaded_before == Some(g.pid)) => Step::Either,
 			Some(_) | None => Step::Done,
 		}
 	}
@@ -1243,7 +1179,7 @@ impl Helper {
 	/// The setup word of the load the session follows (`Session::load`): none before that load's strip carried one,
 	/// once it ended (its save written, the game left), or from an addon older than 2026-10-13.
 	fn setup_word(&self) -> Option<SetupWord> {
-		self.setup.filter(|&(load, _)| self.session.load() == Some(load)).map(|(_, word)| word)
+		self.setup.filter(|&(load, _)| self.desk.session.load() == Some(load)).map(|(_, word)| word)
 	}
 
 	/// The pairing's step on the Phones page, This computer and the welcome's Game row (the `menu.phones` topic's
@@ -1251,7 +1187,7 @@ impl Helper {
 	/// and, on a client that does not read its save back, its saved progress wait for one), and none when nothing is left; published only when
 	/// it changes.
 	fn show_next(&mut self, step: Step) {
-		let paired = self.settings.pairing.phone.is_some();
+		let paired = self.desk.settings.pairing.phone.is_some();
 		let unseen = self.setup_word().is_some_and(|word| !word.helper_seen);
 		let next = (step != Step::Done && (paired || unseen)).then_some(step);
 		if next != self.next {
@@ -1264,8 +1200,9 @@ impl Helper {
 	/// QuestPump known (`followed`: without one no strip ever shows), and a phone or a watch paired, or the strap or the
 	/// walking pad on, whose heart rate meets the pumps and whose metres meet the stretch rows only through the strip.
 	fn grant_wanted(&self) -> bool {
-		let p = &self.settings.pairing;
-		self.followed.is_some() && (p.phone.is_some() || p.watch.is_some() || self.settings.strap || self.settings.pad)
+		let p = &self.desk.settings.pairing;
+		self.desk.p.followed.is_some()
+			&& (p.phone.is_some() || p.watch.is_some() || self.desk.settings.strap || self.desk.settings.pad)
 	}
 
 	/// A missing Screen Recording grant, asked for in the window only while it is wanted; the pairing block says so
@@ -1286,13 +1223,13 @@ impl Helper {
 	/// The window's strap button, and the start with the strap on: the Bluetooth task reads it while it is on (macOS asks
 	/// for Bluetooth the first time), and the verdict counts the strap as a source. Off disconnects it.
 	fn set_strap(&mut self, on: bool) {
-		let read = self.ble.is_some() && self.settings.strap;
-		if self.settings.strap != on {
-			self.settings.strap = on;
-			self.save_settings();
+		let read = self.ble.is_some() && self.desk.settings.strap;
+		if self.desk.settings.strap != on {
+			self.desk.settings.strap = on;
+			self.desk.save_settings();
 			self.counts_trying(Kind::Strap, on);
 		}
-		self.session.set_strap(on, lan::now_ms());
+		self.desk.session.set_strap(on, lan::now_ms());
 		if read && !on {
 			self.emit(&ble_status(Kind::Strap, "off", None));
 		}
@@ -1305,10 +1242,10 @@ impl Helper {
 	/// The window's walking pad button, and the start with the pad on: the Bluetooth task reads it while it is on (macOS
 	/// asks for Bluetooth the first time), and the metres it counts go into the stretch rows. Off disconnects it.
 	fn set_pad(&mut self, on: bool) {
-		let read = self.ble.is_some() && self.settings.pad;
-		if self.settings.pad != on {
-			self.settings.pad = on;
-			self.save_settings();
+		let read = self.ble.is_some() && self.desk.settings.pad;
+		if self.desk.settings.pad != on {
+			self.desk.settings.pad = on;
+			self.desk.save_settings();
 			self.counts_trying(Kind::Pad, on);
 		}
 		if read && !on {
@@ -1324,15 +1261,15 @@ impl Helper {
 	/// Whether the player has the device turned on.
 	fn is_on(&self, kind: Kind) -> bool {
 		match kind {
-			Kind::Strap => self.settings.strap,
-			Kind::Pad => self.settings.pad,
+			Kind::Strap => self.desk.settings.strap,
+			Kind::Pad => self.desk.settings.pad,
 		}
 	}
 
 	/// The Bluetooth task for the devices that are on: started with the first, told when they change (a device no longer
 	/// wanted is let go) and stopped with the last.
 	fn sync_ble(&mut self) {
-		let want = Want { strap: self.settings.strap, pad: self.settings.pad };
+		let want = Want { strap: self.desk.settings.strap, pad: self.desk.settings.pad };
 		if !want.any() {
 			self.ble = None; // dropping the task stops it
 		} else if let Some(task) = &self.ble {
@@ -1358,14 +1295,14 @@ impl Helper {
 				self.ble_stopped(&state);
 			}
 			Ble::State(kind, state) if self.is_on(kind) => self.ble_state(kind, &state),
-			Ble::Heart(m) if self.settings.strap => {
+			Ble::Heart(m) if self.desk.settings.strap => {
 				if let Some(bpm) = m.reading() {
-					self.session.heart(HrSource::Strap, lan::now_ms(), Some(bpm));
+					self.desk.session.heart(HrSource::Strap, lan::now_ms(), Some(bpm));
 				}
 				self.emit(&Line::Hr { bpm: m.bpm, rr: m.rr, contact: m.contact });
 			}
-			Ble::Pad(record) if self.settings.pad => self.on_pad(&record),
-			Ble::PadStatus(status) if self.settings.pad => self.pad_status(status),
+			Ble::Pad(record) if self.desk.settings.pad => self.on_pad(&record),
+			Ble::PadStatus(status) if self.desk.settings.pad => self.pad_status(status),
 			Ble::State(..) | Ble::Heart(_) | Ble::Pad(_) | Ble::PadStatus(_) | Ble::PadRefused(_) => {}
 		}
 	}
@@ -1399,15 +1336,15 @@ impl Helper {
 	/// Bluetooth is one `error` line however many were on.
 	fn ble_stopped(&mut self, state: &bluetooth::State) {
 		self.ble = None;
-		if self.settings.strap {
+		if self.desk.settings.strap {
 			self.ble_state(Kind::Strap, state);
-			self.settings.strap = false;
-			self.session.set_strap(false, lan::now_ms());
+			self.desk.settings.strap = false;
+			self.desk.session.set_strap(false, lan::now_ms());
 			ui::update(&self.app, |v| v.devices.strap.on = false);
 		}
-		if self.settings.pad {
+		if self.desk.settings.pad {
 			self.ble_state(Kind::Pad, state);
-			self.settings.pad = false;
+			self.desk.settings.pad = false;
 			ui::update(&self.app, |v| v.devices.pad.on = false);
 		}
 		match state {
@@ -1421,7 +1358,7 @@ impl Helper {
 			bluetooth::State::Failed(e) => log::warn!("bluetooth: {e}"),
 			_ => {}
 		}
-		self.save_settings();
+		self.desk.save_settings();
 		self.show_grant();
 	}
 
@@ -1430,7 +1367,7 @@ impl Helper {
 	fn on_pad(&mut self, record: &Treadmill) {
 		self.emit(&Line::Pad { kmh: record.kmh, distance_m: record.distance_m, elapsed_s: record.elapsed_s });
 		if let Some(metres) = record.distance_m {
-			self.session.pad(metres);
+			self.desk.session.pad(metres);
 		}
 		if let Some(read) = &mut self.pad_read {
 			read.records = read.records.saturating_add(1);
@@ -1446,7 +1383,7 @@ impl Helper {
 	/// The pad's line while a pad is read, drawn again when a record or a status comes and on the game tick: a load that
 	/// starts or ends and the game day's turn move the day's figures while a stopped belt may send nothing.
 	fn show_pad(&mut self) {
-		let today = self.session.pad_today(now().unix);
+		let today = self.desk.session.pad_today(now().unix);
 		let Some(read) = &mut self.pad_read else { return };
 		let line = pad_walking(read, today);
 		if line != read.shown {
@@ -1487,7 +1424,7 @@ impl Helper {
 	/// is off.
 	fn pad_command(&self, command: PadCommand) {
 		match &self.ble {
-			Some(task) if self.settings.pad => task.pad(command),
+			Some(task) if self.desk.settings.pad => task.pad(command),
 			// copy-lint: not shown (a socket line's detail)
 			_ => self.pad_refused(format!("{}: the walking pad is off", command.word())),
 		}
@@ -1501,22 +1438,16 @@ impl Helper {
 
 	/// The heart-rate verdicts whose window has passed.
 	fn on_proof_tick(&mut self) {
-		let fx = self.session.tick(lan::now_ms());
+		let fx = self.desk.session.tick(lan::now_ms());
 		self.apply(fx);
-	}
-
-	/// The paired phone's name for the window: the name it gave at pairing, else its kind; none while no phone is paired.
-	pub(crate) fn phone_name(&self) -> Option<String> {
-		let phone = self.settings.pairing.phone.as_ref()?;
-		Some(self.settings.phone_name.clone().unwrap_or_else(|| phone.clone()))
 	}
 
 	/// The paired phone, its watch and the device that gets the countdowns now (Phones and the tray), and whether the
 	/// phone has been quiet for `QUIET_AFTER_S` (the Phones page shows the code again).
 	fn show_phone(&self) {
-		let p = &self.settings.pairing;
+		let p = &self.desk.settings.pairing;
 		let line = PhoneLine {
-			name: self.phone_name(),
+			name: self.desk.phone_name(),
 			watch: p.watch.is_some(),
 			holder: self.linked.map(|d| if d.is_watch() { Holder::Watch } else { Holder::Phone }),
 		};
@@ -1540,7 +1471,7 @@ impl Helper {
 			FoundGame::Installed => Wow::NoAddon,
 			FoundGame::Unfound => Wow::Unfound,
 		};
-		let (sight, step, asks, ble) = (self.sight(), self.step(), self.wow_with_addon(), self.ble_word());
+		let (sight, step, asks, ble) = (self.sight(), self.step(), self.desk.wow_with_addon(), self.ble_word());
 		if self.lan.set_game(wow, sight, step, asks, ble) {
 			let read = if wow == Wow::Addon { format!(", {sight:?}, step {step:?}") } else { String::new() };
 			let runs = if asks { ", running" } else { "" };
@@ -1615,12 +1546,12 @@ impl Helper {
 			return;
 		}
 		log::info!("lan: a new pairing code; every pairing ends");
-		self.settings.new_key();
+		self.desk.settings.new_key();
 		self.end_pairings();
 		// the grants first, so Pro's state never reads on for a moment with the old code's grants
 		self.clear_pro();
 		self.paired();
-		self.lan.rekey(&self.settings.key);
+		self.lan.rekey(&self.desk.settings.key);
 		self.ble_rekeyed(); // every central goes, and the service is published again with the new code's hellos
 		self.show_pair();
 	}
@@ -1639,7 +1570,8 @@ impl Helper {
 		let (address, qr) = match *host {
 			_ if self.secrets_unread() => (AddressLine::Unread { name }, None),
 			Some(host) if open || self.ble_serves() => {
-				let (_, qr) = pairing::link_and_qr(host, self.settings.key, &name, mdns.as_deref(), self.settings.hid);
+				let (_, qr) =
+					pairing::link_and_qr(host, self.desk.settings.key, &name, mdns.as_deref(), self.desk.settings.hid);
 				let host = host.to_string();
 				(if open { AddressLine::Ready { name, host } } else { AddressLine::Ble { name, host } }, qr)
 			}
@@ -1672,9 +1604,9 @@ impl Helper {
 				match autostart::set(on) {
 					// the player's own choice, kept: off stays off at the next starts, on is on for this program
 					Ok(()) => {
-						self.settings.autostart_off = !on;
-						self.settings.autostart_for = if on { std::env::current_exe().ok() } else { None };
-						self.save_settings();
+						self.desk.settings.autostart_off = !on;
+						self.desk.settings.autostart_for = if on { std::env::current_exe().ok() } else { None };
+						self.desk.save_settings();
 					}
 					Err(e) => log::warn!("start at login: {e:#}"),
 				}
@@ -1726,21 +1658,22 @@ impl Helper {
 		self.counts_load(loaded);
 		// the install a strip seen before the first mirror write belongs to: the folder remembered (`addons` follows the
 		// running game's from then on)
-		if let Some(install) = self.settings.addons.as_deref().and_then(install_key) {
-			let fx = self.session.set_install(&install);
+		if let Some(install) = self.desk.settings.addons.as_deref().and_then(install_key) {
+			let fx = self.desk.session.set_install(&install);
 			self.apply(fx);
 		}
-		self.engine_start();
-		self.book_log_start();
+		self.desk.engine_start();
+		self.desk.book_log_start();
+		self.drain();
 		let unmoved = update::unmoved();
-		self.save_settings();
+		self.desk.save_settings();
 		if let Ok(mut place) = self.app.state::<crate::desk::Desk>().place.lock() {
-			place.clone_from(&self.settings.window);
+			place.clone_from(&self.desk.settings.window);
 		}
 		let program = std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default();
 		let asked = crate::capture::permission_asked(&self.dir);
 		let (os, capture) = (crate::feedback::os(), self.capture_word());
-		let (zoom, fullscreen) = (self.settings.zoom, self.settings.fullscreen);
+		let (zoom, fullscreen) = (self.desk.settings.zoom, self.desk.settings.fullscreen);
 		let resources = self.app.path().resource_dir().ok().map(|dir| dir.join("resources").display().to_string());
 		ui::update(&self.app, |v| {
 			v.shell.zoom = zoom;
@@ -1754,7 +1687,7 @@ impl Helper {
 			capture.clone_into(&mut v.feedback.capture);
 		});
 		self.show_phone();
-		self.show_found();
+		questpump_desk::Platform::show_found(&mut self.desk.p);
 		if loaded == Loaded::Unread {
 			ui::update(&self.app, |v| v.phones.unread = true);
 		}
@@ -1763,9 +1696,9 @@ impl Helper {
 		self.reel_start();
 		self.start_pro(loaded != Loaded::Read);
 		self.menu_start();
-		self.sync_start(far_lost);
-		self.set_strap(self.settings.strap);
-		self.set_pad(self.settings.pad);
+		self.desk.sync_start(far_lost);
+		self.set_strap(self.desk.settings.strap);
+		self.set_pad(self.desk.settings.pad);
 		self.serve_lan().await;
 		self.ble_link_sync();
 		self.start_at_login(unmoved);
@@ -1787,6 +1720,7 @@ impl Helper {
 			Launch::Player if unmoved => Some(Landing::Computer),
 			Launch::Player => Some(Landing::Here),
 		};
+		self.drain();
 		log::info!("launch: {launch:?} {loaded:?}, the window {}", landing.map_or("stays closed", |_| "opens"));
 		if let Some(landing) = landing {
 			let handle = self.app.clone();
@@ -1817,14 +1751,14 @@ impl Helper {
 		}
 		let program = std::env::current_exe().ok();
 		if !cfg!(debug_assertions)
-			&& !self.settings.autostart_off
+			&& !self.desk.settings.autostart_off
 			&& program.is_some()
-			&& (self.settings.autostart_for != program || autostart::record() == Some(autostart::Record::Missing))
+			&& (self.desk.settings.autostart_for != program || autostart::record() == Some(autostart::Record::Missing))
 		{
 			match autostart::renew() {
 				Ok(()) => {
-					self.settings.autostart_for = program;
-					self.save_settings();
+					self.desk.settings.autostart_for = program;
+					self.desk.save_settings();
 				}
 				Err(e) => log::warn!("start at login: {e:#}"),
 			}
@@ -1842,7 +1776,7 @@ impl Helper {
 		for summary in self.queue.quiet(now) {
 			self.summary(summary);
 		}
-		let paired = self.settings.pairing.phone.is_some();
+		let paired = self.desk.settings.pairing.phone.is_some();
 		for u in self.queue.unreached(now).into_iter().filter(|_| paired) {
 			log::info!("pump {}: {} of {} commands reached no device", link::pump_tag(&u.pump), u.unreached, u.queued);
 		}
@@ -1867,15 +1801,15 @@ impl Helper {
 		}
 		self.counts_link();
 		self.ble_tick();
-		self.places_tick();
+		self.desk.places_tick();
 	}
 
 	/// A device linked at `unix`: the pairing block's `linked_at`, saved at most once an hour (`LINKED_EVERY_S`).
 	fn note_linked(&mut self, unix: i64) {
-		let p = &mut self.settings.pairing;
+		let p = &mut self.desk.settings.pairing;
 		if p.linked_at.is_none_or(|t| unix - t >= LINKED_EVERY_S) {
 			p.linked_at = Some(unix);
-			self.save_settings();
+			self.desk.save_settings();
 		}
 	}
 
@@ -1913,18 +1847,20 @@ impl Helper {
 	fn addons(&mut self) -> Option<PathBuf> {
 		let holds = |a: &PathBuf| install::holds_questpump(a);
 		let found = self
+			.desk
+			.p
 			.game_addons
 			.clone()
-			.or_else(|| self.settings.addons.clone().filter(holds))
-			.or_else(|| self.without_addon.clone().filter(holds))
+			.or_else(|| self.desk.settings.addons.clone().filter(holds))
+			.or_else(|| self.desk.p.without_addon.clone().filter(holds))
 			.or_else(install::discover);
-		let followed_before = self.followed.is_some();
-		self.followed.clone_from(&found);
+		let followed_before = self.desk.p.followed.is_some();
+		self.desk.p.followed.clone_from(&found);
 		match &found {
 			Some(found) => self.follow(found),
 			None => self.show_without_addon(),
 		}
-		if followed_before != self.followed.is_some() {
+		if followed_before != self.desk.p.followed.is_some() {
 			self.show_grant();
 		}
 		found
@@ -1932,15 +1868,15 @@ impl Helper {
 
 	/// The install with QuestPump the session follows from now: its numbering, remembered and shown.
 	fn follow(&mut self, found: &PathBuf) {
-		self.without_addon = None;
+		self.desk.p.without_addon = None;
 		self.without_addon_picked = false;
 		if let Some(install) = install_key(found) {
-			let fx = self.session.set_install(&install);
+			let fx = self.desk.session.set_install(&install);
 			self.apply(fx);
 		}
-		if self.settings.addons.as_ref() != Some(found) {
-			self.settings.addons = Some(found.clone());
-			self.save_settings();
+		if self.desk.settings.addons.as_ref() != Some(found) {
+			self.desk.settings.addons = Some(found.clone());
+			self.desk.save_settings();
 		}
 		if self.shown_folder.as_ref() != Some(found) {
 			self.show_folder(found);
@@ -1954,14 +1890,14 @@ impl Helper {
 	/// to it, as the first install does, `first_target`), shown on This computer with its folder, which says QuestPump is
 	/// not in it; none shows that no game folder is known. The progress is kept on this computer meanwhile.
 	fn show_without_addon(&mut self) {
-		let running = self.game.as_ref().filter(|_| self.game_addons.is_none()).map(|g| g.addons.clone());
-		let picked = self.without_addon.take().filter(|a| self.without_addon_picked && install::is_game(a));
+		let running = self.desk.p.game.as_ref().filter(|_| self.desk.p.game_addons.is_none()).map(|g| g.addons.clone());
+		let picked = self.desk.p.without_addon.take().filter(|a| self.without_addon_picked && install::is_game(a));
 		self.without_addon_picked = running.is_none() && picked.is_some();
 		let game = running.or(picked).or_else(|| {
-			let remembered = self.settings.addons.clone().filter(|a| install::is_game(a));
+			let remembered = self.desk.settings.addons.clone().filter(|a| install::is_game(a));
 			install::preferred(remembered.into_iter().chain(install::discover_game()))
 		});
-		self.without_addon.clone_from(&game);
+		self.desk.p.without_addon.clone_from(&game);
 		if game.is_some() {
 			self.addon_game_found();
 		}
@@ -1984,16 +1920,16 @@ impl Helper {
 	/// checked again, and one found since (QuestPump installed while QuestPump runs) gets the mirror at once, so the
 	/// client's first start already finds the pairing block, the sign of life and the rows.
 	fn look_for_game(&mut self) {
-		if self.game.is_some() {
+		if self.desk.p.game.is_some() {
 			return;
 		}
-		let installed =
-			self.followed.is_none() && self.without_addon.as_ref().is_some_and(|a| install::holds_questpump(a));
+		let installed = self.desk.p.followed.is_none()
+			&& self.desk.p.without_addon.as_ref().is_some_and(|a| install::holds_questpump(a));
 		if !installed && self.looked_for_game.is_some_and(|t| t.elapsed() < LOOK_FOR_GAME) {
 			return;
 		}
 		self.looked_for_game = Some(Instant::now());
-		let before = self.followed.clone();
+		let before = self.desk.p.followed.clone();
 		if let Some(found) = self.addons()
 			&& before.as_ref() != Some(&found)
 		{
@@ -2010,7 +1946,7 @@ impl Helper {
 		self.sitting_look(now().unix, &snap);
 		self.reminders_look();
 		self.on_games_tick(&snap);
-		self.recent_look(now().unix);
+		self.desk.recent_look(now().unix);
 		self.look_for_game();
 		// the addon's update before QuestPump's own (`addon_busy` holds that one)
 		self.addon_look();
@@ -2019,11 +1955,11 @@ impl Helper {
 		self.feedback_due();
 		self.crash_due();
 		self.counts_due();
-		self.home_look();
+		self.desk.home_look();
 		// a game started or quit, the engine folded: the pump's gates and the tray
-		self.pump_refresh();
+		self.desk.pump_refresh();
 		// the game found or running, and a pump that held the first five minutes' end gone
-		self.welcome_found();
+		self.desk.welcome_found();
 	}
 
 	fn on_game_tick(&mut self, capture: &Capture, snap: &Snapshot) {
@@ -2031,22 +1967,22 @@ impl Helper {
 		// a save the client wrote while it runs (a /reload, a logout to the character list) comes in now, so a load the
 		// strip never showed (no grant, the game out of view) is in the mirror from the load after it on; the load after
 		// it reads the pairing block and the sign of life, so its load no longer comes before them
-		if let Some(addons) = self.game.as_ref().map(|g| g.addons.clone()).filter(|a| self.taken_in.contains(a))
+		if let Some(addons) = self.desk.p.game.as_ref().map(|g| g.addons.clone()).filter(|a| self.taken_in.contains(a))
 			&& self.take_in_saves(&addons)
 		{
 			self.loaded_before = None;
 		}
-		if alive_due(self.game.is_some(), self.alive_at, now().unix) {
+		if alive_due(self.desk.p.game.is_some(), self.alive_at, now().unix) {
 			self.beat_for_game();
 		}
-		let running = game::running(self.game.as_ref(), snap);
+		let running = game::running(self.desk.p.game.as_ref(), snap);
 		// QuestPump installed or removed while the game runs (a /reload loads it): the mirror follows from its next write
 		let lacked = self.game_lacks_addon();
-		let had = self.game_addons.take();
-		self.game_addons = running.as_ref().map(|g| g.addons.clone()).filter(|a| install::holds_questpump(a));
-		let lacks = running.is_some() && self.game_addons.is_none();
-		if running == self.game {
-			if self.game_addons != had {
+		let had = self.desk.p.game_addons.take();
+		self.desk.p.game_addons = running.as_ref().map(|g| g.addons.clone()).filter(|a| install::holds_questpump(a));
+		let lacks = running.is_some() && self.desk.p.game_addons.is_none();
+		if running == self.desk.p.game {
+			if self.desk.p.game_addons != had {
 				// QuestPump installed in the running game (its rows are that install's), or removed from it
 				let _ = self.addons();
 			}
@@ -2054,27 +1990,32 @@ impl Helper {
 			// comes on the tick, and so does the end of Reading once no frame read for `OUT_AFTER` (a stream that
 			// stopped as the window left the screen sent one frame without the strip; frames that do not read are the
 			// unreadable rule's)
-			let unseen = self.sighting.read_at.is_some_and(|t| t.elapsed() >= UNSEEN_AFTER);
-			let gone = self.screen == Dot::Live && !self.sighting.read_lately() && !self.sighting.unreadable_now();
-			if self.game.is_some() && (gone || (self.screen == Dot::NoStrip && (lacks || lacked || unseen))) {
+			let unseen = self.desk.p.sighting.read_at.is_some_and(|t| t.elapsed() >= UNSEEN_AFTER);
+			let gone = self.desk.p.screen == Dot::Live
+				&& !self.desk.p.sighting.read_lately()
+				&& !self.desk.p.sighting.unreadable_now();
+			if self.desk.p.game.is_some()
+				&& (gone || (self.desk.p.screen == Dot::NoStrip && (lacks || lacked || unseen)))
+			{
 				let line = self.out_of_sight();
 				self.screen(Dot::NoStrip, line);
 			}
 			return;
 		}
-		let was = self.game.take();
-		self.game = running;
-		self.sighting.read = false; // another client, or none: none of its frames read yet
+		let was = self.desk.p.game.take();
+		self.desk.p.game = running;
+		self.desk.p.sighting.read = false; // another client, or none: none of its frames read yet
 		// the client whose load came before the mirror is left once another or none runs: a client that starts now reads
 		// the pairing block and the sign of life at its load
-		if self.game.as_ref().map(|g| g.pid) != self.loaded_before {
+		if self.desk.p.game.as_ref().map(|g| g.pid) != self.loaded_before {
 			self.loaded_before = None;
 		}
 		// the capture reads the window of the client the mirror follows, never another client's
-		capture.set_game(self.game.as_ref().map(|g| g.pid));
+		capture.set_game(self.desk.p.game.as_ref().map(|g| g.pid));
 		// the client by its install's label, and what QuestPump found of the game with it, in one change of the view
-		let client = self.game.as_ref().map(|g| ui::RunningGame { label: install::label(&g.addons), read: false });
-		let found = self.found().game;
+		let client =
+			self.desk.p.game.as_ref().map(|g| ui::RunningGame { label: install::label(&g.addons), read: false });
+		let found = self.desk.found().game;
 		ui::update(&self.app, |v| {
 			v.computer.game = client;
 			v.computer.found = found;
@@ -2083,11 +2024,11 @@ impl Helper {
 		self.shown_folder = None; // the folder's state again: an addon updated while the game was closed, another install
 		let _ = self.addons();
 		// a capture that stopped tries again with the game (a missing grant waits for the grant and a restart)
-		let again = self.screen == Dot::Stopped && !self.grant_missing;
-		if again || !matches!(self.screen, Dot::Stopped | Dot::Off) {
-			self.sighting.unreadable = None;
-			if self.game.is_some() {
-				self.sighting.read_at = Some(Instant::now());
+		let again = self.desk.p.screen == Dot::Stopped && !self.grant_missing;
+		if again || !matches!(self.desk.p.screen, Dot::Stopped | Dot::Off) {
+			self.desk.p.sighting.unreadable = None;
+			if self.desk.p.game.is_some() {
+				self.desk.p.sighting.read_at = Some(Instant::now());
 				let line = if lacks { self.out_of_sight() } else { Screen::Waiting };
 				self.screen(Dot::NoStrip, line);
 			} else {
@@ -2097,20 +2038,20 @@ impl Helper {
 		// every game start: a game in another folder than the last write gets the pairing block and the rows before
 		// it logs in, and the write's sign of life tells the addon at its first load that the helper runs
 		// (`ns.HelperState`)
-		if self.game.is_some() {
+		if self.desk.p.game.is_some() {
 			self.due_by(Instant::now());
 		}
 		// the client followed until now is left: its logout rule and the devices' `session_end`, whether none runs now
 		// or another took its place within the tick. `game::running` leaves a running client only for one with
 		// QuestPump where it had none, so a client left this way quit or never painted a strip.
 		if let Some(left) = was {
-			let fx = self.session.end_game(&now());
+			let fx = self.desk.session.end_game(&now());
 			self.apply(fx);
 			// the client wrote its save as it quit: rows the strip never showed (the helper started late, the capture
 			// stopped) come in here
 			self.take_in_saves(&left.addons);
 			// the game closed: what the release feeds bring may go in now
-			if self.game.is_none() {
+			if self.desk.p.game.is_none() {
 				self.feeds_wake();
 			}
 		}
@@ -2145,7 +2086,7 @@ impl Helper {
 					return false;
 				};
 				self.unread.remove(addons);
-				let (taken, fx) = self.session.adopt(&held, &install, &now());
+				let (taken, fx) = self.desk.session.adopt(&held, &install, &now());
 				if taken > 0 || fx.people_changed {
 					log::info!("{}: took in {taken} rows the helper did not have", path.display());
 				}
@@ -2171,7 +2112,7 @@ impl Helper {
 		let came = !written.is_empty();
 		for (path, at) in written {
 			if let Some(written) = at.and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()) {
-				let fx = self.session.save_written(written.as_secs_f64(), &now());
+				let fx = self.desk.session.save_written(written.as_secs_f64(), &now());
 				self.apply(fx);
 			}
 			if self.take_in_file(&path, addons, true) {
@@ -2199,9 +2140,9 @@ impl Helper {
 	/// follows or failed (a `State.lua` that does not read, a folder that does not resolve: tried again, and what it
 	/// brings later may still end the first five minutes): the first five minutes may decide.
 	fn stores_are_read(&mut self) {
-		if !self.stores_read {
-			self.stores_read = true;
-			self.welcome_found();
+		if !self.desk.p.stores_read {
+			self.desk.p.stores_read = true;
+			self.desk.welcome_found();
 		}
 	}
 
@@ -2213,7 +2154,7 @@ impl Helper {
 			Sight::Sees
 		} else if self.grant_missing {
 			Sight::NoGrant
-		} else if self.screen == Dot::Stopped {
+		} else if self.desk.p.screen == Dot::Stopped {
 			Sight::Stopped
 		} else {
 			Sight::Sees
@@ -2253,20 +2194,20 @@ impl Helper {
 			return None;
 		};
 		// a character the install has no index for yet gets one here, kept from then on (the people saved)
-		let (mirrored, fx) = self.session.mirrored(&install);
+		let (mirrored, fx) = self.desk.session.mirrored(&install);
 		self.apply(fx);
 		let t = now();
 		let text = mirror::state_lua(&State {
 			saved_at: t.unix,
-			pairing: &self.settings.pairing,
+			pairing: &self.desk.settings.pairing,
 			seen_at: t.unix,
 			sight: self.sight(),
 			rows: &mirrored.rows,
 			chars: &mirrored.chars,
 			profiles: &mirrored.profiles,
 			profile_keys: &mirrored.profile_keys,
-			proofs: &self.session.book().mirror(),
-			body: &self.body.body,
+			proofs: &self.desk.session.book().mirror(),
+			body: &self.desk.body.body,
 		});
 		Some((addons, text))
 	}
@@ -2332,7 +2273,8 @@ impl Helper {
 	async fn quit(&mut self, start: Option<PathBuf>, again: bool) {
 		let place = self.app.state::<crate::desk::Desk>().place();
 		self.keep_place(place);
-		self.pump_quit();
+		self.desk.pump_quit();
+		self.drain();
 		self.wind_down().await;
 		if let Some(moved) = start {
 			match update::start_moved(&moved) {
@@ -2358,8 +2300,8 @@ impl Helper {
 			let _ = served.stop.send(true);
 		}
 		// the games running are played up to now and their runs kept, both written by the clock's write just after
-		self.recent_seen(now().unix);
-		self.settings.runs = self.games.as_ref().map(|g| g.watcher.keep(lan::now_ms()));
+		self.desk.recent_seen(now().unix);
+		self.desk.settings.runs = self.desk.p.games.as_ref().map(|g| g.watcher.keep(lan::now_ms()));
 		self.sitting_keep(now().unix);
 		self.ble_stop();
 		self.advert.stop().await;
@@ -2371,7 +2313,8 @@ impl Helper {
 		if said {
 			tokio::time::sleep(Duration::from_millis(50)).await; // the socket's writers send the lines before the exit
 		}
-		self.engine_settle().await;
+		self.desk.engine_settle().await;
+		self.drain();
 		self.flush().await;
 	}
 
@@ -2379,9 +2322,9 @@ impl Helper {
 	/// listens again, and what the wind-down kept for a start that never came goes (the games' runs and the sitting
 	/// clock), so a later start never takes it, and never closes a run again.
 	async fn carry_on(&mut self) {
-		self.settings.runs = None;
-		self.settings.sitting = None;
-		self.save_settings();
+		self.desk.settings.runs = None;
+		self.desk.settings.sitting = None;
+		self.desk.save_settings();
 		self.serve_lan().await;
 	}
 
@@ -2600,6 +2543,12 @@ fn games_channels() -> (Option<Games>, mpsc::UnboundedReceiver<games::Heard>, mp
 
 /// The body every app device shares from `body.json`, a file that did not read logged (Your setup says it started
 /// empty).
+/// How the engine's door runs a call that may panic (`questpump_desk::engine::Caught`): its panic caught, never a
+/// crash report (`crash::caught`).
+fn engine_caught(call: Box<dyn FnOnce() + '_>) -> std::thread::Result<()> {
+	crate::crash::caught(call)
+}
+
 fn kept_body(dir: &Path) -> Kept {
 	let kept = Kept::load(dir, lan::now_ms());
 	if let Some(why) = &kept.unread {
@@ -2610,7 +2559,7 @@ fn kept_body(dir: &Path) -> Kept {
 
 /// The session from the data folder: the rows, the app's rows, the sheets, the people, the heart-rate proofs and the
 /// learnt display lag; and whether `far.jsonl` lost rows (it could not be read, or lines of it did not), which the sync
-/// takes in again (`Helper::sync_start`).
+/// takes in again (`Desk::sync_start`).
 fn open_session(dir: &Path, settings: &Settings) -> anyhow::Result<(Session, bool)> {
 	let (store, damaged) = Store::open(dir)?;
 	if damaged > 0 {
@@ -2645,7 +2594,7 @@ fn open_session(dir: &Path, settings: &Settings) -> anyhow::Result<(Session, boo
 	session.set_display_lag(settings.display_lag_ms);
 	session.set_book(Book::load(dir));
 	// the other computers' rows (slice 60): a file that cannot be read leaves them in memory for this run; either way a
-	// row lost is taken in again, since the sync pulls the account from its start (`Helper::sync_start`)
+	// row lost is taken in again, since the sync pulls the account from its start (`Desk::sync_start`)
 	let far_lost = match FarRows::open(dir) {
 		Ok((far, damaged)) => {
 			if damaged > 0 {
@@ -2710,7 +2659,6 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 	let (ble_tx, ble) = mpsc::unbounded_channel::<Heard>();
 	let feedback = Feedback::new(&dir, client.clone(), posts_tx.clone());
 	let counts = CountsState::new(&dir, client.clone(), posts_tx);
-	let (sync_state, sync) = SyncState::new(client);
 	let (addon_state, addon) = AddonState::new();
 	let (mut games, heard, feeds) = games_channels();
 	// the runs the last quit kept go on before the first look; taken, so the start's own save drops them and a later
@@ -2718,7 +2666,8 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 	if let (Some(games), Some(kept)) = (games.as_mut(), settings.runs.take()) {
 		games.resume_runs(&kept, lan::now_ms(), &settings.games);
 	}
-	let engine = Door::start();
+	let clock = Clock { now: Box::new(|| lan::now_ms().div_euclid(1_000)), offset_at: Box::new(local_offset_at) };
+	let engine = Door::start(clock, engine_caught);
 	let display = Arc::new(Mutex::new((String::new(), 1.0)));
 	let cmds = socket_task(&app, &dir, &lines, &display);
 	let address = find_address().await;
@@ -2727,16 +2676,35 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 	let lan = lan_state(&settings, &queue, asks_tx);
 	let capture = Capture::start(events_tx);
 	let secrets = keeper.run();
+	let (sync_link, sync) = SyncLink::new(client, address.name.clone(), secrets == RunSecrets::Unread);
 	let writes = writer(&app, written_tx, keeper);
 	let sitting = sitting::restored(settings.sitting, now().unix);
-	let helper = Helper {
-		audio: Audio::start(&app, &settings.sound),
-		app,
-		body: kept_body(&dir),
+	let audio = Audio::start(&app, &settings.sound);
+	let body = kept_body(&dir);
+	let shell = Shell {
+		audio,
+		app: app.clone(),
+		dir: dir.clone(),
+		writes: writes.clone(),
+		game: None,
+		game_addons: None,
+		followed: None,
+		without_addon: None,
+		sighting: Sighting::default(),
+		screen: Dot::NoGame,
+		stores_read: false,
+		games,
+		standing: Standing::default(),
+		sitting,
 		pro: pro::Pro::load(&dir, settings.sync.account.as_deref()),
+		sync: sync_link,
+		out: Vec::new(),
+	};
+	let publisher = app.state::<desk::Desk>().publisher.clone();
+	let helper = Helper {
+		desk: questpump_desk::Desk::new(shell, publisher, session, settings, body, engine),
+		app,
 		dir,
-		session,
-		settings,
 		secrets,
 		queue,
 		lan,
@@ -2748,7 +2716,6 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		advert: dnssd::Advert::start(),
 		lines,
 		writes,
-		game: None,
 		due: Some(Instant::now()), // the pairing block reaches the game even before it runs
 		alive_at: None,
 		alive_error: None,
@@ -2756,17 +2723,11 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		read_retry: false,
 		unread: HashSet::new(),
 		held_until: None,
-		screen: Dot::NoGame,
-		sighting: Sighting::default(),
 		grant_missing: false,
-		game_addons: None,
-		followed: None,
-		without_addon: None,
 		without_addon_picked: false,
 		looked_for_game: None,
 		written: None,
 		taken_in: HashSet::new(),
-		stores_read: false,
 		saves_read: mirror::SavesRead::default(),
 		setup: None,
 		loaded_before: game::running(None, &Snapshot::take()).filter(|g| !alive_fresh(&g.addons)).map(|g| g.pid),
@@ -2789,18 +2750,10 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		crash,
 		region,
 		counts,
-		games,
-		standing: Standing::default(),
 		offering: Offering::default(),
 		reminding: Reminding::new(),
-		sitting,
-		engine,
-		home: Home::default(),
-		menu: MenuPages::default(),
-		book_log: BookLog::default(),
-		pumps: Pumps::default(),
-		sync: sync_state,
 		addon: addon_state,
+		backup: menu_pages::backup::State::default(),
 	};
 	let inbox = Inbox {
 		events,
@@ -2851,7 +2804,7 @@ struct Inbox {
 	/// What the games' feeds say: Rocket League's connection and the fed games' tasks (slice 48).
 	feeds: mpsc::UnboundedReceiver<games::News>,
 	/// What the sync server answered (slice 60).
-	sync: mpsc::UnboundedReceiver<sync::News>,
+	sync: mpsc::UnboundedReceiver<questpump_desk::sync::News>,
 	/// What the addon's feed checks, downloads and swaps report.
 	addon: mpsc::UnboundedReceiver<crate::addon::News>,
 }
@@ -2868,7 +2821,7 @@ async fn serve(
 	helper.start(started, updates_tx).await;
 	let mut ticks = Ticks::new();
 	loop {
-		let wake = helper.pump_wake();
+		let wake = helper.desk.pump_wake();
 		tokio::select! {
 			Some(event) = inbox.events.recv() => {
 				keep_display(&display, &event);
@@ -2898,19 +2851,22 @@ async fn serve(
 			Some(news) = inbox.posts.recv() => helper.on_posted(news),
 			Some(post) = inbox.heard.recv() => helper.on_gsi(post),
 			Some(news) = inbox.feeds.recv() => helper.on_feed(news),
-			Some(news) = inbox.sync.recv() => helper.on_sync(news),
+			Some(news) = inbox.sync.recv() => helper.desk.on_sync(news),
 			Some(news) = inbox.addon.recv() => helper.on_addon(news),
-			_ = ticks.sync.tick() => helper.sync_drive(),
-			Some(back) = helper.engine.answer() => back(&mut helper),
-			() = pump::wake(wake) => helper.pump_due(),
+			_ = ticks.sync.tick() => helper.desk.sync_drive(),
+			Some(back) = helper.desk.engine.answer() => back(&mut helper.desk),
+			() = desk::wake(wake) => helper.desk.pump_due(),
 			_ = ticks.outbox.tick() => {
 				helper.send_feedback();
 				helper.send_crashes();
 				helper.send_counts();
 			}
 		}
-		// the Log, once a turn, from whatever the turn made due (desk/log.rs)
-		helper.log_flush();
+		// what the desk asked of the loop in this turn (`Helper::drain`)
+		helper.drain();
+		// the Log, once a turn, from whatever the turn made due (questpump-desk/src/log.rs)
+		helper.desk.log_flush();
+		helper.drain();
 		// the game as the computer knows it now, in the next response to a phone or a watch
 		helper.tell_devices();
 	}

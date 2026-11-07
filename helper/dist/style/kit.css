@@ -77,6 +77,11 @@ input, textarea, code {
 	white-space: nowrap;
 }
 
+/* a hyphenated word kept whole (element.js `wordsWhole`): a line never breaks at its hyphen */
+.qp-nowrap {
+	white-space: nowrap;
+}
+
 /* Art ------------------------------------------------------------------------------------------------------------- */
 
 /* a glyph's colour beside its words: gold for progress and earned stars only (docs/ui.md rule 2) */

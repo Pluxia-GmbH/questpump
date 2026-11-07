@@ -13,14 +13,19 @@
 // lookup), a group without a row not at all. Copy a report for help puts QuestPump's own report (the `diagnostics`
 // command's) on the clipboard, written inside the click with the text still coming (WebKit asks for that), and says for
 // three seconds whether it copied; Pump home and Hero offer the same report as a quiet button when pumps could not
-// start.
+// start. In the browser (its `play` topic, docs/plan.md slice 63) the Menu starts with Get QuestPump for your computer
+// (the site's /from/play in a new tab) and, while the phone apps are in the stores (the topic's `phones`), Get
+// QuestPump for your phone (the site's /get/phone in a new tab), and a Menu not yet saved ends on Delete progress in
+// this browser (asked once), which deletes this browser's data and starts again ("Leaving"); the desktop app publishes
+// no `play`.
 
-import {call, intent} from "../../lib/bridge.js";
+import {call, get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {announce} from "../../lib/focus.js";
 import {MENU, push, register, registered} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
-import {page, watch} from "../page.js";
+import {confirmWindow} from "../book/common.js";
+import {GET_COMPUTER, GET_PHONE, page, watch} from "../page.js";
 import {backupDay} from "./backup.js";
 import {clock} from "./reminders.js";
 
@@ -88,12 +93,21 @@ register(MENU, () => {
 	const feedback = open("desk.feedback", t("menu.feedback.row"), "mark_report");
 	const acknowledgements = open("desk.menu.acknowledgements", t("menu.acknowledgements.row"), "reward_title");
 	const pro = open("desk.menu.pro", t("pro.title"), "helm");
-	// the switch moves when the topic brings Rust's answer (Toggle's contract), never before
+	const getComputer = get("play") ? h("qp-row", {heading: t("setup.add.get"), glyph: "device_computer",
+		trailing: "external", "on:click": () => window.open(GET_COMPUTER, "_blank", "noopener")}) : null;
+	const getPhone = get("play") ? h("qp-row", {heading: t("play.phoneapp"), glyph: "device_phone", trailing: "external",
+		hidden: !get("play").phones, "on:click": () => window.open(GET_PHONE, "_blank", "noopener")}) : null;
+	const wipe = get("play") ? h("qp-row", {heading: t("play.wipe"), glyph: "mark_close", trailing: "action",
+		destructive: true, hidden: true, "data-focus-key": "wipe",
+		"on:click": () => confirmWindow(t("play.wipe.title"), null, t("places.delete"),
+			() => intent("play.wipe").catch(console.error))}) : null;
+	// the switch moves when the topic brings Rust's answer (Toggle's contract), never before; each shows once its topic
+	// stands (the browser sends nothing, slice 63, and publishes neither)
 	const crash = h("qp-row", {heading: t("menu.crash"), meta: t("menu.crash.note"), glyph: "mark_report",
-		trailing: "toggle"});
+		trailing: "toggle", hidden: true});
 	crash.addEventListener("qp-change", (e) => intent("crash.switch", {on: e.detail}).catch(console.error));
 	const usage = h("qp-row", {heading: t("menu.usage"), meta: t("menu.usage.note"), glyph: "action_log",
-		trailing: "toggle"});
+		trailing: "toggle", hidden: true});
 	usage.addEventListener("qp-change", (e) => intent("usage.switch", {on: e.detail}).catch(console.error));
 	const diagnostics = h("qp-row", {heading: t("desk.feedback.diagnostics"), glyph: "mark_list", trailing: "action"});
 	let reset = null;
@@ -105,9 +119,10 @@ register(MENU, () => {
 		}, SAID_MS);
 	}));
 	view.body.append(
-		...group(null, computer, phones, devices),
+		...group(null, getComputer, getPhone, computer, phones, devices),
 		...group(t("desk.menu.section.pumps"), reminders, sound, setup, quick, backup, email),
-		...group(t("desk.feedback.section"), about, does, feedback, crash, usage, diagnostics, acknowledgements, pro));
+		...group(t("desk.feedback.section"), about, does, feedback, crash, usage, diagnostics, acknowledgements, pro,
+			wipe));
 	watch(view, "menu.phones", (phonesTopic) => {
 		if (phones) phones.meta = phonesTopic.phone_line;
 	});
@@ -128,9 +143,11 @@ register(MENU, () => {
 			: r.sitting_on ? t("reminders.sitting") : t("menu.reminders.off");
 	});
 	watch(view, "crash", (c) => {
+		crash.hidden = false;
 		crash.checked = c.on;
 	});
 	watch(view, "usage", (u) => {
+		usage.hidden = false;
 		usage.checked = u.on;
 	});
 	// the later of the last backup file and the last sync (none while Sync is off)
@@ -155,7 +172,11 @@ register(MENU, () => {
 		pro.value = a.pro === "on" ? t("menu.on") : null;
 		pro.meta = a.pro === "refused" ? t("desk.menu.pro.refused") : null;
 	});
+	watch(view, "play", (p) => {
+		if (wipe) wipe.hidden = p.saved;
+		if (getPhone) getPhone.hidden = !p.phones;
+	});
 	view.stops.push(() => clearTimeout(reset));
-	view.primary = () => computer;
+	view.primary = () => getComputer ?? computer;
 	return view;
 });

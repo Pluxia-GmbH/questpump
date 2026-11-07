@@ -8,6 +8,15 @@ import {announce, focusOn} from "../lib/focus.js";
 import {conceal, reveal} from "../lib/router.js";
 import {h} from "../kit/element.js";
 
+/** QuestPump on your computer from the browser (docs/plan.md slice 63): the site's click count (`/from/play`, the
+ * source `play`, contract/get-api.yaml), which goes on to the download page. */
+export const GET_COMPUTER = "https://questpump.com/from/play";
+
+/** QuestPump on your phone from the browser while the phone apps are in the stores (the `play` topic's `phones`): the
+ * site's `/get/phone`, which sends the visitor to their phone's store, or to the start page where it cannot tell
+ * (contract/get-api.yaml). */
+export const GET_PHONE = "https://questpump.com/get/phone";
+
 /** A pushed page with its DetailBar `heading` (a root page's TopBar with `root`), its column `body`. */
 export function page({heading, root = false}) {
 	const bar = h(root ? "qp-top-bar" : "qp-detail-bar", {heading});
@@ -38,6 +47,35 @@ export function say(line, text) {
 	if (text && text !== line.textContent) announce(text);
 	line.textContent = text;
 	line.hidden = !text;
+}
+
+/** How long Copy says Copied. */
+const COPIED_MS = 3000;
+
+/** Copy for a code the view holds (the restore code, Link a device's link code): the code on the clipboard, then
+ * Copied for three seconds, heard as it is said; disabled while `set` gives it none. Its timer stops with the view. */
+export function copyButton(view) {
+	let text = "";
+	let reset = null;
+	const button = h("qp-secondary-button", {label: t("menu.restore.copy")});
+	button.addEventListener("click", () => {
+		navigator.clipboard.writeText(text).then(() => {
+			button.label = t("menu.restore.copied");
+			announce(button.label);
+			clearTimeout(reset);
+			reset = setTimeout(() => {
+				button.label = t("menu.restore.copy");
+			}, COPIED_MS);
+		}, console.error);
+	});
+	view.stops.push(() => clearTimeout(reset));
+	return {
+		button,
+		set(value) {
+			text = value ?? "";
+			button.disabled = !value;
+		},
+	};
 }
 
 /** A code that opens the player's account (the restore code, the one typed to restore, Link a device's code, Email's
@@ -73,6 +111,26 @@ export function heldCode(view, draw) {
 			if (code === null) hold();
 			else if (drawn) draw(code);
 			else show.hidden = false;
+		},
+	};
+}
+
+/** The restore code held behind Show code, its one line under it, and its Copy (Restore code's page and Keep your
+ * key's): `set` takes the code, none while there is none. */
+export function restoreCode(view) {
+	const code = h("p", {class: "qp-type-num-medium qp-words-block qp-centre", hidden: true});
+	const held = heldCode(view, (shown) => {
+		code.textContent = shown ?? "";
+		code.hidden = shown === null;
+		return code;
+	});
+	const copy = copyButton(view);
+	return {
+		card: h("qp-card", {class: "qp-stack-small"}, code, held.show, words(t("menu.restore.line"), "body")),
+		copy: copy.button,
+		set(value) {
+			copy.set(value);
+			held.set(value || null);
 		},
 	};
 }

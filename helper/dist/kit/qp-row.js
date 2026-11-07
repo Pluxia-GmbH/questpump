@@ -13,7 +13,7 @@
 // pump's swap row, "More ways to swap", 2026-10-26). `destructive` draws its words and its glyph in stop, `disabled` in
 // text3, inert, its segment too.
 
-import {KitElement, define, emit, h} from "./element.js";
+import {KitElement, define, emit, h, wordsWhole} from "./element.js";
 
 class QpRow extends KitElement {
 	build() {
@@ -79,7 +79,7 @@ class QpRow extends KitElement {
 		if (this.glyph && this.glyphEl.name !== this.glyph) this.glyphEl.name = this.glyph;
 		this.glyphEl.classList.toggle("qp-row-tile", this.tile);
 		this.stepEl.textContent = this.step ?? "";
-		this.head.textContent = this.heading ?? "";
+		this.head.replaceChildren(...wordsWhole(this.heading ?? ""));
 		const lines = this.meta ? [this.meta, ...this.lines] : this.lines;
 		this.metas.replaceChildren(...lines.filter(Boolean).map((line) => h("span", {text: line})));
 		this.metas.hidden = !this.metas.childElementCount;

@@ -1,14 +1,14 @@
-//! Pro on the computer in the loop (docs/plan.md slice 35, "Pro on the computer", and slice 64, "Every device reads
-//! it" and "The screens"; `questpump_core::pro`): a paired phone's proof rides its sync and is checked at once, the
-//! account's token comes from the sync server (`GET pro`, `runtime/sync.rs`) and is checked offline the same way, the
-//! grants live in `pro.json` in the data folder (checked again at every start under this build's rules), a new pairing
-//! code clears the phones' (the window's, or the start's when the settings did not read) and the pair tick drops the
-//! ones that ended and a token of another account. Pro's extras show on the computer while any phone's grant or the
-//! account's stands, paired or not, also after another phone's Unpair ended the pairings (`end_pairings`): a phone
-//! that holds the code keeps its grant and names itself paired again at its next sync. The log names the device or the
-//! account's source, the outcome and the date a grant holds until, never a proof, a token or an id it carries; no
-//! proof or token reaches diagnostics, feedback, the mirror, `Alive.lua` or anything the game reads. The Menu's Pro row
-//! follows each change of the state (`menu.about`, `Helper::pro_state`), which keeps each phone's last refusal in
+//! Pro on the computer in the loop (docs/plan.md slice 35, "Pro on the computer", and slice 64, "Every device reads it"
+//! and "The screens"; `questpump_core::pro`): a paired phone's proof rides its sync and is checked at once, the
+//! account's token comes from the sync server (`GET pro`, questpump-desk's `sync`) and is checked offline the same way,
+//! the grants live in `pro.json` in the data folder (checked again at every start under this build's rules), a new
+//! pairing code clears the phones' (the window's, or the start's when the settings did not read) and the pair tick
+//! drops the ones that ended and a token of another account. Pro's extras show on the computer while any phone's grant
+//! or the account's stands, paired or not, also after another phone's Unpair ended the pairings (`end_pairings`): a
+//! phone that holds the code keeps its grant and names itself paired again at its next sync. The log names the device
+//! or the account's source, the outcome and the date a grant holds until, never a proof, a token or an id it carries;
+//! no proof or token reaches diagnostics, feedback, the mirror, `Alive.lua` or anything the game reads. The Menu's Pro
+//! row follows each change of the state (`menu.about`, `Helper::pro_state`), which keeps each phone's last refusal in
 //! memory until its next proof is taken or a new pairing code ends the pairings, so a paired phone whose proof this
 //! build could not confirm (no Play licensing key built in, Apple's Sandbox in a release) reads so, never "Comes with
 //! Pro on your phone".
@@ -42,7 +42,7 @@ const PRO_PAGE: &str = "https://questpump.com/pro";
 const RULES: Rules = Rules { sandbox: cfg!(debug_assertions) };
 
 /// The paired phones' Pro grants in the loop.
-pub(super) struct Pro {
+pub(crate) struct Pro {
 	grants: Grants,
 	/// Pro's state on the computer as the log last named it (`Helper::pro_state`).
 	shown: Option<ProState>,
@@ -55,7 +55,7 @@ pub(super) struct Pro {
 }
 
 /// What Pro's page opens in the browser: Get Pro's questpump.com page (`PRO_PAGE`) or Manage Pro's portal (`POST
-/// pro/portal`, `runtime/sync.rs`).
+/// pro/portal`, `questpump_desk::sync`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum ProLink {
 	Page,
@@ -118,6 +118,11 @@ impl Pro {
 		}
 		Self { grants, shown: None, due: dropped > 0, refused: BTreeMap::new(), page: Page::default() }
 	}
+
+	/// Any verified grant stands at `now_ms`, a phone's or the account's (`account`: `Grants::on`).
+	pub(crate) fn grants_on(&self, now_ms: i64, account: Option<&str>) -> bool {
+		self.grants.on(now_ms, account)
+	}
 }
 
 /// The date a grant holds until, as the log names it ("2026-11-14", UTC).
@@ -127,26 +132,17 @@ fn day(ms: i64) -> String {
 }
 
 impl Helper {
-	/// Whether Pro's extras show on the computer: on while any phone's verified grant or the account's stands now
-	/// (`Grants::on`; a release build's are Apple's `Production` alone, `RULES`), whether or not the pairing block names
-	/// a phone, so one phone's Unpair never hides the grants of the others that hold the code; off while a phone is
-	/// paired without one; none while neither (the Menu's Pro page then offers to pair a phone, and Get Pro).
-	pub(crate) fn pro_on(&self) -> Option<bool> {
-		let on = self.pro.grants.on(lan::now_ms(), self.settings.sync.account.as_deref());
-		(on || self.settings.pairing.phone.is_some()).then_some(on)
-	}
-
 	/// Where the account's Pro was bought while its token stands (Pro's page's line and Manage Pro).
 	fn pro_from(&self) -> Option<Source> {
-		self.pro.grants.account_pro(lan::now_ms(), self.settings.sync.account.as_deref()).map(|g| g.source)
+		self.desk.p.pro.grants.account_pro(lan::now_ms(), self.desk.settings.sync.account.as_deref()).map(|g| g.source)
 	}
 
 	/// Pro's state as the Menu's Pro row and its page say it: none while no phone is paired and no grant stands.
 	pub(crate) fn pro_state(&self) -> Option<ProState> {
-		self.pro_on().map(|on| {
+		self.desk.pro_on().map(|on| {
 			if on {
 				ProState::On
-			} else if self.pro.refused.values().any(|why| !why.lapsed()) {
+			} else if self.desk.p.pro.refused.values().any(|why| !why.lapsed()) {
 				ProState::Refused
 			} else {
 				ProState::Off
@@ -158,12 +154,12 @@ impl Helper {
 	/// there were none), since no phone holds that code yet; the file again when its check dropped a grant; and Pro's
 	/// state in the log.
 	pub(super) fn start_pro(&mut self, new_key: bool) {
-		if new_key && self.pro.grants.clear() {
+		if new_key && self.desk.p.pro.grants.clear() {
 			log::info!("pro: a new pairing code at the start: every kept grant dropped");
-			self.pro.due = true;
+			self.desk.p.pro.due = true;
 		}
-		if self.pro.due {
-			self.pro.due = false;
+		if self.desk.p.pro.due {
+			self.desk.p.pro.due = false;
 			self.save_pro();
 		}
 		self.show_pro();
@@ -172,12 +168,12 @@ impl Helper {
 	/// A phone's proof from its sync: kept, dropped or refused; a refusal never touches the sync it rode on.
 	pub(super) fn take_pro(&mut self, client: &str, device: Device, proof: &ProProof) {
 		let (who, store) = (device.name(), proof.store.name());
-		let taken = self.pro.grants.take(client, device, proof, lan::now_ms(), RULES);
+		let taken = self.desk.p.pro.grants.take(client, device, proof, lan::now_ms(), RULES);
 		// the phone's last refusal stands until a proof of it is taken
 		if let Taken::Refused(why) = taken {
-			self.pro.refused.insert(client.to_owned(), why);
+			self.desk.p.pro.refused.insert(client.to_owned(), why);
 		} else {
-			self.pro.refused.remove(client);
+			self.desk.p.pro.refused.remove(client);
 		}
 		match taken {
 			Taken::Kept(grant) => {
@@ -202,9 +198,9 @@ impl Helper {
 
 	/// The account's token and status as the sync server answered (`GET pro`; no token and no status that stands: the
 	/// account has no Pro): kept, dropped or refused; a refusal keeps the token kept before.
-	pub(super) fn take_account_pro(&mut self, token: Option<&str>, status: Option<&str>) {
-		let Some(account) = self.settings.sync.account.clone() else { return };
-		match self.pro.grants.take_token(token, status, &account, lan::now_ms()) {
+	pub(crate) fn take_account_pro(&mut self, token: Option<&str>, status: Option<&str>) {
+		let Some(account) = self.desk.settings.sync.account.clone() else { return };
+		match self.desk.p.pro.grants.take_token(token, status, &account, lan::now_ms()) {
 			TokenTaken::Kept(grant) => {
 				log::info!("pro: the account's Pro ({:?}) verified, until {}", grant.source, day(grant.ends));
 				self.save_pro();
@@ -222,8 +218,8 @@ impl Helper {
 
 	/// A new pairing code ends every pairing, and every phone's grant with them.
 	pub(super) fn clear_pro(&mut self) {
-		self.pro.grants.clear();
-		self.pro.refused.clear();
+		self.desk.p.pro.grants.clear();
+		self.desk.p.pro.refused.clear();
 		self.save_pro();
 		self.pro_changed();
 	}
@@ -231,18 +227,18 @@ impl Helper {
 	/// A phone unpaired (`POST /v1/unpair`): its grant and its last refusal go with it, so a phone paired later shows
 	/// Pro on the computer only by its own.
 	pub(super) fn forget_pro(&mut self, client: &str) {
-		if self.pro.grants.forget(client) {
+		if self.desk.p.pro.grants.forget(client) {
 			log::info!("pro: the unpaired phone's grant dropped");
 			self.save_pro();
 		}
-		self.pro.refused.remove(client);
+		self.desk.p.pro.refused.remove(client);
 		self.pro_changed();
 	}
 
 	/// The pair tick: the grants that ended go, and a token of another account than the one the computer is in, and
 	/// the state is computed again.
 	pub(super) fn on_pro_tick(&mut self) {
-		if self.pro.grants.prune(lan::now_ms(), self.settings.sync.account.as_deref()) {
+		if self.desk.p.pro.grants.prune(lan::now_ms(), self.desk.settings.sync.account.as_deref()) {
 			log::info!("pro: a grant ended");
 			self.save_pro();
 		}
@@ -251,15 +247,15 @@ impl Helper {
 
 	/// Pro's state on the computer (`pro_state`) again, in the log when it changed.
 	pub(super) fn pro_changed(&mut self) {
-		if self.pro_state() != self.pro.shown {
+		if self.pro_state() != self.desk.p.pro.shown {
 			self.show_pro();
 		}
 	}
 
 	/// Pro's state on the computer in the log: at the start, and at each change.
 	fn show_pro(&mut self) {
-		self.pro.shown = self.pro_state();
-		match self.pro.shown {
+		self.desk.p.pro.shown = self.pro_state();
+		match self.desk.p.pro.shown {
 			Some(ProState::On) => log::info!("pro: the extras are on"),
 			Some(ProState::Off) => log::info!("pro: the extras are off"),
 			Some(ProState::Refused) => log::info!("pro: the extras are off: the phone's proof was refused here"),
@@ -269,24 +265,24 @@ impl Helper {
 		self.publish_about();
 		self.publish_pro();
 		// the Book's and the Log's Pro parts (`desk::book`)
-		self.book_log_pro();
+		self.desk.book_log_pro();
 	}
 
 	/// The `pro` area's intents: Pro's page's look, Get Pro (questpump.com's Pro page in the browser, `PRO_PAGE`; with
 	/// `sync: true` Sync turned on first, since Pro goes with the account) and Manage Pro (Paddle's customer portal,
-	/// `pro_portal`).
+	/// `Desk::sync_portal`).
 	pub(crate) fn pro_intent(&mut self, intent: &Intent) -> Result<(), String> {
 		match intent.kind() {
-			"pro.look" => self.pro.page.failed = false,
+			"pro.look" => self.desk.p.pro.page.failed = false,
 			"pro.get" => {
 				if !pro::web_prices() {
 					return Err("pro.get: questpump.com sells no Pro".to_owned());
 				}
-				if !self.settings.sync.on {
+				if !self.desk.settings.sync.on {
 					if intent.arg("sync").and_then(serde_json::Value::as_bool) != Some(true) {
 						return Err("pro.get: Sync is off".to_owned());
 					}
-					self.sync_switch(true)?;
+					self.desk.sync_switch(true)?;
 				}
 				self.pro_link_done(ProLink::Page, Some(PRO_PAGE));
 			}
@@ -294,13 +290,17 @@ impl Helper {
 				if self.pro_from() != Some(Source::Web) {
 					return Err("pro.manage: the account's Pro is not questpump.com's".to_owned());
 				}
-				self.pro.page.failed = false;
-				self.pro_portal();
+				self.desk.p.pro.page.failed = false;
+				if self.desk.sync_portal() {
+					self.desk.p.pro.page.out = true;
+				} else {
+					self.pro_link_done(ProLink::Portal, None);
+				}
 			}
 			_ => return Err(intent.unknown()),
 		}
 		self.publish_pro();
-		self.sync_drive();
+		self.desk.sync_drive();
 		Ok(())
 	}
 
@@ -313,18 +313,25 @@ impl Helper {
 			Some(Err(e)) => log::warn!("pro: {link:?} not opened: {e}"),
 			None => {}
 		}
-		self.pro.page.failed = !matches!(opened, Some(Ok(())));
+		self.desk.p.pro.page.failed = !matches!(opened, Some(Ok(())));
 		self.publish_pro();
+	}
+
+	/// Manage Pro's call answered (`Platform::portal_answered`): the portal's address opened, or the page says the
+	/// server did not answer.
+	pub(crate) fn portal_done(&mut self, url: Option<&str>) {
+		self.desk.p.pro.page.out = false;
+		self.pro_link_done(ProLink::Portal, url);
 	}
 
 	/// Pro's page's topic as it stands.
 	pub(crate) fn publish_pro(&self) {
-		let page = &self.pro.page;
+		let page = &self.desk.p.pro.page;
 		let topic = PageTopic {
 			state: self.pro_state(),
 			from: self.pro_from(),
 			get: pro::web_prices(),
-			sync: self.settings.sync.on,
+			sync: self.desk.settings.sync.on,
 			busy: page.out,
 			failed: page.failed,
 		};
@@ -332,7 +339,7 @@ impl Helper {
 	}
 
 	fn save_pro(&self) {
-		match self.pro.grants.to_json() {
+		match self.desk.p.pro.grants.to_json() {
 			Ok(bytes) => self.save_file(pro::FILE, bytes),
 			Err(e) => log::warn!("{}: {e}", pro::FILE),
 		}

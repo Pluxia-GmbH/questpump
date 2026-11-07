@@ -34,11 +34,12 @@
 use questpump_core::games::{Finish, MATCH, Watched};
 use questpump_core::offers::{self, Gate, Offer, Pause, Tunables};
 use questpump_core::protocol::{Command, Line};
+use questpump_desk::seams::Recalled;
+use questpump_desk::settings::GamesSettings;
 
 use super::Helper;
-use crate::desk::seams::Recalled;
 use crate::games::procs::Snapshot;
-use crate::games::{Heard, News};
+use crate::games::{Games, Heard, News};
 use crate::lan::{self, OfferFacts};
 
 /// What a recall or a game's start ended (`Recalled`), logged for `who` (the offer, or the pump) and `why`.
@@ -54,9 +55,9 @@ fn ended_log(ended: Recalled, who: &str, why: &str) {
 impl Helper {
 	/// The games' settings changed: saved, and on Windows the uninstaller's list of the files written beside them.
 	pub(crate) fn save_games(&self) {
-		self.save_settings();
+		self.desk.save_settings();
 		#[cfg(windows)]
-		self.save_file(crate::games::files::LIST, crate::games::files::list_bytes(&self.settings.games));
+		self.save_file(crate::games::files::LIST, crate::games::files::list_bytes(&self.desk.settings.games));
 	}
 
 	/// One look at the games, after the game's: a game started again recalls its close's offer, a new run or match
@@ -67,21 +68,22 @@ impl Helper {
 	/// the card shown or closed, the offer out to the devices where the computer cannot ask, the pages
 	/// and the tray drawn.
 	pub(super) fn on_games_tick(&mut self, snap: &Snapshot) {
-		let Some(games) = self.games.as_mut() else { return };
+		let Some(games) = self.desk.p.games.as_mut() else { return };
 		let ms = lan::now_ms();
 		let unix = ms.div_euclid(1_000);
-		let ticked = games.tick(snap, ms, &mut self.settings.games);
+		let ticked = games.tick(snap, ms, &mut self.desk.settings.games);
 		let t = games.tunables();
 		// a game kept by its Steam app from now on: a pause while it runs names its new key, before the look asks
 		// whether it still runs (saved with the games' settings, which the new key changed)
 		for (from, to) in &ticked.rekeyed {
-			if let Pause::WhileRunning { game } = &mut self.settings.offers.pause
+			if let Pause::WhileRunning { game } = &mut self.desk.settings.offers.pause
 				&& game == from
 			{
 				game.clone_from(to);
 			}
 		}
-		let pause_over = self.settings.offers.pause.over(unix, games.paused_runs(&self.settings.offers.pause));
+		let pause_over =
+			self.desk.settings.offers.pause.over(unix, games.paused_runs(&self.desk.settings.offers.pause));
 		if ticked.changed {
 			self.save_games();
 		}
@@ -95,20 +97,20 @@ impl Helper {
 		for finish in &ticked.finishes {
 			self.offer(finish, unix);
 		}
-		self.standing.expire(unix, t);
-		if let Some(offer) = self.standing.hold_ends(unix).cloned() {
+		self.desk.p.standing.expire(unix, t);
+		if let Some(offer) = self.desk.p.standing.hold_ends(unix).cloned() {
 			log::info!("offer {}: its game did not start again, the sitting clock starts again from it", offer.id);
 			self.clock_from(&offer);
 		}
 		self.offer_done_since(unix);
 		self.offer_after_pump(unix);
-		if let Some(game) = self.standing.look_ends(unix).map(|o| o.game.clone()) {
+		if let Some(game) = self.desk.p.standing.look_ends(unix).map(|o| o.game.clone()) {
 			self.open_offer(&game, unix);
 		}
 		if pause_over {
 			log::info!("offers: the pause ended");
-			self.settings.offers.pause = Pause::None;
-			self.save_settings();
+			self.desk.settings.offers.pause = Pause::None;
+			self.desk.save_settings();
 		}
 		for game in &ticked.closed {
 			self.open_offer(game, unix);
@@ -120,9 +122,9 @@ impl Helper {
 
 	/// A post from CS2 or Dota 2.
 	pub(super) fn on_gsi(&mut self, heard: Heard) {
-		let Some(games) = self.games.as_mut() else { return };
+		let Some(games) = self.desk.p.games.as_mut() else { return };
 		let ms = lan::now_ms();
-		let (finish, changed) = games.on_gsi(heard, ms, &mut self.settings.games);
+		let (finish, changed) = games.on_gsi(heard, ms, &mut self.desk.settings.games);
 		if changed {
 			self.save_games();
 		}
@@ -135,9 +137,9 @@ impl Helper {
 
 	/// What a game's feed says: Rocket League's, or a fed game's task (slice 48); a match's end offers at once.
 	pub(super) fn on_feed(&mut self, news: News) {
-		let Some(games) = self.games.as_mut() else { return };
+		let Some(games) = self.desk.p.games.as_mut() else { return };
 		let ms = lan::now_ms();
-		let (finish, changed) = games.on_feed(news, ms, &mut self.settings.games);
+		let (finish, changed) = games.on_feed(news, ms, &mut self.desk.settings.games);
 		if changed {
 			self.save_games();
 		}
@@ -159,19 +161,19 @@ impl Helper {
 	/// a match's end a feed told once its look ends, `offers::LOOK_S`); one made at a game's close (`Finish::at_close`:
 	/// any watched game's, a fed game's closed mid-match among them) is also held `match_relaunch_s`. None goes to the devices here (`out_look`).
 	fn offer(&mut self, finish: &Finish, now: i64) {
-		let Some(games) = self.games.as_ref() else { return };
+		let Some(games) = self.desk.p.games.as_ref() else { return };
 		let t = games.tunables();
-		let o = &self.settings.offers;
+		let o = &self.desk.settings.offers;
 		let gate = Gate {
 			now,
-			wow: self.wow_asks_pumps(),
-			locked_until: self.session.locked_until(now),
+			wow: self.desk.wow_asks_pumps(),
+			locked_until: self.desk.session.locked_until(now),
 			pause: &o.pause,
 			paused_runs: games.paused_runs(&o.pause),
-			sat_s: self.seated_s(now),
-			moved_at: self.last_move_at(),
-			back_at: self.sitting.kept(),
-			arms: self.arms_runs(&finish.watched),
+			sat_s: self.desk.seated_s(now),
+			moved_at: self.desk.last_move_at(),
+			back_at: self.desk.p.sitting.kept(),
+			arms: arms_runs(self.desk.p.games.as_ref(), &self.desk.settings.games, &finish.watched),
 		};
 		let mut random = [0u8; 16];
 		rand::fill(&mut random);
@@ -184,11 +186,11 @@ impl Helper {
 					self.clock_from(&offer);
 				}
 				self.offering.card.stands(&offer.id, &from);
-				if self.desk_pump_mid_move() {
+				if self.desk.desk_pump_mid_move() {
 					log::info!("offer {}: a move runs here, the offer waits for the pump", offer.id);
 					self.offering.card.wait_pump(&offer.id);
 				}
-				self.standing.replace(offer, t);
+				self.desk.p.standing.replace(offer, t);
 				self.reminder_sitting_ends();
 				self.open_offer(&from, now);
 				self.counts_offer(link, "shown");
@@ -197,37 +199,12 @@ impl Helper {
 		}
 	}
 
-	/// Whether the arms rest goes with the game `watched`'s offer: contract/links.json marks it `aim`, its switch in
-	/// the game's window is on (`settings.games.aim_off`) and its process ran at the last look.
-	fn arms_runs(&self, watched: &Watched) -> bool {
-		watched.aim()
-			&& self.settings.games.aim_on(watched.link())
-			&& self.games.as_ref().is_some_and(|g| g.running().iter().any(|id| id == watched.id()))
-	}
-
-	/// The name of the first game marked `aim` with its switch on that runs now (contract/links.json's): a pump on this
-	/// computer from an offer or a match picked by hand rests the arms while one runs, and its Ready view names it.
-	pub(crate) fn arms_game(&self) -> Option<String> {
-		let games = self.games.as_ref()?;
-		games
-			.running()
-			.iter()
-			.filter_map(|id| Watched::from_key(id))
-			.find(|w| self.arms_runs(w))
-			.map(|w| w.name().to_owned())
-	}
-
-	/// Whether a game marked `aim` with its switch on runs now (`arms_game`): every sync response says so (`arms`).
-	pub(crate) fn arms_now(&self) -> bool {
-		self.arms_game().is_some()
-	}
-
 	/// The sitting clock starts again from the offer's moment (the latest game offer, which every sync answers and the
 	/// sitting cue counts from, never a match's warm move: `seated_s`): one a feed told as it is made, one at a game's
 	/// close as its hold ends.
 	fn clock_from(&mut self, offer: &Offer) {
-		self.settings.offers.game_offered(offer.at);
-		self.save_settings();
+		self.desk.settings.offers.game_offered(offer.at);
+		self.desk.save_settings();
 	}
 
 	/// The game `game` (`Watched::id`) started again within `match_relaunch_s` of a close that offered (a
@@ -237,14 +214,14 @@ impl Helper {
 	/// composed) or after (its pump at Ready with nothing done; DESK-PUMP's `offer_recalled`). Its run goes on, and its
 	/// later close may offer again.
 	fn recall(&mut self, game: &str) {
-		if let Some(offer) = self.standing.recall(game) {
+		if let Some(offer) = self.desk.p.standing.recall(game) {
 			log::info!("offer {}: recalled, its game started again", offer.id);
 			if self.offering.card.shows(&offer.id) {
 				self.close_card();
 			}
 		}
 		let Some(opened) = self.offering.card.opened_from(game).map(str::to_owned) else { return };
-		if let Some(ended) = self.offer_recalled(&opened) {
+		if let Some(ended) = self.desk.offer_recalled(&opened) {
 			ended_log(ended, &format!("offer {opened}"), "its game started again"); // copy-lint: not shown (a log line)
 		}
 	}
@@ -255,10 +232,10 @@ impl Helper {
 	/// `outside_recalled`: the Start a pump window, a start waiting for the place, a pump being composed, the pump at
 	/// Ready with nothing done) but a match pump's moves, which bank (since 2026-10-27).
 	fn game_started(&mut self, started: bool) {
-		let in_match = self.games.as_ref().is_some_and(|g| g.watcher.in_match());
+		let in_match = self.desk.p.games.as_ref().is_some_and(|g| g.watcher.in_match());
 		let began = self.offering.card.match_began(in_match);
 		if (started || began)
-			&& let Some(ended) = self.outside_recalled()
+			&& let Some(ended) = self.desk.outside_recalled()
 		{
 			ended_log(ended, "pump", "a game started"); // copy-lint: not shown (a log line)
 		}
@@ -269,9 +246,9 @@ impl Helper {
 	/// card closes. An offer waiting for a move that runs in the pump on this computer counts moves only from when that
 	/// pump went idle (`CardState::answered_from`), so the pump it waited for never answers it.
 	fn offer_done_since(&mut self, now: i64) {
-		let Some((id, at)) = self.standing.current().map(|o| (o.id.clone(), o.at)) else { return };
+		let Some((id, at)) = self.desk.p.standing.current().map(|o| (o.id.clone(), o.at)) else { return };
 		let Some(from) = self.offering.card.answered_from(&id, at) else { return };
-		if self.last_move_at().is_none_or(|done| done <= from) {
+		if self.desk.last_move_at().is_none_or(|done| done <= from) {
 			return;
 		}
 		self.offer_ends(&id, now);
@@ -284,11 +261,11 @@ impl Helper {
 	/// place (`open_offer`).
 	fn offer_after_pump(&mut self, now: i64) {
 		let Some(id) = self.offering.card.waiting_pump().map(str::to_owned) else { return };
-		if self.desk_pump_mid_move() {
+		if self.desk.desk_pump_mid_move() {
 			return;
 		}
 		self.offering.card.pump_idle(now);
-		let Some(game) = self.standing.current().filter(|o| o.id == id).map(|o| o.game.clone()) else { return };
+		let Some(game) = self.desk.p.standing.current().filter(|o| o.id == id).map(|o| o.game.clone()) else { return };
 		log::info!("offer {id}: the pump here is idle");
 		self.open_offer(&game, now);
 	}
@@ -297,9 +274,9 @@ impl Helper {
 	/// on the devices when it went out, `Standing::take`), its card closed. Whether a `match_end` still waited on the
 	/// link. Callers: a device's or this computer's pump from it (`offer_taken`), a move done since (`offer_done_since`).
 	pub(crate) fn offer_ends(&mut self, id: &str, now: i64) -> bool {
-		let Some(t) = self.games.as_ref().map(crate::games::Games::tunables) else { return false };
+		let Some(t) = self.desk.p.games.as_ref().map(crate::games::Games::tunables) else { return false };
 		let queued = self.queue.withdraw(id);
-		let standing = self.standing.take(id, now, t);
+		let standing = self.desk.p.standing.take(id, now, t);
 		if standing || self.offering.card.shows(id) {
 			self.close_card();
 		}
@@ -317,16 +294,16 @@ impl Helper {
 	/// its show (slice 48's second fix round). Once its card's time passed or the player answered it here, it never
 	/// goes.
 	fn out_look(&mut self, now: i64, t: &Tunables) {
-		let Some(offer) = self.standing.due_out(now) else { return };
-		let o = &self.settings.offers;
-		let paused_runs = self.games.as_ref().is_some_and(|g| g.paused_runs(&o.pause));
+		let Some(offer) = self.desk.p.standing.due_out(now) else { return };
+		let o = &self.desk.settings.offers;
+		let paused_runs = self.desk.p.games.as_ref().is_some_and(|g| g.paused_runs(&o.pause));
 		let card = &self.offering.card;
 		let away = card.shown_for(&offer.id, now).is_some_and(|s| s >= t.away_s)
-			&& self.sitting.idle_s().is_some_and(|s| i64::from(s) >= t.away_s);
+			&& self.desk.p.sitting.idle_s().is_some_and(|s| i64::from(s) >= t.away_s);
 		if !(card.waits(&offer.id) || away) || o.pause.holds(now, &offer.game, paused_runs) || self.offers_held(now) {
 			return;
 		}
-		let Some(offer) = self.standing.send(now).cloned() else { return };
+		let Some(offer) = self.desk.p.standing.send(now).cloned() else { return };
 		log::info!("offer {}: out to the devices", offer.id);
 		self.queue_match_end(&offer);
 	}
@@ -359,13 +336,13 @@ impl Helper {
 	/// response carries as it leaves, told to the routes (`tell_offers`).
 	pub(super) fn offer_heard(&mut self, heard: Option<i64>, now: i64) {
 		if let Some(at) = heard.filter(|&at| at > 0)
-			&& self.settings.offers.last_game_offer_at.is_none_or(|last| at > last)
+			&& self.desk.settings.offers.last_game_offer_at.is_none_or(|last| at > last)
 		{
-			self.settings.offers.last_game_offer_at = Some(at);
-			self.save_settings();
+			self.desk.settings.offers.last_game_offer_at = Some(at);
+			self.desk.save_settings();
 		}
-		if let Some(t) = self.games.as_ref().map(crate::games::Games::tunables) {
-			self.standing.expire(now, t);
+		if let Some(t) = self.desk.p.games.as_ref().map(crate::games::Games::tunables) {
+			self.desk.p.standing.expire(now, t);
 		}
 		self.tell_offers(now);
 	}
@@ -377,11 +354,31 @@ impl Helper {
 	/// or `arms` answers the waiting held and standing requests at once (`Lan::set_offers`).
 	pub(super) fn tell_offers(&self, now: i64) {
 		self.lan.set_offers(OfferFacts {
-			locked_until: self.session.locked_until(now),
-			offer_withdrawn: self.standing.withdrawn().map(str::to_owned).collect(),
-			playing: self.games.as_ref().is_some_and(|g| g.watcher.playing(now * 1_000)),
-			arms: self.arms_now(),
-			game_offer_at: self.settings.offers.last_game_offer_at,
+			locked_until: self.desk.session.locked_until(now),
+			offer_withdrawn: self.desk.p.standing.withdrawn().map(str::to_owned).collect(),
+			playing: self.desk.p.games.as_ref().is_some_and(|g| g.watcher.playing(now * 1_000)),
+			arms: self.desk.arms_now(),
+			game_offer_at: self.desk.settings.offers.last_game_offer_at,
 		});
 	}
+}
+
+/// Whether the arms rest goes with the game `watched`'s offer: contract/links.json marks it `aim`, its switch in the
+/// game's window is on (`settings.games.aim_off`, `settings`) and its process ran at the games' last look (`games`).
+pub(crate) fn arms_runs(games: Option<&Games>, settings: &GamesSettings, watched: &Watched) -> bool {
+	watched.aim()
+		&& settings.aim_on(watched.link())
+		&& games.is_some_and(|g| g.running().iter().any(|id| id == watched.id()))
+}
+
+/// The name of the first game marked `aim` with its switch on that runs now (contract/links.json's): a pump on this
+/// computer from an offer or a match picked by hand rests the arms while one runs, and its Ready view names it; every
+/// sync response says whether one runs (`arms`).
+pub(crate) fn arms_game(games: Option<&Games>, settings: &GamesSettings) -> Option<String> {
+	games?
+		.running()
+		.iter()
+		.filter_map(|id| Watched::from_key(id))
+		.find(|w| arms_runs(games, settings, w))
+		.map(|w| w.name().to_owned())
 }

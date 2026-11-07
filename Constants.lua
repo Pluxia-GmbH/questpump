@@ -135,7 +135,7 @@ ns.C = {
 	load_max_kg = 300, really_load = 2, load_floor_reps = 5, load_box_step = 5,
 	-- a cardio move is short and hard (David, 2026-10-04: "you want the excercises to count as you leave your computer
 	-- for them"): 20-30 s by the quest's active minutes, × the steady ledger's M up to 45 s (slice 52; × P until then),
-	-- an uncounted all-out window its build and 20 s × M
+	-- × a form's `span` (the pad walks' 2, Library.lua), an uncounted all-out window its build and 20 s × M
 	cardio_base_s = 20, cardio_per_min_s = 1, cardio_cap_s = 30,
 	allout_s = 20, allout_build_s = 10,
 	-- the Stamina Ledger's steady side (slice 52, ns.SteadyM): the prior, ledger_prior_s at the cardio step it starts
@@ -196,6 +196,9 @@ ns.C = {
 	-- mastered before it may rest on windows nobody answered, so it masters again from answered ones (DB.lua's mastered
 	-- rows)
 	cardio_mastery_ts = 1793469600,
+	-- 2026-11-06 18:00:00 UTC, the build that doubled the pad walks (a move's `span`): a row before it ran its form's
+	-- plain length, so the steady ledger reads its seconds whole (ns.RowSpan)
+	ledger_span_ts = 1793988000,
 	star_fractions = { 1 / 3, 2 / 3, 1 },
 	-- a rung unlocks with its anchor at the window's top on unlock_days separate game days, each a new session by the
 	-- night rule (slice 20; two sets at the top until 2026-10-03, which one long evening could give); plateau_attempts

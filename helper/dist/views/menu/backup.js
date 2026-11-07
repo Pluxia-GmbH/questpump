@@ -5,13 +5,15 @@
 // not read at this start, `unread`), Devices (a Row per device of the account: its glyph, its name, else This computer
 // or its kind's word, and its last sync; another one's Row asks once to remove it), Link a device and the legal line
 // on what syncs (`menu.sync.footer`), from the `menu.sync` topic
-// (helper/src-tauri/src/runtime/sync.rs); the switch moves when the topic brings Rust's answer (Toggle's contract).
+// (helper/crates/questpump-desk/src/sync.rs); the switch moves when the topic brings Rust's answer (Toggle's contract).
 // Then the backup file: its last date, the last outcome (what a file brought, or why nothing came), then Save a backup
 // file (the system's save dialog, which Rust shows) and Restore from a file (its open dialog), both waiting while one
 // is under way, Restore while a pump runs, from the `menu.backup` topic
-// (helper/src-tauri/src/desk/menu_pages/backup.rs).
+// (helper/src-tauri/src/desk/menu_pages/backup.rs). In the browser (docs/plan.md slice 63) the Sync card alone, this
+// browser's Row its own, and while it is in no account Save your progress in the switch's place, which opens the Email
+// page's Save flow, since a browser makes no account in silence.
 
-import {intent} from "../../lib/bridge.js";
+import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {announce} from "../../lib/focus.js";
 import {LOCALE} from "../../lib/format.js";
@@ -92,20 +94,26 @@ function kindWord(kind) {
 /** A device's glyph: a computer's for a computer and a browser, a phone's for the rest. */
 const kindGlyph = (kind) => kind === "desktop" || kind === "web" ? "device_computer" : "device_phone";
 
-/** The Sync card: the switch with its state line, then Devices with Link a device, then the footer. */
-function syncCard() {
+/** The Sync card: the switch with its state line (in a browser in no account, Save your progress), then Devices with
+ * Link a device, then the footer. */
+function syncCard(web) {
 	const toggle = h("qp-row", {heading: t("menu.sync.toggle"), glyph: "mark_cloud", trailing: "toggle",
 		"data-focus-key": "sync"});
 	toggle.addEventListener("qp-change", (e) => intent("sync.switch", {on: e.detail}).catch(console.error));
+	const save = h("qp-row", {heading: t("menu.sync.save.title"), glyph: "mark_cloud", hidden: true,
+		"data-focus-key": "save", "on:click": () => push("desk.menu.email", {save: true})});
 	const link = h("qp-row", {heading: t("menu.sync.linkdevice"), glyph: "mark_link", "data-focus-key": "linkdevice",
 		"on:click": () => push("desk.menu.linkdevice")});
 	const label = h("qp-section-label", {label: t("menu.sync.devices")});
 	const devices = h("qp-card", {rows: true});
-	const els = [h("qp-section-label", {label: t("menu.sync.header")}), h("qp-card", {rows: true}, toggle), label,
-		devices, words(t("menu.sync.footer"), "meta")];
+	const els = [h("qp-section-label", {label: t("menu.sync.header")}), h("qp-card", {rows: true}, toggle, save),
+		label, devices, words(t("menu.sync.footer"), "meta")];
 	const remove = (d, name) => confirmWindow(t("menu.sync.remove.title", {device: name}), null, t("menu.sync.remove"),
 		() => intent("sync.remove", {device: d.device}).catch(console.error));
-	return {els, toggle, draw(s) {
+	return {els, toggle, save, account(held) {
+		toggle.hidden = web && !held;
+		save.hidden = !toggle.hidden;
+	}, draw(s) {
 		toggle.checked = s.on;
 		toggle.disabled = s.line === "unread";
 		toggle.meta = syncLine(s);
@@ -113,7 +121,7 @@ function syncCard() {
 		devices.hidden = !s.on;
 		// this computer first, then the others as the server lists them
 		const rows = [...s.devices].sort((a, b) => Number(b.this) - Number(a.this)).map((d) => {
-			const name = d.this ? t("desk.menu.sync.this") : d.name ?? kindWord(d.kind);
+			const name = d.this ? t(web ? "play.sync.this" : "desk.menu.sync.this") : d.name ?? kindWord(d.kind);
 			return h("qp-row", {heading: name, glyph: kindGlyph(d.kind),
 				value: backupDay(d.seen_at), trailing: d.this ? "shown" : "action", "data-focus-key": `device:${d.device}`,
 				"on:click": d.this ? null : () => remove(d, name)});
@@ -124,7 +132,8 @@ function syncCard() {
 
 register("desk.menu.backup", () => {
 	const view = page({heading: t("menu.backup.header.sync")});
-	const sync = syncCard();
+	const web = get("shell")?.platform === "web";
+	const sync = syncCard(web);
 	const last = h("p", {class: "qp-type-body-strong"});
 	const busy = h("p", {class: "qp-type-body qp-quiet-line", hidden: true, text: t("menu.backup.restoring")});
 	const said = h("p", {class: "qp-type-body qp-quiet-line", hidden: true});
@@ -140,9 +149,17 @@ register("desk.menu.backup", () => {
 		opening = true;
 		intent("backup.open").catch(console.error);
 	});
-	view.body.append(...sync.els, h("qp-section-label", {label: t("menu.backup.header")}),
-		h("qp-card", {class: "qp-stack-small"}, last, busy, said), h("div", {class: "qp-foot"}, save, open));
+	view.body.append(...sync.els);
 	watch(view, "menu.sync", sync.draw);
+	watch(view, "menu.email", (e) => sync.account(e.account));
+	intent("sync.look").catch(console.error);
+	// the backup file is a computer's (its save and open dialogs)
+	if (web) {
+		view.primary = () => (sync.toggle.hidden ? sync.save : sync.toggle);
+		return view;
+	}
+	view.body.append(h("qp-section-label", {label: t("menu.backup.header")}),
+		h("qp-card", {class: "qp-stack-small"}, last, busy, said), h("div", {class: "qp-foot"}, save, open));
 	watch(view, "menu.backup", (b) => {
 		last.textContent = b.last ? t("menu.backup.last", {date: WHEN.format(new Date(b.last))})
 			: t("menu.backup.never");
@@ -158,7 +175,6 @@ register("desk.menu.backup", () => {
 		open.disabled = b.busy || b.pump_on;
 	});
 	intent("backup.look").catch(console.error);
-	intent("sync.look").catch(console.error);
 	view.primary = () => sync.toggle;
 	return view;
 });

@@ -8,20 +8,23 @@
 //! names equal to the feed's. Versions compare as `x.y.z` after a leading `v` (`version`); one that does not parse (a
 //! checkout's `@project-version@`, `dev`) is never older or newer than another.
 //!
-//! The feed's zip must be the release's own (`verify` takes its address), and it is unpacked (`unpack`) into a staging
-//! folder only when every check holds: each entry under one of the three folders the release ships (`FOLDERS`), no
-//! `..`, no absolute path, no link, every file of the feed's list there once with its size and sha256, and
-//! `QuestPump/QuestPump.toc`'s `## Version` the feed's. The helper keeps a record of each install it made (`Record`),
-//! which it manages only while the folders hold exactly the record's files (`tree`; a game that has no AddOns folder
-//! yet holds none); a folder that is or holds a link or a `.git` (a developer's `make link` folder, a clone) is never
-//! written. `swap` puts the staged folders in place by renames on the same volume (AddOns made first where a new
-//! install has none), putting the old ones back on any error and marking the staging folder `DONE` once the last new
-//! one is in, and `recover` puts back what a swap cut short left aside, or, once the swap finished, only removes the
-//! staging folder. Nothing here touches `QuestPump_Mirror`, `WTF` or a save.
+//! The feed's zip must be the release's own (`verify` takes its address). A staging folder takes the feed's files file
+//! by file: those this computer holds already (`take_local`: the install's own, the desktop app's voice takes), by
+//! their sha256, then the rest out of the zip by byte ranges (`plan` on its central directory, `unpack_span` on each
+//! span fetched), else, whenever that cannot finish, the whole zip unpacked (`unpack`). Either way nothing is staged
+//! unless every check holds: each entry under one of the three folders the release ships (`FOLDERS`), no `..`, no
+//! absolute path, no link, every file of the feed's list there once with its size and sha256, and
+//! `QuestPump/QuestPump.toc`'s `## Version` the feed's (`check_version`). The helper keeps a record of each install it
+//! made (`Record`), which it manages only while the folders hold exactly the record's files (`tree`; a game that has no
+//! AddOns folder yet holds none); a folder that is or holds a link or a `.git` (a developer's `make link` folder, a
+//! clone) is never written. `swap` puts the staged folders in place by renames on the same volume (AddOns made first
+//! where a new install has none), putting the old ones back on any error and marking the staging folder `DONE` once the
+//! last new one is in, and `recover` puts back what a swap cut short left aside, or, once the swap finished, only
+//! removes the staging folder. Nothing here touches `QuestPump_Mirror`, `WTF` or a save.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
-use std::io::{BufWriter, Read as _, Write as _};
+use std::io::{BufReader, BufWriter, Read as _, Write as _};
 use std::path::{Path, PathBuf};
 
 use base64::Engine as _;
@@ -29,7 +32,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest as _, Sha256};
 
 use crate::mirror::{rename_retried, toc_field};
-use crate::zip::{self, Archive, ZipError};
+use crate::zip::{self, Archive, Entry, ZipError};
 
 /// The folders the release zip ships into `Interface/AddOns`, in the order a swap moves the old ones out; the new ones
 /// go in the other way round, QuestPump's own last, so a QuestPump folder of the new version means the others came
@@ -37,10 +40,10 @@ use crate::zip::{self, Archive, ZipError};
 pub const FOLDERS: [&str; 3] = ["QuestPump", "QuestPump_FigArmor", "QuestPump_Lines"];
 /// The addon's TOC in the zip, whose `## Version` must be the feed's.
 pub const TOC: &str = "QuestPump/QuestPump.toc";
-/// The staging folder beside AddOns in the flavour's `Interface` folder (the client walks AddOns alone): the zip, the
-/// new folders (`NEW`), the old ones a swap moved aside (`OLD`), once every old one is out the names of the new ones
-/// going in (`MOVING`), and once nothing in `OLD` is to go back (the last new folder is in, or a cut swap was put
-/// right) the marker `DONE`, which `recover` reads as "only remove".
+/// The staging folder beside AddOns in the flavour's `Interface` folder (the client walks AddOns alone): the zip or the
+/// span of it fetched last, the new folders (`NEW`), the old ones a swap moved aside (`OLD`), once every old one is out
+/// the names of the new ones going in (`MOVING`), and once nothing in `OLD` is to go back (the last new folder is in,
+/// or a cut swap was put right) the marker `DONE`, which `recover` reads as "only remove".
 pub const STAGING: &str = ".questpump-update";
 pub const NEW: &str = "new";
 pub const OLD: &str = "old";
@@ -218,6 +221,67 @@ pub fn safe_path(path: &str, dir: bool) -> bool {
 	parts.iter().all(plain) && FOLDERS.contains(&parts[0]) && (dir || parts.len() > 1)
 }
 
+/// The zip's entries (its central directory, in its order) checked against the feed before anything is written: no
+/// link, every folder entry one of the three folders or under one, every file entry a file the feed lists, once, with
+/// the feed's size, and every file the feed lists there.
+fn contents<'a>(entries: &'a [Entry], feed: &'a Feed) -> Result<Contents<'a>, AddonError> {
+	let wanted: BTreeMap<&str, &FeedFile> = feed.files.iter().map(|f| (f.path.as_str(), f)).collect();
+	let (mut folders, mut files) = (Vec::new(), Vec::new());
+	let mut seen = BTreeSet::new();
+	for entry in entries {
+		if entry.is_link() {
+			return Err(bad(format!("{}: a link", entry.name)));
+		}
+		if entry.is_dir() {
+			let name = entry.name.trim_end_matches('/');
+			if !safe_path(name, true) {
+				return Err(bad(format!("{}: a folder outside the addon's", entry.name)));
+			}
+			folders.push(name);
+			continue;
+		}
+		let want = wanted.get(entry.name.as_str()).ok_or_else(|| bad(format!("{}: not in the feed", entry.name)))?;
+		if !seen.insert(entry.name.as_str()) {
+			return Err(bad(format!("{}: twice in the zip", entry.name)));
+		}
+		if entry.size != want.size {
+			return Err(bad(format!("{}: {} bytes, the feed says {}", entry.name, entry.size, want.size)));
+		}
+		files.push((entry, *want));
+	}
+	if let Some(missing) = wanted.keys().find(|p| !seen.contains(*p)) {
+		return Err(bad(format!("{missing}: not in the zip")));
+	}
+	Ok(Contents { folders, files })
+}
+
+/// The zip's folders and each of its files' entry with the feed's, in the zip's order, as `contents` checked them.
+struct Contents<'a> {
+	folders: Vec<&'a str>,
+	files: Vec<(&'a Entry, &'a FeedFile)>,
+}
+
+/// One entry written into `into` (its folders made) by `copy`, which writes its bytes and answers their sha256, the
+/// feed's `sha256`.
+fn write_entry(
+	entry: &Entry,
+	sha256: &str,
+	into: &Path,
+	copy: impl FnOnce(&mut BufWriter<File>) -> Result<String, ZipError>,
+) -> Result<(), AddonError> {
+	let path = into.join(&entry.name);
+	if let Some(parent) = path.parent() {
+		std::fs::create_dir_all(parent)?;
+	}
+	let mut out = BufWriter::new(File::create_new(&path)?);
+	let got = copy(&mut out)?;
+	out.flush()?;
+	if got != sha256 {
+		return Err(bad(format!("{}: its sha256 is not the feed's", entry.name)));
+	}
+	Ok(())
+}
+
 /// Unpacks the release zip into `into`, made anew: every entry checked as the module says, and the TOC's version the
 /// feed's. The caller has checked the zip's own sha256 and size.
 ///
@@ -229,47 +293,193 @@ pub fn unpack(zip_path: &Path, feed: &Feed, into: &Path) -> Result<(), AddonErro
 		std::fs::remove_dir_all(into)?;
 	}
 	std::fs::create_dir_all(into)?;
-	let wanted: BTreeMap<&str, &FeedFile> = feed.files.iter().map(|f| (f.path.as_str(), f)).collect();
 	let mut archive = Archive::open(zip_path)?;
 	let entries = archive.entries().to_vec();
-	let mut seen = BTreeSet::new();
-	for entry in &entries {
-		if entry.is_link() {
-			return Err(bad(format!("{}: a link", entry.name)));
-		}
-		if entry.is_dir() {
-			let name = entry.name.trim_end_matches('/');
-			if !safe_path(name, true) {
-				return Err(bad(format!("{}: a folder outside the addon's", entry.name)));
-			}
-			std::fs::create_dir_all(into.join(name))?;
-			continue;
-		}
-		let want = wanted.get(entry.name.as_str()).ok_or_else(|| bad(format!("{}: not in the feed", entry.name)))?;
-		if !seen.insert(entry.name.as_str()) {
-			return Err(bad(format!("{}: twice in the zip", entry.name)));
-		}
-		if entry.size != want.size {
-			return Err(bad(format!("{}: {} bytes, the feed says {}", entry.name, entry.size, want.size)));
-		}
-		let path = into.join(&entry.name);
-		if let Some(parent) = path.parent() {
-			std::fs::create_dir_all(parent)?;
-		}
-		let mut out = BufWriter::new(File::create_new(&path)?);
-		let got = archive.copy(entry, &mut out)?;
-		out.flush()?;
-		if got != want.sha256 {
-			return Err(bad(format!("{}: its sha256 is not the feed's", entry.name)));
-		}
+	let Contents { folders, files } = contents(&entries, feed)?;
+	for folder in folders {
+		std::fs::create_dir_all(into.join(folder))?;
 	}
-	if let Some(missing) = wanted.keys().find(|p| !seen.contains(*p)) {
-		return Err(bad(format!("{missing}: not in the zip")));
+	for (entry, want) in files {
+		write_entry(entry, &want.sha256, into, |out| archive.copy(entry, out))?;
 	}
+	check_version(into, feed)
+}
+
+/// The staged TOC's `## Version` is the feed's.
+///
+/// # Errors
+/// The TOC does not read or names another version.
+pub fn check_version(into: &Path, feed: &Feed) -> Result<(), AddonError> {
 	let toc = std::fs::read_to_string(into.join(TOC))?;
 	let shipped = toc_field(&toc, "Version").unwrap_or_default(); // copy-lint: not shown (a TOC field)
 	if !same(shipped, &feed.version) {
 		return Err(bad(format!("{TOC} says {shipped:?}, the feed {}", feed.version)));
+	}
+	Ok(())
+}
+
+/// Stages into `into`, made anew, every file of the feed that this computer holds already, found by its sha256: in the
+/// three folders in `addons` (`tree`; none where they are or hold a link) and among the desktop app's own copies of the
+/// addon's voice takes (`voice`, a folder of files). Each is copied while its sha256 is taken and kept only when its
+/// size and sha256 are the feed's, so a file changed since it was read is fetched instead. Answers the feed's files
+/// still to fetch, in its order.
+///
+/// # Errors
+/// `into` or a file in it cannot be made or written (a source that does not read is fetched instead).
+pub fn take_local(feed: &Feed, addons: &Path, voice: Option<&Path>, into: &Path) -> Result<Vec<FeedFile>, AddonError> {
+	if into.exists() {
+		std::fs::remove_dir_all(into)?;
+	}
+	std::fs::create_dir_all(into)?;
+	let mut held: BTreeMap<String, PathBuf> = BTreeMap::new();
+	if let Ok(Tree::Files(files)) = tree(addons) {
+		for (path, sha256) in files {
+			held.entry(sha256).or_insert_with(|| addons.join(path));
+		}
+	}
+	for take in voice.and_then(|v| std::fs::read_dir(v).ok()).into_iter().flatten().flatten() {
+		let path = take.path();
+		if take.file_type().is_ok_and(|t| t.is_file())
+			&& let Ok(sha256) = sha256_file(&path)
+		{
+			held.entry(sha256).or_insert(path);
+		}
+	}
+	let mut wanted = Vec::new();
+	for file in &feed.files {
+		let taken = match held.get(&file.sha256) {
+			Some(from) => copy_checked(from, file, into)?,
+			None => false,
+		};
+		if !taken {
+			wanted.push(file.clone());
+		}
+	}
+	Ok(wanted)
+}
+
+/// `from` copied into `into` as the feed's `file`, its sha256 taken as it is written; true when its size and sha256 are
+/// the feed's, else the copy is removed (as when the source stops reading).
+fn copy_checked(from: &Path, file: &FeedFile, into: &Path) -> Result<bool, AddonError> {
+	let Ok(mut source) = File::open(from) else { return Ok(false) };
+	let path = into.join(&file.path);
+	if let Some(parent) = path.parent() {
+		std::fs::create_dir_all(parent)?;
+	}
+	let mut out = BufWriter::new(File::create_new(&path)?);
+	let mut hasher = Sha256::new();
+	let mut buf = vec![0_u8; 64 << 10];
+	let mut got = 0_u64;
+	let read = loop {
+		match source.read(&mut buf) {
+			Ok(0) => break true,
+			Ok(n) => {
+				got += n as u64;
+				if got > file.size {
+					break false;
+				}
+				hasher.update(&buf[..n]);
+				out.write_all(&buf[..n])?;
+			}
+			Err(_) => break false,
+		}
+	};
+	out.flush()?;
+	drop(out);
+	if read && got == file.size && zip::hex(&hasher.finalize()) == file.sha256 {
+		return Ok(true);
+	}
+	std::fs::remove_file(&path)?;
+	Ok(false)
+}
+
+/// How far apart two files to fetch may lie in the release zip and still come in one request: the bytes between them
+/// cost less than another request's two round trips (github.com, then its storage) on most lines.
+const GAP: u64 = 256 << 10;
+
+/// A run of the release zip's bytes fetched in one request, `start..end`, and the files in it, each with its sha256 in
+/// the feed.
+#[derive(Debug)]
+pub struct Span {
+	pub start: u64,
+	pub end: u64,
+	files: Vec<(Entry, String)>,
+}
+
+/// The files to fetch out of the release zip by byte ranges: the spans that hold them. The zip's folder entries make
+/// nothing here, since neither the feed's signature nor the zip's sha256 covers the central directory they come from;
+/// every file's own folders are made as it is written (`write_entry`).
+#[derive(Debug)]
+pub struct Plan {
+	spans: Vec<Span>,
+}
+
+impl Plan {
+	/// The spans to fetch, in the zip's order.
+	#[must_use]
+	pub fn spans(&self) -> &[Span] {
+		&self.spans
+	}
+
+	/// The files to fetch.
+	#[must_use]
+	pub fn files(&self) -> usize {
+		self.spans.iter().map(|s| s.files.len()).sum()
+	}
+
+	/// The bytes to fetch.
+	#[must_use]
+	pub fn bytes(&self) -> u64 {
+		self.spans.iter().map(|s| s.end - s.start).sum()
+	}
+}
+
+/// The spans of the release zip that hold `wanted`, once its central directory (`entries`, starting at `directory`)
+/// passed every check `unpack` makes before a write. An entry's bytes run from its local header to the next entry's
+/// (or to the central directory) and must hold at least its header and its packed bytes; entries in a row, or no more
+/// than `GAP` apart, come in one span.
+///
+/// # Errors
+/// An entry the feed does not allow (as `unpack`'s), or one whose bytes do not fit before the next.
+pub fn plan(entries: &[Entry], directory: u64, feed: &Feed, wanted: &[FeedFile]) -> Result<Plan, AddonError> {
+	let Contents { files, .. } = contents(entries, feed)?;
+	let wanted: BTreeSet<&str> = wanted.iter().map(|f| f.path.as_str()).collect();
+	let mut starts: Vec<u64> = entries.iter().map(|e| e.offset).collect();
+	starts.sort_unstable();
+	starts.dedup();
+	let mut picked = Vec::new();
+	for (entry, file) in files.into_iter().filter(|(entry, _)| wanted.contains(entry.name.as_str())) {
+		let end = starts.get(starts.partition_point(|&at| at <= entry.offset)).copied().unwrap_or(directory);
+		let least = entry.offset.checked_add(entry.header_len()).and_then(|at| at.checked_add(entry.compressed));
+		if least.is_none_or(|least| least > end) {
+			return Err(bad(format!("{}: its bytes run into the next entry's", entry.name)));
+		}
+		picked.push((entry.offset, end, entry.clone(), file.sha256.clone()));
+	}
+	picked.sort_by_key(|(start, ..)| *start);
+	let mut spans: Vec<Span> = Vec::new();
+	for (start, end, entry, sha256) in picked {
+		match spans.last_mut() {
+			Some(span) if start <= span.end.saturating_add(GAP) => {
+				span.end = span.end.max(end);
+				span.files.push((entry, sha256));
+			}
+			_ => spans.push(Span { start, end, files: vec![(entry, sha256)] }),
+		}
+	}
+	Ok(Plan { spans })
+}
+
+/// The files of `span` written into `into` out of `part`, which holds the span's bytes from its start, each checked
+/// against its sha256 in the feed as it is written.
+///
+/// # Errors
+/// An entry that does not unpack (`zip::copy_at`), one whose sha256 is not the feed's, or a file that cannot be
+/// written.
+pub fn unpack_span(part: &Path, span: &Span, into: &Path) -> Result<(), AddonError> {
+	let mut bytes = BufReader::new(File::open(part)?);
+	for (entry, sha256) in &span.files {
+		write_entry(entry, sha256, into, |out| zip::copy_at(&mut bytes, entry.offset - span.start, entry, out))?;
 	}
 	Ok(())
 }

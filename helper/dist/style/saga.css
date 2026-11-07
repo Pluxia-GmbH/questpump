@@ -675,9 +675,11 @@ qp-page.qp-saga-page {
 	aspect-ratio: 266 / 366;
 }
 
+/* each key whole ("Main muscles" never on two lines in a narrow tile); a key that has no room goes under the other */
 .qp-saga-legend {
 	display: flex;
-	gap: var(--qp-layout-space10);
+	flex-wrap: wrap;
+	gap: var(--qp-layout-space4) var(--qp-layout-space10);
 	color: var(--qp-color-text2);
 }
 
@@ -685,6 +687,7 @@ qp-page.qp-saga-page {
 	display: inline-flex;
 	align-items: center;
 	gap: var(--qp-layout-space4);
+	white-space: nowrap;
 }
 
 .qp-swatch-most, .qp-swatch-some {

@@ -3,7 +3,6 @@
   "view": "side",
   "camera": {"yaw": 14, "pitch": 4},
   "working": ["shin"],
-  "ballistic": true,
   "fast_phase": 0.9,
   "poses": {
     "ground": {

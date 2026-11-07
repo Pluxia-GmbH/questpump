@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 34, "pitch": 8},
   "working": ["thigh", "shin", "abdomen"],
-  "ballistic": true,
+  "ballistic": ["squat", "jump", "knees_up", "land_softly"],
   "poses": {
     "tall": {
       "pelvis": [4, 94.6, 0],
@@ -68,7 +68,7 @@
     {"to": "fall", "s": 0.18, "ease": "inout", "phase": "land_softly", "effort": 0.8},
     {"to": "land", "s": 0.14, "ease": "in", "phase": "land_softly", "effort": 0.8},
     {"to": "absorb", "s": 0.3, "phase": "land_softly", "effort": 0.7},
-    {"to": "tall", "s": 0.6, "phase": "stand_tall", "effort": 0.4}
+    {"to": "tall", "s": 1.0, "phase": "stand_tall", "effort": 0.4}
   ],
   "key": "tuck",
   "targets": [

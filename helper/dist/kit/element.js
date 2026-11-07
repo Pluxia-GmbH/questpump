@@ -78,6 +78,13 @@ export function h(tag, props = {}, ...children) {
 	return el;
 }
 
+/** A text's words as children, each hyphenated word (Push-up, One-arm) whole in a `qp-nowrap` span, so a line never
+ * breaks at its hyphen: `el.replaceChildren(...wordsWhole("Easier version: Push-up"))`. */
+export function wordsWhole(text) {
+	return text.split(" ").flatMap((word, i) => [i ? " " : "", word.includes("-")
+		? h("span", {class: "qp-nowrap", text: word}) : word]).filter((part) => part !== "");
+}
+
 /** Sets CSS properties on an element through the CSSOM (the CSP refuses a `style` attribute) and returns it:
  * `styled(h("i"), {"flex-grow": 3, "--qp-share": 0.5})`. */
 export function styled(el, props) {

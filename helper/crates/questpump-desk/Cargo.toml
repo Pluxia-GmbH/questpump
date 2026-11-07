@@ -1,0 +1,39 @@
+[package]
+name = "questpump-desk"
+version = "0.1.0"
+description = "The desk of QuestPump's desktop app and its browser version: the pump, Pump home, Hero, the Book, the Saga, Your setup and the topics the pages read, behind a Platform trait"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+# The desk core (docs/plan.md slice 63, "One desk core"): no tauri, no platform code and no unsafe, so the desktop app
+# (`src-tauri`) and the browser (`questpump-web`, wasm32-unknown-emscripten) run the same desk on the same engine.
+[dependencies]
+questpump-core = { path = "../questpump-core" }
+# the addon's own engine behind the desk's ordered door (engine.rs)
+questpump-engine = { path = "../questpump-engine" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+# the door's answers back to the platform's loop (engine.rs)
+tokio = { version = "1", features = ["sync"] }
+# the session's clock as its rows' times spell it, and the Saga's calendar days
+time = { version = "0.3", features = ["formatting", "macros"] }
+# a pump's id and the places' and the install's random ids
+rand = "0.10"
+uuid = "1"
+# the install's id in settings.json, and the game's save as the engine takes it (CBOR)
+base64 = "0.23"
+ciborium = "0.2"
+# the sync's device batch digest (sync.rs) and its link and request codes as the pages draw them (qr.rs)
+sha2 = "0.11"
+qrcode = { version = "0.14", default-features = false }
+
+# a quit's wait for the door's last answers (engine.rs `settle`): the computer's loop alone
+[target.'cfg(not(target_os = "emscripten"))'.dependencies]
+tokio = { version = "1", features = ["sync", "time"] }

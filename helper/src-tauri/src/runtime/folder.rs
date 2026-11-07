@@ -108,7 +108,7 @@ impl Helper {
 	/// so, and while no install with QuestPump is known it is the game on this computer, followed once QuestPump is in
 	/// it (`Helper::addons`).
 	pub(super) fn picked(&mut self, path: &Path) {
-		if let Some(running) = &self.game_addons {
+		if let Some(running) = &self.desk.p.game_addons {
 			let note = FolderNote::Running { path: running.display().to_string() };
 			ui::update(&self.app, |v| v.computer.folder_note = Some(note));
 			return;
@@ -122,18 +122,18 @@ impl Helper {
 			log::info!("the player chose {}, which holds no QuestPump yet", addons.display());
 			let note = FolderNote::NoQuestPump { path: addons.display().to_string() };
 			ui::update(&self.app, |v| v.computer.folder_note = Some(note));
-			if self.followed.is_none() {
+			if self.desk.p.followed.is_none() {
 				// Add QuestPump to the game, waiting for this pick, goes here
 				self.addon_picked(&addons);
-				self.without_addon = Some(addons);
+				self.desk.p.without_addon = Some(addons);
 				self.without_addon_picked = true;
 				self.due_by(Instant::now()); // the next mirror job shows it as the game on this computer
 			}
 			return;
 		}
 		log::info!("the player chose {}", addons.display());
-		self.settings.addons = Some(addons.clone());
-		self.save_settings();
+		self.desk.settings.addons = Some(addons.clone());
+		self.desk.save_settings();
 		self.mirror_error = None;
 		self.access = Access::Fine; // a new folder: its own card, if any, after its first write
 		ui::update(&self.app, |v| {

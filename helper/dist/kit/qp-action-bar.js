@@ -31,6 +31,13 @@ class QpActionBar extends KitElement {
 		this.update();
 	}
 
+	/** Takes `root`'s tab away, for a root no view registered (lib/router.js `startRouter`). */
+	drop(root) {
+		this.ensure();
+		this.tabs[root]?.remove();
+		delete this.tabs[root];
+	}
+
 	/** Presses `root`'s tab as a click does (lib/sound.js's tab sound on a new tab, qp-tab). */
 	press(root) {
 		this.ensure();

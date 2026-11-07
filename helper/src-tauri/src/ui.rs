@@ -19,13 +19,14 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use questpump_desk::platform::FoundGame;
+pub use questpump_desk::platform::{EngineState, Fold};
+use questpump_desk::publisher::Staged;
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::sync::oneshot;
 
-use crate::desk::seams::FoundGame;
-use crate::desk::state::Staged;
 use crate::desk::tray::{State, Tone};
 use crate::desk::{self, Desk, DeskAsk};
 
@@ -41,25 +42,6 @@ pub enum Dot {
 	/// The capture waits for the Screen Recording grant, which This computer asks for once a game with QuestPump is
 	/// known and a device is paired (or a strap or a walking pad is on).
 	Off,
-}
-
-/// The engine's state, the `shell` topic's `engine` (`desk::engine`): a fold of every row runs (at the start, after a
-/// reset), the engine answers, or it did not start or fold (the log says why).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum EngineState {
-	#[default]
-	Busy,
-	Ready,
-	Failed,
-}
-
-/// The engine's last fold, for the report for help: its rows, how long it took and when it landed (unix ms).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Fold {
-	pub rows: usize,
-	pub ms: u64,
-	pub at: i64,
 }
 
 /// Everything the window and the tray show, by topic.
@@ -219,7 +201,7 @@ pub struct Computer {
 	/// The colour of this computer's dot, the tray icon's (`desk::tray::tone`, from the shell's `dot`), kept by
 	/// `update`: Pump home's Chip shows it while this computer's state needs the player (`desk::home`'s `Fix`).
 	pub tone: Tone,
-	/// What QuestPump found of the game (`Helper::found`'s `game`), which the state reads.
+	/// What QuestPump found of the game (`Desk::found`'s `game`), which the state reads.
 	pub found: FoundGame,
 	/// The other games QuestPump watches for their matches' end, by name (`Helper::show_games`): with no game found,
 	/// the state names them.
@@ -863,7 +845,7 @@ pub fn quit(app: &AppHandle) {
 
 /// The player's quit, then `start` once this process has gone (the copy moved into Applications that a second launch
 /// asked to take over): while a pump holds the window the page asks "Leave the pump?" first, with the window brought
-/// forward, and its Leave quits (`desk/pump.rs` `pump_leave`, the ask's start with it) while its Stay drops both;
+/// forward, and its Leave quits (`questpump-desk/src/pump.rs` `pump_leave`, the ask's start with it) while its Stay drops both;
 /// else the loop's quit at once.
 pub fn quit_for(app: &AppHandle, start: Option<PathBuf>) {
 	if app.state::<Desk>().guard.load(Ordering::Relaxed) {

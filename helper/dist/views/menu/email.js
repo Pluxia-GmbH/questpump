@@ -1,5 +1,5 @@
 // Email on the computer (docs/plan.md slice 60, "The screens"; the phones' Email page), from the `menu.email` topic
-// (helper/src-tauri/src/runtime/sync.rs), each step as Rust's flow names it, in the account this computer holds a
+// (helper/crates/questpump-desk/src/sync.rs), each step as Rust's flow names it, in the account this computer holds a
 // token and the key R for whatever Sync's switch says (`account`, `Account::held`): not linked, the address field,
 // Send code and the Privacy link (the privacy page's sync part), then Restore code while this computer is in an
 // account, or on a sign-in (this computer in no account) Enter restore code; the code: where it went, six boxes over
@@ -13,9 +13,15 @@
 // (`heldCode`). So Restore code is there whenever this computer is in an account, an email linked or not, and opens
 // only from its row. While this computer is in an account and not signing in, Delete account (asked once) is last,
 // with the line of a Sign out, Remove email or Delete account the server did not answer over it. Every result line is
-// heard as it comes.
+// heard as it comes. In the browser (docs/plan.md slice 63) the device is this browser, and Save your progress opens
+// the page on its Save flow (`save`): its heading, no Sign in or Enter restore code, Send making the account first
+// (Keep your key follows any way back the player gets: web/views/index.js); its sign-in (I played before) offers Link
+// a device, whose request code a phone answers, while the phone apps are in the stores (`requests`). There Sign out
+// stands whenever the browser is in an account, an email linked or not, and goes once the rows it made reached the
+// account; where they could not, the line that says so with Sign out anyway and Stay signed in (`unsent`) in the
+// page's place.
 
-import {intent} from "../../lib/bridge.js";
+import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {announce} from "../../lib/focus.js";
 import {push, register} from "../../lib/router.js";
@@ -46,9 +52,11 @@ function part(...children) {
 	return h("div", {class: "qp-part", hidden: true}, ...children);
 }
 
-register("desk.menu.email", () => {
-	const view = page({heading: t("menu.email.title")});
-	const computer = t("desk.menu.email.computer");
+register("desk.menu.email", (params) => {
+	const saving = Boolean(params?.save);
+	const view = page({heading: t(saving ? "menu.sync.save.title" : "menu.email.title")});
+	const web = get("shell")?.platform === "web";
+	const computer = t(web ? "desk.menu.email.browser" : "desk.menu.email.computer");
 	const enterRestore = () => push("desk.menu.restore", {enter: true});
 	const openRestore = () => push("desk.menu.restore");
 	/** Restore code's row: in the linked view's card, and in a card of its own in the not-linked view. */
@@ -63,9 +71,12 @@ register("desk.menu.email", () => {
 	send.addEventListener("click", sendCode);
 	address.addEventListener("qp-submit", sendCode);
 	const restoreInstead = h("qp-quiet-button", {label: t("menu.email.needkey.restore"), "on:click": enterRestore});
+	// a browser's sign-in while a phone can answer its request code: Link a device, which shows it
+	const phoneInstead = h("qp-quiet-button", {label: t("menu.sync.linkdevice"), hidden: true,
+		"on:click": () => push("desk.menu.linkdevice")});
 	const privacy = h("qp-card", {rows: true}, h("qp-row", {heading: t("menu.privacy"), glyph: "mark_lock",
 		trailing: "external", "on:click": () => intent("about.open", {page: "sync"}).catch(console.error)}));
-	const field = part(signin, address, send, restoreInstead, privacy);
+	const field = part(signin, address, send, restoreInstead, phoneInstead, privacy);
 
 	// the code
 	const sentTo = words("", "body");
@@ -97,22 +108,38 @@ register("desk.menu.email", () => {
 
 	// linked
 	const shown = h("qp-row", {glyph: "mark_check", trailing: "shown"});
-	const signOut = h("qp-row", {heading: t("menu.email.signout"), glyph: "mark_close", trailing: "action",
-		"data-focus-key": "signout",
-		"on:click": () => confirmWindow(t("menu.email.signout.title", {device: computer}), t("menu.email.signout.body"),
-			t("menu.email.signout"), () => intent("email.signout").catch(console.error))});
+	/** The linked address, null where this device does not know it (another device linked it, or this one joined by
+	 * a code). */
+	let linkedAddress = null;
+	/** Sign out's row: in the linked view's card, and in the browser in the not-linked one's too. */
+	const signOutRow = (key) => h("qp-row", {heading: t("menu.email.signout"), glyph: "mark_close", trailing: "action",
+		"data-focus-key": key,
+		"on:click": () => confirmWindow(t("menu.email.signout.title", {device: computer}),
+			t(web ? "play.signout.body" : "menu.email.signout.body"), t("menu.email.signout"),
+			() => intent("email.signout").catch(console.error))});
+	const signOut = signOutRow("signout");
+	const signOutUnlinked = signOutRow("signout:unlinked");
 	const removeEmail = h("qp-row", {heading: t("menu.email.remove"), glyph: "mark_dash", trailing: "action",
 		"data-focus-key": "remove",
-		"on:click": () => confirmWindow(t("menu.email.remove.title", {address: shown.heading}), null,
-			t("menu.sync.remove"), () => intent("email.remove").catch(console.error))});
+		"on:click": () => confirmWindow(linkedAddress ? t("menu.email.remove.title", {address: linkedAddress})
+			: t("menu.email.remove.unknown"), null, t("menu.sync.remove"),
+			() => intent("email.remove").catch(console.error))});
 	const linked = part(h("qp-card", {rows: true}, shown,
 		h("qp-row", {heading: t("menu.email.change"), glyph: "mark_share", trailing: "action",
 			"data-focus-key": "change:linked",
 			"on:click": () => intent("email.change").catch(console.error)}),
 		restoreRow(), signOut, removeEmail));
 
-	// in an account no email holds: Restore code, over Delete account
-	const unlinkedRestore = h("qp-card", {rows: true, hidden: true}, restoreRow());
+	// in an account no email holds: Restore code (and in the browser Sign out), over Delete account
+	const unlinkedRestore = h("qp-card", {rows: true, hidden: true}, restoreRow(), web ? signOutUnlinked : null);
+
+	// in the browser, a Sign out whose rows could not reach the account: sign out anyway, or stay
+	const unsent = part(h("p", {class: "qp-type-body-strong", text: t("play.signout.unsent")}),
+		h("div", {class: "qp-foot"},
+			h("qp-primary-button", {label: t("play.signout.stay"), "data-focus-key": "stay",
+				"on:click": () => intent("email.stay").catch(console.error)}),
+			h("qp-secondary-button", {label: t("play.signout.anyway"),
+				"on:click": () => intent("email.signout", {anyway: true}).catch(console.error)})));
 
 	// a sign-in on a computer without the account's key
 	const needTitle = t("menu.email.needkey.title", {device: computer});
@@ -137,7 +164,7 @@ register("desk.menu.email", () => {
 			t("menu.email.delete"), () => intent("email.delete").catch(console.error))}));
 	const said = h("p", {class: "qp-type-body qp-quiet-line", hidden: true});
 
-	view.body.append(said, field, codePart, taken, linked, needKey, unlinkedRestore, outLine, remove);
+	view.body.append(said, unsent, field, codePart, taken, linked, needKey, unlinkedRestore, outLine, remove);
 
 	let wanting = false; // whether this page asked Rust for the request code
 	const want = (on) => {
@@ -159,18 +186,22 @@ register("desk.menu.email", () => {
 	};
 	watch(view, "menu.email", (e) => {
 		const linkedView = e.linked && e.step === "field" && e.purpose !== "change";
-		field.hidden = e.step !== "field" || linkedView;
+		unsent.hidden = !e.unsent;
+		field.hidden = e.step !== "field" || linkedView || e.unsent;
 		codePart.hidden = e.step !== "code";
 		taken.hidden = e.step !== "taken";
-		linked.hidden = !linkedView;
-		unlinkedRestore.hidden = !e.account || e.linked || e.step !== "field" || e.purpose === "signin";
+		linked.hidden = !linkedView || e.unsent;
+		const unsaved = e.save && !e.linked;
+		unlinkedRestore.hidden = !e.account || e.linked || e.step !== "field" || e.purpose === "signin" || unsaved
+			|| e.unsent;
 		needKey.hidden = e.step !== "need_key";
-		remove.hidden = !e.account || e.purpose === "signin" || e.step === "need_key";
+		remove.hidden = !e.account || e.purpose === "signin" || e.step === "need_key" || unsaved || e.unsent;
 		want(e.step === "need_key");
 		busy = e.busy;
 
-		signin.hidden = e.account;
-		restoreInstead.hidden = e.account;
+		signin.hidden = e.account || e.save;
+		restoreInstead.hidden = e.account || e.save;
+		phoneInstead.hidden = !web || !e.requests || e.account || e.save;
 		const line = problem(e);
 		address.error = e.step === "field" ? line ?? "" : "";
 		address.disabled = e.busy;
@@ -194,8 +225,10 @@ register("desk.menu.email", () => {
 		say(takenLine, e.step === "taken" ? line ?? "" : "");
 		join.state = e.busy && e.step === "taken" ? "busy" : "normal";
 
-		shown.heading = e.address ?? t("menu.email.linked");
+		linkedAddress = e.address ?? null;
+		shown.heading = linkedAddress ?? t("menu.email.linked");
 		signOut.disabled = e.busy;
+		signOutUnlinked.disabled = e.busy;
 		removeEmail.disabled = e.busy;
 
 		held.set(needKey.hidden ? null : e.request ?? null);
@@ -218,11 +251,11 @@ register("desk.menu.email", () => {
 		heard ??= seq;
 		if (fresh) announce(said.textContent);
 	});
-	intent("email.start").catch(console.error);
+	intent("email.start", saving ? {save: true} : {}).catch(console.error);
 	view.stops.push(() => {
 		clearInterval(ticker);
 		want(false);
 	});
-	view.primary = () => (field.hidden ? null : address);
+	view.primary = () => (!unsent.hidden ? unsent.querySelector("qp-primary-button") : field.hidden ? null : address);
 	return view;
 });

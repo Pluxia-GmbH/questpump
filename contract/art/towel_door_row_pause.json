@@ -1,6 +1,0 @@
-{
-  "move": "towel_door_row_pause",
-  "variant_of": "towel_door_one_arm_row",
-  "pause": {"phase": "pull", "at": 1.0, "s": 3.0},
-  "note": "Pull in 1, hold 3 at the top, lower: the one-arm towel row's top frame held."
-}

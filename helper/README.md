@@ -375,7 +375,8 @@ tag. Both tags may sit on the same commit.
 1. **Versions** (in the private repository, through a pull request): the helper's in
    `helper/src-tauri/tauri.conf.json` and `helper/src-tauri/Cargo.toml` (let `cargo` update `Cargo.lock`); the add-on's
    is its tag, and `CHANGELOG.md` gets its section, `## [X.Y.Z]` (with ` - YYYY-MM-DD` once the day is known), which
-   the packager sends as the release's notes. Run the gates above.
+   the packager sends as the release's notes; `make changelog` then writes the site's `/changelog` and its feed
+   from it. Run the gates above.
 2. **Export:** `python3 -B tools/public/export.py` builds the public tree from `origin/main`, checks it (every listed
    path, every file the helper's build or a public workflow reads, `publish.py --check`, betterleaks) and prints its
    diff against the public `main`. `python3 -B tools/public/export.py --push --version X.Y.Z` then pushes it as one

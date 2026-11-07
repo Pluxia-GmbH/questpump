@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 45, "pitch": 4},
   "working": ["upper_arm", "pauldron", "back"],
-  "ballistic": true,
+  "ballistic": ["pull"],
   "props": [{"kind": "bar", "f": 8, "u": 222, "ground": true}],
   "poses": {
     "hang": {

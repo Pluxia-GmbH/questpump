@@ -1,5 +1,5 @@
 // Restore code on the computer (docs/plan.md slice 60, "The screens"; the phones' Restore code page), from the
-// `menu.restore` topic (helper/src-tauri/src/runtime/sync.rs): this computer's code in its groups, selectable, held
+// `menu.restore` topic (helper/crates/questpump-desk/src/sync.rs): this computer's code in its groups, selectable, held
 // behind Show code (`heldCode`), with Copy (Copied for three seconds; it copies the code, shown or held), the one line
 // that anyone with it can open the progress, and Done; opened to enter one (`enter`, Email's Enter restore code), the
 // field, what it holds masked until Show code, and Continue, the wrong and not-found lines under the field (and that
@@ -8,13 +8,9 @@
 
 import {intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
-import {announce} from "../../lib/focus.js";
 import {back, register} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
-import {heldCode, page, watch, words} from "../page.js";
-
-/** How long Copy says Copied. */
-const SAID_MS = 3000;
+import {heldCode, page, restoreCode, watch} from "../page.js";
 
 /** The problem's line under the field, none without one. */
 function problem(error) {
@@ -57,35 +53,11 @@ register("desk.menu.restore", (params) => {
 		view.primary = () => field;
 		return view;
 	}
-	const code = h("p", {class: "qp-type-num-medium qp-words-block qp-centre", hidden: true});
-	const held = heldCode(view, (shown) => {
-		code.textContent = shown ?? "";
-		code.hidden = shown === null;
-		return code;
-	});
-	let restoreCode = "";
-	const copy = h("qp-secondary-button", {label: t("menu.restore.copy")});
-	let reset = null;
-	copy.addEventListener("click", () => {
-		navigator.clipboard.writeText(restoreCode).then(() => {
-			copy.label = t("menu.restore.copied");
-			announce(copy.label);
-			clearTimeout(reset);
-			reset = setTimeout(() => {
-				copy.label = t("menu.restore.copy");
-			}, SAID_MS);
-		}, console.error);
-	});
+	const shown = restoreCode(view);
 	const done = h("qp-primary-button", {label: t("common.done"), "on:click": () => back()});
-	view.body.append(h("qp-card", {class: "qp-stack-small"}, code, held.show, words(t("menu.restore.line"), "body")),
-		h("div", {class: "qp-foot"}, copy, done));
-	watch(view, "menu.restore", (r) => {
-		restoreCode = r.code ?? "";
-		copy.disabled = !r.code;
-		held.set(r.code || null);
-	});
+	view.body.append(shown.card, h("div", {class: "qp-foot"}, shown.copy, done));
+	watch(view, "menu.restore", (r) => shown.set(r.code));
 	intent("restore.look").catch(console.error);
-	view.stops.push(() => clearTimeout(reset));
 	view.primary = () => done;
 	return view;
 });

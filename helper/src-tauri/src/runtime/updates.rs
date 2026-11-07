@@ -103,11 +103,11 @@ impl Helper {
 	/// new start would hear it mid-pump, without its moves); a match's offer stands within its time or its card shows
 	/// (both live only in memory, so the new QuestPump would have neither on the tray, Pump home or the screen).
 	pub(super) fn quit_held(&self) -> bool {
-		self.desk_pump_starting()
-			|| self.desk_pump_running()
+		self.desk.desk_pump_starting()
+			|| self.desk.desk_pump_running()
 			|| self.app.state::<Desk>().guard.load(Ordering::Relaxed)
-			|| (self.game.is_some() && self.session.pump_on())
-			|| self.standing.current().is_some()
+			|| (self.desk.p.game.is_some() && self.desk.session.pump_on())
+			|| self.desk.p.standing.current().is_some()
 			|| self.offering.card.shown().is_some()
 	}
 
@@ -118,11 +118,13 @@ impl Helper {
 	/// game; a quit keeps the watcher's runs, `Watcher::keep`, but only for a start within `match_relaunch_s`, which an
 	/// install may outlast).
 	fn install_held(&self) -> bool {
-		self.game.is_some()
+		self.desk.p.game.is_some()
 			|| self.addon_busy()
 			|| self.quit_held()
 			|| self.socket_quit.is_some()
 			|| self
+				.desk
+				.p
 				.games
 				.as_ref()
 				.is_some_and(|games| !games.running().is_empty() || games.watcher.playing(lan::now_ms()))

@@ -9,7 +9,7 @@ import {KitElement, define} from "./element.js";
 
 let copies = 0;
 
-// questpump.com/play asks Trusted Types for every HTML sink (web/worker.js's CSP, docs/plan.md slice 63), and this is
+// play.questpump.com asks Trusted Types for every HTML sink (web/worker.js's CSP, docs/plan.md slice 63), and this is
 // one of the page's two that write markup: the art's own, tools/art.py's, which this policy alone passes on. A browser
 // or webview without Trusted Types takes the markup as it is.
 const POLICY = globalThis.trustedTypes?.createPolicy("qp-art", {createHTML: (markup) => markup});

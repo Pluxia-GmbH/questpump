@@ -3,7 +3,6 @@
   "view": "side",
   "camera": {"yaw": 36, "pitch": 24},
   "working": ["abdomen", "thigh", "pauldron"],
-  "ballistic": true,
   "fast_phase": 0.5,
   "props": [{"kind": "mat", "f0": -90, "f1": 110, "l0": -50, "l1": 50}],
   "poses": {

@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 18, "pitch": 8},
   "working": ["chest", "upper_arm"],
-  "ballistic": true,
+  "ballistic": ["throw", "catch"],
   "props": [{"kind": "wall", "f": 150}],
   "items": [
     {

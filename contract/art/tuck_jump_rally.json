@@ -3,7 +3,6 @@
   "view": "side",
   "camera": {"yaw": 34, "pitch": 8},
   "working": ["thigh", "shin", "abdomen"],
-  "ballistic": true,
   "fast_phase": 0.5,
   "poses": {
     "dip": {

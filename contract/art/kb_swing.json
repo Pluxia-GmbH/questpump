@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 20, "pitch": 6},
   "working": ["thigh", "abdomen"],
-  "ballistic": true,
+  "ballistic": ["float", "hike_back", "snap_hips"],
   "items": [{"kind": "kettlebell"}],
   "poses": {
     "top": {
@@ -48,11 +48,11 @@
   "timeline": [
     {"pose": "top"},
     {"hold": 0.1, "phase": "float", "effort": 0.4},
-    {"to": "drop", "s": 0.29, "phase": "hike_back", "effort": 0.4, "ease": "in"},
+    {"to": "drop", "s": 0.3, "phase": "hike_back", "effort": 0.4, "ease": "in"},
     {"to": "pass", "s": 0.15, "phase": "hike_back", "effort": 0.5, "ease": "linear"},
     {"to": "hike", "s": 0.2, "phase": "hike_back", "effort": 0.6, "ease": "out"},
-    {"to": "pass", "s": 0.11, "phase": "snap_hips", "effort": 1.0, "ease": "in"},
-    {"to": "lock", "s": 0.15, "phase": "snap_hips", "effort": 1.0, "ease": "linear"},
+    {"to": "pass", "s": 0.3, "phase": "snap_hips", "effort": 1.0, "ease": "in"},
+    {"to": "lock", "s": 0.2, "phase": "snap_hips", "effort": 1.0, "ease": "linear"},
     {"to": "top", "s": 0.35, "phase": "float", "effort": 0.5, "ease": "out"}
   ],
   "key": "top",

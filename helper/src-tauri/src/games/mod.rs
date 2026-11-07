@@ -513,7 +513,7 @@ impl Games {
 
 	/// The asset URL of World of Warcraft's icon, while its file stands.
 	pub(crate) fn wow_icon(&self) -> Option<String> {
-		self.icons.url(crate::desk::recent::WOW)
+		self.icons.url(questpump_desk::recent::WOW)
 	}
 
 	/// The processes of the watched game `id` (`Watched::id`: a named game's key, a found or picked program's own) in

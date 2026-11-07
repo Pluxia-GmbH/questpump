@@ -3,7 +3,6 @@
   "view": "front",
   "camera": {"yaw": -12, "pitch": 6},
   "working": ["thigh", "shin"],
-  "ballistic": true,
   "fast_phase": 0.55,
   "poses": {
     "land_near": {

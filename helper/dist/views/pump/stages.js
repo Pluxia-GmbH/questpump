@@ -17,7 +17,7 @@ import {figureName} from "../../lib/figure.js";
 import {announce} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
 import {guardMs} from "../../lib/keys.js";
-import {over} from "../../lib/router.js";
+import {openMenu, over} from "../../lib/router.js";
 import {openShare, streakCard} from "../../lib/share.js";
 import {h, qualityName} from "../../kit/element.js";
 import {shifted, turned} from "../../kit/qp-count-bar.js";
@@ -83,7 +83,7 @@ function back(pump) {
 	return pump.back ? button("qp-quiet-button", t("common.back"), () => heard(intent("pump.back"))) : null;
 }
 
-/** The read-aloud button (`pump.guide`, the game's guide button; desk/pump/guide.rs): How and Tips read aloud, paused
+/** The read-aloud button (`pump.guide`, the game's guide button; questpump-desk/src/pump/guide.rs): How and Tips read aloud, paused
  * and gone on with, its words and its glyph by the topic's `guide` (`show`, again at each `update`), hidden where no
  * guide reads; a quiet button, never the primary. */
 function guideButton(pump) {
@@ -243,7 +243,7 @@ export function resting(pump) {
  * digit, "Go", the clock or the count) and the words (the line; `words` takes a pace line before it) placed about it
  * by pump.css. A set of reps' loop is phased to its go from the countdown on (its `beat` and the go, Rust's), so the
  * voice's count, and the count in the dial where the voice counts, come as the figure finishes each rep. The name
- * carries the side a side move is on. */
+ * carries the side a side move is on, and fits its room (`fitName`). */
 function bigMiddle(pump, ctx) {
 	const m = pump.moves[pump.current];
 	const name = h("h1", {class: "qp-big-name", text: sideName(m, pump.side)});
@@ -255,7 +255,72 @@ function bigMiddle(pump, ctx) {
 	const words = h("div", {class: "qp-big-words"}, sub);
 	const dial = h("div", {class: "qp-big-dial"}, ring);
 	const stage = h("div", {class: "qp-big-stage"}, name, figure, dial, words);
-	return {name, ring, dial, sub, words, parts: [stage]};
+	const keep = [dial];
+	fitName(name, dial, keep);
+	return {name, ring, dial, sub, words, keep, parts: [stage]};
+}
+
+/** Big view's name (a move's, or the count's question that names it) at its size in pump.css, or under it the largest
+ * at which no word of it is wider than its line, the whole of each control in `keep` (the dial, and a count's weight
+ * box or a question's answers) stays in the body's first view and the dial keeps TimerRing's least room
+ * (`surface.TimerRing.least`, under which its count turns compact), at every size of the window (David, 2026-11-06, on
+ * a count's question that broke "Copenhage-n" and hid the seconds under the foot: "they should always be visible no
+ * matter the window size", and on a weighted count's keys pushed to the column's edges: "ui issues here with
+ * overlapping"). Where no size keeps the dial that room, the least, the words' own size (pump.css
+ * `--qp-big-line-size`), which gives the dial all the room there is; there a word too long for its line breaks again.
+ * It fits when the stage is first drawn and whenever the body's or a kept control's size changes, and stops once the
+ * stage has left the page. */
+function fitName(name, dial, keep) {
+	const roomy = (body) => {
+		if (name.scrollWidth > name.clientWidth + 1) return false;
+		const top = body.getBoundingClientRect().top - body.scrollTop;
+		if (keep.some((el) => el.getBoundingClientRect().bottom - top > body.clientHeight + 1)) return false;
+		const css = getComputedStyle(dial);
+		const ring = parseFloat(css.getPropertyValue("--qp-surface-timer-ring-least"));
+		return dial.clientHeight - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom) >= ring - 0.5;
+	};
+	/** The largest size from `lo`, where the name is roomy, to `hi`, where it is not, at which it is roomy. */
+	const largest = (body, lo, hi) => {
+		for (let i = 0; i < 8; i++) {
+			const size = (lo + hi) / 2;
+			name.style.fontSize = `${size}px`;
+			if (roomy(body)) lo = size;
+			else hi = size;
+		}
+		return lo;
+	};
+	const fit = (body) => {
+		name.style.fontSize = "";
+		name.style.overflowWrap = "normal";
+		if (!roomy(body)) {
+			const css = getComputedStyle(name);
+			const most = parseFloat(css.fontSize);
+			const floor = Math.min(most, parseFloat(css.getPropertyValue("--qp-big-line-size")));
+			name.style.fontSize = `${floor}px`;
+			if (roomy(body)) name.style.fontSize = `${largest(body, floor, most)}px`;
+		}
+		name.style.overflowWrap = "";
+	};
+	const body = () => (name.isConnected ? name.closest(".qp-pump-body") : null);
+	const again = () => {
+		const room = body();
+		if (room) return fit(room);
+		sized.disconnect();
+		document.fonts.removeEventListener("loadingdone", again);
+	};
+	const sized = new ResizeObserver(again);
+	// once the stage is on the page (session.js places it in the same task): fitted before its first paint, even in a
+	// window the game hides, where neither a frame nor a size change comes until it shows; again at each size of the
+	// body and when a font arrives (Cinzel, the name's, after a launch), which changes the name and not the body
+	queueMicrotask(() => {
+		const room = body();
+		if (!room) return;
+		fit(room);
+		sized.observe(room);
+		// a control that shows or hides later (the weight box's "Don't know the weight") changes what must stay in view
+		for (const el of keep) if (el !== dial) sized.observe(el);
+		document.fonts.addEventListener("loadingdone", again);
+	});
 }
 
 /** The countdown (design v3 §4): the move's name and its side, the move's figure playing where it will run, the digit
@@ -293,7 +358,7 @@ export function countdown(pump, topic, ctx) {
 
 /** The reps a set's figure has ended `ms` into its side's run, at most one set's most, by its count's rule (`rule`, the
  * move's `rep_count`: `beat` ms a loop, `ends` the ms in the loop each rep ends, the last the loop's, and `most`), a
- * rep ending at `ms` itself counted: the twin of Rust's `Beats::ended` (desk/pump/run.rs; Speech.lua countsBy), by
+ * rep ending at `ms` itself counted: the twin of Rust's `Beats::ended` (questpump-desk/src/pump/run.rs; Speech.lua countsBy), by
  * which the voice counts and the count step starts, kept here so no rep changes the `pump` topic. */
 function ended(rule, ms) {
 	const elapsed = Math.max(0, ms);
@@ -478,7 +543,9 @@ export function longer(pump, topic, ctx) {
 	const answer = (code) => settled(() => heard(intent("pump.longer", {answer: code})));
 	const rows = LONGER.map(([code, words], i) => h("qp-row", {step: i + 1, heading: t(words), trailing: "action",
 		"on:click": answer(code)}));
-	mid.words.replaceChildren(h("qp-card", {rows: true, class: "qp-big-card"}, ...rows));
+	const answers = h("qp-card", {rows: true, class: "qp-big-card"}, ...rows);
+	mid.keep.push(answers);
+	mid.words.replaceChildren(answers);
 	const guide = guideButton(pump);
 	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts, foot: [ways(guide, pump)]});
 	return {
@@ -736,6 +803,7 @@ function formStep(pump, topic, ctx) {
 	const pick = (answer) => settled(() => send(stepper.value ?? 0, answer));
 	const rows = FORMS.map(([answer, words]) => h("qp-row", {heading: t(words), trailing: "action", "on:click": pick(answer)}));
 	const answers = h("qp-card", {rows: true, class: "qp-big-card"}, ...rows);
+	mid.keep.push(answers);
 	const most = mostLine(c);
 	mid.words.replaceChildren(...[most.el, asked, answers].filter(Boolean));
 	const yes = check ? button("qp-primary-button", check.yes, settled(() => send(c.check.value, c.check.answer))) : null;
@@ -791,19 +859,19 @@ function formStep(pump, topic, ctx) {
 	};
 }
 
-/** An app pump's count, and since 2026-10-12 a catch-up's for a move the engine dosed (the game's result view), set on
- * the run view's dial since slice 66 (Rapha, 2026-11-04: "maybe just in the circle adjust the times and reps etc.
+/** An app pump's count, and since 2026-10-12 a catch-up's for a move the engine dosed (the game's result view), set
+ * on the run view's dial since slice 66 (Rapha, 2026-11-04: "maybe just in the circle adjust the times and reps etc.
  * instead of new screen (its bad ux anyways)"; a count view of its own until then): Done keeps the move's figure on its
  * stage and stops the clock, the question naming the move takes the name's place, and the dial holds the count, − and +
  * at its sides (the digits, Backspace, the arrows and the wheel step and type it; the first digit replaces the count it
  * started from); a counted set's form step (`formStep`, slice 42). Under the dial: the line while the count stands at
  * its most (`mostLine`), on a loaded move the weight box (the keys go to it while it has the focus; "." or "," move it
- * there) with what Save keeps with a weight ("16 reps with 11 kg"), and "Is that right?" for a count (or a weight) far
- * from the record, its Yes in Save's place and Change it in "Could not do one"'s while the dial and the box hold the
- * count it asks about; a new count there takes Save back (the phones' CountStep.changed()), which sends that count to
- * be checked again. Save never takes 0 on a first max set; Back. Enter is the primary. The record chip shows on a
- * count past the reps record, but not with a weight on a move with a weighted record, a score the reps alone cannot
- * tell. */
+ * there), "Don't know the weight" under it while it holds one, and what Save keeps with a weight ("16 reps with
+ * 11 kg"), and "Is that right?" for a count (or a weight) far from the record, its Yes in Save's place and Change it in
+ * "Could not do one"'s while the dial and the box hold the count it asks about; a new count there takes Save back (the
+ * phones' CountStep.changed()), which sends that count to be checked again. Save never takes 0 on a first max set;
+ * Back. Enter is the primary. The record chip shows on a count past the reps record, but not with a weight on a move
+ * with a weighted record, a score the reps alone cannot tell. */
 export function counting(pump, topic, ctx) {
 	if (pump.count.question === "form") return formStep(pump, topic, ctx);
 	const m = pump.moves[pump.current];
@@ -813,11 +881,18 @@ export function counting(pump, topic, ctx) {
 	mid.name.textContent = ask;
 	const stepper = dialOf(m, c, mid, {label: ask});
 	const weight = weightBox(c);
+	// "Don't know the weight" under the box while it holds a weight (David, 2026-11-06: "there should be a "dont know
+	// weight" option here"): it empties the box, so Save keeps the reps alone; − or + brings the planned weight back
+	const unknown = weight ? button("qp-quiet-button", t("pump.count.kg.unknown"), () => {
+		weight.clear();
+		weight.focus({preventScroll: true});
+	}) : null;
+	mid.keep.push(...[weight, unknown].filter(Boolean));
 	const kept = weight ? h("p", {class: "qp-big-line"}) : null;
 	const most = mostLine(c);
 	const check = c.check ? checkWords(c.check) : null;
 	const asked = check ? h("qp-card", {class: "qp-big-card"}, h("p", {class: "qp-type-body", text: check.line})) : null;
-	mid.words.replaceChildren(...[most.el, weight, kept, asked].filter(Boolean));
+	mid.words.replaceChildren(...[most.el, weight, unknown, kept, asked].filter(Boolean));
 	// the count comes on the press that ended the move (its Done, which Enter is while it runs) and starts at a count of
 	// its own (a hold's stopwatch, the voice's reps), and "Is that right?" comes on the press of Save: Save, Yes and
 	// Could not do one answer once it has settled, so that press pressed twice never answers them, as the phones' foot
@@ -842,6 +917,7 @@ export function counting(pump, topic, ctx) {
 			kept.textContent = load != null && value > 0 ? preview(value, load, c.kg.each) : "";
 			kept.hidden = !kept.textContent;
 		}
+		if (unknown) unknown.hidden = load == null;
 		stepper.record = load != null && c.kg?.top ? null : c.chip;
 		const was = asking;
 		asking = Boolean(c.check) && stepper.value === c.check.value && load === (c.check.load ?? null);
@@ -995,6 +1071,28 @@ function legendWindow() {
 	};
 }
 
+/** The Result's foot and its main action: Continue; in the browser, while its `play` topic offers Save here (its first
+ * pump's Result; docs/plan.md slice 63, "Save your progress") and this is a Result the offer counts (the pump's
+ * `ended_done`, the desk's: a move done, never felt unwell's calm card or a pump that ended before a move ran;
+ * questpump-web `Play::seen` reads the same), Save your progress as the main action, which
+ * puts the offer away, ends the first five minutes where they stand (their Hero step would cover the Email page),
+ * continues and opens the Email page in the Menu on its Save flow (`save`), with Not now beside it, which puts it
+ * away and continues. The desktop app publishes no `play` topic. */
+function saveOffer(pump, continueButton) {
+	if (get("play")?.offer !== "result" || !pump.ended_done) {
+		return {foot: [continueButton], primary: continueButton};
+	}
+	const save = button("qp-primary-button", t("menu.sync.save.title"), () => {
+		const first = () => (get("welcome")?.step ? intent("welcome.done") : null);
+		heard(intent("play.later").then(first).then(() => intent("pump.continue"))
+			.then(() => openMenu("desk.menu.email", {save: true})));
+	});
+	const later = button("qp-quiet-button", t("menu.sync.notnow"), () => {
+		heard(intent("play.later").then(() => intent("pump.continue")));
+	});
+	return {foot: [save, later], primary: save};
+}
+
 /** The pump's end (mockup pump-done): the fanfare and what the pump earned, played by the Result's one reveal on the
  * instants Rust gave (the XP counting up as the bar fills, the banner turning at a level, a Paragon rank or a streak
  * milestone, the reward rows one by one, each move the pump did first with its record and its progress, 2026-10-29)
@@ -1091,7 +1189,8 @@ export function done(pump, topic, ctx) {
 		body.push(h("p", {class: "qp-type-subtitle qp-pump-centre", text: paidLine(r.paid)}));
 	}
 	if (trip) body.push(...trip.tail);
-	const {el, column} = frame({body, foot: trip ? trip.foot : [continueButton]});
+	const offer = trip ? null : saveOffer(pump, continueButton);
+	const {el, column} = frame({body, foot: trip ? trip.foot : offer.foot});
 	// the Share window by itself as the reveal ends (at once on one ended part way)
 	let opened = false;
 	const reveals = draw;
@@ -1119,7 +1218,7 @@ export function done(pump, topic, ctx) {
 	return {
 		el,
 		light: celebrates,
-		primary: () => (trip ? trip.primary : continueButton),
+		primary: () => (trip ? trip.primary : offer.primary),
 		frame: (now) => draw(now),
 		update(next) {
 			reveal = next.reveal;

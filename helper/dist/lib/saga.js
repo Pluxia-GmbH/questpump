@@ -1,4 +1,4 @@
-// The Saga's words and shapes (the Saga, 2026-10-15; contract/fixtures/history.json `saga`, desk/saga.rs), shared by
+// The Saga's words and shapes (the Saga, 2026-10-15; contract/fixtures/history.json `saga`, questpump-desk/src/saga.rs), shared by
 // the Saga's pages (views/log), Pump home's today's chapter (views/home) and the share cards (lib/share.js), so a day
 // reads alike on every one: its chapter and date, its word in its tone, a set as the Log writes it, the parts of the
 // day, the units drawn small beside a large number, the strip's bars placed on the 24 hours, and what a screen reader

@@ -1,9 +1,9 @@
 // Pump home on the computer (docs/ui.md, "Pump home on the computer"; slice 32's Pump home, iOS PumpTab, Android's
-// twin), from the `home` topic (helper/src-tauri/src/desk/home.rs): under the TopBar this computer's status Chip only
+// twin), from the `home` topic (helper/crates/questpump-desk/src/home.rs): under the TopBar this computer's status Chip only
 // while something needs fixing (the topic's `fix`: This computer's state words as the tray says them, the
 // `menu.computer` topic's `state_line`, beside the tray icon's colour, `tone`; a save that failed; the firewall between
 // this PC and the paired phone), opening This computer or Phones; the recent games (2026-10-27, `recent`,
-// desk/recent.rs: since 2026-10-28 a Carousel of GameStat tiles, every game running now first, then every game with a
+// questpump-desk/src/recent.rs: since 2026-10-28 a Carousel of GameStat tiles, every game running now first, then every game with a
 // move this week or played in the last week, the most moves first, in Rust's order, under Moves this week, or under
 // Moves all time every game with a move by its moves in all, as the label's This week | All time says (`home.span`,
 // kept on this computer); World of Warcraft's in its own words with the Chip's step as its dot, a click opening This
@@ -13,7 +13,7 @@
 // the streak page since slice 51), under Up next (2026-11-03) the embers row (slice 55: Cardio moves today 2 of 3 with
 // the cardio step's move's tile and three marks, the phones' pump.tab's, starting that move at once, the step's card
 // where Rust refuses the start; until 2026-11-03 it opened the card) and the step-up closest to done of all the ladders
-// (2026-11-02: the `book` topic's `closest`, desk/book.rs, its key line over the ring's share, book.js `nextRow`,
+// (2026-11-02: the `book` topic's `closest`, questpump-desk/src/book.rs, its key line over the ring's share, book.js `nextRow`,
 // opening the ladder's page in the Book at that step; none while nothing climbs), none while pumps rest, then one card (the rest
 // after feeling unwell, the banked moves (2026-11-03: their first three with their tiles, the whole card opening the
 // window of every one with its Skip), or today's chapter, the Saga's own day, laid out as the
@@ -298,7 +298,8 @@ register("pump", () => {
 	const placeButton = h("qp-round-button", {icon: "place_home", "on:click": () => openPlaces()});
 	view.bar.action = placeButton;
 	let chipTo = "desk.menu.computer";
-	const status = h("qp-chip", {button: true, hidden: true, "on:click": () => openMenu(chipTo)});
+	let chipParams;
+	const status = h("qp-chip", {button: true, hidden: true, "on:click": () => openMenu(chipTo, chipParams)});
 	// the recent games, each a GameStat made once and kept while the topic lists it
 	const stats = new Map();
 	const carousel = h("qp-carousel", {previous: t("desk.home.games.previous"), next: t("desk.home.games.next")});
@@ -402,8 +403,16 @@ register("pump", () => {
 	const pair = laterCard("pair", t("desk.home.pair.title"), t("desk.menu.phones.pair"), pairWindow);
 	const addon = laterCard("addon", t("desk.addon.missing"), t("desk.addon.add"),
 		() => call("addon_install").catch(console.error));
+	// the browser's Save your progress (its `play` topic's `offer` here: once more after the first record or on the
+	// third game day, docs/plan.md slice 63), Add email opening the Email page, Not now putting it away for good
+	const save = h("qp-card", {class: "qp-stack-small", hidden: true},
+		h("h2", {class: "qp-type-heading", text: t("menu.sync.save.title")}),
+		h("qp-secondary-button", {label: t("menu.sync.save.action"),
+			"on:click": () => openMenu("desk.menu.email", {save: true})}),
+		h("qp-quiet-button", {label: t("menu.sync.notnow"),
+			"on:click": () => intent("play.later").catch(console.error)}));
 	const column = h("qp-hero-column", {least: STAGE_LEAST, most: STAGE_MOST}, status, recent, figure, board, upNext,
-		rest, waiting, todayBlock, checkin.el, pair.el, addon.el);
+		rest, waiting, todayBlock, checkin.el, save, pair.el, addon.el);
 	view.body.append(column);
 
 	const gameLine = words(t("pump.waiting.game"), "meta");
@@ -440,13 +449,18 @@ register("pump", () => {
 	let fix = null;
 	let games = [];
 	let span = "week";
+	// the browser's Not saved (its `play` topic's `unsaved`), while nothing on this computer needs fixing
+	let play = null;
 	const drawChip = () => {
-		const c = computer && chip(fix, computer);
+		const unsaved = play?.unsaved
+			? {label: t("play.unsaved"), dot: "reaching", to: "desk.menu.email", params: {save: true}} : null;
+		const c = (computer && chip(fix, computer)) || unsaved;
 		status.hidden = !c;
 		if (!c) return;
 		status.label = c.label;
 		status.state = c.dot;
 		chipTo = c.to;
+		chipParams = c.params;
 	};
 	/** A recent game's GameStat, made once and kept while the topic lists it: a click opens This computer for World of
 	 * Warcraft, else the game's window on the Games tab. */
@@ -500,6 +514,12 @@ register("pump", () => {
 	watch(view, "book", (value) => {
 		book = value;
 		drawUp();
+	});
+
+	watch(view, "play", (p) => {
+		play = p;
+		drawChip();
+		save.hidden = p.offer !== "home";
 	});
 
 	watch(view, "home", (home) => {

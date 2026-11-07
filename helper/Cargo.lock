@@ -4113,6 +4113,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "questpump-desk"
+version = "0.1.0"
+dependencies = [
+ "base64 0.23.1",
+ "ciborium",
+ "log",
+ "qrcode",
+ "questpump-core",
+ "questpump-engine",
+ "rand",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "questpump-engine"
 version = "0.1.0"
 dependencies = [
@@ -4128,7 +4147,7 @@ dependencies = [
 
 [[package]]
 name = "questpump-helper"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -4164,8 +4183,8 @@ dependencies = [
  "plist",
  "png",
  "prost",
- "qrcode",
  "questpump-core",
+ "questpump-desk",
  "questpump-engine",
  "rand",
  "reqwest",
@@ -4197,7 +4216,11 @@ dependencies = [
 name = "questpump-web"
 version = "0.1.0"
 dependencies = [
+ "log",
+ "questpump-core",
+ "questpump-desk",
  "questpump-engine",
+ "serde",
  "serde_json",
 ]
 

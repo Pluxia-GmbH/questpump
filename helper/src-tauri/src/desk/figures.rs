@@ -16,15 +16,16 @@
 //! `animations`).
 //!
 //! Each owner's film is one loop of the move at its real tempo, from its start pose back to it (a timing variant has a
-//! film of its own), and the table names its length (`loop`, seconds): a move's beat (`beat`), which the pump's rep
-//! count runs on and Big view's figure is phased to (`desk/pump.rs`), with the second each rep but the last ends where
-//! a loop shows more than one (`counts`, a dead bug's two sides: `rep_ends`); both stay out of the topic, since the
-//! pump publishes a running move's own. A gear variant (`<move>.<gear>`, 2026-10-09) inherits its move's timeline,
-//! so the move's beat and rep ends are its own too.
+//! film of its own), and the table names its length (`loop`, seconds): a move's beat (`questpump_desk::figures::beat`),
+//! which the pump's rep count runs on and Big view's figure is phased to (the desk's `pump.rs`), with the second each
+//! rep but the last ends where a loop shows more than one (`counts`, a dead bug's two sides: `rep_ends`); both stay out
+//! of the topic, since the pump publishes a running move's own. A gear variant (`<move>.<gear>`, 2026-10-09) inherits
+//! its move's timeline, so the move's beat and rep ends are its own too.
 //!
 //! The day reel (slice 45, `desk::reel`) reads the same films from Rust: a move's film, its key pose, its mirror and
-//! its tile (`film`), only where the whole set is here (`filmed`), so the Saga's reel and its maker agree on which
-//! moves a reel can show; the films' landing after a download has the Saga built again (`DeskAsk::Films`).
+//! its tile (`film`), only where the whole set is here (`films_here`, the desk's `Platform::films` and
+//! `figures::has_film`), so the Saga's reel and its maker agree on which moves a reel can show; the films' landing
+//! after a download has the Saga built again (`DeskAsk::Films`).
 //!
 //! The topic: `{"card", "crimson", "film": {"side", "tint"}, "moves": {<move>: {"owner", "key", "mirror", "fault"?,
 //! "gear"?: {<gear key>: {"owner", "key", "mirror", "fault"?}}}},
@@ -46,11 +47,12 @@ use std::time::Duration;
 
 use anyhow::Context as _;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
+use questpump_desk::facts::{Facts, facts};
+use questpump_desk::figures::{Extra, Film, Move, Owner, TABLE, Table, hex};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager as _};
 use tokio::io::AsyncWriteExt as _;
 
-use super::facts::{Facts, facts};
 use super::{Desk, DeskAsk};
 use crate::runtime::Helper;
 use crate::ui::{self, Animations, Shared, WindowAsk};
@@ -64,7 +66,7 @@ const TOPIC: &str = "figures";
 /// line still brings it.
 const RETRY: [Duration; 4] =
 	[Duration::from_mins(1), Duration::from_mins(5), Duration::from_mins(30), Duration::from_hours(6)];
-/// The most a download may bring (the films are about 60 MB): a feed that sends more is refused.
+/// The most a download may bring (the films are about 161 MB): a feed that sends more is refused.
 const MAX_BYTES: u64 = 512 << 20;
 /// What `encodeURIComponent` leaves as it is.
 pub(crate) const URI_COMPONENT: &AsciiSet = &NON_ALPHANUMERIC
@@ -77,68 +79,6 @@ pub(crate) const URI_COMPONENT: &AsciiSet = &NON_ALPHANUMERIC
 	.remove(b'\'')
 	.remove(b'(')
 	.remove(b')');
-
-/// figures.json, the part the desktop app reads.
-#[derive(Deserialize)]
-struct Table {
-	card: String,
-	crimson: String,
-	film: Film,
-	films_digest: String,
-	/// Each file's sha256 by its path in contract/figures/.
-	files: BTreeMap<String, String>,
-	moves: BTreeMap<String, Move>,
-	owners: BTreeMap<String, Owner>,
-	/// The figures that are no library move, by name: a still each, no film (`streak_banner`).
-	#[serde(default)]
-	extras: BTreeMap<String, Extra>,
-}
-
-/// An extra figure's numbers: an owner's, read off its still.
-#[derive(Deserialize, Serialize)]
-struct Extra {
-	r#box: [f64; 4],
-	fade: [Option<f64>; 3],
-	tile: [f64; 3],
-}
-
-/// The films' layout: the square's side and the tint's first row.
-#[derive(Deserialize, Serialize)]
-struct Film {
-	side: u32,
-	tint: u32,
-}
-
-#[derive(Deserialize, Serialize)]
-struct Move {
-	owner: String,
-	key: f64,
-	mirror: bool,
-	#[serde(skip_serializing_if = "Option::is_none")]
-	fault: Option<String>,
-	/// The move drawn with the implement each equipment key names (tools/figures' gear variants, 2026-10-09), which
-	/// the pump shows a player whose load that implement carries (`lib/figure.js` `figureName`).
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	gear: Option<BTreeMap<String, Move>>,
-	/// Where its loop shows more than one rep (a dead bug's two sides), the second each rep but the last ends.
-	#[serde(default, skip_serializing)]
-	counts: Vec<f64>,
-}
-
-/// An owner's numbers, shares of its square's side, unmirrored, and its film's length.
-#[derive(Deserialize, Serialize)]
-struct Owner {
-	r#box: [f64; 4],
-	fade: [Option<f64>; 3],
-	tile: [f64; 3],
-	/// The film's length in seconds, one loop at real tempo (`beat`); none in a table written before it.
-	#[serde(default, rename = "loop", skip_serializing)]
-	film_s: Option<f64>,
-}
-
-/// The table, built in; one that does not read leaves the app without figures (logged at the start).
-static TABLE: LazyLock<Option<Table>> =
-	LazyLock::new(|| serde_json::from_str(include_str!("../../../../contract/figures/figures.json")).ok());
 
 /// The share cards' scenes (`contract/design/scenes/scenes.json`): each scene's page and where the standard-bearer
 /// stands in it, the scene of each place template, the streak card's and a place's without a template.
@@ -225,19 +165,6 @@ impl Helper {
 	}
 }
 
-/// A move's beat in seconds by its key: its owner's film's length, one loop at its real tempo; none for a move without
-/// a figure, an owner whose length the table does not name, or a table that does not read.
-pub(crate) fn beat(key: &str) -> Option<f64> {
-	let table = TABLE.as_ref()?;
-	table.owners.get(&table.moves.get(key)?.owner)?.film_s
-}
-
-/// The seconds in a move's loop at which each of its reps but the last ends (a dead bug's two sides), by its key; none
-/// for a loop of one rep, a move without a figure or a table that does not read.
-pub(crate) fn rep_ends(key: &str) -> Vec<f64> {
-	TABLE.as_ref().and_then(|t| t.moves.get(key)).map(|m| m.counts.clone()).unwrap_or_default()
-}
-
 /// A move's film as the day reel reads it (`desk::reel`): the file, the key pose's second, whether the pack mirrors it,
 /// its owner's tile square (shares of the film's square: x, y, side) and length in seconds; the films' layout (the
 /// square's side and the tint's first row) and the crimson the films are tinted in.
@@ -271,16 +198,10 @@ pub(crate) fn film(f: &Facts, mv: u16) -> Option<MoveFilm> {
 	})
 }
 
-/// Whether a move's film is on this computer (`film`): the Saga's reel leaves out the moves it is not.
-pub(crate) fn filmed(f: &Facts, mv: u16) -> bool {
-	film(f, mv).is_some()
-}
-
-/// "#RRGGBB" as its three bytes.
-fn hex(colour: &str) -> Option<[u8; 3]> {
-	let digits = colour.strip_prefix('#').filter(|d| d.len() == 6)?;
-	let byte = |i: usize| u8::from_str_radix(digits.get(i..i + 2)?, 16).ok();
-	Some([byte(0)?, byte(2)?, byte(4)?])
+/// Whether the whole set of films is on this computer (`Platform::films`): the Saga's reel leaves out the moves whose
+/// film it is not (`questpump_desk::figures::has_film`).
+pub(crate) fn films_here() -> bool {
+	FILMS.lock().is_ok_and(|films| films.is_some())
 }
 
 /// Publishes the topic: the stills, the pairs and the scenes from the bundle, the films from `films`, which the day

@@ -1,6 +1,6 @@
 [package]
 name = "questpump-helper"
-version = "1.0.0"
+version = "1.0.1"
 description = "QuestPump for Mac and Windows (the helper): reads the addon's status strip, keeps your progress for the game and pairs your phone"
 edition.workspace = true
 rust-version.workspace = true
@@ -24,6 +24,8 @@ tauri-build = { version = "2", features = [] }
 questpump-core = { path = "../crates/questpump-core" }
 # the addon's own engine (desk/engine.rs, slice 35)
 questpump-engine = { path = "../crates/questpump-engine" }
+# the desk core the browser runs too (docs/plan.md slice 63, "One desk core"): this app implements its Platform
+questpump-desk = { path = "../crates/questpump-desk" }
 # 2.12: Builder::activate_ignoring_other_apps; protocol-asset: the figures the page shows from the bundle's resources
 # and the films' folder (app.security.assetProtocol's scope), byte ranges for <video> included
 tauri = { version = "2.12", features = ["tray-icon", "image-png", "protocol-asset"] }
@@ -42,7 +44,6 @@ dirs = "7"
 rand = "0.10"
 base64 = "0.23"
 ciborium = "0.2"
-qrcode = { version = "0.14", default-features = false } # the pair link's modules, which the page draws
 if-addrs = "0.15"
 time = { version = "0.3", features = ["formatting", "local-offset", "macros"] }
 anyhow = "1"
@@ -68,7 +69,7 @@ tokio-tungstenite = { version = "0.30", default-features = false, features = ["c
 # the desktop app's sounds and voice (desk/audio.rs) on the output the player picks: cpal's playback and symphonia's
 # Ogg Vorbis (the sounds, the takes) only
 rodio = { version = "0.23", default-features = false, features = ["playback", "vorbis"] }
-# sha256s (the addon's zip as it downloads, addon.rs; the games' icons; the sync) and the asset protocol's URLs spelt
+# sha256s (the addon's zip as it downloads, addon.rs; the games' icons) and the asset protocol's URLs spelt
 # as Tauri's convertFileSrc spells them (both already in the graph)
 sha2 = "0.11"
 percent-encoding = "2"

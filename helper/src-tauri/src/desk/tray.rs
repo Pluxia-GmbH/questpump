@@ -16,17 +16,19 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use questpump_desk::Intent;
+use questpump_desk::platform::FoundGame;
 use serde::Serialize;
 use tauri::image::Image;
 use tauri::menu::{IsMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager as _};
 
+use super::DeskAsk;
 use super::offers::{self, TrayItems};
-use super::seams::FoundGame;
 use super::windows::{self, Landing};
 use crate::copy;
-use crate::ui::{self, Access, Dot, Holder, Note, PhoneLine, View};
+use crate::ui::{self, Access, Dot, Holder, Note, PhoneLine, Shared, View, WindowAsk};
 
 const TRAY: &str = "main";
 const OPEN: &str = "tray.open";
@@ -75,7 +77,7 @@ pub(crate) enum State {
 }
 
 /// This computer's state in the view: a step left first (as This computer's cards ask it), then the squares read, then
-/// what QuestPump found of the game (`Helper::found`'s `game`, kept in `computer.found`), a running client without
+/// what QuestPump found of the game (`Desk::found`'s `game`, kept in `computer.found`), a running client without
 /// QuestPump before a found install, so "Waiting…" only ever means a game with QuestPump not read yet in this run of it
 /// (`computer.game`'s `read`), and one read before and out of view now is `Out`.
 pub(crate) fn state(view: &View) -> State {
@@ -284,8 +286,68 @@ fn on_menu(app: &AppHandle, event: &MenuEvent) {
 		PHONE => windows::open_main(app, Landing::Phones),
 		QUIT => ui::quit(app),
 		id if offers::is_tray(id) => offers::on_tray(app, id),
-		id if id.starts_with("pump.") => super::pump::on_tray(app, id),
+		id if id.starts_with("pump.") => on_pumps(app, id),
 		_ => {}
+	}
+}
+
+/// The pump's tray items' ids, `pump.` and the intent's what.
+const PUMP_ON: &str = "pump.on";
+const PUMP_QUICK: &str = "pump.quick";
+const PUMP_CATCHUP: &str = "pump.catchup";
+
+/// The pump's tray items, made once on the main thread (`draw_pumps`).
+struct PumpItems {
+	on: MenuItem<tauri::Wry>,
+	quick: MenuItem<tauri::Wry>,
+	catch_up: MenuItem<tauri::Wry>,
+	shown: [AtomicBool; 3],
+}
+
+/// The tray's pump items: "A pump is on" (no control) while one runs, Quick pump and Catch up where they can start;
+/// made on the main thread the first time they show, each just above Open QuestPump.
+pub(crate) fn draw_pumps(app: &AppHandle, (on, quick, catch_up): (bool, bool, bool)) {
+	let Some(lines) = app.try_state::<TrayLines>() else { return };
+	if app.try_state::<PumpItems>().is_none() {
+		let made = (|| {
+			Ok::<_, tauri::Error>(PumpItems {
+				on: MenuItem::with_id(app, PUMP_ON, copy::desk_pump_tray_on(), false, None::<&str>)?,
+				quick: MenuItem::with_id(app, PUMP_QUICK, copy::pump_quick(), true, None::<&str>)?,
+				catch_up: MenuItem::with_id(app, PUMP_CATCHUP, copy::pump_waiting_catchup(), true, None::<&str>)?,
+				shown: [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)],
+			})
+		})();
+		match made {
+			Ok(tray) => {
+				app.manage(tray);
+			}
+			Err(e) => {
+				log::warn!("pump: the tray's items: {e}");
+				return;
+			}
+		}
+	}
+	let Some(tray) = app.try_state::<PumpItems>() else { return };
+	for (item, shown, want) in [
+		(&tray.on, &tray.shown[0], on),
+		(&tray.quick, &tray.shown[1], quick),
+		(&tray.catch_up, &tray.shown[2], catch_up),
+	] {
+		let at = lines.above_open();
+		lines.show(item, shown, at, want);
+	}
+}
+
+/// The tray's pump items: Quick pump and Catch up open QuestPump's window and start that pump.
+fn on_pumps(app: &AppHandle, id: &str) {
+	let kind = match id {
+		PUMP_QUICK => "pump.quick",
+		PUMP_CATCHUP => "pump.catchup",
+		_ => return,
+	};
+	if let Ok(intent) = Intent::from_value(serde_json::json!({"type": kind, "outside": true})) {
+		let (done, _) = tokio::sync::oneshot::channel();
+		app.state::<Shared>().ask(WindowAsk::Desk(DeskAsk::Intent { intent, done }));
 	}
 }
 

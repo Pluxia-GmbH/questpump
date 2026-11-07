@@ -1,5 +1,5 @@
 // The page's line to QuestPump on this computer (docs/plan.md slice 35, "The UI stack"): Rust owns the state and sends
-// it as topics through one channel (helper/src-tauri/src/desk/state.rs), each a whole value at a rev that counts every
+// it as topics through one channel (helper/crates/questpump-desk/src/publisher.rs), each a whole value at a rev that counts every
 // change; the page keeps the newest of each and hands it to its subscribers. The page answers with intents
 // ({type: "<area>.<what>", ...}: desk_intent, answered once the area's handler took it) and the Menu pages' own app
 // commands. No plugin command is called, so the page needs no capability file.

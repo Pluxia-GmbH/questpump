@@ -1295,7 +1295,7 @@ async function drawSticker(card) {
 
 /** Draws the Quest Bill of a day in a format and a style: a receipt with torn edges on its iron ground (the light
  * paper for Parchment, the card inside the gold band for Gilded, the dark paper with a gold edge for Night): The Quest
- * Bill, the day's span, a line a move in desk/saga.rs' order (the day's records and unlocks first, then the most done;
+ * Bill, the day's span, a line a move in questpump-desk/src/saga.rs' order (the day's records and unlocks first, then the most done;
  * at most four, then the more line, + in the counts' column and the rest's words where the names start; its reps for
  * a move dosed in reps, blank while none of its sets has a count, else its seconds), the total and the day's XP (none
  * where no sheet knows it, the barcode then closing up under the number unless the seal's word needs the room),

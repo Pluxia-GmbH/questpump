@@ -241,7 +241,7 @@ fn handled(marks: &mut CrashSettings, newest: Option<Handled>, panic: Option<i64
 impl Helper {
 	/// The switch as it reads: the player's answer, else on outside an opt-in region.
 	pub(crate) fn crash_on(&self) -> bool {
-		self.settings.crash.choice.reads(self.region)
+		self.desk.settings.crash.choice.reads(self.region)
 	}
 
 	/// In the start, once a window can be asked for (the sweep ran first in `run()` and saved the marks it moved):
@@ -263,8 +263,8 @@ impl Helper {
 			}
 			"crash.send" => self.crash_send_asked(),
 			"crash.always" => {
-				self.settings.crash.choice.answer(true, now().unix);
-				self.save_settings();
+				self.desk.settings.crash.choice.answer(true, now().unix);
+				self.desk.save_settings();
 				log::info!("crash: Send crash reports on, the player's answer (Always send)");
 				self.privacy_settled();
 				self.crash_send_asked();
@@ -282,8 +282,8 @@ impl Helper {
 	/// The player's answer to Send crash reports (the Menu's switch, the privacy page's answer), kept with its moment and
 	/// the words' version: on sends what waits, off deletes it and empties the outbox at once.
 	pub(crate) fn crash_answer(&mut self, on: bool) {
-		self.settings.crash.choice.answer(on, now().unix);
-		self.save_settings();
+		self.desk.settings.crash.choice.answer(on, now().unix);
+		self.desk.save_settings();
 		log::info!("crash: Send crash reports {}, the player's answer", if on { "on" } else { "off" });
 		self.privacy_settled();
 		if on {
@@ -305,8 +305,8 @@ impl Helper {
 	fn crash_send_asked(&mut self) {
 		let (asking, newest) = self.crash_take_asked();
 		if asking.is_empty() {
-			if handled(&mut self.settings.crash, newest, None) {
-				self.save_settings();
+			if handled(&mut self.desk.settings.crash, newest, None) {
+				self.desk.save_settings();
 			}
 			self.send_crashes();
 			return;
@@ -328,20 +328,20 @@ impl Helper {
 
 	/// Reports into the outbox (`Crash::keep`), the settings saved when a mark moved.
 	fn crash_keep(&mut self, reports: Vec<Found>, newest: Option<Handled>, asked: bool) -> Vec<String> {
-		let before = self.settings.crash.clone();
-		let ids = self.crash.keep(reports, newest, asked, &mut self.settings.crash);
-		if self.settings.crash != before {
-			self.save_settings();
+		let before = self.desk.settings.crash.clone();
+		let ids = self.crash.keep(reports, newest, asked, &mut self.desk.settings.crash);
+		if self.desk.settings.crash != before {
+			self.desk.save_settings();
 		}
 		ids
 	}
 
 	/// Reports turned down (`drop_reports`), the settings saved when a mark moved.
 	fn crash_drop(&mut self, reports: &[Found], newest: Option<Handled>, why: &str) {
-		let before = self.settings.crash.clone();
-		drop_reports(reports, newest, why, &mut self.settings.crash);
-		if self.settings.crash != before {
-			self.save_settings();
+		let before = self.desk.settings.crash.clone();
+		drop_reports(reports, newest, why, &mut self.desk.settings.crash);
+		if self.desk.settings.crash != before {
+			self.desk.save_settings();
 		}
 	}
 

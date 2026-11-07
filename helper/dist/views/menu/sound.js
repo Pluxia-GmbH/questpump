@@ -5,9 +5,10 @@
 // its one owner, which the Book's Tree | List default reads too). Each switch asks Rust (`sound.on`, `sound.voice`,
 // `sound.callouts`, `sound.count`, `sound.voice_offers`) and shows the answer the `menu.sound` topic brings
 // (helper/src-tauri/src/desk/audio.rs); a level goes as it is set (`sound.level`), so closing the window keeps it, and
-// its part of the test plays once it rests (`sound.test`).
+// its part of the test plays once it rests (`sound.test`). In the browser (docs/plan.md slice 63) no match offers and
+// no output to pick: a browser plays on the system's own.
 
-import {intent} from "../../lib/bridge.js";
+import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {register} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
@@ -54,9 +55,11 @@ register("desk.menu.sound", () => {
 	const levels = {master: level(t("desk.sound.volume.master"), "master"), sounds: level(t("menu.sounds"), "sounds"),
 		voice: level(t("desk.sound.volume.voice"), "voice")};
 	const reader = words("", "meta");
+	const web = get("shell")?.platform === "web";
+	offers.hidden = web;
 	view.body.append(h("qp-card", {rows: true}, sounds, voice, callouts, count, offers),
-		h("qp-section-label", {label: t("desk.sound.volume")}), h("qp-card", {rows: true}, ...Object.values(levels).map((l) => l.slider)),
-		h("qp-section-label", {label: t("desk.sound.output")}), h("qp-output-picker"), reader);
+		h("qp-section-label", {label: t("desk.sound.volume")}), h("qp-card", {rows: true}, ...Object.values(levels).map((l) => l.slider)));
+	if (!web) view.body.append(h("qp-section-label", {label: t("desk.sound.output")}), h("qp-output-picker"), reader);
 	watch(view, "menu.sound", (s) => {
 		sounds.checked = s.sound;
 		voice.checked = s.voice;

@@ -6174,7 +6174,7 @@
         ],
         "em": 0,
         "exp": 0,
-        "into": 86,
+        "into": 65,
         "lad": [
           [2, 43, 0, 0],
           [2, 2, 0, 0],
@@ -6246,7 +6246,7 @@
         "va": [4, 0, 0, 1790568000],
         "wk": [3, 0, 9, 6, 1],
         "ws": 1789963200,
-        "xp": 540
+        "xp": 519
       }
     },
     {
@@ -31149,7 +31149,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -31340,7 +31340,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -32285,7 +32285,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -32909,7 +32909,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -33132,7 +33132,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -33336,7 +33336,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -33722,7 +33722,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -41394,11 +41394,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -41408,11 +41408,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -41422,11 +41422,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -41436,11 +41436,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -41450,11 +41450,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -41464,11 +41464,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -43744,11 +43744,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -43758,11 +43758,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -43772,11 +43772,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -43786,11 +43786,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -43800,11 +43800,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -43814,11 +43814,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -48679,11 +48679,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -48693,11 +48693,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -48707,11 +48707,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -48721,11 +48721,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -48735,11 +48735,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -48749,11 +48749,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -51137,11 +51137,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -51151,11 +51151,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -51165,11 +51165,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -51179,11 +51179,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -51193,11 +51193,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -51207,11 +51207,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -59363,11 +59363,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -59377,11 +59377,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -59391,11 +59391,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -59405,11 +59405,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -59419,11 +59419,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -59433,11 +59433,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -61609,11 +61609,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -61623,11 +61623,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -61637,11 +61637,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -61651,11 +61651,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -61665,11 +61665,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -61679,11 +61679,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -64053,11 +64053,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -64067,11 +64067,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -64081,11 +64081,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -64095,11 +64095,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -64109,11 +64109,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -64123,11 +64123,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -66839,11 +66839,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -66853,11 +66853,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -66867,11 +66867,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -66881,11 +66881,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -66895,11 +66895,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -66909,11 +66909,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -69651,7 +69651,13 @@
                     {
                       "count": 8,
                       "ladder": 9,
-                      "move": 313,
+                      "move": 652,
+                      "step": 8
+                    },
+                    {
+                      "count": 8,
+                      "ladder": 9,
+                      "move": 655,
                       "step": 8
                     }
                   ]
@@ -69662,7 +69668,7 @@
         },
         {
           "at": 1790359200,
-          "write": ["1790359200|0|0|0|0|1|6|51|1|6|30|3|0", "1790359260|0|0|0|0|9|8|313|1|8|30|3|0"]
+          "write": ["1790359200|0|0|0|0|1|6|51|1|6|30|3|0", "1790359260|0|0|0|0|9|8|652|1|8|30|3|0"]
         },
         {
           "at": 1790359320,
@@ -69708,7 +69714,7 @@
           ]
         }
       ],
-      "name": "an any group and a move's checks (slice 42): with a pole, the towel and door and no bar the tuck flag's need, 8 pull-ups or 8 one-arm towel rows with a hold, is met by the rows; the vertical flag, the clutch flag's next on the side's path, waits for that need and the push-up's step 6 as its checks; with them done and each stage at its top on two game days the side climbs",
+      "name": "an any group and a move's checks (slice 42): with a pole, a table and no bar the tuck flag's need, 8 pull-ups or 8 feet-up table rows with a hold, is met by the rows; the vertical flag, the clutch flag's next on the side's path, waits for that need and the push-up's step 6 as its checks; with them done and each stage at its top on two game days the side climbs",
       "profile": {
         "exclude": {
           "groups": [],
@@ -69716,7 +69722,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["door_towel", "pole"],
+        "gear": ["pole", "table"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -69789,8 +69795,8 @@
         "ld": [0, 0, 0, 0, 0],
         "ls": [0, 0, 0, 0, 0],
         "lvl": 5,
-        "mq": [3, 3, 4, 0, 0, 5, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0],
-        "mw": [4, 1, 2, 1, 2, 5, 0, 2, 0, 0, 5, 0, 0, 1, 0, 0, 0, 0, 0],
+        "mq": [3, 3, 4, 0, 0, 5, 0, 5, 0, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0],
+        "mw": [4, 1, 2, 1, 2, 5, 0, 2, 0, 1, 5, 0, 0, 1, 0, 0, 0, 0, 0],
         "need": 411,
         "nx": [
           [0, 2, 0, 0],
@@ -69801,7 +69807,7 @@
           [0, 2, 0, 0],
           [0, 2, 0, 0],
           [0, 0, 0, 0],
-          [0, 2, 0, 0],
+          [0, 2, 1, 0],
           [0, 2, 0, 0],
           [0, 3, 0, 0],
           [0, 3, 0, 0, 1, 1],
@@ -74622,7 +74628,7 @@
             "move": 326,
             "why": [
               {
-                "move": 313,
+                "move": 652,
                 "reason": "need",
                 "value": 8
               }
@@ -74779,7 +74785,7 @@
           }
         }
       ],
-      "name": "what holds a step or a check's move after the review (slice 42, 2026-10-17): with a pole, the towel and door and no bar the side's top-out line names the towel row with a hold, the `any` group's entry the setup offers; the dragon pistol with a hand on the desk waits for the 90-90 sit, ankle step 6 and its stage after the held shrimp squat: a passed check opens it only as the last of them",
+      "name": "what holds a step or a check's move after the review (slice 42, 2026-10-17): with a pole, a table and no bar the side's top-out line names the feet-up table row with a hold, the `any` group's entry the setup offers; the dragon pistol with a hand on the desk waits for the 90-90 sit, ankle step 6 and its stage after the held shrimp squat: a passed check opens it only as the last of them",
       "profile": {
         "exclude": {
           "groups": [],
@@ -74787,7 +74793,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["door_towel", "pole"],
+        "gear": ["pole", "table"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -74872,7 +74878,7 @@
           [0, 2, 0, 0],
           [0, 2, 0, 0],
           [0, 0, 0, 0],
-          [0, 2, 0, 0],
+          [0, 2, 1, 0],
           [0, 2, 0, 0],
           [0, 0, 0, 0],
           [0, 3, 0, 0, 1, 1],
@@ -110877,7 +110883,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -111959,11 +111965,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -111973,11 +111979,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -111987,11 +111993,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -112001,11 +112007,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -112015,11 +112021,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -112029,11 +112035,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -113948,11 +113954,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -113962,11 +113968,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -113976,11 +113982,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -113990,11 +113996,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -114004,11 +114010,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -114018,11 +114024,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -115956,11 +115962,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -115970,11 +115976,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -115984,11 +115990,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -115998,11 +116004,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -116012,11 +116018,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -116026,11 +116032,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -117945,11 +117951,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -117959,11 +117965,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -117973,11 +117979,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -117987,11 +117993,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -118001,11 +118007,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -118015,11 +118021,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -127224,7 +127230,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": true,
@@ -134615,11 +134621,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -134629,11 +134635,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -134643,11 +134649,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -134657,11 +134663,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -134671,11 +134677,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -134685,11 +134691,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -136680,11 +136686,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -136694,11 +136700,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -136708,11 +136714,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -136722,11 +136728,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -136736,11 +136742,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -136750,11 +136756,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -138643,11 +138649,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -138657,11 +138663,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -138671,11 +138677,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -138685,11 +138691,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -138699,11 +138705,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -138713,11 +138719,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -140651,11 +140657,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -140665,11 +140671,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -140679,11 +140685,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -140693,11 +140699,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -140707,11 +140713,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -140721,11 +140727,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -142610,11 +142616,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -142624,11 +142630,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -142638,11 +142644,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -142652,11 +142658,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -142666,11 +142672,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -142680,11 +142686,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -153657,11 +153663,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -153671,11 +153677,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -153685,11 +153691,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -153699,11 +153705,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -153713,11 +153719,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -153727,11 +153733,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -155650,11 +155656,11 @@
                     "rung": 11,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -155664,11 +155670,11 @@
                     "rung": 10,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -155678,11 +155684,11 @@
                     "rung": 9,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -155692,11 +155698,11 @@
                     "rung": 8,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -155706,11 +155712,11 @@
                     "rung": 7,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -155720,11 +155726,11 @@
                     "rung": 6,
                     "start": {
                       "gap": {
-                        "key": "door_towel",
+                        "key": "table",
                         "kind": "gear"
                       },
                       "ladder": 9,
-                      "move": 231,
+                      "move": 650,
                       "refused": "setup",
                       "rung": 6
                     },
@@ -159801,7 +159807,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
@@ -161300,7 +161306,7 @@
         },
         "experience": "none",
         "floor": true,
-        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "door_towel", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
+        "gear": ["backpack", "ball", "bands", "bar", "barbell", "bike", "dumbbells", "fixed_bar", "kettlebell", "pad", "parallettes", "pole", "rings", "roller", "rope", "stable_chair", "stairs", "step", "table", "vest", "wheel"],
         "include": [],
         "noHeadDown": false,
         "noJump": false,
