@@ -99,11 +99,13 @@ use questpump_core::body::Body;
 use questpump_core::codes::kind;
 use questpump_core::far;
 use questpump_core::link::Device;
-use questpump_core::protocol::RowRecord;
+use questpump_core::protocol::{RowRecord, Source};
 use questpump_core::row::Row;
+use questpump_core::session;
 use questpump_core::sync::{
 	self, Batch, DeviceBody, GameRows, KeyPair, Kind, LinkCode, MAX_SEALED, Opened, RowsBody, Sent, SyncKeys,
 };
+use questpump_core::work::Work;
 use serde::{Deserialize, Serialize};
 use sha2::Digest as _;
 use tokio::sync::oneshot;
@@ -471,6 +473,8 @@ pub struct SyncState {
 	out: VecDeque<Out>,
 	/// The account is full (a 413): nothing more is pushed in this run.
 	full: bool,
+	/// The server refused a work batch (a 400: a server before slice 67): no work batch more in this run.
+	work_refused: bool,
 	line: Option<Line>,
 	/// A line said in place of syncing until the account's first sync ends (`menu.sync.deleted` while a new account
 	/// replaces one that is gone).
@@ -551,6 +555,7 @@ impl Default for SyncState {
 			wait_until: None,
 			out: VecDeque::new(),
 			full: false,
+			work_refused: false,
 			line: None,
 			told: None,
 			devices: Vec::new(),
@@ -983,6 +988,13 @@ impl<P: Platform> Desk<P> {
 		}
 		self.sync_publish_all();
 		self.sync_drive();
+	}
+
+	/// Whether the account's first pull since the start is still to come: Sync on in an account and in reach, and no
+	/// pull answered yet (work mode's kept ask waits for it, `Desk::work_kept`).
+	pub(crate) fn sync_first_pull_pending(&self) -> bool {
+		let a = &self.settings.sync;
+		a.on && a.held() && self.p.sync_reachable() && self.sync.pulled_at.is_none()
 	}
 
 	/// The stores changed: a push soon.
@@ -1596,6 +1608,19 @@ impl<P: Platform> Desk<P> {
 			self.sync.out.push_back(Out { seq, kind: Kind::Device, sealed, marks: None, digest: Some(sum) });
 			seq += 1;
 		}
+		// the work state (slice 67): a batch of its own whenever it changed, none while it holds no time, and none in
+		// this run once the server refused the kind (a server before slice 67)
+		let work = &self.settings.work;
+		let value = serde_json::to_value(work).unwrap_or_default();
+		let sum = digest(value.to_string().as_bytes());
+		if work.heard()
+			&& !self.sync.work_refused
+			&& a.work_digest.as_deref() != Some(&sum)
+			&& let Some(sealed) = batch(Kind::Work, value, seq)
+		{
+			self.sync.out.push_back(Out { seq, kind: Kind::Work, sealed, marks: None, digest: Some(sum) });
+			seq += 1;
+		}
 		// the rows in batches under `MAX_SEALED`: a part halved by its texts until it fits (one text's copies stay
 		// together), in their order
 		let (groups, game, app) = self.rows_due();
@@ -1637,14 +1662,22 @@ impl<P: Platform> Desk<P> {
 	/// The rows made since the last batch, by text with all their copies, and the stores' marks once they went: the
 	/// game's rows (characters as the helper numbers them, `GET /v1/history`'s) and the rows of this computer's own app
 	/// pumps (the ones `keep_computer` gave a pump id), each without the body notes, and the game's without a reset
-	/// that came in from another computer (`FarRows::came_in`), which its maker sent.
+	/// that came in from another computer (`FarRows::came_in`) or a row of the account's unfinished list taken in from
+	/// another device (`Session::take_account_banks`, slice 67), which its maker sent.
 	fn rows_due(&self) -> (Vec<Group>, Sent, Sent) {
 		let a = &self.settings.sync;
 		let (store, app, far) = (self.session.store(), self.session.app_rows(), self.session.far_rows());
 		let (game_id, app_id) = (store.id(), app.id());
+		// the account's unfinished list goes from the store that wrote it alone: the game's own payment, and every row
+		// this store wrote for a pump (`Session::bank`, `catch_up`, `skip`: its pump's id, whichever device's pump it
+		// was, a linked phone's catch-up or Skip among them), never one taken in from another device's batch
+		// (`take_account_banks`, which gives none) (slice 67)
+		let ours = |r: &RowRecord| r.source == Source::Game || r.pump.is_some();
 		let goes = |r: &RowRecord| {
 			let row = r.row();
-			!(is_body_note(&row) || (row.kind == kind::RESET && far.came_in(row.ts)))
+			!(is_body_note(&row)
+				|| (row.kind == kind::RESET && far.came_in(row.ts))
+				|| (session::is_account_bank(&row) && !ours(r)))
 		};
 		let game_rows: Vec<RowRecord> = self.session.history_rows(0).filter(|r| goes(r)).collect::<Vec<_>>();
 		// the rows that never go out, the marks still count every record
@@ -1696,8 +1729,10 @@ impl<P: Platform> Desk<P> {
 					if let Some((game, app)) = out.marks {
 						(s.game, s.app) = (game, app);
 					}
-					if out.digest.is_some() {
-						s.device_digest = out.digest;
+					match (out.kind, out.digest) {
+						(Kind::Work, digest) => s.work_digest = digest,
+						(_, Some(digest)) => s.device_digest = Some(digest),
+						(_, None) => {}
 					}
 					log::info!("sync: batch {} ({}) kept", out.seq, out.kind.name());
 					self.save_settings();
@@ -1724,6 +1759,14 @@ impl<P: Platform> Desk<P> {
 				self.sync.push_at = Some(Instant::now());
 			}
 			Ok(a) if a.status == 401 => self.sync_removed(),
+			Ok(a) if a.status == 400 && self.sync.out.front().is_some_and(|o| o.kind == Kind::Work) => {
+				// a server before slice 67 refuses the kind: the batches build again without it for this run, so the
+				// rows behind it go
+				log::info!("sync: the server takes no work batch; none more in this run");
+				self.sync.work_refused = true;
+				self.sync.out.clear();
+				self.sync.push_at = Some(Instant::now());
+			}
 			Ok(a) if a.status == 413 => {
 				log::info!("sync: the account is full; nothing more goes in this run");
 				(self.sync.full, self.sync.line) = (true, Some(Line::Full));
@@ -1837,6 +1880,15 @@ impl<P: Platform> Desk<P> {
 				self.take_device_batch(&listed.device, batch.body);
 				Taken::In
 			}
+			Kind::Work => {
+				match serde_json::from_value::<Work>(batch.body) {
+					Ok(work) => {
+						self.work_heard(&work);
+					}
+					Err(e) => log::info!("sync: a work batch of {} did not read: {e}", listed.device),
+				}
+				Taken::In
+			}
 		}
 	}
 
@@ -1861,6 +1913,12 @@ impl<P: Platform> Desk<P> {
 			self.apply(fx);
 		}
 		let guids = body.guids();
+		// the account's unfinished list, whichever device banked or paid it (slice 67)
+		let (banks, fx) = self.session.take_account_banks(&body.game.rows, &t);
+		if banks > 0 {
+			log::info!("sync: {banks} rows of the account's unfinished list of {device}");
+		}
+		self.apply(fx);
 		if let Some(hid) = body.hid.filter(|h| *h != own)
 			&& !body.game.rows.is_empty()
 		{

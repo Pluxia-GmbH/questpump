@@ -38,13 +38,15 @@
 //! time, kept in settings.json's `desk.played_span`, 2026-10-28). The games found are the Games tab's
 //! (`desk/offers.rs`, slice 56): Pump home neither offers them nor asks about one.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use questpump_core::app_rows::after_start_over;
 use questpump_core::codes::{kind, outcome};
 use questpump_core::games::MATCH;
 use questpump_core::link::{OwedMove, Sheet};
 use questpump_core::protocol::RowRecord;
+use questpump_core::row::Row;
+use questpump_core::session::owed_now;
 use questpump_engine::{BookLadder, Embers, GameLadders, GameSummary, RidesAs, SetAside};
 use serde::Serialize;
 use serde_json::Value;
@@ -386,6 +388,20 @@ fn free(last: i64, d: i64, locked: &BTreeSet<i64>) -> i64 {
 	d - last - 1 - i64::try_from(between).unwrap_or(0)
 }
 
+/// An unfinished row in [`Home::aside`]: its move and whether it is an all-out window, since a form's steady row can have
+/// a move to stand in for it where its window has none.
+pub(crate) type AsideKey = (u16, bool);
+
+/// An unfinished move's [`AsideKey`].
+pub(crate) fn aside_key(o: &OwedMove) -> AsideKey {
+	(o.move_id, o.allout)
+}
+
+/// The [`AsideKey`]s of the rows of `kept` at `places` (`Engine::owed_aside`'s answer), each by its move as owed now.
+pub(crate) fn aside_keys(kept: &[Row], places: Vec<usize>) -> Vec<AsideKey> {
+	places.into_iter().filter_map(|i| kept.get(i)).map(|r| aside_key(&OwedMove::of(&owed_now(r)))).collect()
+}
+
 /// What the engine's fold says for Pump home and Hero, asked through its door.
 struct Asked {
 	summary: Option<Summary>,
@@ -400,6 +416,8 @@ struct Asked {
 	embers: Option<Embers>,
 	/// The unfinished moves that ride as another move (`Engine::rides_as`); none where the engine did not answer.
 	rides: Option<Vec<RidesAs>>,
+	/// The unfinished moves the setup in force sets aside (`Engine::owed_aside`); none where the engine did not answer.
+	aside: Option<Vec<AsideKey>>,
 	/// The game's save as the game folds it, asked only while the game's sheet the app shows needs it.
 	game: Option<GameSummary>,
 }
@@ -439,6 +457,10 @@ pub struct Home {
 	/// Engine.lua `ns.RidesAs`, 2026-10-29): the waiting card names that move, as the game's HUD does, and its Skip the
 	/// owed one.
 	rides: HashMap<u16, u16>,
+	/// The unfinished moves the setup in force sets aside, by [`aside_key`] (`Engine::owed_aside`, Engine.lua
+	/// `ns.OwedAside`, 2026-11-09): left out by the place with no move of their level to stand in, so the waiting card and
+	/// a catch-up leave them out until the setup lets them in again.
+	pub(crate) aside: HashSet<AsideKey>,
 	/// The place in use as the loop last looked (`Desk::places_tick`): a start or an end of a time that changes it
 	/// gives the engine its profile and Pump home's place button its glyph.
 	pub place: Option<String>,
@@ -483,6 +505,7 @@ impl Home {
 			today_xp: 0,
 			embers: None,
 			rides: HashMap::new(),
+			aside: HashSet::new(),
 			place: None,
 			checkin: false,
 			pain: Vec::new(),
@@ -681,6 +704,7 @@ impl<P: Platform> Desk<P> {
 		}
 		self.book_look(now);
 		self.p.show_found();
+		self.work_look();
 		self.desk_views();
 	}
 
@@ -741,7 +765,8 @@ impl<P: Platform> Desk<P> {
 		let game = shown.and_then(|g| serde_json::from_value::<GameLadders>(g.sheet).ok());
 		let wanted = self.save_sheet_wanted(&sheet);
 		let save = wanted && !self.desk_pump_running();
-		let owed: Vec<String> = self.session.payable_kept().iter().map(ToString::to_string).collect();
+		let kept = self.session.payable_kept();
+		let owed: Vec<String> = kept.iter().map(ToString::to_string).collect();
 		// the game's weeks run from the region's weekly reset the latest sheet it painted names
 		let reset = history::reset(self.logged_sheets());
 		let game_save = if save { self.game_save_cbor(&sheet) } else { None };
@@ -769,6 +794,11 @@ impl<P: Platform> Desk<P> {
 					embers: e
 						.embers(at)
 						.inspect_err(|err| log::warn!("desk: the engine's embers for Pump home: {err}"))
+						.ok(),
+					aside: e
+						.owed_aside(owed.clone(), at)
+						.map(|places| aside_keys(&kept, places))
+						.inspect_err(|err| log::warn!("desk: the unfinished moves set aside: {err}"))
 						.ok(),
 					rides: e
 						.rides_as(owed, at)
@@ -801,6 +831,9 @@ impl<P: Platform> Desk<P> {
 						}
 						(h.home.titles, h.home.today_xp) = (asked.titles, asked.today_xp);
 						h.home.embers = asked.embers.or_else(|| h.home.embers.take());
+						if let Some(aside) = asked.aside {
+							h.home.aside = aside.into_iter().collect();
+						}
 						if let Some(rides) = asked.rides {
 							h.home.rides = rides.into_iter().map(|r| (r.r#move, r.stand_in)).collect();
 						}
@@ -880,6 +913,10 @@ impl<P: Platform> Desk<P> {
 	}
 
 	fn publish_home(&mut self, sheet: &Sheet, board: &Board, now: i64) {
+		// what the setup in force sets aside leaves the card, its counts and the dot until the setup lets it in again
+		let mut sheet = sheet.clone();
+		sheet.owed.retain(|o| !self.home.aside.contains(&aside_key(o)));
+		let sheet = &sheet;
 		let f = facts();
 		let paired = self.settings.pairing.phone.is_some();
 		let shell = self.p.home_shell(paired);

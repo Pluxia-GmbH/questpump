@@ -74,8 +74,9 @@ pub const GROUP_CHARS: usize = 32;
 /// The longest title key, in characters (contract/sheet.json's `titles`' keys are a word or two in camel case).
 pub const TITLE_CHARS: usize = 48;
 
-/// Whether `word` is 1 to `most` lower-case letters, digits or underscores (a group name, a title key).
-fn word(w: &str, most: usize) -> bool {
+/// Whether `word` is 1 to `most` lower-case letters, digits or underscores (a group name, a title key, a piece of
+/// equipment).
+pub(crate) fn word(w: &str, most: usize) -> bool {
 	(1..=most).contains(&w.chars().count())
 		&& w.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
 }
@@ -200,8 +201,9 @@ impl Default for PlaceSetup {
 }
 
 impl PlaceSetup {
-	/// At most `GEAR_MOST` pieces, each 1-32 lower-case letters, digits or underscores.
-	fn checks_out(&self) -> bool {
+	/// At most `GEAR_MOST` pieces, each 1-32 lower-case letters, digits or underscores (a place's, and work mode's own
+	/// equipment's, `crate::work`).
+	pub(crate) fn checks_out(&self) -> bool {
 		self.gear.len() <= GEAR_MOST && self.gear.iter().all(|k| word(k, 32))
 	}
 

@@ -1463,13 +1463,19 @@ local GENERAL = {
 		-- the player's focus (Lc.SetFocus): one for every character, as the rows are
 		{ "focus", "select", w = 170, choices = choices("focus.", ns.Enum.focusKeys),
 			get = function() return ns.Focus(ns.state) end, set = function(v) ns.Lifecycle.SetFocus(v) end },
+		-- when pumps ask (Lc.AskWhen, slice 70): at each turn-in, or held unopened for the next flight. The profile's
+		-- `askWhen`, nil until chosen, as `afterPump` is
+		{ "askWhen", "select", w = 170, choices = choices("settings.askWhen.", ns.Lifecycle.ASK_WHEN),
+			get = function() return ns.Lifecycle.AskWhen() end },
 		{ "instances", "box" },
 	} },
 	{ side = {
 		{ head = "settings.section.sound", rows = {
-			{ "speech", "box" },
-			{ "callouts", "box", needs = "speech", why = "settings.needsVoice" },
-			{ "countReps", "box", needs = "speech", why = "settings.needsVoice" },
+			-- the voice's switches need the voice pack, a download of its own (Speech.Pack; slice 71): without it each
+			-- is greyed with that reason, since it would switch nothing, and two of them need Voice on besides
+			{ "speech", "box", needs = function() return ns.Speech.Heard() end },
+			{ "callouts", "box", needs = function() return ns.Speech.Heard("speech") end },
+			{ "countReps", "box", needs = function() return ns.Speech.Heard("speech") end },
 			{ "sounds", "box" },
 		} },
 		{ head = "settings.section.screen", rows = {
@@ -1613,9 +1619,15 @@ end
 -- choice's words, greyed with its reason while what it needs is off.
 local function renderRow(row)
 	local spec = row.spec
+	-- what the row needs: a setting on (its name), or a function's answer, which may name its own reason's key
 	local needs = spec.needs
-	local met = needs == nil or (type(needs) == "function" and needs()) or (type(needs) == "string" and isOn(needs))
-	local reason = not met and L[spec.why] or nil
+	local met, why = needs == nil, nil
+	if type(needs) == "function" then
+		met, why = needs()
+	elseif type(needs) == "string" then
+		met = isOn(needs)
+	end
+	local reason = not met and L[why or spec.why] or nil
 	local on = spec[2] == "box" and isOn(spec[1])
 	Kit.Choose(row, on, true, reason)
 	if row.control then

@@ -49,7 +49,7 @@ mod tiles;
 mod udp;
 mod warships;
 #[cfg(windows)]
-mod win;
+pub(crate) mod win;
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};

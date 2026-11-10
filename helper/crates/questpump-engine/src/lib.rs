@@ -26,6 +26,7 @@
 //! | `merge` | `own`, `game` | [`Merged`] |
 //! | `gameFlags` | | joint ids |
 //! | `ridesAs` | `rows` (owed row texts), `at` | a [`RidesAs`] for each row that rides as another move, in their order |
+//! | `owedAside` | `rows` (owed row texts), `at` | the places in `rows` (from 0) of those the setup in force leaves out with no stand-in |
 //! | `startRows` | `at` | row texts |
 //! | `painRows` | `joints`, `on`, `at` | row texts |
 //! | `checkinRow`, `focusRow` | `code`, `at` | a row text |
@@ -49,7 +50,7 @@
 //! | `titles` | | the title codes earned (`ns.Enum.title`), in the list's order |
 //! | `nextGoal` | `move`, `value` | the least the next fresh set asks after a first record `value` (`ns.FreshGoal`) |
 //! | `nextLoad` | `move`, `at` | a loaded move's next fresh set ([`NextLoad`], `ns.NextLoad`), or null |
-//! | `compose` | `id`, `kind`, `family`?, `tier`, `at`, `match`? ([`Match`]), `owed`?, `queue`? ([`Unfinished`]) | [`Composed`] |
+//! | `compose` | `id`, `kind`, `family`?, `tier`, `at`, `match`? ([`Match`]), `work`? ([`Work`]), `owed`?, `queue`? ([`Unfinished`]) | [`Composed`] |
 //! | `quick` | `id`, `at`, `owed`?, `queue`? ([`Unfinished`]) | [`Composed`] |
 //! | `expedition` | `id`, `stage` ([`ExpeditionStage`]), `regions`, `at` | [`Composed`] (an expedition's round, slice 51) |
 //! | `expeditionNext` | `budget`, `elapsed` (seconds), `last`? ([`ExpeditionStage`]), `regions`, `at` | the next round's [`ExpeditionStage`], or null once the expedition is done |
@@ -113,7 +114,7 @@ pub use api::{
 	Pace, PaceUnit, PathNeed, PathNext, PathStep, Picked, PlannedMove, Preview, PreviewRound, Profile, Proving, Pump,
 	Reached, Record, Rider, RidesAs, Ring, Rung, RungChange, SetAside, SetKey, SetReading, SetupGap, SetupStep, Slot,
 	Stage, StageState, StageTop, Start, StartedCheck, Stays, StepChanges, StepNeed, StepState, SwapOptions, Take,
-	Target, Top, Toward, Unfinished,
+	Target, Top, Toward, Unfinished, Work,
 };
 
 /// The notices of what the engine brings into the app (Lua 5.1.5, mlua and mlua-sys, lua-src), each with its MIT
@@ -123,6 +124,10 @@ pub const NOTICES: &str = include_str!("../NOTICES.txt");
 /// The SHA-256 of the embedded sources (each file's path, a NUL, its text with CRLF read as LF, a NUL, in load order):
 /// the engine a build runs, named in the diagnostics.
 pub const DIGEST: &str = embedded::DIGEST;
+
+/// A work pump's size code (slice 67): the Normal pump, whose tier its offered row and its moves carry; its moves come
+/// from its place in the set, never from the tier (`tools/apppump.lua` `A.compose` refuses any other).
+pub const WORK_TIER: u8 = 2;
 
 /// The engine's clock and time zone: the unix time now, and the seconds east of UTC at an instant (the computer's
 /// zone; game days begin at 04:00 local). The engine asks for the offset once per 15 minutes of the rows it reads.
@@ -425,6 +430,16 @@ impl Engine {
 		self.ask("ridesAs", &api::RowsAt { rows, at })
 	}
 
+	/// The places in `rows` (from 0) of the owed rows that the setup in force leaves out with no move of their level to
+	/// stand in (Engine.lua `ns.OwedAside`, 2026-11-09), read as [`Engine::rides_as`] reads them: Pump home's unfinished
+	/// list and a catch-up leave them out until the setup lets them in again.
+	///
+	/// # Errors
+	/// As [`Engine::call`].
+	pub fn owed_aside(&self, rows: Vec<String>, at: i64) -> Result<Vec<usize>, EngineError> {
+		self.ask("owedAside", &api::RowsAt { rows, at })
+	}
+
 	/// The records of `moves` with the goal an app pump asks of each; moves without one left out.
 	///
 	/// # Errors
@@ -561,6 +576,37 @@ impl Engine {
 			tier,
 			at,
 			r#match,
+			work: None,
+			unfinished,
+		};
+		self.ask("compose", &args)
+	}
+
+	/// A work pump (slice 67): an app pump of the kind key `kind` (contract/kinds.json's `work`) and its `family`, a
+	/// Normal pump ([`WORK_TIER`]) sized by its place in the set at "Moves per block" (`work`, the profile's `workPace`),
+	/// with no all-out window of its own or owed, its warm move first where `work.warm`, carrying the `unfinished` moves
+	/// as [`Engine::compose`] carries a match pump's: the start rungs first while no ladder has one, then its moves and
+	/// its offered row. It becomes the pump on screen.
+	///
+	/// # Errors
+	/// As [`Engine::call`].
+	pub fn work(
+		&self,
+		id: &str,
+		kind: &str,
+		family: &str,
+		at: i64,
+		work: Work,
+		unfinished: Unfinished,
+	) -> Result<Composed, EngineError> {
+		let args = api::Compose {
+			id: id.to_owned(),
+			kind: kind.to_owned(),
+			family: Some(family.to_owned()),
+			tier: WORK_TIER,
+			at,
+			r#match: None,
+			work: Some(work),
 			unfinished,
 		};
 		self.ask("compose", &args)

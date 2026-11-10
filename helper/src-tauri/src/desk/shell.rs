@@ -15,6 +15,7 @@ use questpump_core::protocol::Source;
 use questpump_core::session::{Effects, Zone};
 use questpump_core::sitting::Sitting;
 use questpump_core::sync::DESKTOP;
+use questpump_core::work::Hold;
 use questpump_desk::Platform;
 use questpump_desk::audio::Channel;
 use questpump_desk::home::Board;
@@ -24,6 +25,7 @@ use questpump_desk::platform::{
 use questpump_desk::saga::ReelTune;
 use questpump_desk::settings::{GamesSettings, SoundSettings};
 use questpump_desk::sync::{Call, Then};
+use questpump_desk::work::WorkView;
 use serde_json::Value;
 use tauri::{AppHandle, Manager as _};
 
@@ -32,6 +34,7 @@ use super::audio::{self, Audio};
 use super::tray::State;
 use super::windows::{self, Landing, MAIN};
 use super::{awake, figures, offers, reel, tray};
+use crate::games::procs::Front;
 use crate::games::{Games, Wow};
 use crate::lan;
 use crate::runtime::sync::SyncLink;
@@ -97,6 +100,13 @@ pub(crate) struct Shell {
 	pub(crate) standing: Standing,
 	/// The input's part of the sitting clock, which the sitting cue and the match offers share (slice 48).
 	pub(crate) sitting: Sitting,
+	/// What holds work mode's clock on this computer at the last look while it is on (`runtime/work.rs`: a call, a game
+	/// in front or in a match, presenting or mirroring, full screen), beside the desk's own holds (slice 67).
+	pub(crate) work_hold: Option<Hold>,
+	/// The app last in front other than QuestPump while work mode is on (`presence::look`).
+	pub(crate) front: Option<Front>,
+	/// The app a work pump's Back to work brings to the front, noted as the pump came (`Platform::back_note`).
+	pub(crate) back_to: Option<Front>,
 	/// The paired phones' Pro grants (slice 35).
 	pub(crate) pro: runtime::Pro,
 	/// The desktop app's sound and voice on the picked output (slice 35).
@@ -437,5 +447,28 @@ impl Platform for Shell {
 
 	fn pro_grants(&self, account: Option<&str>) -> bool {
 		self.pro.grants_on(lan::now_ms(), account)
+	}
+
+	fn idle_s(&self) -> Option<u32> {
+		self.sitting.idle_s()
+	}
+
+	fn work_hold(&self) -> Option<Hold> {
+		self.work_hold
+	}
+
+	fn work_changed(&mut self, view: &WorkView) {
+		let (handle, view) = (self.app.clone(), view.clone());
+		let _ = self.app.run_on_main_thread(move || tray::draw_work(&handle, &view));
+	}
+
+	fn back_note(&mut self) -> bool {
+		self.back_to = self.front;
+		self.back_to.is_some()
+	}
+
+	fn back_to_work(&mut self) {
+		let Some(front) = self.back_to.take() else { return };
+		let _ = self.app.run_on_main_thread(move || windows::back_to(front));
 	}
 }

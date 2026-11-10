@@ -333,6 +333,12 @@ impl Host {
 					self.decode(self.player()?.call_method("ridesAs", (lua.create_sequence_from(a.rows)?, a.at))?)?;
 				json(&rides)
 			}
+			"owedAside" => {
+				let a: api::RowsAt = parse(args)?;
+				let places: Vec<usize> =
+					self.decode(self.player()?.call_method("owedAside", (lua.create_sequence_from(a.rows)?, a.at))?)?;
+				json(&places)
+			}
 			"startRows" => {
 				let a: api::At = parse(args)?;
 				let rows: Vec<String> = self.decode(self.player()?.call_method("startRows", a.at)?)?;
@@ -489,13 +495,28 @@ impl Host {
 			}
 			"compose" => {
 				let a: api::Compose = parse(args)?;
-				// a plain kind's pump has no `chosen` move (A.pick's); its `match` facts, or nil; a match pump's
-				// unfinished moves (slice 61), or nil
+				// a plain kind's pump has no `chosen` move (A.pick's); its `match` facts, or nil; a pump that banks's
+				// unfinished moves (slices 61 and 67), or nil; no expedition (A.expedition's); a work pump's facts
+				// (slice 67), or nil
 				let r#match = a.r#match.map(|m| self.encode(&m)).transpose()?.unwrap_or(Value::Nil);
+				let work = a.work.map(|w| self.encode(&w)).transpose()?.unwrap_or(Value::Nil);
 				let (owed, queue) = (self.texts(a.unfinished.owed)?, self.texts(a.unfinished.queue)?);
 				let made = self.app.call_function(
 					"compose",
-					(self.player()?, a.id, a.kind, a.family, a.tier, a.at, Value::Nil, r#match, owed, queue),
+					(
+						self.player()?,
+						a.id,
+						a.kind,
+						a.family,
+						a.tier,
+						a.at,
+						Value::Nil,
+						r#match,
+						owed,
+						queue,
+						Value::Nil,
+						work,
+					),
 				)?;
 				json(&self.composed(made)?)
 			}

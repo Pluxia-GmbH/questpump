@@ -20,8 +20,10 @@ use questpump_core::mirror::{self, toc_field};
 
 use crate::game::is_flavour;
 
-/// The move figures' load-on-demand folder beside QuestPump (`Figure.lua`, `Figure.pack`).
+/// The move figures' load-on-demand folder beside QuestPump (`Figure.lua`, `Figure.pack`), and the voice's
+/// (`Speech.lua`).
 const PACK: &str = "QuestPump_FigArmor";
+const VOICE: &str = "QuestPump_Voice";
 
 /// The Battle.net Agent's database (reverse-engineered `proto_database.Database`, as WowUp and TACTLib read it): only
 /// the fields read here are declared, and prost skips the others.
@@ -234,15 +236,15 @@ pub fn from_picked(path: &Path) -> Option<PathBuf> {
 	None
 }
 
-/// The move figures' pack beside QuestPump.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// A media pack beside QuestPump, the move figures' or the voice's: a download of its own since slice 71, whose TOC
+/// names its own version, which says nothing about QuestPump's (until then one zip wrote one version into the figure
+/// pack and QuestPump, and a difference read as "from another download"). A missing one the helper adds from its feed
+/// (`runtime/addon.rs`, a packs job).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Pack {
-	/// Not installed: a manual install that left the second folder out.
+	/// Not installed: an install that left the pack's folder out.
 	Missing,
-	/// From the same download as QuestPump (both TOCs carry the release's version).
-	Same,
-	/// From another download than QuestPump: one folder was updated without the other.
-	Other { pack: String, addon: String },
+	Installed,
 }
 
 /// What an AddOns folder holds for the window.
@@ -251,6 +253,7 @@ pub struct AddonsState {
 	/// QuestPump's `## Version`, when it is installed (empty when its TOC names none).
 	pub questpump: Option<String>,
 	pub pack: Pack,
+	pub voice: Pack,
 }
 
 /// A folder's TOC `## Version`, when the folder is there (empty when the TOC cannot be read or names none).
@@ -263,16 +266,11 @@ fn version(addons: &Path, folder: &str) -> Option<String> {
 	Some(toc_field(&text, "Version").unwrap_or_default().to_owned()) // copy-lint: not shown (a TOC field)
 }
 
-/// QuestPump's version and the pack's state, from the two folders' TOCs (the packager writes the same release version
-/// into both, so a difference means one folder came from another download).
+/// QuestPump's version, and whether each media pack's folder is beside it.
 pub fn addons_state(addons: &Path) -> AddonsState {
 	let questpump = version(addons, "QuestPump"); // copy-lint: not shown (the addon's folder)
-	let pack = match (version(addons, PACK), &questpump) {
-		(None, _) => Pack::Missing,
-		(Some(pack), Some(addon)) if pack != *addon => Pack::Other { pack, addon: addon.clone() },
-		(Some(_), _) => Pack::Same,
-	};
-	AddonsState { questpump, pack }
+	let held = |folder: &str| if addons.join(folder).is_dir() { Pack::Installed } else { Pack::Missing };
+	AddonsState { questpump, pack: held(PACK), voice: held(VOICE) }
 }
 
 /// The product a flavour folder holds (`.flavor.info`: a header line, then the product's uid).

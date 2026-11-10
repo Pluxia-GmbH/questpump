@@ -402,8 +402,8 @@ end
 -- strip's sheet, and the focus (fc, slice 30), which the phone shows and plans its own pumps on while it holds no focus
 -- row. The strip's sheet event carries them all, and the export every one of them the summary holds (all but char and
 -- lt).
-local SNAPSHOT_LEAVES = { "held", "ls", "lu", "ld", "lv", "lt", "lx", "ear", "nx", "saved", "ws", "char", "va", "em",
-	"dx", "dxFrom", "bd", "rh" }
+local SNAPSHOT_LEAVES = { "held", "aside", "ls", "lu", "ld", "lv", "lt", "lx", "ear", "nx", "saved", "ws", "char", "va",
+	"em", "dx", "dxFrom", "bd", "rh" }
 
 -- The sheet as the QR's text: the strip's sheet payload but SNAPSHOT_LEAVES, CBOR, raw DEFLATE, Base64, behind the
 -- prefix. nil and why: "none" without a save, "large" when the text, prefix included, runs past qr_max_bytes

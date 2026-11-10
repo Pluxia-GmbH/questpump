@@ -328,13 +328,16 @@ end
 -- move belowBackup keeps out of a fresh pick: the move that stands for that rung with this setup (ns.RungMove with the
 -- rung moves' own held rule), which pays its owed row as Swap's backup does (swapSlot; David, 2026-10-29, after the
 -- walkout on a bed, offered as a new move once the walkout was at its top, was banked: "can you fix my banked
--- excercises then"). Nil where it rides as itself: a move that waits (riderFits), a loaded move, a move the player
+-- excercises then"), or the stand-in of a move its place leaves out (standIn). Else nil where it rides as itself:
+-- a move that waits (riderFits), a loaded move, a move the player
 -- stepped down to or from or one not open (an owed one still rides as it was offered), a family not open, a stand-in of
 -- another kind, and one the arms rest leaves out where the owed move is not (ns.ArmsHeld: an owed move that may ride a
 -- match pump under its arms rest never rides as one the rest holds).
-local riderFits -- below (Owed moves)
+local riderFits, standIn, backupMove -- below (Owed moves, Swap)
 
 local function ridesAs(ctx, r)
+	local stand = standIn(ctx, r)
+	if stand then return stand end
 	local m, l = ns.Library[r.move], r.ladder
 	if not (m and (r.kind == K.rep or r.kind == K.hold) and ns.STRENGTH[l] and ns.Open(ctx.state, l)) then return nil end
 	local rec = ctx.state.moves[r.move]
@@ -373,8 +376,9 @@ local function context(input)
 		setup = ns.FilterContext(input.profile, nil), -- the setup alone, which names a check's pose (ns.NeedAt)
 		rung = {}, rungMove = {}, belowMove = {}, down = {}, open = {}, why = {},
 		used = { moves = {}, regions = {}, families = {}, placement = false }, marked = {},
-		-- slice 48's match pump: its first move warms up (input.warm) and it keeps the arms rest (input.arms)
-		warm = input.warm == true, arms = input.arms == true }
+		-- slice 48's match pump: its first move warms up (input.warm) and it keeps the arms rest (input.arms); slice 67's
+		-- work pump (input.work = { block }: its place in the set) at the desk, with no all-out effort of its own or owed
+		warm = input.warm == true, arms = input.arms == true, work = input.work }
 	-- an expedition's round (slice 51): the regions its earlier rounds' own record moves took stay taken, so one record
 	-- move a region across the expedition (ns.RoundRegions)
 	for _, region in ipairs(input.expedition and input.expedition.regions or {}) do ctx.used.regions[region] = true end
@@ -439,7 +443,7 @@ local function context(input)
 	-- step's card that pays the row as itself still takes it as Swap's backup, backupMove); one owed this game day or
 	-- the one before counts in its block's share (once: take skips it when it rides); one on a strength ladder or a pose
 	-- family is that ladder's or family's turn (lastTurn)
-	ctx.owed, ctx.turn, ctx.owedCounted = {}, {}, {}
+	ctx.owed, ctx.turn, ctx.owedCounted, ctx.standIn = {}, {}, {}, {}
 	local yesterday = ns.day(ns.DayMid(now, -1))
 	for _, r in ipairs(ns.OwedList(state)) do
 		ctx.owed[r.move] = true
@@ -1352,15 +1356,17 @@ end
 -- An owed move rides the next pump as it was owed, whatever that pump holds already (David, 2026-10-02: unfinished
 -- moves "should just autoplay with the next quest I return and never stack passively"). Only the player's own setup
 -- holds one back: a move the filters now exclude (the pain flags and the Body switches among them), or one more than a
--- rung above the player's after a rung down, waits until the setup or the rung lets it. It is paid with a lesser move
--- only when the player picks Swap's easier version (2026-10-05), and never with the painful one; a backup of its rung
--- the setup leaves unneeded rides as the move that stands for that rung (ridesAs, 2026-10-29). Cardio keeps its own
+-- rung above the player's after a rung down, waits until the setup or the rung lets it, while one its place alone
+-- leaves out rides as a move of its level (standIn) and, with none, leaves every list until the setup lets it in
+-- (ns.OwedAside). It is paid with a lesser move only when the player picks Swap's easier version (2026-10-05), and
+-- never with the painful one; a backup of its rung the setup leaves unneeded rides as the move that stands for that
+-- rung (ridesAs, 2026-10-29). Cardio keeps its own
 -- rung rule (ns.AboveReach): a cardio form waits while it is above the cardio rung (an all-out window by its finisher
 -- rung), and a climb from rung 7 up, whose steady moves are the forms of rungs 4-6, holds back none of the forms
 -- below them. A window of a form with no finisher rung waits by the form's own rung: only a reps-2 row owed before
 -- 2026-10-15 names one (its steady lead: the jog, butt kicks, quick steps, high knees, pogo hops), while a reps-1 row
 -- always names a finisher form; without the form's rung such a row rode at any cardio rung.
-function riderFits(ctx, r)
+local function moveFits(ctx, r)
 	if not ns.Passes(r.move, ctx.f) then return false end
 	local m = ns.Library[r.move]
 	if r.kind == K.cardio then
@@ -1372,9 +1378,52 @@ function riderFits(ctx, r)
 	return not (scale and scale ~= ns.CARDIO and m.rung > ctx.rung[scale] + ns.Reach(scale))
 end
 
+-- What the player's place sets (ns.Passes' reasons): its equipment, the floor, the room to move and quiet mode.
+local PLACE_RULES = { gear = true, floor = true, space = true, quiet = true }
+
+-- Whether the place alone leaves a move out (ns.Shut): a pain flag, a Body switch or the player's own exclusion among
+-- what shuts it keeps it waiting as before.
+local function placeShut(ctx, id)
+	local shut = ns.Shut(id, ctx.f)
+	for _, w in ipairs(shut) do
+		if not PLACE_RULES[w.reason] then return false end
+	end
+	return #shut > 0
+end
+
+-- The move that pays an owed row the place now leaves out (Rapha, 2026-11-09: "it needs to replace it (we already have
+-- similar of same toughness) and if no replacement available, dont show it in the banked until you enable it again"):
+-- Swap's backup at the row's own level that this place allows and that fits as a rider of the row's kind, a form with
+-- an all-out window for an owed window, a move of the rung's own chain for an owed placement; nil where none does.
+-- A cardio form's level is its own rung, since its row carries the cardio rung it was owed at.
+function standIn(ctx, r)
+	local known = ctx.standIn[r.key]
+	if known == nil then
+		known = false
+		if placeShut(ctx, r.move) then
+			local allout = isFinisherRow(r)
+			local function allowed(id)
+				local x = ns.Library[id]
+				return K[x.dose] == r.kind and (not allout or x.finisher ~= nil)
+					and moveFits(ctx, { move = id, kind = r.kind, reps = r.reps })
+			end
+			local rung = r.kind == K.cardio and ns.Library[r.move].rung or r.rung
+			known = backupMove(ctx, { move = r.move, ladder = r.ladder, rung = rung, owed = r }, allowed,
+				{ atLevel = true, chain = isPlacement(ctx, r), place = true }) or false
+		end
+		ctx.standIn[r.key] = known
+	end
+	return known or nil
+end
+
+function riderFits(ctx, r)
+	return moveFits(ctx, r) or standIn(ctx, r) ~= nil
+end
+
 -- `own`: the owed row rides as its own move, never its rung's (chosenSlot: the move the player started stays)
 local function riderSlot(ctx, r, own)
-	-- an owed backup the setup leaves unneeded rides as its rung's move (ridesAs), which pays its row
+	-- an owed backup the setup leaves unneeded rides as its rung's move and one the place leaves out as the move that
+	-- stands in for it (ridesAs), each of which pays its row
 	local slot = { move = not own and ridesAs(ctx, r) or r.move, kind = r.kind, questID = r.questID, tier = r.tier,
 		ladder = r.ladder, rung = r.rung, owed = r }
 	if r.kind == K.cardio then
@@ -1384,14 +1433,14 @@ local function riderSlot(ctx, r, own)
 		else
 			-- a row owed before cardio went short and hard (2026-10-04) kept its old length, up to 270 s: it rides at no
 			-- more than today's longest for its form, cardio_cap_s × M × its span
-			local mult, span = formM(ctx, r.move), ns.Span(r.move)
+			local mult, span = formM(ctx, slot.move), ns.Span(slot.move)
 			slot.seconds = r.seconds > 0 and math.min(r.seconds, ns.CardioSeconds(math.huge, mult, span))
 				or ns.CardioSeconds(0, mult, span)
 			paceSlot(ctx, slot)
 			keepSlot(slot)
 		end
 	elseif r.kind == K.flow then
-		slot.seconds = r.seconds > 0 and r.seconds or flowSeconds(r.move) -- its asks: markRiders
+		slot.seconds = r.seconds > 0 and r.seconds or flowSeconds(slot.move) -- its asks: markRiders
 	elseif r.kind == K.rep or r.kind == K.hold then
 		-- dosed like a fresh move: at the ladder's current rung an owed anchor is the rung's attempt (a placement
 		-- after a break, "enough" at hi)
@@ -1407,19 +1456,25 @@ local function riderSlot(ctx, r, own)
 	return slot
 end
 
+-- A pump with no all-out window at all, its own, the closing rule's or an owed one: the arms rest (ctx.arms, a match
+-- pump after an aim game, slice 48) and a work pump (ctx.work, slice 67: 30 s all out at the desk, many times a day,
+-- means sweating at work and a loud voice in an open office). The game's own pumps are never calm.
+local function calm(ctx)
+	return ctx.arms or ctx.work ~= nil
+end
+
 -- Every owed move that fits: the plain ones oldest first (spreadRiders sets their play order once the effort before
 -- them is known), then the all-out windows oldest first, which end the pump as its last efforts in place of the pump's
 -- own window (David, 2026-10-14: "It should just be all coming right after the pump and when im done I can always bank
 -- the rest"; until then only the oldest window rode and any other waited for the pumps after it, so 27 of his 30
--- unfinished moves rode). Under the arms rest (ctx.arms: a match pump after an aim game, slice 48) every owed window
--- waits, as the pump's own has none (slice 61); it is left out before riderSlot takes its move. The game's own pumps
--- never keep the rest.
+-- unfinished moves rode). In a calm pump every owed window waits, as the pump's own has none (slice 61); it is left
+-- out before riderSlot takes its move.
 local function pickRiders(ctx, owed)
 	local plain, windows = {}, {}
 	for _, r in ipairs(owed or {}) do
 		if not isFinisherRow(r) and riderFits(ctx, r) then plain[#plain + 1] = riderSlot(ctx, r) end
 	end
-	if ctx.arms then return plain, windows end
+	if calm(ctx) then return plain, windows end
 	for _, r in ipairs(owed or {}) do
 		if isFinisherRow(r) and riderFits(ctx, r) then windows[#windows + 1] = riderSlot(ctx, r) end
 	end
@@ -1488,6 +1543,26 @@ end
 function ns.RidersReady(state, profile, now)
 	local owed = ns.OwedCount(state)
 	return owed == 0 and 0 or owed - #ns.OwedHeldRows(state, profile, now)
+end
+
+-- The owed moves the place leaves out with no move of their level to stand in for them: by their owed keys, how many,
+-- and their move ids in order, which the sheet carries. No list shows them until the player's setup lets them in again
+-- (standIn).
+function ns.OwedAside(state, profile, now)
+	local ctx = context({ state = state, profile = profile, now = now })
+	local aside, n, seen, moves = {}, 0, {}, {}
+	for _, r in ipairs(ns.OwedList(state)) do
+		if not riderFits(ctx, r) and placeShut(ctx, r.move) then
+			aside[r.key] = true
+			n = n + 1
+			if not seen[r.move] then
+				seen[r.move] = true
+				moves[#moves + 1] = r.move
+			end
+		end
+	end
+	table.sort(moves)
+	return aside, n, moves
 end
 
 -- The owed moves the game holds back now, by move id in order: the rider gates (the filters, the pain flags and the
@@ -1926,7 +2001,8 @@ end
 -- move started from a step's card pays that row as itself); where the setup leaves none at that level, the closest rung
 -- below. `opts.chain`: the rung's own chain only, never a rung below, whose max set the rung's window would judge (a
 -- placement; none when the chain holds no other move); `opts.atLevel`: the move's rung only and no move whose own rung
--- is lower (an owed move). Returns the move, its rung and whether it is lower.
+-- is lower (an owed move); `opts.place`: the stand-in for an owed move its place leaves out (standIn), which may be a
+-- move the queue holds and a form of the cardio rung's own chain. Returns the move, its rung and whether it is lower.
 -- A need is one item or an any-of list ({ "stairs", "step" }), which compares by its items, never by its table.
 local function needKey(n)
 	return type(n) == "table" and table.concat(n, "/") or tostring(n)
@@ -1941,13 +2017,13 @@ local function sameNeeds(a, b)
 	return true
 end
 
-local function backupMove(ctx, cur, allowed, opts)
+function backupMove(ctx, cur, allowed, opts)
 	local m = ns.Library[cur.move]
 	local ladder = (cur.ladder or 0) ~= 0 and cur.ladder or m.ladder
 	local level = levelOf(cur)
 	local function fits(id)
 		local owed = ctx.owed[id]
-		return id ~= cur.move and (not owed or (cur.owed and owed == cur.owed.key)) and ns.Passes(id, ctx.f)
+		return id ~= cur.move and (opts.place or not owed or (cur.owed and owed == cur.owed.key)) and ns.Passes(id, ctx.f)
 			and allowed(id) and not steppedDown(ctx, id)
 			and isOpen(ctx, id) and jumpReady(ctx, ns.Library[id])
 			and not (opts.atLevel and (ns.Library[id].rung or level) < (m.rung or level)) and not ns.BetterOpen(id, ctx.f)
@@ -1955,7 +2031,7 @@ local function backupMove(ctx, cur, allowed, opts)
 	for r = level, (opts.atLevel or opts.chain) and level or 1, -1 do
 		local list = {}
 		if ladder then
-			if ladder ~= ns.CARDIO then
+			if ladder ~= ns.CARDIO or opts.place then
 				for _, id in ipairs(ns.RungChain(ladder, r)) do
 					if fits(id) then list[#list + 1] = id end
 				end
@@ -2163,6 +2239,17 @@ local function quota(pace, tier)
 	return size - window, allout, withMajor > 1 and withMajor - 1 - window or nil
 end
 
+-- A work pump's own moves (slice 67, `block` its place in the set, 1 to work_set_blocks), as quota answers: the short
+-- pump is a Normal pump's size at work mode's pace (Moves per block: Light 1, Balanced 2, Extreme 3) and the set's
+-- last one more (Light 2, Balanced 3, Extreme 4; David approved Light's 2 past Light's most with the design page,
+-- 2026-11-07), never an all-out window, and the major move, when due, inside that count (one beside it), so a pump of
+-- one move has none.
+local function workQuota(pace, block)
+	assert(block >= 1 and block <= C.work_set_blocks, "workQuota: no such block")
+	local n = C.pace_moves[pace][2] + (block == C.work_set_blocks and 1 or 0)
+	return n, false, n > 1 and n - 1 or nil
+end
+
 -- A move the player started from a step's card or a move's window (slice 36, `chosen` = { move, allout, rung, ask }, as
 -- ns.StartFor names it; `ask` a check's least answer, 2026-10-16): the pump's one slot. The oldest owed row of that
 -- move and shape that rides now pays it (riderSlot: a steady and an all-out row of one form differ, and a row only at
@@ -2187,7 +2274,7 @@ end
 local function chosenSlot(ctx, chosen, owed)
 	local slot
 	for _, r in ipairs(not chosen.haul and owed or {}) do
-		if not slot and sameShape(r, chosen) and riderFits(ctx, r) then
+		if not slot and sameShape(r, chosen) and moveFits(ctx, r) then
 			slot = riderSlot(ctx, r, true)
 			slot.closing = slot.allout or nil
 			markRiders(ctx, { slot })
@@ -2348,9 +2435,12 @@ end
 -- one, warmPick, its stretches last), arms? (the arms rest, slice 48: ns.ArmsRest's filters and no all-out window),
 -- expedition? (an expedition's round, slice 51: { stage, regions }, one of ns.EXPEDITION_STAGES and the regions its
 -- earlier rounds took, ns.RoundRegions; its quests are its stage's, never input.quests: the warm-up and the cool-down
--- easeRound's, an inner round the Normal pump with no closing window, the last the Big pump) }; a quest's
--- `share.active` is in seconds.
--- The game's own pumps set neither warm, arms nor expedition (tools/apppump.lua's match pumps and expeditions do).
+-- easeRound's, an inner round the Normal pump with no closing window, the last the Big pump), work? (a work pump,
+-- slice 67: { block }, its place in the set, 1 to work_set_blocks, which sizes it at the pace (workQuota) whatever its
+-- quest's tier, and no all-out window of its own, the closing rule's or an owed one: calm; its warm move is input.warm,
+-- after work_warm_min) }; a quest's `share.active` is in seconds.
+-- The game's own pumps set neither warm, arms, expedition nor work (tools/apppump.lua's match pumps, expeditions and
+-- work pumps do).
 -- Returns the pump's slots in order: { move, kind, questID, tier, ladder, rung, target?, goal?, load?, loadUp?,
 -- loadFrom?, maxSet?, placing?, hi?, cap?, seconds?, allout?, closing?, counted?, owed?, standup?, practice?, trial?,
 -- mark?, ask?, pace?, keep?, warm?, haul? }, with `.why` holding what /qp why prints (its `pace`: the pace, Moves per
@@ -2445,7 +2535,13 @@ function ns.Compose(input)
 		-- Light gives no major move (quota): the quest's one move is the day plan's, whose strength turn goes to the
 		-- ladder that has waited longest, as the major move does (made the one move, the major move took 79-94 % of
 		-- Light's pumps and left an evening all strength; a simulator probe, 2026-10-05)
-		local n, allout, beside = quota(ctx.pace, top.tier)
+		-- a work pump (slice 67) is sized by its place in the set (workQuota), never by its quest's tier
+		local n, allout, beside
+		if ctx.work then
+			n, allout, beside = workQuota(ctx.pace, ctx.work.block)
+		else
+			n, allout, beside = quota(ctx.pace, top.tier)
+		end
 		-- the arms rest (slice 48) has no all-out window: its place goes to one more move of the day plan
 		if ctx.arms and allout then n, allout, beside = n + 1, false, beside and beside + 1 end
 		-- a match pump after a long sit (ctx.warm, slice 48) opens on its warm move (warmPick), one of its own moves, so
@@ -2518,10 +2614,10 @@ function ns.Compose(input)
 	-- 2026-10-17, slice 42's review: the closing window took the one steady move of every pump that was not a T3's, and
 	-- the step's ready days almost never came), the first steady move is the one that asks, so it stays and the next one
 	-- becomes the window, or none does. A match pump's warm cardio move (slice 48) stays steady and easy and never asks
-	-- the pace (paceSlot), so the next steady move asks it where the ask is due, and the arms rest has no window. An
-	-- expedition's inner round has none (slice 51: its one all-out effort is its last round's).
+	-- the pace (paceSlot), so the next steady move asks it where the ask is due, and a calm pump (the arms rest, a work
+	-- pump) has no window. An expedition's inner round has none (slice 51: its one all-out effort is its last round's).
 	local closing
-	if not finisher and #windows == 0 and not ctx.arms and ctx.cardioRung >= C.closing_rung
+	if not finisher and #windows == 0 and not calm(ctx) and ctx.cardioRung >= C.closing_rung
 		and (not exp or exp.stage == "last") then
 		local asking = true
 		for i, slot in ipairs(own) do

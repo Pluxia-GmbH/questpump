@@ -1,0 +1,11 @@
+## Interface: 16001, 120105
+## Title: QuestPump Voice
+## Notes: The recorded voice for QuestPump: move names, counts and the spoken How and Tips. QuestPump loads it when it needs it.
+## Author: Pluxia GmbH
+## IconTexture: Interface\AddOns\QuestPump\Media\Icon
+## Group: QuestPump
+## LoadOnDemand: 1
+## Dependencies: QuestPump
+## Version: @project-version@
+
+Manifest.lua

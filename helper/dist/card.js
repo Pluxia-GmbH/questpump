@@ -1,5 +1,6 @@
 // The match-over card's page (docs/ui.md, "The match-over card"): a window that never takes the focus, drawn in the
-// kit's MatchCard from the `card` topic (helper/src-tauri/src/desk/card.rs: the offer, or null while no card shows).
+// kit's MatchCard from the `card` topic (helper/src-tauri/src/desk/card.rs: the offer or a reminder, or null while no
+// card shows).
 // Start asks for the pump at the size chosen (`card.start`), Later and the × close the card (`card.later`); each names
 // the card it shows, so a click on a card a newer offer replaced does nothing. Its own errors go into QuestPump's log
 // first.

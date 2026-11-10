@@ -33,6 +33,8 @@ use crate::web::{self, DATA, NetAnswer, NetHeard, Page, VERSION, Web};
 
 /// The page's label in the publisher: the browser has one page.
 const PAGE: &str = "play";
+/// The page's presence for work mode's clock (slice 67, `lib/bridge.js`): `{present, since_s?}`, the platform's own.
+const PRESENCE: &str = "presence.seen";
 
 /// The browser's desk and its own part.
 struct Open {
@@ -314,7 +316,12 @@ pub unsafe extern "C" fn qp_intent(intent: *const c_char) -> *mut c_char {
 					Intent::from_value(json!({ "type": "email.signout", "anyway": true })).map_err(Refusal::shape)?;
 				return open.desk.intent(&leave).map_err(Refusal::refused);
 			}
-			if intent.area() == play::TOPIC {
+			if intent.kind() == PRESENCE {
+				let present = intent.arg("present").and_then(Value::as_bool).unwrap_or(false);
+				let since_s = intent.arg("since_s").and_then(Value::as_i64).unwrap_or(0);
+				open.desk.p.presence_seen(present, since_s, now());
+				Ok(())
+			} else if intent.area() == play::TOPIC {
 				open.play.intent(&intent).map_err(Refusal::refused)
 			} else if intent.area() == "about" {
 				about_intent(open, &intent).map_err(Refusal::refused)
@@ -348,6 +355,7 @@ pub extern "C" fn qp_look() -> *mut c_char {
 			let fx = desk.session.tick(now() * 1_000);
 			desk.apply(fx);
 			desk.recent_look(now());
+			desk.p.presence_look(now());
 			desk.home_look();
 			desk.pump_refresh();
 			desk.welcome_found();

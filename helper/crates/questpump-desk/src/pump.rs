@@ -127,20 +127,23 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::facts::facts;
 use crate::figures;
 use crate::hero::Summary;
-use crate::home::Board;
+use crate::home::{Board, aside_key, aside_keys};
 use crate::seams::{Cue, Recalled, StoreMark};
+use crate::work::LaterEnd;
 use crate::{Desk, Intent, Platform};
 use questpump_core::body::{self, DEFAULT_PACE};
 use questpump_core::codes::{answer, clear, flags, kind, outcome, pace};
 use questpump_core::games::MATCH;
 use questpump_core::link::OwedMove;
 use questpump_core::offers::Offer;
-use questpump_core::protocol::{ExpeditionStage, PumpKind, RowRecord, Source};
+use questpump_core::protocol::{ExpeditionStage, PumpKind, RowRecord};
 use questpump_core::row::Row;
 use questpump_core::session::{
-	BankMove, BankPump, CatchupError, CatchupMove, CatchupPump, CatchupRan, CatchupSet, SetRung, SetStep, owed_now,
+	self, BankMove, BankPump, CatchupError, CatchupMove, CatchupPump, CatchupRan, CatchupSet, SetRung, SetStep,
+	owed_now,
 };
 use questpump_core::sitting;
+use questpump_core::work::WORK;
 use questpump_engine::{
 	CardioDay, Check, CheckOpens, CheckOutcome, Composed, Dosed, Engine, EngineError, Finished, Judged, Judgement,
 	LevelAt, Match, MoveResult, PlannedMove, Preview, Pump, Rider, Slot, StartedCheck, SwapOptions, Take, Target,
@@ -195,8 +198,8 @@ impl Started {
 }
 
 /// An app pump being composed: what it is, its id, the match offer that opened it, where it was asked, the aim game its
-/// arms rest is for and, on a match's pump, the owed rows it was composed with (slice 61: `Unfinished::owed`, as the
-/// store keeps them).
+/// arms rest is for, on a pump that banks the owed rows it was composed with (slice 61: `Unfinished::owed`, as the
+/// store keeps them) and on a work pump its place in the set (slice 67).
 struct Asking {
 	what: What,
 	id: String,
@@ -204,6 +207,7 @@ struct Asking {
 	outside: bool,
 	arms: Option<String>,
 	riding: Vec<Row>,
+	work: Option<u8>,
 }
 
 /// A pump the engine composes now (an app pump or a catch-up), until it answers: its id, the match offer that opened
@@ -237,6 +241,8 @@ pub enum Start {
 	Expedition {
 		minutes: u16,
 	},
+	/// Work mode's pump (slice 67, `work.rs`): the next of the set, which banks as a match's pump does.
+	Work,
 }
 
 impl Start {
@@ -244,7 +250,7 @@ impl Start {
 	fn offer(&self) -> Option<&str> {
 		match self {
 			Self::Free { offer, .. } | Self::Choose(Choose { offer, .. }) => offer.as_deref(),
-			Self::Quick | Self::Move { .. } | Self::CatchUp | Self::Expedition { .. } => None,
+			Self::Quick | Self::Move { .. } | Self::CatchUp | Self::Expedition { .. } | Self::Work => None,
 		}
 	}
 }
@@ -406,12 +412,22 @@ impl What {
 	}
 }
 
-/// What an app pump is composed from: the Quick pump, a plain kind's family (with the match offer that opened it), or a
-/// move from a step's card or a move's window, read again from its target as the engine composes it.
+/// What an app pump is composed from: the Quick pump, a plain kind's family (with the match offer that opened it), a
+/// move from a step's card or a move's window, read again from its target as the engine composes it, or work mode's.
 enum Compose {
 	Quick,
-	Free { family: &'static str, offer: Option<String> },
-	Move { target: Target },
+	Free {
+		family: &'static str,
+		offer: Option<String>,
+	},
+	Move {
+		target: Target,
+	},
+	/// Work mode's pump (slice 67): its kind's family and its place in the set.
+	Work {
+		family: &'static str,
+		work: questpump_engine::Work,
+	},
 }
 
 /// What the engine answered a compose: the pump with its start's facts (none for a pump with no move) and, on a move
@@ -672,6 +688,13 @@ struct Run {
 	/// The match offer that opened it (`m-<uuid>`, `m-test`), which a recall of it ends while it is untouched, and
 	/// whose pump banks like a quest's (slice 58: `Desk::pump_bank_way`).
 	offer: Option<String>,
+	/// A work pump's place in the set (slice 67, 1 to `work_set_blocks`): it banks and carries riders as a match's
+	/// pump does (`Run::banks`), and its end counts a block where it answered an ask (`Desk::work_pump_ended`).
+	work: Option<u8>,
+	/// A work pump's Result reads Back to work (slice 67): opened from outside the window (by itself, the tray), the app
+	/// in front as it came was noted (`Platform::back_note`), and its Continue brings that app back
+	/// (`Platform::back_to_work`).
+	back: bool,
 	/// The aim game whose arms rest it composed with (its name), which its Ready view names (`pump.rest.arms`); the
 	/// unfinished moves that rest holds back and every owed all-out window wait for a later pump, never riding it (slice
 	/// 61, Engine.lua `pickRiders`).
@@ -753,6 +776,8 @@ impl Run {
 			streak_before: None,
 			reached: view::Reached::default(),
 			offer: None,
+			work: None,
+			back: false,
 			arms: None,
 			offered: None,
 		}
@@ -823,7 +848,13 @@ impl Run {
 	/// The pump's end reads Bank the rest (`Ways::rest`, `pump_end`): only riders are left of a catch-up or of a
 	/// match pump (one the player started holds none).
 	fn ends_rest(&self) -> bool {
-		(self.offer.is_some() || !self.what.app()) && self.only_riders_left()
+		(self.banks() || !self.what.app()) && self.only_riders_left()
+	}
+
+	/// The pump banks its moves and carries the unfinished ones: a match offer's or work mode's (slice 67; never a
+	/// pump of kind `work` picked by hand, call 4).
+	fn banks(&self) -> bool {
+		self.offer.is_some() || self.work.is_some()
 	}
 
 	/// A match pump's riders as the engine's pump names them now (`Pump::riders`, slice 61): each slot's owed row, read
@@ -964,9 +995,11 @@ impl Run {
 	}
 
 	/// Its bank (slice 58, the game's `Lc.Bank`): each move of its own with no row yet, from the one on screen on (a
-	/// rider stays the owed row it is, slice 61), as its slot dosed it, under its id with the platform's `source`, dated
-	/// and sized by its offered row (`now_ms` and Balanced without one); and the slot of each move banked, in their order.
-	fn bank(&self, now_ms: i64, source: Source) -> (BankPump, Vec<usize>) {
+	/// rider stays the owed row it is, slice 61), as its slot dosed it, under its id with the platform's source
+	/// (`Platform::DEVICE`), dated and sized by its offered row (`now_ms` and Balanced without one), under the account's
+	/// bank number where the platform's banks are the account's (`Platform::ACCOUNT_BANKS`, slice 67); and the slot of
+	/// each move banked, in their order.
+	fn bank<P: Platform>(&self, now_ms: i64) -> (BankPump, Vec<usize>) {
 		let now = u32::try_from(unix_s(now_ms).max(0)).unwrap_or(u32::MAX);
 		let (start, tier) = self.offered.unwrap_or((now, NORMAL));
 		let n = |v: Option<i64>| u16::try_from(v.unwrap_or(0).max(0)).unwrap_or(u16::MAX);
@@ -990,7 +1023,8 @@ impl Run {
 				}
 			})
 			.collect();
-		let pump = BankPump { source, id: self.id.clone(), start, tier, moves };
+		let quest = if P::ACCOUNT_BANKS { session::bank_quest(&self.id).unwrap_or(0) } else { 0 };
+		let pump = BankPump { source: P::DEVICE, id: self.id.clone(), start, tier, quest, moves };
 		(pump, left.iter().map(|m| m.slot).collect())
 	}
 }
@@ -1583,7 +1617,7 @@ impl<P: Platform> Desk<P> {
 		let Some(run) = self.pumps.run.as_ref() else { return true };
 		log::info!("pump {}: idle, it ends for a game's pump", run.id);
 		if run.running() {
-			if let Some((bank, _)) = (self.pump_bank_way(run) == Some(Bank::It)).then(|| run.bank(now_ms, P::DEVICE)) {
+			if let Some((bank, _)) = (self.pump_bank_way(run) == Some(Bank::It)).then(|| run.bank::<P>(now_ms)) {
 				self.pump_write_bank(&bank);
 			}
 			if let Err(e) = self.pump_stop(Stop::Left) {
@@ -1606,9 +1640,15 @@ impl<P: Platform> Desk<P> {
 		self.gate(self.wow_with_addon())
 	}
 
-	/// The gate of a start of this kind.
+	/// The gate of a start of this kind: work mode's pump passes a World of Warcraft client that runs behind and holds
+	/// only while its quest pump is open (slice 67: the game holds work mode while it is in front, where nothing asks,
+	/// or its pump is open), carrying no rider while the game asks the moves owed (`pump_compose`).
 	fn start_gate(&self, start: &Start) -> Option<Gate> {
-		if matches!(start, Start::CatchUp) { self.catch_up_gate() } else { self.pump_gate() }
+		match start {
+			Start::CatchUp => self.catch_up_gate(),
+			Start::Work => self.gate(self.session.pump_on()),
+			_ => self.pump_gate(),
+		}
 	}
 
 	fn gate(&self, game: bool) -> Option<Gate> {
@@ -1687,6 +1727,17 @@ impl<P: Platform> Desk<P> {
 			}
 			Start::CatchUp => self.pump_catch_up(outside),
 			Start::Expedition { minutes } => self.expedition_begin(minutes, outside),
+			Start::Work => match (words::family(WORK), self.work_facts(unix_s(self.p.now_ms()))) {
+				(Some(family), Some(work)) => {
+					self.pump_compose(
+						What::Free { kind: WORK.to_owned() },
+						Compose::Work { family, work },
+						NORMAL,
+						outside,
+					);
+				}
+				_ => log::warn!("pump: no work pump without its kind and work mode's tunables"),
+			},
 		}
 	}
 
@@ -1713,11 +1764,15 @@ impl<P: Platform> Desk<P> {
 			.then(|| self.match_facts(offer.as_deref(), key.as_deref(), at))
 			.flatten();
 		let arms = facts.as_ref().is_some_and(|f| f.arms).then(|| self.arms_game()).flatten();
-		let riding =
-			if offer.is_some() && self.catch_up_gate().is_none() { self.session.payable_kept() } else { Vec::new() };
+		let work = match &compose {
+			Compose::Work { work, .. } => Some(work.block),
+			_ => None,
+		};
+		let banks = offer.is_some() || work.is_some();
+		let riding = if banks && self.catch_up_gate().is_none() { self.session.payable_kept() } else { Vec::new() };
 		let unfinished = Unfinished {
 			owed: riding.iter().map(ToString::to_string).collect(),
-			queue: if offer.is_some() {
+			queue: if banks {
 				self.session.store().owed().iter().map(ToString::to_string).collect()
 			} else {
 				Vec::new()
@@ -1734,6 +1789,9 @@ impl<P: Platform> Desk<P> {
 					Compose::Free { family, .. } => {
 						let kind = key.as_deref().unwrap_or_default();
 						(e.compose(&pump_id, kind, family, size, at, facts, unfinished)?, None)
+					}
+					Compose::Work { family, work } => {
+						(e.work(&pump_id, key.as_deref().unwrap_or_default(), family, at, work, unfinished)?, None)
 					}
 					Compose::Move { target } => {
 						let picked = e.chosen(&pump_id, target, at)?;
@@ -1770,7 +1828,7 @@ impl<P: Platform> Desk<P> {
 							}
 							other => other,
 						};
-						h.pump_composed(composed, started, Asking { what, id, offer, outside, arms, riding });
+						h.pump_composed(composed, started, Asking { what, id, offer, outside, arms, riding, work });
 					}
 					Ok(Made::Refused(why)) => {
 						log::info!("pump {id}: the move's start is refused now ({why:?}), no pump");
@@ -1789,7 +1847,7 @@ impl<P: Platform> Desk<P> {
 	/// offer that opened it taken, its riders' owed rows read (slice 61: `Run::ride`, paid under an id of their own),
 	/// its Ready view.
 	fn pump_composed(&mut self, mut composed: Composed, started: Option<Started>, asking: Asking) {
-		let Asking { what, id, offer, outside, arms, riding } = asking;
+		let Asking { what, id, offer, outside, arms, riding, work } = asking;
 		let written = rows(&composed.rows);
 		self.pump_keep(&id, what.kind(), &written);
 		let offered =
@@ -1801,6 +1859,9 @@ impl<P: Platform> Desk<P> {
 		};
 		if let Some(offer) = &offer {
 			self.p.offer_taken(offer);
+		}
+		if work.is_some() {
+			self.work_pump_shown(&id);
 		}
 		// a pump of its own after an expedition's Result: the expedition is over and leaves the screen with it
 		if !matches!(what, What::Expedition { .. }) {
@@ -1826,6 +1887,10 @@ impl<P: Platform> Desk<P> {
 			titles_before: titles,
 			streak_before: Some(self.board_now()),
 			offer,
+			work,
+			// Back to work for a work pump that opened itself or the tray opened from outside the window (Pump home's keeps
+			// Continue)
+			back: work.is_some() && outside && self.p.back_note(),
 			arms,
 			offered,
 			riding,
@@ -1849,11 +1914,16 @@ impl<P: Platform> Desk<P> {
 		self.pumps.starting = true;
 		self.pumps.composing = Some(Composing { id: id.clone(), offer: None, outside });
 		self.pumps.choose = None;
-		self.engine_call(Engine::pain_flags, move |h, answer| {
+		let kept = self.session.payable_kept();
+		let owed: Vec<String> = kept.iter().map(ToString::to_string).collect();
+		let at = unix_s(self.p.now_ms());
+		let ask = move |e: &Engine| Ok((e.pain_flags()?, aside_keys(&kept, e.owed_aside(owed, at)?)));
+		self.engine_call(ask, move |h, answer| {
 			h.pumps.starting = false;
 			match answer {
-				Ok(flags) => {
+				Ok((flags, aside)) => {
 					h.pumps.flags = flags;
+					h.home.aside = aside.into_iter().collect();
 					// a recall while the flags were asked took the mark (`pump_recalled`)
 					if h.pumps.composing.as_ref().is_some_and(|c| c.id == id) {
 						h.pump_plan_catch_up(id, outside);
@@ -1873,12 +1943,16 @@ impl<P: Platform> Desk<P> {
 
 	/// The owed rows a catch-up on this computer pays now, in the helper's payment order, as the store keeps them
 	/// (`Session::payable_kept`): those whose move as owed now (`owed_now`) no pain flag in `flags` rests (a move loading
-	/// a flagged joint waits, as it does on the phones).
+	/// a flagged joint waits, as it does on the phones) and the setup in force does not set aside (`Home::aside`).
 	pub fn pump_payable(&self, flags: &[u8]) -> Vec<Row> {
 		self.session
 			.payable_kept()
 			.into_iter()
-			.filter(|r| facts().move_joints(owed_now(r).move_id).iter().all(|j| !flags.contains(j)))
+			.filter(|r| {
+				let now = owed_now(r);
+				!self.home.aside.contains(&aside_key(&OwedMove::of(&now)))
+					&& facts().move_joints(now.move_id).iter().all(|j| !flags.contains(j))
+			})
 			.collect()
 	}
 
@@ -3539,8 +3613,8 @@ impl<P: Platform> Desk<P> {
 		run.move_start = None;
 		run.asked = None;
 		run.count.clear();
-		let banks = run.what.app() && run.offer.is_some() && !run.rider(slot);
-		if let Some((mut bank, slots)) = banks.then(|| run.bank(now_ms, P::DEVICE)) {
+		let banks = run.what.app() && run.banks() && !run.rider(slot);
+		if let Some((mut bank, slots)) = banks.then(|| run.bank::<P>(now_ms)) {
 			bank.moves = bank.moves.into_iter().zip(slots).filter(|&(_, s)| s == slot).map(|(m, _)| m).collect();
 			bank.id = short_id(&bank.id, slot);
 			self.pump_write_bank(&bank);
@@ -3621,7 +3695,9 @@ impl<P: Platform> Desk<P> {
 		if !run.what.app() {
 			return Some(Bank::Rest);
 		}
-		run.offer.as_ref()?;
+		if !run.banks() {
+			return None;
+		}
 		Some(if run.only_riders_left() { Bank::Rest } else { Bank::It })
 	}
 
@@ -3638,7 +3714,7 @@ impl<P: Platform> Desk<P> {
 		let run = self.pumps.run.as_ref().filter(|r| r.busy == 0).ok_or("no Bank now")?;
 		match self.pump_bank_way(run).ok_or("no Bank now")? {
 			Bank::It => {
-				let (bank, _) = run.bank(now_ms, P::DEVICE);
+				let (bank, _) = run.bank::<P>(now_ms);
 				self.pump_write_bank(&bank);
 				self.pump_stop(Stop::Left)
 			}
@@ -3659,24 +3735,105 @@ impl<P: Platform> Desk<P> {
 	/// and the pump ends): the offers pause as the Games tab's Pause offers pauses them (`pause_offers`: an hour, four
 	/// hours, until the next game day, while the watched game running now runs, until resumed), then the pump ends as
 	/// its bar's Close ends it (`pump_end`: its own moves not done count for nothing, a catch-up's and its riders stay
-	/// unfinished, with only riders left a match pump ends done). Refused, nothing changed, off a Ready view and where
+	/// unfinished, with only riders left a match pump ends done). Refused, nothing changed, off a Ready view, on a work
+	/// pump (its Pause menu holds Your body alone: Stop ends work mode and Later puts its pump off, slice 67) and where
 	/// that pause cannot be (no offers on this computer, no watched game runs): the pump is looked at first and the
 	/// pause is set whole or not at all, so the two happen together or neither does.
 	fn pump_pause(&mut self, kind: &str) -> Result<(), String> {
-		self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready).ok_or("no Pause now")?;
+		self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready && r.work.is_none()).ok_or("no Pause now")?;
 		self.pause_offers(kind)?;
 		self.pump_end()
 	}
 
-	/// A match pump's moves `bank` names written in the game's owed queue (`Session::bank`: the computer's source, dated
-	/// its offered row's time, at its tier), or why none was (a reset since it began, the felt-unwell lock), logged.
-	fn pump_write_bank(&mut self, bank: &BankPump) {
+	/// A banking pump's moves `bank` names written in the owed queue (`Session::bank`: the platform's source, dated its
+	/// offered row's time, at its tier; a work pump's has banked, which its end counts as done, `work_banked`), or why
+	/// none was (a reset since it began, the felt-unwell lock), logged and given back.
+	pub(crate) fn pump_write_bank(&mut self, bank: &BankPump) -> Option<CatchupError> {
 		let (banked, fx) = self.session.bank(bank, &self.now());
 		self.apply(fx);
 		match banked {
-			Ok(rows) => log::info!("pump {}: {} moves banked, unfinished from {}", bank.id, rows.len(), bank.start),
-			Err(e) => log::warn!("pump {}: no move banked: {e}", bank.id),
+			Ok(rows) => {
+				log::info!("pump {}: {} moves banked, unfinished from {}", bank.id, rows.len(), bank.start);
+				self.work_banked(&bank.id);
+				None
+			}
+			Err(e) => {
+				log::warn!("pump {}: no move banked: {e}", bank.id);
+				Some(e)
+			}
 		}
+	}
+
+	/// Work mode's Later (slice 67, `Desk::work_later`): the work pump its ask stood for (`work`, its place in the set)
+	/// composed on the engine with no screen at work mode's Moves per block (the profile taken first, as `pump_begin`
+	/// takes it), on the owed queue so no fresh pick takes a queued move and carrying no rider (they wait for the next
+	/// pump); while its ask still stands and no reset since its block was due or felt-unwell lock refuses it, its rows
+	/// kept as the engine wrote them and every move of its own banked as its Bank all banks them (`Run::bank`,
+	/// `pump_write_bank`), so a refused Later keeps no row; how it came back (banked, a refusal, an engine that composed
+	/// nothing, the ask gone meanwhile) goes to work mode (`Desk::work_later_ended`). Refused while a pump is on screen
+	/// or being made.
+	pub(crate) fn pump_work_later(&mut self, work: questpump_engine::Work) -> Result<(), String> {
+		if self.pumps.starting || self.pumps.on() {
+			return Err("a pump is on screen already".to_owned());
+		}
+		let family = words::family(WORK).ok_or("work is no kind of contract/kinds.json")?;
+		self.profile_changed();
+		let id = new_id::<P>();
+		let at = unix_s(self.p.now_ms());
+		let queue = self.session.store().owed().iter().map(ToString::to_string).collect();
+		let unfinished = Unfinished { owed: Vec::new(), queue };
+		let pump_id = id.clone();
+		self.engine_call(
+			move |e| {
+				let composed = e.work(&pump_id, WORK, family, at, work, unfinished)?;
+				let moves = e.moves()?;
+				Ok((composed, moves))
+			},
+			move |h, answer| {
+				let end = match answer {
+					Ok((composed, moves)) => {
+						if !h.work_later_stands() {
+							log::info!("pump {id}: the ask its Later answered stands no more: nothing banked");
+							h.work_later_ended(LaterEnd::Gone);
+							return;
+						}
+						// a refused Later keeps no row of its pump, so no empty entry reaches the Log (E5)
+						if h.work_later_reset() {
+							log::info!("pump {id}: a reset came since its block was due: nothing banked");
+							h.work_later_ended(LaterEnd::Refused(CatchupError::BeforeReset));
+							return;
+						}
+						if let Some(until) = h.session.locked_until(unix_s(h.p.now_ms())) {
+							log::info!("pump {id}: the felt-unwell lock holds: nothing banked");
+							h.work_later_ended(LaterEnd::Refused(CatchupError::Locked(until)));
+							return;
+						}
+						let written = rows(&composed.rows);
+						h.pump_keep(&id, None, &written);
+						let offered = written
+							.iter()
+							.find(|r| kind::is_pump(r.kind) && r.outcome == outcome::OFFERED)
+							.map(|r| (r.ts, r.tier));
+						let rungs = composed.pump.slots.iter().map(|s| s.rung).collect();
+						let slots = composed.pump.slots.into_iter().map(Some).collect();
+						let what = What::Free { kind: WORK.to_owned() };
+						let run = Run {
+							offered,
+							work: Some(work.block),
+							..Run::new(id.clone(), what, false, moves, slots, rungs)
+						};
+						let (bank, _) = run.bank::<P>(h.p.now_ms());
+						h.pump_write_bank(&bank).map_or(LaterEnd::Banked, LaterEnd::Refused)
+					}
+					Err(e) => {
+						log::warn!("pump {id}: the engine composed no work pump to bank: {e}");
+						LaterEnd::Failed
+					}
+				};
+				h.work_later_ended(end);
+			},
+		);
+		Ok(())
 	}
 
 	/// Swap on Ready (the swap row or its window, at one click: the game's `Lc.Swap`): the move becomes the option taken
@@ -4141,6 +4298,7 @@ impl<P: Platform> Desk<P> {
 			self.pump_full_screen(false);
 		}
 		let Some(run) = self.pumps.run.as_ref() else { return };
+		let (id, ran, unwell) = (run.id.clone(), !(run.ran.is_empty() && run.recorded.is_empty()), run.unwell);
 		if run.what.app() {
 			let riders = !run.owed.is_empty();
 			self.expedition_round_ends(stopped);
@@ -4160,6 +4318,7 @@ impl<P: Platform> Desk<P> {
 				run.reveal = Some(view::Reveal::plan(now, &view::caught_up(run), true));
 			}
 		}
+		self.work_pump_ended(&id, ran, unwell);
 		self.pump_publish();
 	}
 
@@ -4445,8 +4604,12 @@ impl<P: Platform> Desk<P> {
 			self.pump_publish();
 			return Ok(());
 		}
-		let (done, resulted) = (run.ended_done(), run.resulted());
+		let (done, resulted, back) = (run.ended_done(), run.resulted(), run.back);
 		self.pump_dismiss();
+		// a work pump's Back to work: the app it came from in front again, this window left open behind it
+		if back {
+			self.p.back_to_work();
+		}
 		if done {
 			self.pumps.focus_due = true;
 			self.home_publish();
@@ -4505,7 +4668,7 @@ impl<P: Platform> Desk<P> {
 		let now_ms = self.p.now_ms();
 		let Some(run) = self.pumps.run.as_ref().filter(|r| r.running()) else { return };
 		log::info!("pump: QuestPump quits; the pump here ends");
-		let banks = (run.what.app() && run.offer.is_some()).then(|| (run.id.clone(), run.bank(now_ms, P::DEVICE)));
+		let banks = (run.what.app() && run.banks()).then(|| (run.id.clone(), run.bank::<P>(now_ms)));
 		if let Err(e) = self.pump_stop(Stop::Left) {
 			log::warn!("pump: the pump did not end at the quit: {e}");
 		}
@@ -4550,13 +4713,21 @@ impl<P: Platform> Desk<P> {
 			}
 			let banks = self.pumps.run.as_ref().filter(|r| offer.is_none() && self.pump_bank_way(r) == Some(Bank::It));
 			let now_ms = self.p.now_ms();
-			if let Some((bank, _)) = banks.map(|r| r.bank(now_ms, P::DEVICE)) {
+			if let Some((bank, _)) = banks.map(|r| r.bank::<P>(now_ms)) {
 				self.pump_write_bank(&bank);
 			}
 			return self.pump_stop(Stop::Left).is_ok().then_some(Recalled::Ready);
 		};
 		self.pump_publish();
 		Some(ended)
+	}
+
+	/// The pump `id` ends while it waits untouched on its Ready view (`Run::untouched`), nothing written, as "Leave the
+	/// pump?"'s Leave ends one with no move run (work mode's pump that opened itself with nobody there:
+	/// `Desk::work_unattended`); whether it ended.
+	pub(crate) fn pump_end_untouched(&mut self, id: &str) -> bool {
+		let waits = !self.pumps.starting && self.pumps.run.as_ref().is_some_and(|r| r.id == id && r.untouched());
+		waits && self.pump_stop(Stop::Left).is_ok()
 	}
 
 	/// A pump the game offered on the strip: the pump here ends, as it ends one on the wrist (one pump at a time).

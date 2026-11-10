@@ -303,11 +303,12 @@ impl<P: Platform> Desk<P> {
 
 	/// This computer's engine profile: the body every device shares (`body.json`: the Body switches, the experience, the
 	/// moves left out and the opt-in moves checked, "Moves per match"; off, `none`, none and Balanced while no device
-	/// changed them, the phones' defaults; `favourites`, `title`) and the place in use on this computer
-	/// (`Desk::place_in_use`). "Moves per match" goes in only when it is not Balanced (`matchPace`, slice 48), and sizes
-	/// only a pump composed with a game's end's facts (`tools/apppump.lua`); every other app pump is Balanced.
+	/// changed them, the phones' defaults; `favourites`, `title`) and the setup in force on this computer (the place in
+	/// use's, work mode's own equipment while it is on: `Desk::setup_in_force`). "Moves per match" goes in only when it
+	/// is not Balanced (`matchPace`, slice 48), and sizes only a pump composed with a game's end's facts
+	/// (`tools/apppump.lua`); every other app pump is Balanced.
 	pub fn engine_profile(&self) -> Profile {
-		let ((_, place), body) = (self.place_in_use(), &self.body.body);
+		let (place, body) = (self.setup_in_force(), &self.body.body);
 		let on = |switch: &Option<Changed<bool>>| switch.as_ref().is_some_and(|s| s.value);
 		let moves = body.moves.as_ref().map(|m| &m.value);
 		Profile {
@@ -327,6 +328,7 @@ impl<P: Platform> Desk<P> {
 			favourites: self.favourites(),
 			title: self.title(),
 			match_pace: body.match_pace.as_ref().map(|p| p.value.clone()).filter(|p| p != DEFAULT_PACE),
+			work_pace: Some(self.settings.work.pace.clone()).filter(|p| p != DEFAULT_PACE),
 		}
 	}
 

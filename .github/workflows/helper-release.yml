@@ -21,7 +21,9 @@ name: Helper release
 #            per film set: the app fetches its set from there by contract/figures/figures.json's films_digest), then
 #            latest.json (the feed tauri.conf.json names) and the three installers under the fixed names the
 #            site's download links reach through the report Worker's /get/ redirects (contract/get-api.yaml); the
-#            add-on's feed beside them (addon.json, its signature, QuestPump-addon.zip) is addon-release.yml's and stays;
+#            add-on's feed beside them (addon-v2.json, its signature, QuestPump-addon-v2.zip, each pack's
+#            pack-<name>.json, and the first feed's addon.json, its signature and QuestPump-addon.zip) is
+#            addon-release.yml's and stays;
 #   cask     Casks/questpump.rb in the tap Pluxia-GmbH/homebrew-tap;
 #   winget   the winget-pkgs pull request (skipped with a notice without WINGET_TOKEN).
 # Run from the Actions tab (rehearse), it rehearses a release of the commit it runs on, at the version its files name:
@@ -488,7 +490,7 @@ jobs:
           if ! gh release view helper-updater > /dev/null 2>&1; then
             notes="The update feed of QuestPump for Mac and Windows (latest.json), its newest installers under"
             notes="$notes fixed names, which questpump.com's download links reach, its move films, and the add-on's"
-            notes="$notes feed (addon.json, signed, with QuestPump-addon.zip), from which QuestPump on your computer"
+            notes="$notes feed (addon-v2.json, signed, with QuestPump-addon-v2.zip), from which QuestPump on your computer"
             notes="$notes installs and updates the add-on. Each version has its own release, tagged helper-vX.Y.Z"
             notes="$notes or vX.Y.Z."
             gh release create helper-updater --prerelease --latest=false --target "$GITHUB_SHA" \

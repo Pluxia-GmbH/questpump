@@ -380,7 +380,8 @@ tag. Both tags may sit on the same commit.
 2. **Export:** `python3 -B tools/public/export.py` builds the public tree from `origin/main`, checks it (every listed
    path, every file the helper's build or a public workflow reads, `publish.py --check`, betterleaks) and prints its
    diff against the public `main`. `python3 -B tools/public/export.py --push --version X.Y.Z` then pushes it as one
-   commit "QuestPump X.Y.Z" by Pluxia GmbH (David's step, with his GitHub sign-in).
+   commit "QuestPump X.Y.Z" by Pluxia GmbH (a session's step once David said go for the version, with the Mac's
+   GitHub sign-in; the tags are his).
 3. **Rehearse the helper:** run Helper release from the public repository's Actions tab (rehearse ticked). It runs
    `check`, a draft named `helper-rehearsal-<run id>` with no tag, `build`, `sbom` and `verify` on the exported commit,
    then `cleanup` deletes the draft; nothing is published, and the tap, winget and `helper-updater` stay as they are.
@@ -405,28 +406,59 @@ tag. Both tags may sit on the same commit.
    `QuestPump-mac-intel.dmg` and `QuestPump-windows-setup.exe`, that the updater and the site's download links read
    through the report Worker's `/get/` redirects, `contract/get-api.yaml`), then `cask` and `winget`.
 5. **Tag the add-on** `vX.Y.Z` on the same commit and push the tag, once the helper's release made `helper-updater`.
-   `check` (the tag is vX.Y.Z, `CHANGELOG.md` has its section, the updater's key and `PHONE_APPS` are set,
-   `helper-updater` exists, the packager's dry run passes `tools/package-check.sh` and its `QuestPump.toc` names the
-   tag), then `release` (the packager, BigWigsMods/packager pinned to a commit, in the environment `addon-release`:
-   CurseForge for Forever and retail, Wago, and this repository's release of the tag with its `release.json`, which
-   takes Latest), then `feed` (`tools/addon_feed.py` writes `addon.json` for that release's zip, `tauri signer sign`
-   signs it with the updater's key into `addon.json.sig`, its key id is checked against `plugins.updater.pubkey`, and
-   the zip as `QuestPump-addon.zip`, the signature and `addon.json` go to `helper-updater`, from which QuestPump on this
-   computer installs and updates the add-on).
+   The add-on is three zips and three store projects since slice 71 (QuestPump with the quests' lines, the voice
+   pack, the figure pack), and a store never gets a QuestPump that needs packs it does not have. The jobs:
+   `plan` (nothing starts while a pack's CurseForge project id or slug is not set), `check` (the tag is vX.Y.Z,
+   `CHANGELOG.md` has its section, the updater's key and `PHONE_APPS` are set, `helper-updater` exists, the packager's
+   dry runs of the three zips pass `tools/package-check.sh` and `QuestPump.toc` names the tag), `packs` (each pack is
+   staged by `tools/addon_packs.py`, packed, put on `helper-updater` and sent to each store that does not hold its
+   content yet; Wago's "too large" is written down as refused and ends the job green with a warning), `release`
+   (QuestPump's own zip by the packager, BigWigsMods/packager pinned to a commit, in the environment `addon-release`,
+   one store a step and each only once that store holds both packs: CurseForge for Forever and retail with the packs
+   as required dependencies, Wago, then this repository's release of the tag with its `release.json`, which takes
+   Latest, and the packs' zips beside it), then `feed` (`tools/addon_feed.py` joins the release's three zips into
+   `QuestPump-addon-v2.zip` and writes `addon-v2.json` for it, `tauri signer sign` signs it with the updater's key into
+   `addon-v2.json.sig`, its key id is checked against `plugins.updater.pubkey`, and the zip, the signature and
+   `addon-v2.json` go to `helper-updater`, from which QuestPump on this computer installs and updates the add-on and
+   its packs; it needs the tag's release on GitHub alone, never a store's answer).
+   - **The packs' projects** are repository variables, read at packaging time and passed to the packager, never written
+     into a pack: `CURSEFORGE_VOICE_PROJECT_ID`, `CURSEFORGE_VOICE_SLUG`, `CURSEFORGE_FIGURES_PROJECT_ID` and
+     `CURSEFORGE_FIGURES_SLUG` (all four needed), `WAGO_VOICE_PROJECT_ID` and `WAGO_FIGURES_PROJECT_ID` (each empty
+     while Wago has no project for that pack: Wago then lists QuestPump alone).
+   - **A pack's version is its own number** (`v1`, `v2`, ...), one up each time its content's digest changes
+     (`tools/addon_packs.py digest`: the pack's files, its TOC among them). A QuestPump release sends no pack again; a
+     game patch, which moves every TOC's `## Interface`, sends both once. The state is on `helper-updater`
+     (`tools/release-state.sh`): `pack-<name>.json` (the version, the digest, the digest each store holds, the one
+     Wago refused), `addon-stores.json` (the tag each store took of QuestPump) and each pack's zip as
+     `<pack>-v<version>.zip`.
 6. **The day the phone apps can be installed:** set the variable `PHONE_APPS` to `true`, then run Addon release from
-   the Actions tab (feed_only ticked): it signs `addon.json` again for the newest `vX.Y.Z` release with the new
+   the Actions tab (feed_only ticked): it signs `addon-v2.json` again for the newest `vX.Y.Z` release with the new
    `phone_apps` and no new version.
-7. A failed job leaves its draft (the helper) or its uploads so far (the add-on): re-run the failed jobs, and the
-   helper's draft and files are reused. When `publish` says `latest.json` lacks a platform (two build jobs wrote it at
-   once), re-run that platform's build job. When one of the add-on's store uploads fails, the packager still makes the
-   others and the GitHub release, and the job fails: upload that store's file by hand from the release's zip, then run
-   Addon release from the Actions tab for the feed.
+7. A failed job leaves its draft (the helper) or what it sent so far (the add-on): re-run the failed jobs
+   (`gh run rerun <id> -R Pluxia-GmbH/questpump --failed`). The helper's draft and files are reused. When `publish`
+   says `latest.json` lacks a platform (two build jobs wrote it at once), re-run that platform's build job. The
+   add-on's jobs read the state first, so a store is never sent a pack or QuestPump twice and the run goes on from
+   where it stopped: `plan` red means a variable is missing (set it, then run all jobs again); `release` red with
+   "does not hold both packs" means a `Pack` job failed, which the same rerun makes first; `feed` red is made again
+   by the rerun or by feed_only.
+8. **From the Actions tab, on `main` alone** (no release of QuestPump): feed_only, as in step 6; and packs
+   (`gh workflow run addon-release.yml -R Pluxia-GmbH/questpump --ref main -f packs=true`), which sends the packs of
+   `main`'s commit to the stores that lack them and nothing else: a new CurseForge project's first file, which it
+   needs for its approval before the first tag that names it as a dependency, or a pack that changed while QuestPump
+   did not (feed_only afterwards brings it to the desktop app); with `-f retry_refused=true` it sends again what Wago
+   refused as too large. The environment `addon-release` must admit `main` for it.
 
-The add-on's feed, `addon.json` on `helper-updater` (`tools/addon_feed.py` has the format): `version` (the tag without
-its "v"), `pub_date` (the release's publication, RFC 3339 in UTC), `interfaces` (the TOC's), `phone_apps`, `zip` (the URL
-of `QuestPump-addon.zip` on `helper-updater`, its size and SHA-256) and `files` (every file in the zip by path, with its
-size and SHA-256). `addon.json.sig` is the base64 of a minisign signature by the updater's key whose trusted comment ends
-in `version:X.Y.Z`, checked as `tauri-plugin-updater` checks an update's.
+The add-on's feed, `addon-v2.json` on `helper-updater` (`tools/addon_feed.py` has the format): `version` (the tag
+without its "v"), `pub_date` (the release's publication, RFC 3339 in UTC), `interfaces` (the TOC's), `phone_apps`, `zip`
+(the URL of `QuestPump-addon-v2.zip` on `helper-updater`, its size and SHA-256) and `files` (every file in the zip by
+path, with its size and SHA-256). `addon-v2.json.sig` is the base64 of a minisign signature by the updater's key whose
+trusted comment ends in `version:X.Y.Z`, checked as `tauri-plugin-updater` checks an update's. The first feed
+(`addon.json`, `addon.json.sig`, `QuestPump-addon.zip`: one zip of three folders, to 1.0.1) stays on `helper-updater`
+untouched for the desktop apps from before the packs, which update themselves and then read the new one. Before the
+first tag of a desktop app that reads `addon-v2.json`, run Addon release from the Actions tab (feed_only) once from
+the exported `main`, so the new feed is there, describing the newest add-on release, when that app first asks. The
+first release with the packs, step by step: the `questpump-release` skill's `desktop-and-addon.md`, "The first split
+release".
 
 A shipped build watches and lists the same games as a local one. Until 2026-10-28 the workflow set
 `QUESTPUMP_SHIP=1`, and a shipped build left out each game `contract/links.json` marked `pending` (League of Legends

@@ -10,7 +10,7 @@
 //! check of a phone's Pro proof with the grants it gives, the backup file the desktop app writes and reads, the
 //! sync's keys, codes and batches with the other computers' game rows it brings (slice 60), and the addon's signed
 //! release feed with its zip, its install record and the folders' swap (the zip read by `zip`), and the places (slice
-//! 51). The app crate is the shell around it.
+//! 51) and work mode's shared state and clock (slice 67). The app crate is the shell around it.
 
 #![forbid(unsafe_code)]
 
@@ -67,4 +67,5 @@ pub mod telemetry;
 pub mod telemetry_catalog;
 pub mod vdf;
 pub mod verdict;
+pub mod work;
 pub mod zip;

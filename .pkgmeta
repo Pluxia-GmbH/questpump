@@ -18,12 +18,18 @@ externals:
 # the quests' flavour lines: a second top-level load-on-demand folder in the same zip (docs/plan.md slice 4)
 move-folders:
   QuestPump/QuestPump_Lines: QuestPump_Lines
-  # the move figures: a load-on-demand folder in the same zip, never its own store project (docs/plan.md slice 2)
-  QuestPump/QuestPump_FigArmor: QuestPump_FigArmor
+# The two media packs are zips and store projects of their own (docs/plan.md slice 71; David, 2026-11-10, which ended
+# 2026-09-25's "never its own store project"): tools/addon_packs.py stages each for the packager, and this zip leaves
+# out the voice's takes (Media/Voice, the voice pack's Takes/), the voice pack's folder and the figure pack's. On
+# CurseForge the add-on names them as required dependencies, which its app and WowUp install with it; the release
+# writes those two slugs, repository variables, into a copy of this file (addon-release.yml), and sends QuestPump to
+# a store only once that store holds both packs. In the game neither is a dependency: each loads on demand.
 ignore:
   # LibStub's tag carries its own tests/, which nothing loads (LibEditMode's .pkgmeta keeps its tests out the same way)
   - Libs/LibStub/tests
-  - QuestPump_FigArmor/pack.json
+  - Media/Voice
+  - QuestPump_Voice
+  - QuestPump_FigArmor
   - helper
   - apple
   - android

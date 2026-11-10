@@ -1,8 +1,9 @@
 // The pump's stages on the computer (docs/ui.md, "The pump on the computer"; the phones' PumpSession drawn once more):
 // Ready with the move up next in full, the countdown, the running move, "Did you do the whole move?", the count set on
 // the run view's dial (slice 66; a counted set's form step since slice 42) and a hold's "Could you have held longer?"
-// after its Save (slice 52) in Big view, every move's pour with its rewards (slice 65's hold's, every move's since
-// slice 66), a pose's "How close to the goal pose?", a steady move's "Did you keep that pace to the end?" (slice 42),
+// after its Save (slice 52) and a pose's "How close to the goal pose?" over its greyed figure in Big view, every move's
+// pour with its rewards (slice 65's hold's, every move's since slice 66), a steady move's "Did you keep that pace to the
+// end?" (slice 42),
 // and the end, its Result with its one reveal or a calm card. Each stage is {el (its head, body and foot), primary,
 // space, onKey, frame, update}: the control its keys go to first (Space or Enter presses it; none where no key may
 // answer), whether Space presses it with the focus on no control too (session.js `pressPrimary`: Start, Switch sides),
@@ -457,15 +458,23 @@ const GOAL_ID = "qp-pump-goal";
 
 /** A pose whose move asks ran its whole time (2026-10-09, David: "Reached the mark was very unclear. Think through a
  * better ask. Maybe 4 options or so"; 2026-10-14: "whats to achieve, the "mark" (please rename for clarity), is not
- * very clear"): its key pose held still, the goal pose's picture, with "Goal pose" over its sentence under it, the
- * question, the four answers from Perfect down as rows (each its key and its word, the key its code: 4 Perfect to 1 Not
- * yet, so a stray 1 is the lowest answer; Enter and Escape answer nothing), which answer once the ask has settled
- * (`settles`), and Back; nothing is written before an answer. */
+ * very clear"): on the run's own Big view, so its pour plays where the ask stood (Rapha, 2026-11-09: "over the animation
+ * of the pose (like pose grayed out behind) and not full screen so you can see collect animation after clicking"), the
+ * figure dimmed behind a card over it and the dial at the pose's time as the pour opens: in the card "Goal pose" over its
+ * sentence, the question, the four answers from Perfect down as rows (each its key and its word, the key its code: 4
+ * Perfect to 1 Not yet, so a stray 1 is the lowest answer; Enter and Escape answer nothing), which answer once the ask has
+ * settled (`settles`), and Back; nothing is written before an answer. */
 export function marking(pump, topic, ctx) {
 	const m = pump.moves[pump.current];
 	const ask = pump.marking;
 	const settled = settles();
-	const heading = h("h1", {class: "qp-type-heading qp-pump-centre", tabindex: "-1", text: t("pump.mark.ask.title"),
+	const mid = bigMiddle(pump, ctx);
+	const [stage] = mid.parts;
+	stage.classList.add("qp-marking");
+	const seconds = m.seconds ?? 0;
+	mid.ring.mode = {kind: "pour", clock: seconds, seconds: true, share: 1,
+		caption: t("kit.sweep.goal", {time: clock(seconds)})};
+	const heading = h("h2", {class: "qp-type-heading qp-pump-centre", tabindex: "-1", text: t("pump.mark.ask.title"),
 		"aria-describedby": ask.mark ? GOAL_ID : null});
 	const answer = (code) => settled(() => heard(intent("pump.mark", {answer: code})));
 	const rows = ANSWERS.map(([code, word]) => h("qp-row", {step: code, heading: t(word), trailing: "action",
@@ -473,11 +482,11 @@ export function marking(pump, topic, ctx) {
 	const goal = ask.mark ? h("div", {class: "qp-mark qp-pump-centre", role: "group"},
 		h("span", {class: "qp-type-caps", text: t("ladders.mark")}),
 		h("p", {class: "qp-type-subtitle", id: GOAL_ID, text: ask.mark})) : null;
-	const body = [h("qp-figure-stage", {move: figureName(m), still: true, class: "qp-pump-figure"}), goal, heading,
-		h("qp-card", {rows: true}, ...rows)].filter(Boolean);
-	const {el} = frame({head: steps(pump, ctx), body, foot: [back(pump)]});
+	stage.append(h("div", {class: "qp-mark-ask"}, ...[goal, heading, h("qp-card", {rows: true}, ...rows)].filter(Boolean)));
+	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts, foot: [back(pump)]});
 	return {
 		el,
+		big: true,
 		primary: () => heading,
 		onKey(e) {
 			const code = ANSWERS.find(([c]) => String(c) === e.key)?.[0];

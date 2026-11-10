@@ -5,13 +5,17 @@
 //! and decides what to write and when:
 //!
 //! - **Ownership.** The helper keeps a record of each install it made (`addon-installs.json`: the AddOns folder, the
-//!   version, every file's sha256). An install is managed (`helper`) only while its three folders hold exactly the
+//!   version, every file's sha256). An install is managed (`helper`) only while its folders hold exactly the
 //!   record's files; one another updater rewrote no longer matches, and the helper lets it go (`other`, the record
 //!   dropped). A folder that is or holds a link or a `.git` (a developer's `make link` folder) is never written and
 //!   never managed. The folders are read off the loop when the followed install changes, at a verified feed whose
 //!   version they were not read under yet (`read_under`: the hourly feed of the same version reads nothing), and again
 //!   right before any swap; a read that a job's start or end overtook (`epoch`) is dropped and made again, so a look
 //!   from before a swap never drops the record the swap wrote.
+//! - **The media packs** (slice 71): where QuestPump is in the followed install and a pack the feed holds is missing,
+//!   or one the helper itself put in is behind the feed's, a packs job adds or replaces those folders alone
+//!   (`rules::Scope::Packs`), whoever keeps QuestPump itself; a pack another updater put in is never touched. Every
+//!   job puts in only the folders that differ from the feed's.
 //! - **A first install**: the player's Add QuestPump to the game (the welcome's game row, Pump home's card, This
 //!   computer) while the game on this computer has no QuestPump; allowed while the game runs (it only adds folders),
 //!   after which the line says to start the game again until that client is gone. The install is a folder that holds
@@ -36,7 +40,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use questpump_core::addon::{self as rules, Feed, Record, Tree};
 use questpump_core::mirror;
@@ -74,10 +78,13 @@ enum Owner {
 enum Job {
 	Idle,
 	/// The feed's files coming into the staging folder for this install (`crate::addon::stage`).
+	/// `packs`: a job for the media packs alone (`rules::Scope::Packs`), in an install whose QuestPump is current or
+	/// another updater's: a missing pack added, one of the helper's own brought up to the feed's.
 	Staging {
 		addons: PathBuf,
 		feed: Box<Feed>,
 		first: bool,
+		packs: bool,
 	},
 	/// Staged, waiting for its moment.
 	Staged {
@@ -85,6 +92,7 @@ enum Job {
 		staging: PathBuf,
 		feed: Box<Feed>,
 		first: bool,
+		packs: bool,
 	},
 	/// The folders being swapped; staged again when the game or a pump started first (`News::Held`).
 	Swapping {
@@ -92,6 +100,7 @@ enum Job {
 		staging: PathBuf,
 		feed: Box<Feed>,
 		first: bool,
+		packs: bool,
 	},
 	/// The staging folder being put right and removed (`addon::recover`): after a swap or a failed staging, for a
 	/// dropped update, or found while nothing ran.
@@ -134,6 +143,11 @@ pub(crate) struct AddonState {
 	/// The feed's version each install's folders were last read under (`tree_read`): a verified feed of that version
 	/// reads them no more (`feed_verified`).
 	read_under: HashMap<PathBuf, String>,
+	/// The installs with QuestPump in which a media pack is missing, or one of the helper's own is behind the feed's,
+	/// as their folders were last read (`tree_read`): a packs job is due there.
+	packs_due: HashSet<PathBuf>,
+	/// When the folders were last read for a pack's folder gone since (`pack_gone`).
+	pack_look: Option<Instant>,
 	/// The installs whose folders are being read now.
 	looking: HashSet<PathBuf>,
 	/// The install whose ownership the pairing block states now.
@@ -166,6 +180,8 @@ impl AddonState {
 			records: Vec::new(),
 			owners: HashMap::new(),
 			read_under: HashMap::new(),
+			packs_due: HashSet::new(),
+			pack_look: None,
 			looking: HashSet::new(),
 			stated: None,
 			job: Job::Idle,
@@ -299,7 +315,7 @@ impl Helper {
 			self.desk.welcome_found();
 		}
 		if let Some(followed) = self.desk.p.followed.clone()
-			&& self.addon.read_under.get(&followed) != self.addon.feed.as_ref().map(|f| &f.version)
+			&& self.addon.read_under.get(&followed) != self.addon.feed.as_ref().map(|f| &f.zip.sha256)
 		{
 			self.look_at(followed);
 		}
@@ -332,28 +348,49 @@ impl Helper {
 			}
 		};
 		if let Some(feed) = &self.addon.feed {
-			self.addon.read_under.insert(addons.clone(), feed.version.clone());
+			self.addon.read_under.insert(addons.clone(), feed.zip.sha256.clone());
 		}
 		let owner = match (&tree, self.addon.record(&addons)) {
 			(Tree::Linked, _) => Owner::Linked,
-			(_, Some(record)) if record.matches(&tree) => Owner::Helper,
+			(_, Some(record)) if record.matches(&tree) && record.files.contains_key(rules::TOC) => Owner::Helper,
 			_ => Owner::Other,
 		};
-		if owner != Owner::Helper && self.addon.record(&addons).is_some() {
-			log::info!(
-				"addon: {} changed since QuestPump installed it: another updater keeps it now",
-				addons.display()
-			);
-			self.addon.records.retain(|r| r.addons != addons);
-			self.save_records();
+		// an install the helper no longer keeps as a whole: its record goes, but for the media packs that still hold
+		// the files the helper put in, which it goes on keeping current
+		if owner != Owner::Helper
+			&& let Some(record) = self.addon.record(&addons).cloned()
+		{
+			let kept = record.kept_packs(&tree);
+			if kept != record.files {
+				if record.files.contains_key(rules::TOC) {
+					log::info!(
+						"addon: {} changed since QuestPump installed it: another updater keeps it now",
+						addons.display()
+					);
+				}
+				self.addon.records.retain(|r| r.addons != addons);
+				if !kept.is_empty() {
+					self.addon.records.push(Record { files: kept, ..record });
+				}
+				self.save_records();
+			}
+		}
+		let scope = self.scope(&addons, true);
+		let due = owner != Owner::Linked
+			&& matches!(&tree, Tree::Files(files) if files.contains_key(rules::TOC))
+			&& self.addon.feed.as_ref().is_some_and(|feed| !scope.folders(feed, &tree).is_empty());
+		if due {
+			self.addon.packs_due.insert(addons.clone());
+		} else {
+			self.addon.packs_due.remove(&addons);
 		}
 		if self.addon.owners.get(&addons) != Some(&owner) {
 			log::info!("addon: {} is {owner:?}'s", addons.display());
 		}
 		self.addon.owners.insert(addons.clone(), owner);
-		if let Job::Staged { addons: at, first, .. } = &self.addon.job
+		if let Job::Staged { addons: at, first, packs, .. } = &self.addon.job
 			&& *at == addons
-			&& !self.update_wanted(&addons, *first)
+			&& !self.update_wanted(&addons, *first || *packs)
 		{
 			log::info!("addon: the update staged for {} is dropped: QuestPump no longer keeps it", addons.display());
 			self.settle(addons);
@@ -391,10 +428,10 @@ impl Helper {
 		if self.addon.job == Job::Idle {
 			self.stage_due();
 		}
-		if let Job::Staged { addons, staging, feed, first } = self.addon.job.clone()
+		if let Job::Staged { addons, staging, feed, first, packs } = self.addon.job.clone()
 			&& (first || !self.addon_held())
 		{
-			self.swap_in(addons, staging, feed, first);
+			self.swap_in(addons, staging, feed, first, packs);
 		}
 		self.addon_show();
 	}
@@ -412,36 +449,68 @@ impl Helper {
 
 	/// The followed install's version is older than the feed's and it is the helper's to update (managed, or the
 	/// player's Update now), and the version did not just fail there: its files are staged (`crate::addon::stage`).
+	/// Else, where QuestPump is there and a media pack is missing or one of the helper's own is behind the feed's
+	/// (`packs_due`, whoever keeps QuestPump itself), a packs job is staged; a pack's folder gone since the folders
+	/// were read has them read again.
 	fn stage_due(&mut self) {
 		let (Some(feed), Some(followed)) = (self.addon.feed.clone(), self.desk.p.followed.clone()) else { return };
 		let asked = self.addon.asked == Some(Asked::Update(followed.clone()));
 		let managed = self.addon.owners.get(&followed) == Some(&Owner::Helper);
-		if !(asked || managed) {
-			return;
-		}
 		let installed = install::addons_state(&followed).questpump.unwrap_or_default();
-		if !rules::newer(&feed.version, &installed) {
-			if asked {
-				self.addon.asked = None;
-			}
-			return;
+		let update = (asked || managed) && rules::newer(&feed.version, &installed);
+		if asked && !update {
+			self.addon.asked = None;
 		}
 		let failed = self.addon.failed.as_ref().is_some_and(|f| {
-			f.addons.as_ref() == Some(&followed) && f.version.as_ref() == Some(&feed.version) && !asked
+			f.addons.as_ref() == Some(&followed) && f.version.as_ref() == Some(&feed.version) && !(asked && update)
 		});
 		if failed {
 			return;
 		}
-		self.stage(followed, feed, false);
+		if update {
+			self.stage(followed, feed, false, false);
+		} else if self.addon.packs_due.contains(&followed) {
+			self.stage(followed, feed, false, true);
+		} else if self.pack_gone(&followed, &feed) {
+			self.addon.pack_look = Some(Instant::now());
+			self.look_at(followed);
+		}
 	}
 
-	fn stage(&mut self, addons: PathBuf, feed: Feed, first: bool) {
-		log::info!("addon: {} for {}: downloading", feed.version, addons.display());
+	/// A media pack the feed holds has no folder in `followed`, where QuestPump is and no link: looked for at most once
+	/// a minute, so a folder that cannot be read is not read at every look.
+	fn pack_gone(&self, followed: &Path, feed: &Feed) -> bool {
+		self.addon.owners.get(followed).is_some_and(|owner| *owner != Owner::Linked)
+			&& self.addon.pack_look.is_none_or(|at| at.elapsed() >= Duration::from_secs(60))
+			&& followed.join(rules::TOC).is_file()
+			&& rules::PACKS.iter().any(|pack| {
+				let folder = format!("{pack}/");
+				!followed.join(pack).is_dir() && feed.files.iter().any(|f| f.path.starts_with(&folder))
+			})
+	}
+
+	/// The folders a job puts in: every one that differs from the feed's, or, for a packs job, the missing packs and
+	/// those the helper's record still holds.
+	fn scope(&self, addons: &Path, packs: bool) -> rules::Scope {
+		if packs {
+			rules::Scope::Packs { kept: self.addon.record(addons).map(|r| r.files.clone()).unwrap_or_default() }
+		} else {
+			rules::Scope::Differing
+		}
+	}
+
+	fn stage(&mut self, addons: PathBuf, feed: Feed, first: bool, packs: bool) {
+		if packs {
+			log::info!("addon: {} for {}: downloading its packs", feed.version, addons.display());
+		} else {
+			log::info!("addon: {} for {}: downloading", feed.version, addons.display());
+		}
 		self.addon.failed = None;
-		self.addon.set_job(Job::Staging { addons: addons.clone(), feed: Box::new(feed.clone()), first });
+		self.addon.set_job(Job::Staging { addons: addons.clone(), feed: Box::new(feed.clone()), first, packs });
 		// the desktop app's own copies of the addon's voice takes, which a first install need not fetch
 		let voice = self.app.path().resource_dir().ok().map(|dir| dir.join("resources").join(audio::VOICE));
-		addon::stage(addons, feed, first, voice, self.addon.news_tx.clone());
+		let scope = self.scope(&addons, packs);
+		addon::stage(addons, feed, first, voice, scope, self.addon.news_tx.clone());
 	}
 
 	/// The player's Update now for `addons` stands (it is managed from its swap on).
@@ -456,11 +525,11 @@ impl Helper {
 	}
 
 	fn staged(&mut self, addons: PathBuf, result: Result<Option<PathBuf>, Failure>) {
-		let Job::Staging { addons: at, feed, first } = &self.addon.job else { return };
+		let Job::Staging { addons: at, feed, first, packs } = &self.addon.job else { return };
 		if *at != addons {
 			return;
 		}
-		let (feed, first) = (feed.clone(), *first);
+		let (feed, first, packs) = (feed.clone(), *first, *packs);
 		match result {
 			Ok(None) => {
 				log::info!("addon: QuestPump is back in {}: nothing to add", addons.display());
@@ -468,7 +537,7 @@ impl Helper {
 				self.addon.asked = None;
 				self.folders_back(addons);
 			}
-			Ok(Some(_)) if !self.update_wanted(&addons, first) => {
+			Ok(Some(_)) if !self.update_wanted(&addons, first || packs) => {
 				log::info!(
 					"addon: the update staged for {} is dropped: QuestPump no longer keeps it",
 					addons.display()
@@ -477,7 +546,7 @@ impl Helper {
 			}
 			Ok(Some(staging)) => {
 				log::info!("addon: {} staged in {}", feed.version, staging.display());
-				self.addon.set_job(Job::Staged { addons, staging, feed, first });
+				self.addon.set_job(Job::Staged { addons, staging, feed, first, packs });
 			}
 			Err(failure) => {
 				log::warn!("addon: {} for {}: {}", feed.version, addons.display(), failure.error);
@@ -491,62 +560,84 @@ impl Helper {
 	/// files, an install without a record only for a first install or the player's Update now, a first install still
 	/// without QuestPump (a record left from an addon since removed is replaced); an update that is no first install
 	/// waits again when the game or a pump started meanwhile (`held`).
-	fn swap_in(&mut self, addons: PathBuf, staging: PathBuf, feed: Box<Feed>, first: bool) {
+	fn swap_in(&mut self, addons: PathBuf, staging: PathBuf, feed: Box<Feed>, first: bool, packs: bool) {
 		log::info!("addon: {} going into {}", feed.version, addons.display());
 		let record = self.addon.record(&addons).cloned();
 		let asked = self.asked_update(&addons);
-		let check = move |tree: &Tree| -> Result<(), String> {
+		let (scope, of) = (self.scope(&addons, packs), feed.clone());
+		// the folders to put in, as they stand right before the first rename: only those that differ from the feed's,
+		// and for a packs job only a pack that is missing or still the helper's own
+		let check = move |tree: &Tree| -> Result<Vec<&'static str>, String> {
 			match (tree, &record) {
 				(Tree::Linked, _) => {
 					Err("the game folder holds a link or a .git: QuestPump leaves it alone".to_owned())
 				}
+				(Tree::Files(files), _) if packs && !files.contains_key(rules::TOC) => {
+					Err("QuestPump is no longer in the game".to_owned())
+				}
+				_ if packs => Ok(scope.folders(&of, tree)),
 				(Tree::Files(files), _) if first && files.keys().any(|p| p.starts_with("QuestPump/")) => {
 					Err("QuestPump is in the game already".to_owned())
 				}
-				(_, Some(record)) if !first && !record.matches(tree) => {
+				(_, Some(record)) if !first && !asked && !record.matches(tree) => {
 					Err("another updater changed it meanwhile".to_owned())
 				}
 				(_, None) if !first && !asked => Err("another updater keeps it now".to_owned()),
-				_ => Ok(()),
+				_ => Ok(scope.folders(&of, tree)),
 			}
 		};
 		let held = (!first).then(|| self.addon.held.clone());
-		self.addon.set_job(Job::Swapping { addons: addons.clone(), staging: staging.clone(), feed, first });
+		self.addon.set_job(Job::Swapping { addons: addons.clone(), staging: staging.clone(), feed, first, packs });
 		addon::swap(addons, staging, held, check, self.addon.news_tx.clone());
 	}
 
 	/// The game or a pump started before the swap's first rename: nothing changed, and the update waits again.
 	fn swap_held(&mut self, addons: &Path) {
-		let Job::Swapping { addons: at, staging, feed, first } = &self.addon.job else { return };
+		let Job::Swapping { addons: at, staging, feed, first, packs } = &self.addon.job else { return };
 		if at != addons {
 			return;
 		}
 		log::info!("addon: {} for {}: the game or a pump started, it waits", feed.version, addons.display());
-		let job = Job::Staged { addons: at.clone(), staging: staging.clone(), feed: feed.clone(), first: *first };
+		let (staging, feed) = (staging.clone(), feed.clone());
+		let job = Job::Staged { addons: at.clone(), staging, feed, first: *first, packs: *packs };
 		self.addon.set_job(job);
 	}
 
-	fn swapped(&mut self, addons: &Path, result: Result<(), Failure>) {
-		let Job::Swapping { addons: at, feed, first, .. } = &self.addon.job else { return };
+	fn swapped(&mut self, addons: &Path, result: Result<Vec<&'static str>, Failure>) {
+		let Job::Swapping { addons: at, feed, first, packs, .. } = &self.addon.job else { return };
 		if at != addons {
 			return;
 		}
-		let (feed, first) = (feed.clone(), *first);
+		let (feed, first, packs) = (feed.clone(), *first, *packs);
 		// the old folders go, or any the swap could not put back go back first
 		self.settle(addons.to_path_buf());
 		let version = feed.version.clone();
-		if let Err(failure) = result {
-			log::warn!("addon: {version} not in {}: {}", addons.display(), failure.error);
-			self.addon_failed(addons, Some(version), first, &failure);
-			return;
-		}
-		log::info!("addon: {version} is in {}", addons.display());
-		self.addon.asked = None;
+		let folders = match result {
+			Ok(folders) => folders,
+			Err(failure) => {
+				log::warn!("addon: {version} not in {}: {}", addons.display(), failure.error);
+				self.addon_failed(addons, Some(version), first, &failure);
+				return;
+			}
+		};
+		log::info!("addon: {version} is in {} (put in: {})", addons.display(), folders.join(", "));
+		let before = self.addon.record(addons).cloned();
 		self.addon.records.retain(|r| r.addons != addons);
-		self.addon.records.push(Record { addons: addons.to_path_buf(), version, files: feed.hashes() });
+		if packs {
+			// the packs the helper put in join what it kept there; who keeps QuestPump itself stays as it was
+			let files = rules::merged(before.as_ref().map(|r| &r.files), &feed, &folders);
+			let version = before.map_or(version, |r| r.version);
+			if !files.is_empty() {
+				self.addon.records.push(Record { addons: addons.to_path_buf(), version, files });
+			}
+			self.addon.packs_due.remove(addons);
+		} else {
+			self.addon.asked = None;
+			self.addon.records.push(Record { addons: addons.to_path_buf(), version, files: feed.hashes() });
+			self.addon.owners.insert(addons.to_path_buf(), Owner::Helper);
+			self.addon.stated = None; // stated again at the next look, once the install is followed
+		}
 		self.save_records();
-		self.addon.owners.insert(addons.to_path_buf(), Owner::Helper);
-		self.addon.stated = None; // stated again at the next look, once the install is followed
 		if let Some(game) = self.desk.p.game.as_ref().filter(|g| g.addons == addons) {
 			self.addon.added_while = Some(game.pid);
 		}
@@ -689,7 +780,7 @@ impl Helper {
 			return;
 		}
 		if let Some(addons) = self.first_target(&feed.interfaces) {
-			self.stage(addons, feed, true);
+			self.stage(addons, feed, true, false);
 		} else {
 			log::info!("addon: no game folder runs one of {:?}: the player picks it", feed.interfaces);
 			crate::desk::commands::pick_folder(self.app.clone());
@@ -732,7 +823,7 @@ impl Helper {
 			&& self.addon.job == Job::Idle
 			&& let Some(feed) = self.addon.feed.clone()
 		{
-			self.stage(addons.to_path_buf(), feed, true);
+			self.stage(addons.to_path_buf(), feed, true, false);
 		}
 	}
 

@@ -61,7 +61,7 @@ pub(crate) use mac::{display_at, largest, windows};
 #[cfg(windows)]
 use win as platform;
 #[cfg(windows)]
-pub(crate) use win::{area, main_window, process_id, top_level};
+pub(crate) use win::{area, front_window, main_window, process_id, top_level};
 
 /// The process whose window is in front: the card shows once the game has left the front.
 pub fn foreground_pid() -> Option<u32> {
@@ -71,6 +71,26 @@ pub fn foreground_pid() -> Option<u32> {
 /// The screen a process's largest window is on: the card goes to another screen when there is one.
 pub fn window_monitor(pid: u32) -> Option<Area> {
 	platform::window_monitor(pid)
+}
+
+/// The app in front other than this process (QuestPump), as work mode notes it (docs/plan.md slice 67): its process,
+/// on Windows its window, which Back to work brings to the front again, and on macOS whether that window fills its
+/// screen (the work clock holds while it does; Windows asks the shell for that, `presence.rs`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Front {
+	pub(crate) pid: u32,
+	/// The foreground window's handle, as its address (a handle is no `Send`).
+	#[cfg(windows)]
+	pub(crate) hwnd: isize,
+	#[cfg(target_os = "macos")]
+	pub(crate) fills: bool,
+}
+
+/// The app in front other than this process: on macOS the first window of the normal layer that is not this
+/// process's, on Windows the foreground window while it is not this process's and Alt+Tab lists it (the taskbar and a
+/// tray menu are not); none while none is.
+pub(crate) fn front_other() -> Option<Front> {
+	platform::front_other(std::process::id())
 }
 
 /// The programs the picker offers, from the windows on screen.
@@ -159,6 +179,23 @@ mod mac {
 	/// The process whose window is in front: the first window of the normal layer.
 	pub fn foreground_pid() -> Option<u32> {
 		windows().first().map(|w| w.pid)
+	}
+
+	/// The first window of the normal layer that is not the process `own`'s, and whether it fills its display (its
+	/// bounds the display's: full screen, which a zoomed window under the menu bar never matches).
+	pub(super) fn front_other(own: u32) -> Option<super::Front> {
+		let window = windows().into_iter().find(|w| w.pid != own)?;
+		let fills = window.bounds.is_some_and(|b| {
+			let centre = CGPoint { x: b.origin.x + b.size.width / 2.0, y: b.origin.y + b.size.height / 2.0 };
+			let near = |a: f64, b: f64| (a - b).abs() < 1.0;
+			display_at(centre).is_some_and(|d| {
+				near(d.origin.x, b.origin.x)
+					&& near(d.origin.y, b.origin.y)
+					&& near(d.size.width, b.size.width)
+					&& near(d.size.height, b.size.height)
+			})
+		});
+		Some(super::Front { pid: window.pid, fills })
 	}
 
 	/// The display that holds the centre of the process's largest window, as its bounds in points.
@@ -303,6 +340,22 @@ mod win {
 		// SAFETY: reads the foreground window's handle, which may be null (no window in front).
 		let hwnd = unsafe { GetForegroundWindow() };
 		(!hwnd.is_invalid()).then(|| process_id(hwnd)).flatten()
+	}
+
+	/// The foreground window while it is not the process `own`'s and Alt+Tab lists it, with its process.
+	pub(super) fn front_other(own: u32) -> Option<super::Front> {
+		// SAFETY: reads the foreground window's handle, which may be null (no window in front).
+		let hwnd = unsafe { GetForegroundWindow() };
+		if hwnd.is_invalid() || !listed(hwnd) {
+			return None;
+		}
+		let pid = process_id(hwnd).filter(|&pid| pid != own)?;
+		Some(super::Front { pid, hwnd: hwnd.0.expose_provenance().cast_signed() })
+	}
+
+	/// The window a `Front` names, from its address.
+	pub(crate) fn front_window(front: &super::Front) -> HWND {
+		HWND(std::ptr::with_exposed_provenance_mut(front.hwnd.cast_unsigned()))
 	}
 
 	/// The window's area in physical pixels, 0 when it cannot be read.

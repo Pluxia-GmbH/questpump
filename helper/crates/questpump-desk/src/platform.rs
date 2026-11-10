@@ -18,6 +18,7 @@ use questpump_core::offers::{Offer, Pause, Tunables};
 use questpump_core::protocol::Source;
 use questpump_core::session::Effects;
 use questpump_core::sync::LinkCode;
+use questpump_core::work::Hold;
 use serde::Serialize;
 use serde_json::Value;
 
@@ -26,6 +27,7 @@ use crate::home::Board;
 use crate::saga::ReelTune;
 use crate::settings::{GamesSettings, SoundSettings};
 use crate::sync::{Call, Then};
+use crate::work::WorkView;
 
 /// The engine's state, the `shell` topic's `engine` (`engine.rs`): a fold of every row runs (at the start, after a
 /// reset), the engine answers, or it did not start or fold (the log says why).
@@ -171,6 +173,11 @@ pub trait Platform: 'static {
 	/// (`signed_out`): a browser, which the next person at it may use. Its Sign out sends what waits first and asks
 	/// before leaving rows unsent. The desktop app keeps its rows and the account's R.
 	const WIPES_ON_SIGN_OUT: bool = false;
+
+	/// The pumps the desk banks are the account's unfinished list (`questpump_core::session::bank_quest`, slice 67): a
+	/// device without a computer of the player's, the browser, whose banks every device folds. The desktop app's banks
+	/// are its own (questID 0), as before.
+	const ACCOUNT_BANKS: bool = false;
 
 	/// Who ran the desk's own pumps, in their offered pump rows' answer bits (`questpump_core::codes::by`, Core.lua
 	/// `ns.Enum.by`; `Desk::pump_keep`): a browser's `by::BROWSER`, so every Saga says "in a browser" (docs/plan.md
@@ -514,4 +521,43 @@ pub trait Platform: 'static {
 		let _ = account;
 		false
 	}
+
+	// Work mode (slice 67, `work.rs`): the device's presence and holds, and where its state shows outside the pages.
+
+	/// The device's seconds without input at its last look (the sitting clock's `Sitting::idle_s`), from which work
+	/// mode tells a due pump's moment and whether somebody is there for it, never its count; none where the platform
+	/// reads none.
+	fn idle_s(&self) -> Option<u32> {
+		None
+	}
+
+	/// What on this device holds the work clock beside the desk's own holds (a pump open, quiet hours, the lock, a match
+	/// offer, the game asking pumps): a call, presenting, full screen, a game in front. None where it reads none.
+	fn work_hold(&self) -> Option<Hold> {
+		None
+	}
+
+	/// Work mode's state changed (`WorkView`, the `work` topic's): the tray's line and ring.
+	fn work_changed(&mut self, view: &WorkView) {
+		let _ = view;
+	}
+
+	/// The work pump of the ask `ask` (`WorkView::ask`) was started by itself (`Desk::work_open`: its start accepted and
+	/// the window asked to open, `open_window`, which brings the desktop app's to the front): the browser, whose tab
+	/// cannot come to the front, tells its page, which shows a notification while the tab is hidden and that pump
+	/// stands.
+	fn work_opened(&mut self, ask: &str) {
+		let _ = ask;
+	}
+
+	/// A work pump came on screen: the app in front before it noted, which its Result's Back to work brings back
+	/// (`back_to_work`); whether one was noted. None where no other app comes to the front (the browser, whose Result
+	/// keeps Continue).
+	fn back_note(&mut self) -> bool {
+		false
+	}
+
+	/// A work pump's Back to work: the app noted as it came (`back_note`) in front again, QuestPump's window left open
+	/// behind it.
+	fn back_to_work(&mut self) {}
 }

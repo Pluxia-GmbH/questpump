@@ -1,31 +1,32 @@
 // Your setup and Your moves on the computer (docs/ui.md, "The Menu on the computer"; the phones' Your setup and Your
 // moves, slice 34), in the addon's words (contract/sheet.json, through the topic): the card that a pump is on screen;
 // the Focus row (the focus in force, opening the focus window); the place in use (slice 51: its Row opens the places
-// window, views/places/places.js) and where the player trains there (floor moves, room to move, quiet) and its
-// equipment as chips in the game's order, in its five groups (2026-11-03: each a head that opens and closes its chips,
-// with how many of its pieces are chosen while one is, a group with a chosen piece open at first), with what the next
-// pieces would open under them, each chip's Tooltip on hover
-// and on keyboard focus (its name, what it is, and while it is not chosen what it would open now, as the game's
-// equipment tooltip; David, 2026-10-13: "Add a hover explanation to the equpiments to give more details"); the Body
-// switches and Your moves, the same on the player's phones through the body's exchange (over them a card while they
-// started empty because their file did not read and no device filled them since); the pain flags, a switch per joint, a
-// joint the game flagged named so; the experience question as a Segmented, fixed once a ladder holds a rung (and then
-// saying so); Moves per match as the Games tab shows it (slice 48: the body's match_pace, `games.pace`, from the
-// `games` topic). Your moves lists the groups and the moves the player left out of pumps, each with its switch (what it
-// does read after its name), a row switched staying on the page until the player leaves it, so a slip is undone in
-// place, and at its foot the Book row, which opens the Book's Moves. Every switch and the Segmented move when the topic
-// says the change holds, never before. From the `menu.setup` topic (helper/crates/questpump-desk/src/menu_pages/setup.rs); the
-// engine's part (the pain flags, the focus, the start rungs, the equipment lines, what each piece would open) comes
-// once it answers, and Rust asks it again at every fold, merge of rows and change of profile.
+// window, views/places/places.js; while work mode runs Work mode with its equipment, opening the Work mode page, and
+// what follows is work mode's own equipment, slice 67) and where the player trains there (floor moves, room to move,
+// quiet) and its equipment as chips in the game's order, in its five groups (2026-11-03: each a head that opens and
+// closes its chips, with how many of its pieces are chosen while one is, a group with a chosen piece open at first),
+// with what the next pieces would open under them, each chip's Tooltip on hover and on keyboard focus (its name, what
+// it is, and while it is not chosen what it would open now, as the game's equipment tooltip; David, 2026-10-13: "Add a
+// hover explanation to the equpiments to give more details"); the Body switches and Your moves, the same on the
+// player's phones through the body's exchange (over them a card while they started empty because their file did not
+// read and no device filled them since); the pain flags, a switch per joint, a joint the game flagged named so; the
+// experience question as a Segmented, fixed once a ladder holds a rung (and then saying so); Moves per match as the
+// Games tab shows it (slice 48: the body's match_pace, `games.pace`, from the `games` topic). Your moves lists the
+// groups and the moves the player left out of pumps, each with its switch (what it does read after its name), a row
+// switched staying on the page until the player leaves it, so a slip is undone in place, and at its foot the Book row,
+// which opens the Book's Moves. Every switch and the Segmented move when the topic says the change holds, never before.
+// From the `menu.setup` topic (helper/crates/questpump-desk/src/menu_pages/setup.rs); the engine's part (the pain
+// flags, the focus, the start rungs, the equipment lines, what each piece would open) comes once it answers, and Rust
+// asks it again at every fold, merge of rows and change of profile.
 
-import {intent} from "../../lib/bridge.js";
+import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {covered, find, push, register} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {focusGlyph, focusWindow} from "../hero/focus.js";
 import {page, watch, words} from "../page.js";
 import {openPlaces} from "../places/places.js";
-import {inUse, placeName} from "../places/words.js";
+import {gearLine, placeName, placeShown} from "../places/words.js";
 import {paceRows} from "../games/games.js";
 
 /** Each switch's glyph, as the phones' Your setup leads its rows. */
@@ -112,6 +113,62 @@ export function toggle(heading, glyph, ask) {
 	return row;
 }
 
+/** Where you train's three switches (`PLACE`) as Rows in a card, from the sheet's `words`, as a place's window and work
+ * mode's pages show them: a press asks for the value it would take (`ask(key, on)`, a promise); `draw(setup)` checks
+ * each as `setup` holds it. */
+export function placeSwitches(words, ask) {
+	const card = h("qp-card", {rows: true}, ...PLACE.flatMap((key) => {
+		const word = words.switches[key];
+		if (!word) return [];
+		const row = toggle(word.name, GLYPHS[key], (on) => ask(key, on));
+		row.dataset.key = key;
+		return [row];
+	}));
+	return {
+		card,
+		draw(setup) {
+			for (const row of card.children) row.checked = setup[row.dataset.key];
+		},
+	};
+}
+
+/** Where you train and Equipment as a place's window and the Work mode page draw a setup (`nodes`: each section label
+ * over its part): the three switches (`placeSwitches`, each asking `ask(key, on)`) and the equipment chips in their
+ * groups (`gearGroups`, each asking `press(key, on)`, its Tooltip `tooltip`); `draw(setup)` shows `setup` ({gear,
+ * floor, space, quiet}). */
+export function setupParts(words, tooltip, ask, press) {
+	const switches = placeSwitches(words, ask);
+	const groups = gearGroups(words, (g) => {
+		const chip = gearChip(g, tooltip, () => press(g.key, !chip.selected));
+		return chip;
+	});
+	return {
+		nodes: [h("qp-section-label", {label: t("menu.free.place")}), switches.card,
+			h("qp-section-label", {label: t("menu.free.equipment")}), groups.el],
+		draw(setup) {
+			switches.draw(setup);
+			for (const chip of groups.chips) chip.selected = setup.gear.includes(chip.dataset.key);
+			groups.draw();
+		},
+	};
+}
+
+/** A page's chip Tooltip (Your setup's, the Work mode page's), in the document's body while the page stands: a scroll,
+ * another root or the Menu put it away, and so does Escape while it shows. */
+export function pageTooltip(view) {
+	const tooltip = h("qp-tooltip");
+	document.body.append(tooltip);
+	const untip = () => tooltip.hide();
+	view.el.addEventListener("scroll", untip, true);
+	for (const type of ["qp-tab", "qp-menu"]) {
+		document.addEventListener(type, untip, true);
+		view.stops.push(() => document.removeEventListener(type, untip, true));
+	}
+	view.onKey = (e) => tooltip.escape(e);
+	view.stops.push(() => tooltip.remove());
+	return tooltip;
+}
+
 /** An equipment chip (Your setup's, a place's window's) of piece `g` from the sheet's words: a click puts its Tooltip
  * away and does `press()`; its Tooltip (`tooltip`) shows on hover and keyboard focus with its name, what it is and
  * `effect(key)`'s last line (what it would open, in Your setup), and the pointer may cross onto it (WCAG 1.4.13).
@@ -138,12 +195,12 @@ register("desk.menu.setup", ({focus: wanted = null}) => {
 	const pumpOn = h("qp-card", {hidden: true}, words(t("menu.setup.pumpon"), "body"));
 	const focus = h("qp-row", {heading: t("menu.free.focus"), trailing: "value"});
 	const focusCard = h("qp-card", {rows: true, hidden: true}, focus);
-	// the place in use, opening the places window
-	const placeRow = h("qp-row", {tile: true, meta: t("expedition.place.hint"), "on:click": () => openPlaces()});
+	// the place in use, opening the places window (Work mode while it runs, opening its page)
+	const placeRow = h("qp-row", {tile: true,
+		"on:click": () => (placeShown(get("places"))?.work ? push("desk.menu.work") : openPlaces())});
 	const place = h("qp-card", {rows: true});
 	const gear = h("div");
 	let groups = null;
-	const tooltip = h("qp-tooltip");
 	const opens = h("div", {class: "qp-part"});
 	const body = h("qp-card", {rows: true});
 	const bodyReset = h("qp-card", {hidden: true}, words(t("desk.menu.setup.body.reset"), "body"));
@@ -169,9 +226,7 @@ register("desk.menu.setup", ({focus: wanted = null}) => {
 		h("qp-section-label", {label: t("menu.free.equipment")}), gear, opens,
 		h("qp-section-label", {label: t("menu.free.body")}), bodyReset, body, h("qp-card", {rows: true}, moves),
 		painPart, experienceLabel, experience, experienceNote, ...pace.nodes);
-	document.body.append(tooltip);
-
-	const untip = () => tooltip.hide();
+	const tooltip = pageTooltip(view);
 
 	/** The rows the sheet's words make, once: the place's and the body's switches, the chips, the joints. */
 	function build(w) {
@@ -242,24 +297,15 @@ register("desk.menu.setup", ({focus: wanted = null}) => {
 	});
 
 	watch(view, "places", (p) => {
-		const shown = inUse(p);
+		const shown = placeShown(p);
 		placeRow.heading = placeName(shown);
+		placeRow.meta = shown?.work ? gearLine(shown) : t("expedition.place.hint");
 		placeRow.glyph = shown?.glyph ?? null;
 	});
 
 	// the engine's part now (Rust asks it again whenever the engine's state moves)
 	intent("setup.look").catch(console.error);
-	// a scroll, another root or the Menu put the Tooltip away, and so does Escape while it shows
-	view.el.addEventListener("scroll", untip, true);
-	for (const type of ["qp-tab", "qp-menu"]) {
-		document.addEventListener(type, untip, true);
-		view.stops.push(() => document.removeEventListener(type, untip, true));
-	}
-	view.onKey = (e) => tooltip.escape(e);
-	view.stops.push(() => {
-		chooser?.remove();
-		tooltip.remove();
-	});
+	view.stops.push(() => chooser?.remove());
 	// opened from a refused Start (slice 38): at the switch or the piece its gap names (by the key the game's rules
 	// name it by, the words' `gap`), or at the pain switches, once
 	let at = wanted;

@@ -24,7 +24,8 @@
 //! `qp_free`. The imports (`src/imports.js`): `qp_now`, `qp_offset_at` and `qp_report` as the engine's; `qp_post`, a
 //! message to the page (`{"msg": {topic, rev, data}}` a topic's change, `{"audio": …}` a sound, a take, a stop or the
 //! output held, `{"wipe": "out"}` signed out and `{"wipe": "removed"}` removed from the account: the browser's data
-//! goes, `web::wipe`; `{"open": url}` a site's page in a new tab); `qp_persist`, the data folder changed; `qp_net`, a
+//! goes, `web::wipe`; `{"open": url}` a site's page in a new tab; `{"work_opened": ask}` work mode's pump started by
+//! itself, naming its ask); `qp_persist`, the data folder changed; `qp_net`, a
 //! sync call (`{"fetch": {id, method, url, token, body}}`) or the live socket opened (`{"live": {gen, url, hello}}`) or
 //! closed (`{"live": null}`), whose answers come back through `qp_answer` and `qp_live`.
 

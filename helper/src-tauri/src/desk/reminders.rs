@@ -15,10 +15,11 @@
 //!   pump, and its place under the cap is kept meanwhile. A quit starts the hour again, so a run shorter than an hour
 //!   never shows it. Its card stands until the game day turns or the day is done.
 //! - **The sitting cue**, off by default: once the sitting clock (`runtime/sitting.rs`, slice 48: the minutes since
-//!   the latest of an input pause of `AWAY_S` at this computer, a performed move and a game offer on any device, and
-//!   04:00 only where the input's idle time never reads) holds `sit_after_min`, an hour that starts outside quiet
-//!   hours, at most one each `sit_after_min`, never in the place the streak reminder still to come today needs under
-//!   the cap. Its card stands `sit_after_min`, or until a pump or a match's offer.
+//!   the latest of an input pause of `sitting::away_s` at this computer, a performed move and a game offer on any
+//!   device, and 04:00 only where the input's idle time never reads) holds `sit_after_min`, an hour that starts outside
+//!   quiet hours, at most one each `sit_after_min`, never in the place the streak reminder still to come today needs
+//!   under the cap, and never while work mode is on (slice 67: its own asks stand the player up). Its card stands
+//!   `sit_after_min`, or until a pump or a match's offer.
 //! - Both wait while no felt-unwell lock holds, no World of Warcraft client with QuestPump asks the pumps, no pump runs
 //!   here, no watched game is in a match (`offers_held`) and the offers are not paused, and keep their own quiet hours
 //!   and daily cap (`OfferSettings::count`; the match offers shared them until slice 48); and the engine has folded, so
@@ -305,7 +306,9 @@ impl Helper {
 		let waiting =
 			(due && !ran) || (streak_open && tapered && day.index(later) == today && later > now && !quiet(later));
 		let hour = facts().constants().sit_after_min * 60;
+		// work mode's own asks stand the player up while it is on (slice 67)
 		if !r.sitting_on
+			|| self.desk.work_on()
 			|| shown + u32::from(waiting) >= o.cap(t)
 			|| r.sitting_at.is_some_and(|last| now - last < hour)
 			|| self.sat_s(now) < hour

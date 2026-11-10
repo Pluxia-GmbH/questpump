@@ -2,6 +2,7 @@
  "about": "The app icon's manifest (docs/plan.md slice 35), read by tools/ledger.py as it reads figures.json: each icon QuestPump ships with its files' sha256 and the sources in contract/design/icon/ it is drawn from (the iPhone's control symbol from contract/design/art/action_pump.svg; `sources` holds each one's sha256, its first 16 hex digits). tools/icons.py writes the vector icons' entries; tools/helper-icons.py writes the raster icons' on the Mac, each with `drawn`, the digest of the drawings and sizes it rasterised, which tools/icons.py --check compares with what the sources draw now. Never edit by hand: make icons.",
  "sources": {
   "contract/design/art/action_pump.svg": "939c1f6780b963eb",
+  "contract/design/art/device_computer.svg": "6bd49f3f513feda3",
   "contract/design/icon/apple.json": "1fb393647014ca98",
   "contract/design/icon/ground.svg": "4c052fa638fa9df5",
   "contract/design/icon/ground_watch.svg": "c470ba05fe298864",
@@ -147,11 +148,12 @@
   },
   {
    "id": "control",
-   "title": "The iPhone's Follow the game control's symbol",
-   "what": "an SF Symbols template with one variant, Regular-M: the pump glyph's plate (the kettlebell of contract/design/art/action_pump.svg), which Control Center, the Lock Screen and the Action button tint as they draw it",
+   "title": "The iPhone's controls' symbols",
+   "what": "an SF Symbols template a control with one variant, Regular-M: a glyph's plate, Follow the game's the kettlebell of contract/design/art/action_pump.svg and Work mode's the computer of device_computer.svg, which Control Center, the Lock Screen and the Action button tint as they draw it",
    "by": "tools/icons.py",
    "sources": [
-    "contract/design/art/action_pump.svg"
+    "contract/design/art/action_pump.svg",
+    "contract/design/art/device_computer.svg"
    ],
    "files": [
     {
@@ -165,6 +167,14 @@
     {
      "path": "apple/Widgets/Symbols.xcassets/pump.symbolset/pump.svg",
      "sha256": "80de89a703936b26bc86f8b38acbe83dba71c4c5ede1827f18179dbd4f3cf7e5"
+    },
+    {
+     "path": "apple/Widgets/Symbols.xcassets/work.symbolset/Contents.json",
+     "sha256": "743c203b577a98c112810ba4995fe6a804f544ea0b72b698bf55d9d6dff3bacb"
+    },
+    {
+     "path": "apple/Widgets/Symbols.xcassets/work.symbolset/work.svg",
+     "sha256": "0510d3dd44c4554501ef9b1cb5a26be899183dc2a1eebe1df5474e6e04f2d0ae"
     }
    ]
   },

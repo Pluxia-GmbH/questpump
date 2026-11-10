@@ -1,10 +1,10 @@
 // The Menu on the computer (docs/ui.md, "The Menu on the computer"): one page of Rows, every setting within two clicks,
 // in its groups: This computer, Phones (its line the paired phone's) and Devices (the games and the offers after them
-// are the Games tab's, slice 56); your pumps (Reminders, Sound and voice, Your setup with its equipment's count, Quick
-// pump length with its Segmented of the `expedition` topic's lengths inline (2026-11-03: the timed pump every Quick
-// pump starts, `expedition.length`, its value moving with Rust's answer), Backup and sync with the day of its last
-// backup file or sync, whichever came later, then Email with the linked address, Email linked where another device
-// linked it, or Not linked, slice 60); and QuestPump (Safety and about, what
+// are the Games tab's, slice 56); your pumps (Reminders, Work mode with its Every (slice 67), Sound and voice, Your
+// setup with its equipment's count, Quick pump length with its Segmented of the `expedition` topic's lengths inline
+// (2026-11-03: the timed pump every Quick pump starts, `expedition.length`, its value moving with Rust's answer),
+// Backup and sync with the day of its last backup file or sync, whichever came later, then Email with the linked
+// address, Email linked where another device linked it, or Not linked, slice 60); and QuestPump (Safety and about, what
 // QuestPump does on this computer, Send feedback, the switch Send crash reports and Usage statistics, each with its
 // disclosure line, Copy a report for help, the Acknowledgements, and Pro's row: On, or that the paired phone's Pro
 // could not be confirmed here, opening Pro's page; no price). The switches show the `crash` and `usage`
@@ -26,6 +26,7 @@ import {MENU, push, register, registered} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {confirmWindow} from "../book/common.js";
 import {GET_COMPUTER, GET_PHONE, page, watch} from "../page.js";
+import {WORK_GLYPH} from "../places/words.js";
 import {backupDay} from "./backup.js";
 import {clock} from "./reminders.js";
 
@@ -79,6 +80,7 @@ register(MENU, () => {
 	const phones = open("desk.menu.phones", t("desk.menu.phones.title"), "device_phone");
 	const devices = open("desk.menu.devices", t("desk.menu.devices.title"), "mark_heart");
 	const reminders = open("desk.reminders", t("menu.reminders"), "mark_clock");
+	const work = open("desk.menu.work", t("work.title"), WORK_GLYPH);
 	const sound = open("desk.menu.sound", t("desk.menu.sound"), "rating_expertise");
 	const setup = open("desk.menu.setup", t("menu.setup"), "action_character");
 	// Quick pump length: the lengths inline, the one set chosen once Rust's answer holds
@@ -120,7 +122,7 @@ register(MENU, () => {
 	}));
 	view.body.append(
 		...group(null, getComputer, getPhone, computer, phones, devices),
-		...group(t("desk.menu.section.pumps"), reminders, sound, setup, quick, backup, email),
+		...group(t("desk.menu.section.pumps"), reminders, work, sound, setup, quick, backup, email),
 		...group(t("desk.feedback.section"), about, does, feedback, crash, usage, diagnostics, acknowledgements, pro,
 			wipe));
 	watch(view, "menu.phones", (phonesTopic) => {
@@ -141,6 +143,9 @@ register(MENU, () => {
 		if (!reminders) return;
 		reminders.value = r.streak_on ? (r.streak_quiet ? t("reminders.quiet.inside") : clock(r.streak_at))
 			: r.sitting_on ? t("reminders.sitting") : t("menu.reminders.off");
+	});
+	watch(view, "menu.work", (m) => {
+		if (work) work.value = t("work.every.value", {minutes: m.every});
 	});
 	watch(view, "crash", (c) => {
 		crash.hidden = false;

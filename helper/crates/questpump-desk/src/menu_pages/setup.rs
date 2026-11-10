@@ -1,9 +1,10 @@
 //! Your setup and Your moves on the computer (docs/ui.md, "The Menu on the computer"; the phones' Your setup and Your
-//! moves, slice 34): the place in use (the equipment, floor moves, room to move, quiet; `desk::places`, its change a
-//! change of Home's or another place's in the body since slice 51); the body every app device shares (the Body
-//! switches, the experience, the moves left out), each change made here stamped now, past the field's own stamp, in
-//! `body.json` and given to every paired phone through the body's exchange; and the pain flags and the focus, rows on
-//! every device already, written through the engine (once it has folded) and kept as the computer's own rows
+//! moves, slice 34): the setup in force (the equipment, floor moves, room to move, quiet; `desk::places`): the place in
+//! use's, its change a change of Home's or another place's in the body since slice 51, and while work mode is on work
+//! mode's own equipment, its change a change of work mode's settings (slice 67); the body every app device shares (the
+//! Body switches, the experience, the moves left out), each change made here stamped now, past the field's own stamp,
+//! in `body.json` and given to every paired phone through the body's exchange; and the pain flags and the focus, rows
+//! on every device already, written through the engine (once it has folded) and kept as the computer's own rows
 //! (`Desk::keep_own`). The engine's profile follows every change (`Desk::profile_changed`), and the engine's look
 //! follows the profile and every fold and merge of rows (`Desk::setup_look`, asked by the engine's door).
 //!
@@ -87,7 +88,8 @@ struct YourMoves {
 
 #[derive(Serialize)]
 struct Topic<'a> {
-	/// The place in use (`desk::places`): its id and its setup.
+	/// The place in use's id (`desk::places`) and the setup in force (`Desk::setup_in_force`): the place in use's, work
+	/// mode's own equipment while it is on.
 	place_id: &'a str,
 	place: &'a PlaceSetup,
 	switches: Switches,
@@ -188,7 +190,7 @@ impl<P: Platform> Desk<P> {
 				if !matches!(key, "floor" | "space" | "quiet") {
 					return Err(format!("setup.place: no switch {key}"));
 				}
-				self.change_place(|place| match key {
+				self.change_setup(|place| match key {
 					"floor" => place.floor = on,
 					"space" => place.space = on,
 					_ => place.quiet = on,
@@ -200,7 +202,7 @@ impl<P: Platform> Desk<P> {
 				if !order.iter().any(|k| k == key) {
 					return Err(format!("setup.gear: no equipment {key}"));
 				}
-				self.change_place(|place| place.gear = super::super::places::with_gear(&place.gear, key, on));
+				self.change_setup(|place| place.gear = super::super::places::with_gear(&place.gear, key, on));
 			}
 			"setup.switch" => {
 				let (key, on) = (text(intent, "key")?, flag(intent, "on")?);
@@ -265,7 +267,9 @@ impl<P: Platform> Desk<P> {
 		let body = &self.body.body;
 		let on = |switch: &Option<Changed<bool>>| switch.as_ref().is_some_and(|s| s.value);
 		let moves = body.moves.as_ref().map(|m| m.value.clone()).unwrap_or_default();
-		let (place_id, place) = self.place_in_use();
+		// the setup in force (`Desk::setup_in_force`) beside the place in use's id
+		let (place_id, in_use) = self.place_in_use();
+		let place = self.work_setup().unwrap_or(in_use);
 		let topic = Topic {
 			place_id: &place_id,
 			place: &place,

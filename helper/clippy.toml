@@ -2,4 +2,4 @@ allow-unwrap-in-tests = true
 allow-expect-in-tests = true
 # names, not code: the product, the game's folder, Apple's frameworks, the tools whose readers the helper follows, the
 # games it hears (slice 48; Guild Wars 2's maker and the library its link's layout is read from, 2026-10-28)
-doc-valid-idents = ["QuestPump", "AddOns", "ScreenCaptureKit", "LaunchServices", "ServiceManagement", "WowUp", "TACTLib", "AppleScript", "StarCraft", "PyAccSharedMemory", "HSTracker", "SimHub", "ArenaNet", "Gw2Sharp", ".."]
+doc-valid-idents = ["QuestPump", "AddOns", "ScreenCaptureKit", "CoreAudio", "CoreMediaIO", "FaceTime", "WebKit", "LaunchServices", "ServiceManagement", "WowUp", "TACTLib", "AppleScript", "StarCraft", "PyAccSharedMemory", "HSTracker", "SimHub", "ArenaNet", "Gw2Sharp", ".."]

@@ -223,6 +223,8 @@ pub struct Computer {
 	/// Why a folder the player picked was not taken.
 	pub folder_note: Option<FolderNote>,
 	pub pack: Pack,
+	/// The voice pack beside QuestPump, as `pack` is the move figures'.
+	pub voice: Pack,
 	pub version: Version,
 	/// Starts with the computer; none where the system cannot say (a bare binary in development, a Mac app still in its
 	/// download), which hides the switch.
@@ -409,7 +411,7 @@ pub enum FolderNote {
 	NoQuestPump { path: String },
 }
 
-/// The move figures' pack beside QuestPump in the game folder.
+/// A media pack beside QuestPump in the game folder: the move figures', the voice's.
 #[derive(Serialize, Debug, Clone, Default, PartialEq, Eq)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum Pack {
@@ -419,11 +421,6 @@ pub enum Pack {
 	Absent,
 	Installed,
 	Missing,
-	/// From another download.
-	Other {
-		pack: String,
-		addon: String,
-	},
 }
 
 /// The version line: the build and what the updater knows.

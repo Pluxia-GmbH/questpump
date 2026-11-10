@@ -3,12 +3,12 @@
 //! move (`offers::Tunables::warm`: since slice 57 it gates and sizes no offer, which every match makes at the size its
 //! own minutes give, `tier`). It runs from the latest of the newest performed move on any device, the latest game
 //! offer on any device (the sitting cue's alone: an offer is a stand-up ask itself, while the warm move reads the clock
-//! without the offers, so an offer let pass stands nobody up) and the end of a pause of `AWAY_S` in this computer's
+//! without the offers, so an offer let pass stands nobody up) and the end of a pause of `away_s` in this computer's
 //! input, which also bounds a match's minutes (`offers::Gate::back_at`), and from the game day's start (04:00) only
 //! where the input's idle time never read in this run (since slice 48's double-check: macOS and Windows always read
 //! it, so a session across 04:00 counts whole). The app reads the input's idle time on every look
 //! (`runtime/sitting.rs`: Quartz's HID state on macOS, `GetLastInputInfo` on Windows, neither behind a permission) and
-//! hands it to `Sitting::look`: an idle time that does not read is never a pause, a look that comes more than `AWAY_S`
+//! hands it to `Sitting::look`: an idle time that does not read is never a pause, a look that comes more than `away_s`
 //! after the one before (the computer slept) is one, a look earlier than the one before (the clock set back) starts the
 //! clock again, and while a watched game's window is in front or a match runs its idle time counts as fresh, since a
 //! game played on a pad or with raw input may leave the system's counter standing (a game left open behind other
@@ -17,9 +17,17 @@
 //! a game is read: the queue, the pick phase and the loading screen count, as the player sits through them too.
 
 use crate::games::PLAYING_CAP_MS;
+use crate::library;
 
-/// An input pause this long (seconds) is a time away from the computer: the clock starts again at its end.
-pub const AWAY_S: i64 = 300;
+/// An input pause this long (seconds, library.json's `sit_away_s`, slice 67: Rust's `AWAY_S` until then) is a time
+/// away from the computer: the clock starts again at its end. Work mode takes it as nobody being there for a due
+/// pump's opening (the desk's `work_open`), never as a pause of its clock, which always runs down.
+/// Never when the built-in constants do not read (`make check` keeps them readable): the clock then runs from its first
+/// look and the moves alone, and work mode asks nothing (`work::tunables`).
+#[must_use]
+pub fn away_s() -> i64 {
+	library::constants().map_or(i64::MAX, |c| c.sit_away_s)
+}
 
 /// The input's part of the clock, on the helper's loop.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -41,12 +49,12 @@ pub struct Sitting {
 
 impl Sitting {
 	/// The clock a quit at `quit_at` kept (its `since` and `game_seen`), at a start at `now`: taken on when the start
-	/// came within `AWAY_S` of the quit (an update, Quit and reopen), else a new clock that starts at the first look.
+	/// came within `away_s` of the quit (an update, Quit and reopen), else a new clock that starts at the first look.
 	/// The last look a watched game counted at goes on with it, so a match played on a pad, which leaves the system's
 	/// idle time standing, is no pause at the start's first look (2026-10-29).
 	#[must_use]
 	pub fn restored(since: i64, game_seen: Option<i64>, quit_at: i64, now: i64) -> Self {
-		let kept = since <= quit_at && (0..AWAY_S).contains(&(now - quit_at));
+		let kept = since <= quit_at && (0..away_s()).contains(&(now - quit_at));
 		let game_seen = game_seen.filter(|&at| kept && at <= quit_at);
 		Self { since: kept.then_some(since), game_seen, ..Self::default() }
 	}
@@ -75,8 +83,8 @@ impl Sitting {
 	/// system gives no number), `game_fresh` whether a watched game counts as input now (its window in front, or a
 	/// match running), which it does only while `idle_s` is under `PLAYING_CAP_MS` (a game left in front with nobody at
 	/// the computer, overnight or through a day away). A pause starts the clock again at its end: an idle time of
-	/// `AWAY_S` (counted from the later of the last input and the last look a watched game counted at), or a look
-	/// `AWAY_S` after the one before; so does a look earlier than the one before (the clock was set back, and what the
+	/// `away_s` (counted from the later of the last input and the last look a watched game counted at), or a look
+	/// `away_s` after the one before; so does a look earlier than the one before (the clock was set back, and what the
 	/// clock knew lies ahead of now).
 	pub fn look(&mut self, now: i64, idle_s: Option<u32>, game_fresh: bool) {
 		let back = self.looked.is_some_and(|at| now < at);
@@ -87,7 +95,8 @@ impl Sitting {
 		if game_fresh && !left {
 			self.game_seen = Some(now);
 		}
-		let slept = self.looked.is_some_and(|at| now - at > AWAY_S);
+		let away = away_s();
+		let slept = self.looked.is_some_and(|at| now - at > away);
 		self.looked = Some(now);
 		self.idle_s = idle_s;
 		self.read |= idle_s.is_some();
@@ -95,7 +104,7 @@ impl Sitting {
 			let s = i64::from(s);
 			self.game_seen.map_or(s, |seen| s.min(now - seen))
 		});
-		if back || slept || idle.is_some_and(|s| s >= AWAY_S) || self.since.is_none() {
+		if back || slept || idle.is_some_and(|s| s >= away) || self.since.is_none() {
 			self.since = Some(now);
 		}
 	}

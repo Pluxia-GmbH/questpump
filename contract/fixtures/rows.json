@@ -68,12 +68,12 @@
     "sheet": {
       "frames": [
         {
-          "bytes": [42, 0, 69, 2, 92, 16, 10, 10, 0, 0, 11, 3, 0, 42, 69, 2, 250, 1, 245, 2, 10, 253, 184, 42, 98, 97, 100, 2, 98, 97, 116, 26, 106, 186, 122, 19, 98, 98, 100, 0, 52, 0, 130, 130, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 56, 5, 130, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 54, 1, 100, 98, 111, 100, 121, 100, 109, 97, 108, 101, 101, 98, 117, 105, 108, 100, 103, 103, 111, 114, 105, 108, 108, 97, 138, 0, 0],
+          "bytes": [42, 0, 69, 2, 92, 16, 10, 10, 0, 0, 11, 3, 0, 42, 69, 2, 250, 1, 245, 2, 10, 253, 184, 42, 66, 97, 100, 2, 66, 97, 116, 26, 106, 186, 122, 19, 66, 98, 100, 0, 52, 0, 130, 130, 74, 50, 48, 50, 54, 45, 48, 57, 45, 50, 56, 5, 130, 74, 50, 48, 50, 54, 45, 48, 57, 45, 50, 54, 1, 68, 98, 111, 100, 121, 68, 109, 97, 108, 101, 69, 98, 117, 105, 108, 100, 71, 103, 111, 114, 105, 108, 108, 97, 106, 0, 0],
           "fields": {
-            "checksum": 138,
+            "checksum": 106,
             "chunk": 0,
             "chunks": 11,
-            "data": "01f5020afdb82a626164026261741a6aba7a1362626482826a323032362d30392d323805826a323032362d30392d32360164626f6479646d616c65656275696c6467676f72696c6c61",
+            "data": "01f5020afdb82a426164024261741a6aba7a1342626482824a323032362d30392d323805824a323032362d30392d32360144626f6479446d616c65456275696c6447676f72696c6c61",
             "event": 10,
             "event_no": 52,
             "flags": 16,
@@ -89,12 +89,12 @@
           "name": "sheet chunk 0"
         },
         {
-          "bytes": [42, 0, 69, 2, 93, 16, 10, 10, 0, 1, 11, 3, 0, 42, 69, 2, 250, 100, 99, 104, 97, 114, 1, 100, 99, 114, 105, 116, 5, 99, 100, 101, 102, 3, 98, 100, 120, 130, 130, 0, 53, 0, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 54, 24, 86, 130, 106, 50, 48, 50, 54, 45, 48, 57, 45, 50, 56, 25, 1, 212, 102, 100, 120, 70, 114, 111, 109, 106, 50, 48, 50, 54, 45, 48, 55, 45, 51, 49, 99, 101, 97, 114, 152, 39, 0, 0],
+          "bytes": [42, 0, 69, 2, 93, 16, 10, 10, 0, 1, 11, 3, 0, 42, 69, 2, 250, 68, 99, 104, 97, 114, 1, 68, 99, 114, 105, 116, 5, 67, 100, 101, 102, 3, 66, 100, 120, 130, 130, 0, 53, 0, 74, 50, 48, 50, 54, 45, 48, 57, 45, 50, 54, 24, 86, 130, 74, 50, 48, 50, 54, 45, 48, 57, 45, 50, 56, 25, 1, 212, 70, 100, 120, 70, 114, 111, 109, 74, 50, 48, 50, 54, 45, 48, 55, 45, 51, 49, 67, 101, 97, 114, 152, 7, 0, 0],
           "fields": {
-            "checksum": 39,
+            "checksum": 7,
             "chunk": 1,
             "chunks": 11,
-            "data": "646368617201646372697405636465660362647882826a323032362d30392d32361856826a323032362d30392d32381901d466647846726f6d6a323032362d30372d33316365617298",
+            "data": "446368617201446372697405436465660342647882824a323032362d30392d32361856824a323032362d30392d32381901d446647846726f6d4a323032362d30372d33314365617298",
             "event": 10,
             "event_no": 53,
             "flags": 16,
@@ -110,12 +110,12 @@
           "name": "sheet chunk 1"
         },
         {
-          "bytes": [42, 0, 69, 2, 94, 16, 10, 10, 0, 2, 11, 3, 0, 42, 69, 2, 250, 24, 131, 2, 0, 0, 131, 2, 0, 0, 129, 0, 131, 2, 0, 0, 129, 0, 131, 2, 0, 0, 130, 0, 54, 0, 1, 0, 129, 0, 132, 3, 0, 0, 25, 80, 244, 131, 2, 0, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 130, 1, 0, 98, 101, 109, 2, 99, 101, 120, 86, 0, 0],
+          "bytes": [42, 0, 69, 2, 94, 16, 10, 10, 0, 2, 11, 3, 0, 42, 69, 2, 250, 24, 131, 2, 0, 0, 131, 2, 0, 0, 129, 0, 131, 2, 0, 0, 129, 0, 131, 2, 0, 0, 130, 0, 54, 0, 1, 0, 129, 0, 132, 3, 0, 0, 25, 80, 244, 131, 2, 0, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 129, 0, 130, 1, 0, 66, 101, 109, 2, 67, 101, 120, 22, 0, 0],
           "fields": {
-            "checksum": 86,
+            "checksum": 22,
             "chunk": 2,
             "chunks": 11,
-            "data": "1883020000830200008100830200008100830200008201008100840300001950f483020000810081008100810081008100810081008100810081008100810082010062656d02636578",
+            "data": "1883020000830200008100830200008100830200008201008100840300001950f483020000810081008100810081008100810081008100810081008100810082010042656d02436578",
             "event": 10,
             "event_no": 54,
             "flags": 16,
@@ -131,12 +131,12 @@
           "name": "sheet chunk 2"
         },
         {
-          "bytes": [42, 0, 69, 2, 95, 16, 10, 10, 0, 3, 11, 3, 0, 42, 69, 2, 250, 112, 0, 99, 102, 105, 103, 26, 0, 199, 156, 110, 100, 104, 101, 108, 100, 129, 24, 94, 100, 105, 110, 0, 55, 0, 116, 111, 24, 100, 99, 108, 97, 100, 152, 24, 132, 2, 24, 43, 0, 0, 132, 2, 2, 0, 0, 132, 0, 0, 0, 0, 132, 2, 24, 34, 0, 0, 132, 0, 0, 0, 0, 132, 2, 0, 0, 0, 132, 1, 17, 0, 0, 132, 1, 0, 0, 188, 0, 0],
+          "bytes": [42, 0, 69, 2, 95, 16, 10, 10, 0, 3, 11, 3, 0, 42, 69, 2, 250, 112, 0, 67, 102, 105, 103, 26, 0, 199, 156, 110, 68, 104, 101, 108, 100, 129, 24, 94, 68, 105, 110, 0, 55, 0, 116, 111, 24, 100, 67, 108, 97, 100, 152, 24, 132, 2, 24, 43, 0, 0, 132, 2, 2, 0, 0, 132, 0, 0, 0, 0, 132, 2, 24, 34, 0, 0, 132, 0, 0, 0, 0, 132, 2, 0, 0, 0, 132, 1, 17, 0, 0, 132, 1, 0, 0, 60, 0, 0],
           "fields": {
-            "checksum": 188,
+            "checksum": 60,
             "chunk": 3,
             "chunks": 11,
-            "data": "7000636669671a00c79c6e6468656c6481185e64696e746f1864636c616498188402182b00008402020000840000000084021822000084000000008402000000840111000084010000",
+            "data": "7000436669671a00c79c6e4468656c6481185e44696e746f1864436c616498188402182b00008402020000840000000084021822000084000000008402000000840111000084010000",
             "event": 10,
             "event_no": 55,
             "flags": 16,
@@ -173,12 +173,12 @@
           "name": "sheet chunk 4"
         },
         {
-          "bytes": [42, 0, 69, 2, 97, 16, 10, 10, 0, 5, 11, 3, 0, 42, 69, 2, 250, 0, 0, 0, 132, 1, 25, 1, 102, 0, 0, 132, 0, 0, 0, 0, 132, 0, 0, 0, 0, 132, 1, 0, 57, 0, 25, 1, 187, 0, 0, 100, 108, 97, 115, 116, 132, 25, 1, 212, 9, 1, 3, 98, 108, 100, 133, 3, 0, 0, 1, 0, 98, 108, 115, 133, 4, 1, 0, 3, 1, 98, 108, 117, 129, 134, 9, 3, 24, 59, 2, 0, 0, 99, 108, 118, 108, 34, 0, 0],
+          "bytes": [42, 0, 69, 2, 97, 16, 10, 10, 0, 5, 11, 3, 0, 42, 69, 2, 250, 0, 0, 0, 132, 1, 25, 1, 102, 0, 0, 132, 0, 0, 0, 0, 132, 0, 0, 0, 0, 132, 1, 0, 57, 0, 25, 1, 187, 0, 0, 68, 108, 97, 115, 116, 132, 25, 1, 212, 9, 1, 3, 66, 108, 100, 133, 3, 0, 0, 1, 0, 66, 108, 115, 133, 4, 1, 0, 3, 1, 66, 108, 117, 129, 134, 9, 3, 24, 59, 2, 0, 0, 67, 108, 118, 108, 130, 0, 0],
           "fields": {
-            "checksum": 34,
+            "checksum": 130,
             "chunk": 5,
             "chunks": 11,
-            "data": "000000840119016600008400000000840000000084011901bb0000646c617374841901d4090103626c64850300000100626c73850401000301626c7581860903183b020000636c766c",
+            "data": "000000840119016600008400000000840000000084011901bb0000446c617374841901d4090103426c64850300000100426c73850401000301426c7581860903183b020000436c766c",
             "event": 10,
             "event_no": 57,
             "flags": 16,
@@ -194,12 +194,12 @@
           "name": "sheet chunk 5"
         },
         {
-          "bytes": [42, 0, 69, 2, 98, 16, 10, 10, 0, 6, 11, 3, 0, 42, 69, 2, 250, 4, 98, 108, 120, 130, 130, 26, 106, 186, 122, 18, 24, 86, 130, 26, 106, 186, 136, 34, 25, 1, 212, 0, 58, 0, 98, 109, 113, 147, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 98, 109, 119, 147, 1, 1, 1, 1, 0, 1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 1, 2, 0, 0, 100, 110, 101, 101, 100, 225, 0, 0],
+          "bytes": [42, 0, 69, 2, 98, 16, 10, 10, 0, 6, 11, 3, 0, 42, 69, 2, 250, 4, 66, 108, 120, 130, 130, 26, 106, 186, 122, 18, 24, 86, 130, 26, 106, 186, 136, 34, 25, 1, 212, 0, 58, 0, 66, 109, 113, 147, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 66, 109, 119, 147, 1, 1, 1, 1, 0, 1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 1, 2, 0, 0, 68, 110, 101, 101, 100, 97, 0, 0],
           "fields": {
-            "checksum": 225,
+            "checksum": 97,
             "chunk": 6,
             "chunks": 11,
-            "data": "04626c7882821a6aba7a121856821a6aba88221901d4626d719300010000000001000001010000010000010000626d779301010101000101010002020000020001020000646e656564",
+            "data": "04426c7882821a6aba7a121856821a6aba88221901d4426d719300010000000001000001010000010000010000426d779301010101000101010002020000020001020000446e656564",
             "event": 10,
             "event_no": 58,
             "flags": 16,
@@ -215,12 +215,12 @@
           "name": "sheet chunk 6"
         },
         {
-          "bytes": [42, 0, 69, 2, 99, 16, 10, 10, 0, 7, 11, 3, 0, 42, 69, 2, 250, 25, 1, 66, 98, 110, 120, 152, 24, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 59, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 104, 0, 0],
+          "bytes": [42, 0, 69, 2, 99, 16, 10, 10, 0, 7, 11, 3, 0, 42, 69, 2, 250, 25, 1, 66, 66, 110, 120, 152, 24, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 59, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 132, 0, 2, 0, 0, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 72, 0, 0],
           "fields": {
-            "checksum": 104,
+            "checksum": 72,
             "chunk": 7,
             "chunks": 11,
-            "data": "190142626e7898188400020000840002000084000000008400020000840000000084000200008400020000840000000084000200008400020000840002000086000300000101860003",
+            "data": "190142426e7898188400020000840002000084000000008400020000840000000084000200008400020000840000000084000200008400020000840002000086000300000101860003",
             "event": 10,
             "event_no": 59,
             "flags": 16,
@@ -236,12 +236,12 @@
           "name": "sheet chunk 7"
         },
         {
-          "bytes": [42, 0, 69, 2, 100, 16, 10, 10, 0, 8, 11, 3, 0, 42, 69, 2, 250, 0, 0, 1, 1, 134, 0, 3, 0, 0, 2, 0, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 0, 0, 60, 0, 0, 1, 1, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 0, 0, 2, 0, 134, 0, 3, 0, 0, 2, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 1, 0, 100, 111, 247, 0, 0],
+          "bytes": [42, 0, 69, 2, 100, 16, 10, 10, 0, 8, 11, 3, 0, 42, 69, 2, 250, 0, 0, 1, 1, 134, 0, 3, 0, 0, 2, 0, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 0, 0, 60, 0, 0, 1, 1, 134, 0, 3, 0, 0, 1, 1, 134, 0, 3, 0, 0, 2, 0, 134, 0, 3, 0, 0, 2, 0, 132, 0, 0, 0, 0, 132, 0, 2, 0, 0, 132, 0, 0, 0, 0, 132, 0, 0, 0, 0, 132, 0, 2, 1, 0, 68, 111, 215, 0, 0],
           "fields": {
-            "checksum": 247,
+            "checksum": 215,
             "chunk": 8,
             "chunks": 11,
-            "data": "0000010186000300000200860003000001018600030000010186000300000101860003000002008600030000020084000000008400020000840000000084000000008400020100646f",
+            "data": "0000010186000300000200860003000001018600030000010186000300000101860003000002008600030000020084000000008400020000840000000084000000008400020100446f",
             "event": 10,
             "event_no": 60,
             "flags": 16,
@@ -257,12 +257,12 @@
           "name": "sheet chunk 8"
         },
         {
-          "bytes": [42, 0, 69, 2, 101, 16, 10, 10, 0, 9, 11, 3, 0, 42, 69, 2, 250, 119, 101, 100, 1, 99, 112, 97, 114, 0, 100, 114, 101, 115, 116, 0, 98, 114, 104, 0, 98, 114, 115, 0, 61, 0, 3, 98, 114, 116, 26, 106, 186, 136, 75, 101, 115, 97, 118, 101, 100, 26, 106, 186, 122, 18, 98, 115, 116, 133, 15, 11, 10, 15, 12, 102, 115, 116, 114, 101, 97, 107, 3, 102, 116, 111, 107, 101, 110, 115, 0, 97, 118, 6, 98, 118, 97, 132, 0, 0],
+          "bytes": [42, 0, 69, 2, 101, 16, 10, 10, 0, 9, 11, 3, 0, 42, 69, 2, 250, 119, 101, 100, 1, 67, 112, 97, 114, 0, 68, 114, 101, 115, 116, 0, 66, 114, 104, 0, 66, 114, 115, 0, 61, 0, 3, 66, 114, 116, 26, 106, 186, 136, 75, 69, 115, 97, 118, 101, 100, 26, 106, 186, 122, 18, 66, 115, 116, 133, 15, 11, 10, 15, 12, 70, 115, 116, 114, 101, 97, 107, 3, 70, 116, 111, 107, 101, 110, 115, 0, 65, 118, 6, 66, 118, 97, 36, 0, 0],
           "fields": {
-            "checksum": 132,
+            "checksum": 36,
             "chunk": 9,
             "chunks": 11,
-            "data": "77656401637061720064726573740062726800627273036272741a6aba884b6573617665641a6aba7a12627374850f0b0a0f0c6673747265616b0366746f6b656e7300617606627661",
+            "data": "77656401437061720044726573740042726800427273034272741a6aba884b4573617665641a6aba7a12427374850f0b0a0f0c4673747265616b0346746f6b656e7300417606427661",
             "event": 10,
             "event_no": 61,
             "flags": 16,
@@ -278,12 +278,12 @@
           "name": "sheet chunk 9"
         },
         {
-          "bytes": [42, 0, 69, 2, 102, 16, 10, 10, 0, 10, 11, 3, 0, 42, 69, 2, 250, 132, 6, 2, 2, 26, 106, 187, 210, 112, 98, 119, 107, 133, 5, 1, 0, 5, 2, 98, 119, 115, 26, 0, 62, 0, 106, 178, 151, 240, 98, 120, 112, 25, 2, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 202, 0, 0],
+          "bytes": [42, 0, 69, 2, 102, 16, 10, 10, 0, 10, 11, 3, 0, 42, 69, 2, 250, 132, 6, 2, 2, 26, 106, 187, 210, 112, 66, 119, 107, 133, 5, 1, 0, 5, 2, 66, 119, 115, 26, 0, 62, 0, 106, 178, 151, 240, 66, 120, 112, 25, 2, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 0, 0],
           "fields": {
-            "checksum": 202,
+            "checksum": 106,
             "chunk": 10,
             "chunks": 11,
-            "data": "840602021a6abbd27062776b8505010005026277731a6ab297f062787019022a0000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "data": "840602021a6abbd27042776b8505010005024277731a6ab297f042787019022a0000000000000000000000000000000000000000000000000000000000000000000000000000000000",
             "event": 10,
             "event_no": 62,
             "flags": 16,
@@ -462,12 +462,12 @@
     "about": "the feedback window's Send (contract/feedback-api.yaml, GameFeedback): the message, with the numbers the window counted (a pump finished, one banked, a move stopped early, one taken as the easier version), in the profile event's chunk layout with its own serial, painted once in the blobs lane; message is what the frames carry, read back from them, which the helper posts with source game",
     "frames": [
       {
-        "bytes": [42, 0, 69, 2, 136, 16, 11, 10, 0, 0, 3, 1, 0, 42, 69, 0, 196, 1, 191, 0, 64, 255, 164, 98, 97, 116, 26, 106, 186, 122, 41, 103, 110, 117, 109, 98, 101, 114, 115, 0, 75, 0, 166, 102, 98, 97, 110, 107, 101, 100, 1, 100, 100, 97, 121, 115, 0, 104, 102, 105, 110, 105, 115, 104, 101, 100, 1, 104, 109, 97, 120, 95, 115, 101, 116, 115, 1, 101, 109, 111, 118, 101, 115, 130, 163, 102, 101, 97, 115, 105, 101, 114, 0, 233, 0, 0],
+        "bytes": [42, 0, 69, 2, 136, 16, 11, 10, 0, 0, 3, 1, 0, 42, 69, 0, 196, 1, 191, 0, 64, 255, 164, 66, 97, 116, 26, 106, 186, 122, 41, 71, 110, 117, 109, 98, 101, 114, 115, 0, 75, 0, 166, 70, 98, 97, 110, 107, 101, 100, 1, 68, 100, 97, 121, 115, 0, 72, 102, 105, 110, 105, 115, 104, 101, 100, 1, 72, 109, 97, 120, 95, 115, 101, 116, 115, 1, 69, 109, 111, 118, 101, 115, 130, 163, 70, 101, 97, 115, 105, 101, 114, 0, 233, 0, 0],
         "fields": {
           "checksum": 233,
           "chunk": 0,
           "chunks": 3,
-          "data": "01bf0040ffa46261741a6aba7a29676e756d62657273a66662616e6b6564016464617973006866696e697368656401686d61785f7365747301656d6f76657382a36665617369657200",
+          "data": "01bf0040ffa44261741a6aba7a29476e756d62657273a64662616e6b6564014464617973004866696e697368656401486d61785f7365747301456d6f76657382a34665617369657200",
           "event": 11,
           "event_no": 75,
           "flags": 16,
@@ -483,12 +483,12 @@
         "name": "feedback chunk 0"
       },
       {
-        "bytes": [42, 0, 69, 2, 137, 16, 11, 10, 0, 1, 3, 1, 0, 42, 69, 0, 196, 100, 109, 111, 118, 101, 106, 115, 116, 101, 112, 95, 106, 97, 99, 107, 115, 103, 115, 116, 111, 112, 112, 0, 76, 0, 101, 100, 1, 163, 102, 101, 97, 115, 105, 101, 114, 1, 100, 109, 111, 118, 101, 107, 119, 97, 108, 108, 95, 112, 117, 115, 104, 117, 112, 103, 115, 116, 111, 112, 112, 101, 100, 0, 100, 111, 119, 101, 100, 2, 100, 116, 101, 120, 116, 120, 38, 70, 0, 0],
+        "bytes": [42, 0, 69, 2, 137, 16, 11, 10, 0, 1, 3, 1, 0, 42, 69, 0, 196, 68, 109, 111, 118, 101, 74, 115, 116, 101, 112, 95, 106, 97, 99, 107, 115, 71, 115, 116, 111, 112, 112, 0, 76, 0, 101, 100, 1, 163, 70, 101, 97, 115, 105, 101, 114, 1, 68, 109, 111, 118, 101, 75, 119, 97, 108, 108, 95, 112, 117, 115, 104, 117, 112, 71, 115, 116, 111, 112, 112, 101, 100, 0, 68, 111, 119, 101, 100, 2, 68, 116, 101, 120, 116, 88, 38, 6, 0, 0],
         "fields": {
-          "checksum": 70,
+          "checksum": 6,
           "chunk": 1,
           "chunks": 3,
-          "data": "646d6f76656a737465705f6a61636b736773746f7070656401a36665617369657201646d6f76656b77616c6c5f7075736875706773746f7070656400646f7765640264746578747826",
+          "data": "446d6f76654a737465705f6a61636b734773746f7070656401a34665617369657201446d6f76654b77616c6c5f7075736875704773746f7070656400446f7765640244746578745826",
           "event": 11,
           "event_no": 76,
           "flags": 16,
@@ -504,12 +504,12 @@
         "name": "feedback chunk 1"
       },
       {
-        "bytes": [42, 0, 69, 2, 138, 16, 11, 10, 0, 2, 3, 1, 0, 42, 69, 0, 196, 84, 104, 101, 32, 112, 117, 109, 112, 115, 32, 97, 102, 116, 101, 114, 32, 97, 32, 113, 117, 101, 115, 0, 77, 0, 116, 32, 104, 117, 98, 32, 97, 114, 101, 32, 103, 114, 101, 97, 116, 46, 103, 118, 101, 114, 115, 105, 111, 110, 99, 100, 101, 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 217, 0, 0],
+        "bytes": [42, 0, 69, 2, 138, 16, 11, 10, 0, 2, 3, 1, 0, 42, 69, 0, 196, 84, 104, 101, 32, 112, 117, 109, 112, 115, 32, 97, 102, 116, 101, 114, 32, 97, 32, 113, 117, 101, 115, 0, 77, 0, 116, 32, 104, 117, 98, 32, 97, 114, 101, 32, 103, 114, 101, 97, 116, 46, 71, 118, 101, 114, 115, 105, 111, 110, 67, 100, 101, 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 153, 0, 0],
         "fields": {
-          "checksum": 217,
+          "checksum": 153,
           "chunk": 2,
           "chunks": 3,
-          "data": "5468652070756d7073206166746572206120717565737420687562206172652067726561742e6776657273696f6e636465760000000000000000000000000000000000000000000000",
+          "data": "5468652070756d7073206166746572206120717565737420687562206172652067726561742e4776657273696f6e436465760000000000000000000000000000000000000000000000",
           "event": 11,
           "event_no": 77,
           "flags": 16,
@@ -911,7 +911,7 @@
     "export": {
       "chars": ["Player-1-0000000A", "Player-1-0000000B"],
       "ring": ["1790704860|0|26391|1|0|1|2|43|7|39|0|1|0", "1790791320|2|0|0|0|1|2|0|8|7|0|0|0"],
-      "string": "!QP1!Ac4LMfSlaGJhc2VsaW5luB5nYW55TW92ZfVmY2FyZGlvqGVjbGVhbgBpY2xlYW5FdmVyoGtjbGVhbkZvcm1Uc6BqY2xlYW5Gb3Jtc6BkZnVsbABkaGF1bAFoaGF1bERheXMAZXN0b3BzAGdjbGVhcmVkoGljcmVhdGVkVHMaarv83GRkYXlzomoyMDI2LTA5LTI5pmZiYW5rZWQAZmJsb2Nrc6Foc3RyZW5ndGgBZGRvbmWhGCsBZW1vdmVzAWVwdW1wcwFncmVjb3JkcwBqMjAyNi0wOS0zMKZmYmFua2VkAGZibG9ja3OhaHN0cmVuZ3RoAWRkb25loRgrAWVtb3ZlcwFlcHVtcHMBZ3JlY29yZHMAZGVkZ2WieCYxNzkwNzkxMjAwfDJ8MjYzOTN8MXwwfDB8MHwwfDZ8MXwxfDd8MPV4KTE3OTA3OTEyMDB8MnwyNjM5M3wxfDB8MXwyfDQzfDF8NDB8MzB8Mnww9WdmaXJzdFRzGmq7/KBmZm9ybVRzoGdsYWRkZXJzga5qYW5jaG9yRGF5cwBoYW5jaG9yVHMaar1OIGRkYXlzomoyMDI2LTA5LTI5AWoyMDI2LTA5LTMwAWRmcm9tAmZoaURheXMBZGhpVHMaar1OIGZsYXN0VHMaar1OIGtwZXJmZWN0RGF5cwBocGxhY2VkVHMaarv83GdwbGF0ZWF1AmlwbGF0ZWF1VHMaar1OIGRydW5nAmVzdGFydAJndW5kZXJMbwBqbGFzdERvbmVUcxpqvU4gaGxhc3RNb3ZlGCtmbGVkZ2VyoWVob2xkc6BlbWFya3OgaG1hc3RlcmVkoGhtb3ZlUm93cwNlbW92ZXOhGCurZGJlc3QYKGZiZXN0VHMaar1OIGVmaXJzdBgnZ2ZpcnN0VHMaarv83GVmcmVzaIIYJxgoaWZyZXNoTG9hZIIAAGRsYXN0GChmbGFzdFRzGmq9TiBkcHJldhgnaHRvcERheVRzGmq9TiBndG9wRGF5cwFkb3dlZKFyMTc5MDcwNDkyMDoyNjM5MjoxeCcxNzkwNzA0OTIwfDJ8MjYzOTJ8MXwxfDF8Mnw0M3wxfDB8MHw4fDBpcGFpZEVhcmx5oGRwYWluoGdwYWlyaW5no2RrZXB0gXgiMTc5MDcwNDgwMHwyfDB8MHwwfDF8MnwwfDh8NHwwfDB8MGVydW5nc6JjMToxeCIxNzkwNzA0ODAwfDF8MHwwfDB8MXwyfDB8OHw0fDB8MHwwYzE6MngiMTc5MDcwNDg2MHwyfDB8MHwwfDF8M3wwfDh8MXwwfDB8MGVzdGVwc6BocGF0dGVybnOhZHB1c2ijY2FjY6EYJKJidHMaar1OIGF2+z/6FSV/H6KcZGRheXOiajIwMjYtMDktMjkBajIwMjYtMDktMzABZmxhc3RUcxpqvU4gZXBhdXNloQKiZG1vZGUDYnRzGmq7/VRmcmVjZW50gqJlbW92ZXOhGCv1aHBhdHRlcm5zoWRwdXNo9aJlbW92ZXOhGCv1aHBhdHRlcm5zoWRwdXNo9WdyZWdpb25zoWRwdXNooWRkYXlzomoyMDI2LTA5LTI5AWoyMDI2LTA5LTMwAWRzZWVuoRgr9WVzaGVldLgnamFjdGl2ZURheXMCaWFjdGl2ZUlkeBlQ9mRiYXNlpWdhZ2lsaXR5CmlpbnRlbGxlY3QKZnNwaXJpdApnc3RhbWluYQpoc3RyZW5ndGgKZGJlc3QCZmNsaW1ic6BmY291bnRzrmViZWF0cwBlY2xlYW4AZWRpbmdzAGlmaW5pc2hlcnMAZGZvb3QAZ2tpbmRsZWQAZm1lcmdlZABmcGxhY2VkAWVwdW1wcwJmc3F1YXRzAGZzdGFyczMBYnQzAGx0cmF2ZWxDYXJkaW8AZ3dhbGxzaXQAZWNyaXRSAWRkYXlzohlQ9axmYWN0aXZl9WRiYXJzgaNhbgFmc291cmNlAWJ0cxpqu/zcZXB1bXBzAW1wdW1wc0ZpbmlzaGVkAWdyZWdpb25zoWRwdXNoAWRyZXBzoWRwdXNoGCdicmgBZHNldHOhGCuhYXYYJ2N3YXOhGCv0ZHdpbnMAYndrAWJ4cBhFGVD2rWZhY3RpdmX1ZGJhcnOBo2FuAWZzb3VyY2UBYnRzGmq9TiBlcHVtcHMBbXB1bXBzRmluaXNoZWQBZ3JlZ2lvbnOhZHB1c2gBZHJlcHOhZHB1c2gYKGJyaAFkc2V0c6EYK6FhdhgoZXN0YXJzAWN3YXOhGCuhYXYYJ2R3aW5zAWJ3awFieHAYXmZlYXJuZWSgY2ZhbaEYK6JkbGFzdBlQ9mFuAmhmYW1TdGVwc6BoaGVsZEZyb20ZUNpkbGFzdKNpaW50ZWxsZWN0pGZhbW91bnQBZG1vdmUYK2ZyZWFzb25obGVhcm5pbmdidHMaarv83GZzcGlyaXSjZmFtb3VudAFmcmVhc29uZmFjdGl2ZWJ0cxpqu/zcaHN0cmVuZ3RopGZhbW91bnQBZG1vdmUYK2ZyZWFzb25kc3RhcmJ0cxpqvU4gaGxhc3RNb3Zlo2NpZHgZUPZidHMaar1OIGN3aW71ZmxlZ2FjeaFqc3RhcnJ5RXllZPVmbG9ja2VkoGNsb2eCpWVtb3Zlc4KkaWNvcnJlY3RlZPVkbW92ZRgrY291dANhdhgno2NrZXlyMTc5MDcwNDkyMDoyNjM5MjoxZG1vdmUYK2NvdXQIZ3F1ZXN0SUQZZxdkdGllcgFidHMaarv83GJ4cBhFpmVsZXZlbAJlbW92ZXOBo2Rtb3ZlGCtjb3V0AmF2GChncXVlc3RJRBlnGWR0aWVyAWJ0cxpqvU4gYnhwGF5nbXVzY2xlc6QBpWRoYXJkAGRsYXN0gqJkbW92ZRgrYnRzGmq9TiCiZG1vdmUYK2J0cxpqu/zcZHJ1bmcAZHdlZWsBYndrAQKnZGJlc3QYK2RoYXJkAmRsYXN0gqJkbW92ZRgrYnRzGmq9TiCiZG1vdmUYK2J0cxpqu/zcZHJ1bmcCZHN0ZXACZHdlZWsCYndrAQWlZGhhcmQAZGxhc3SComRtb3ZlGCtidHMaar1OIKJkbW92ZRgrYnRzGmq7/NxkcnVuZwBkd2VlawFid2sBDKVkaGFyZABkbGFzdIKiZG1vdmUYK2J0cxpqvU4gomRtb3ZlGCtidHMaarv83GRydW5nAGR3ZWVrAWJ3awFkcGFpZKBpcGFpZEVhcmx5oGhwYXR0ZXJuc6FkcHVzaPVkcG9vbABkcHVtcKxkZGluZ/RjZmFtAGlwZXJmb3JtZWT1Y3B0cwFncXVlc3RJRBlnGWZxdWVzdHMBZXN0YXJzAWVzdGF0c6Foc3RyZW5ndGgBaXN0cmVha0RheQJkdGllcgFidHMaar1OIGJ4cBheZnJlc3RUcxpqvU4gZXJ1bmdzoGVzdGF0c6VnYWdpbGl0eQppaW50ZWxsZWN0DGZzcGlyaXQLZ3N0YW1pbmEKaHN0cmVuZ3RoDGZzdHJlYWsCZnRva2VucwFndG9wRGF5c4KiY2RheWoyMDI2LTA5LTI5ZW1vdmVzAaJjZGF5ajIwMjYtMDktMzBlbW92ZXMBZXVuaXRzoWRwdXNoGE9ldmF1bHSjZmVtYmVycwBlbW92ZXMCZ3JlY29yZHMBZHdlZWsBaXdlZWtCZWF0cwBqd2Vla0NhcmRpbwBpd2Vla0tpbmRzomZzcGlyaXT1aHN0cmVuZ3Ro9Wl3ZWVrTGVhcm71aXdlZWtQdW1wcwJod2Vla1NldHOBAmJ4cBijZ3NoaWZ0ZWShB/Vlc3BsaXT1aXNwbGl0U2V0c6BndGhyb3VnaBpqvU4gZWNoYXJzgqFkZ3VpZHFQbGF5ZXItMS0wMDAwMDAwQaFkZ3VpZHFQbGF5ZXItMS0wMDAwMDAwQmpleHBvcnRlZEF0Gmq9akBjbG9ngngoMTc5MDcwNDg2MHwwfDI2MzkxfDF8MHwxfDJ8NDN8N3wzOXwwfDF8MHgiMTc5MDc5MTMyMHwyfDB8MHwwfDF8MnwwfDh8N3wwfDB8MGZzY2hlbWEC"
+      "string": "!QP1!Ac4LMfSlSGJhc2VsaW5luB5HYW55TW92ZfVGY2FyZGlvqEVjbGVhbgBJY2xlYW5FdmVyoEtjbGVhbkZvcm1Uc6BKY2xlYW5Gb3Jtc6BEZnVsbABEaGF1bAFIaGF1bERheXMARXN0b3BzAEdjbGVhcmVkoEljcmVhdGVkVHMaarv83ERkYXlzokoyMDI2LTA5LTI5pkZiYW5rZWQARmJsb2Nrc6FIc3RyZW5ndGgBRGRvbmWhGCsBRW1vdmVzAUVwdW1wcwFHcmVjb3JkcwBKMjAyNi0wOS0zMKZGYmFua2VkAEZibG9ja3OhSHN0cmVuZ3RoAURkb25loRgrAUVtb3ZlcwFFcHVtcHMBR3JlY29yZHMARGVkZ2WiWCYxNzkwNzkxMjAwfDJ8MjYzOTN8MXwwfDB8MHwwfDZ8MXwxfDd8MPVYKTE3OTA3OTEyMDB8MnwyNjM5M3wxfDB8MXwyfDQzfDF8NDB8MzB8Mnww9UdmaXJzdFRzGmq7/KBGZm9ybVRzoEdsYWRkZXJzga5KYW5jaG9yRGF5cwBIYW5jaG9yVHMaar1OIERkYXlzokoyMDI2LTA5LTI5AUoyMDI2LTA5LTMwAURmcm9tAkZoaURheXMBRGhpVHMaar1OIEZsYXN0VHMaar1OIEtwZXJmZWN0RGF5cwBIcGxhY2VkVHMaarv83EdwbGF0ZWF1AklwbGF0ZWF1VHMaar1OIERydW5nAkVzdGFydAJHdW5kZXJMbwBKbGFzdERvbmVUcxpqvU4gSGxhc3RNb3ZlGCtGbGVkZ2VyoUVob2xkc6BFbWFya3OgSG1hc3RlcmVkoEhtb3ZlUm93cwNFbW92ZXOhGCurRGJlc3QYKEZiZXN0VHMaar1OIEVmaXJzdBgnR2ZpcnN0VHMaarv83EVmcmVzaIIYJxgoSWZyZXNoTG9hZIIAAERsYXN0GChGbGFzdFRzGmq9TiBEcHJldhgnSHRvcERheVRzGmq9TiBHdG9wRGF5cwFEb3dlZKFSMTc5MDcwNDkyMDoyNjM5MjoxWCcxNzkwNzA0OTIwfDJ8MjYzOTJ8MXwxfDF8Mnw0M3wxfDB8MHw4fDBJcGFpZEVhcmx5oERwYWluoEdwYWlyaW5no0RrZXB0gVgiMTc5MDcwNDgwMHwyfDB8MHwwfDF8MnwwfDh8NHwwfDB8MEVydW5nc6JDMToxWCIxNzkwNzA0ODAwfDF8MHwwfDB8MXwyfDB8OHw0fDB8MHwwQzE6MlgiMTc5MDcwNDg2MHwyfDB8MHwwfDF8M3wwfDh8MXwwfDB8MEVzdGVwc6BIcGF0dGVybnOhRHB1c2ijQ2FjY6EYJKJCdHMaar1OIEF2+z/6FSV/H6KcRGRheXOiSjIwMjYtMDktMjkBSjIwMjYtMDktMzABRmxhc3RUcxpqvU4gRXBhdXNloQKiRG1vZGUDQnRzGmq7/VRGcmVjZW50gqJFbW92ZXOhGCv1SHBhdHRlcm5zoURwdXNo9aJFbW92ZXOhGCv1SHBhdHRlcm5zoURwdXNo9UdyZWdpb25zoURwdXNooURkYXlzokoyMDI2LTA5LTI5AUoyMDI2LTA5LTMwAURzZWVuoRgr9UVzaGVldLgnSmFjdGl2ZURheXMCSWFjdGl2ZUlkeBlQ9kRiYXNlpUdhZ2lsaXR5CklpbnRlbGxlY3QKRnNwaXJpdApHc3RhbWluYQpIc3RyZW5ndGgKRGJlc3QCRmNsaW1ic6BGY291bnRzrkViZWF0cwBFY2xlYW4ARWRpbmdzAElmaW5pc2hlcnMARGZvb3QAR2tpbmRsZWQARm1lcmdlZABGcGxhY2VkAUVwdW1wcwJGc3F1YXRzAEZzdGFyczMBQnQzAEx0cmF2ZWxDYXJkaW8AR3dhbGxzaXQARWNyaXRSAURkYXlzohlQ9axGYWN0aXZl9URiYXJzgaNBbgFGc291cmNlAUJ0cxpqu/zcRXB1bXBzAU1wdW1wc0ZpbmlzaGVkAUdyZWdpb25zoURwdXNoAURyZXBzoURwdXNoGCdCcmgBRHNldHOhGCuhQXYYJ0N3YXOhGCv0RHdpbnMAQndrAUJ4cBhFGVD2rUZhY3RpdmX1RGJhcnOBo0FuAUZzb3VyY2UBQnRzGmq9TiBFcHVtcHMBTXB1bXBzRmluaXNoZWQBR3JlZ2lvbnOhRHB1c2gBRHJlcHOhRHB1c2gYKEJyaAFEc2V0c6EYK6FBdhgoRXN0YXJzAUN3YXOhGCuhQXYYJ0R3aW5zAUJ3awFCeHAYXkZlYXJuZWSgQ2ZhbaEYK6JEbGFzdBlQ9kFuAkhmYW1TdGVwc6BIaGVsZEZyb20ZUNpEbGFzdKNJaW50ZWxsZWN0pEZhbW91bnQBRG1vdmUYK0ZyZWFzb25IbGVhcm5pbmdCdHMaarv83EZzcGlyaXSjRmFtb3VudAFGcmVhc29uRmFjdGl2ZUJ0cxpqu/zcSHN0cmVuZ3RopEZhbW91bnQBRG1vdmUYK0ZyZWFzb25Ec3RhckJ0cxpqvU4gSGxhc3RNb3Zlo0NpZHgZUPZCdHMaar1OIEN3aW71RmxlZ2FjeaFKc3RhcnJ5RXllZPVGbG9ja2VkoENsb2eCpUVtb3Zlc4KkSWNvcnJlY3RlZPVEbW92ZRgrQ291dANBdhgno0NrZXlSMTc5MDcwNDkyMDoyNjM5MjoxRG1vdmUYK0NvdXQIR3F1ZXN0SUQZZxdEdGllcgFCdHMaarv83EJ4cBhFpkVsZXZlbAJFbW92ZXOBo0Rtb3ZlGCtDb3V0AkF2GChHcXVlc3RJRBlnGUR0aWVyAUJ0cxpqvU4gQnhwGF5HbXVzY2xlc6QBpURoYXJkAERsYXN0gqJEbW92ZRgrQnRzGmq9TiCiRG1vdmUYK0J0cxpqu/zcRHJ1bmcARHdlZWsBQndrAQKnRGJlc3QYK0RoYXJkAkRsYXN0gqJEbW92ZRgrQnRzGmq9TiCiRG1vdmUYK0J0cxpqu/zcRHJ1bmcCRHN0ZXACRHdlZWsCQndrAQWlRGhhcmQARGxhc3SCokRtb3ZlGCtCdHMaar1OIKJEbW92ZRgrQnRzGmq7/NxEcnVuZwBEd2VlawFCd2sBDKVEaGFyZABEbGFzdIKiRG1vdmUYK0J0cxpqvU4gokRtb3ZlGCtCdHMaarv83ERydW5nAER3ZWVrAUJ3awFEcGFpZKBJcGFpZEVhcmx5oEhwYXR0ZXJuc6FEcHVzaPVEcG9vbABEcHVtcKxEZGluZ/RDZmFtAElwZXJmb3JtZWT1Q3B0cwFHcXVlc3RJRBlnGUZxdWVzdHMBRXN0YXJzAUVzdGF0c6FIc3RyZW5ndGgBSXN0cmVha0RheQJEdGllcgFCdHMaar1OIEJ4cBheRnJlc3RUcxpqvU4gRXJ1bmdzoEVzdGF0c6VHYWdpbGl0eQpJaW50ZWxsZWN0DEZzcGlyaXQLR3N0YW1pbmEKSHN0cmVuZ3RoDEZzdHJlYWsCRnRva2VucwFHdG9wRGF5c4KiQ2RheUoyMDI2LTA5LTI5RW1vdmVzAaJDZGF5SjIwMjYtMDktMzBFbW92ZXMBRXVuaXRzoURwdXNoGE9FdmF1bHSjRmVtYmVycwBFbW92ZXMCR3JlY29yZHMBRHdlZWsBSXdlZWtCZWF0cwBKd2Vla0NhcmRpbwBJd2Vla0tpbmRzokZzcGlyaXT1SHN0cmVuZ3Ro9Ul3ZWVrTGVhcm71SXdlZWtQdW1wcwJId2Vla1NldHOBAkJ4cBijR3NoaWZ0ZWShB/VFc3BsaXT1SXNwbGl0U2V0c6BHdGhyb3VnaBpqvU4gRWNoYXJzgqFEZ3VpZFFQbGF5ZXItMS0wMDAwMDAwQaFEZ3VpZFFQbGF5ZXItMS0wMDAwMDAwQkpleHBvcnRlZEF0Gmq9akBDbG9nglgoMTc5MDcwNDg2MHwwfDI2MzkxfDF8MHwxfDJ8NDN8N3wzOXwwfDF8MFgiMTc5MDc5MTMyMHwyfDB8MHwwfDF8MnwwfDh8N3wwfDB8MEZzY2hlbWEC"
     },
     "save": {
       "chars": ["Player-1-0000000B"]

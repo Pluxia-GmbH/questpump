@@ -12,7 +12,9 @@
 //! device (`settings.offers.last_game_offer_at`); a match's warm move reads it without the offers (`Desk::seated_s`),
 //! so an offer let pass or put off stands nobody up. The game day's 04:00 bounds it only where the idle time never
 //! read. A quit keeps the pause's end and the last look a watched game counted at in settings.json
-//! (`settings.sitting`), and a start within `AWAY_S` of that quit (an update, Quit and reopen) takes them on.
+//! (`settings.sitting`), and a start within `sitting::away_s` of that quit (an update, Quit and reopen) takes them on.
+//! While work mode is on (slice 67) a call, presenting, mirroring and full screen count as input too, as a game in
+//! front does, so a long call is no time away (`runtime/work.rs`, which reads them then alone).
 
 use questpump_core::session::Zone;
 use questpump_core::sitting::Sitting;
@@ -58,15 +60,18 @@ pub(super) fn restored(kept: Option<KeptClock>, now: i64) -> Sitting {
 impl Helper {
 	/// One look at this computer's input (the loop's look, before the reminders' and the games'): a watched game that
 	/// ran at the games' last look keeps the idle time fresh while a match runs (`Watcher::match_runs`) or its window is
-	/// in front in this look's snapshot, as long as the system's idle time is under `PLAYING_CAP_MS` (`Sitting::look`).
+	/// in front in this look's snapshot, and so do work mode's call, presenting and full screen while it is on
+	/// (`work_look_here`, which this look runs first), as long as the system's idle time is under `PLAYING_CAP_MS`
+	/// (`Sitting::look`).
 	pub(super) fn sitting_look(&mut self, now: i64, snap: &Snapshot) {
-		let fresh = self.desk.p.games.as_ref().is_some_and(|g| {
+		let game = self.desk.p.games.as_ref().is_some_and(|g| {
 			g.watcher.match_runs()
 				|| (!g.running().is_empty()
 					&& procs::foreground_pid()
 						.is_some_and(|front| g.running().iter().any(|id| g.pids(id, snap).contains(&front))))
 		});
-		self.desk.p.sitting.look(now, input_idle_s(), fresh);
+		let present = self.work_look_here(game);
+		self.desk.p.sitting.look(now, input_idle_s(), game || present);
 	}
 
 	/// The seconds the sitting clock holds at unix second `now`, the sitting cue's: the latest game offer on any device

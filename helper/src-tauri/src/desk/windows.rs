@@ -160,7 +160,10 @@ const FORWARD_AGAIN: [Duration; 3] =
 /// game's close with "Open the pump after each match", the card's and the tray's Start, the tray, a second launch).
 /// macOS: tao's `set_focus` (`makeKeyAndOrderFront:`, then `activateIgnoringOtherApps:`), asked again after each of
 /// `FORWARD_AGAIN` while QuestPump is not active, since the window server refuses an app whose new window is not on
-/// screen yet ("presents 0 windows ... Denying the request", seen on 2026-10-26 when a League close built the window).
+/// screen yet ("presents 0 windows ... Denying the request", seen on 2026-10-26 when a League close built the window);
+/// where QuestPump is still not the active app after them (macOS may keep the app the player types in active, as a
+/// work pump that opens itself can meet), the window is ordered in front of the other apps' windows without the keys
+/// (`card::order_front`), as Windows does, and the log says so.
 /// Windows: never tao's `set_focus`, whose fallback sends a synthetic Alt key through `SendInput` (no input to a game,
 /// not even a key: `docs/companion.md`), but `SetForegroundWindow`; where Windows refuses it (the last input went to
 /// another app), the window comes above the others without activation and its taskbar button flashes until the player
@@ -184,6 +187,21 @@ fn forward(app: &AppHandle, window: &WebviewWindow) {
 					return;
 				}
 			}
+			// every ask was needed: the last one's outcome, and the window in front without the keys where it failed
+			std::thread::sleep(FORWARD_AGAIN.last().copied().unwrap_or_default());
+			let on_main = handle.clone();
+			let _ = handle.run_on_main_thread(move || {
+				if super::card::app_active() {
+					return;
+				}
+				let Some(window) = on_main.get_webview_window(MAIN) else { return };
+				match super::card::order_front(&window) {
+					Ok(()) => {
+						log::info!("window: macOS kept another app active; the window is in front without the keys");
+					}
+					Err(e) => log::warn!("window: {e}"),
+				}
+			});
 		});
 	}
 	#[cfg(windows)]
@@ -224,6 +242,53 @@ fn to_front(window: &WebviewWindow) -> Result<(), String> {
 		let _ = FlashWindowEx(&raw const flash);
 	}
 	Ok(())
+}
+
+/// A work pump's Back to work (docs/plan.md slice 67, on the main thread): the app noted as the pump came
+/// (`Shell::back_to`) made the active app again, QuestPump's window left open behind it (a Result never closes it:
+/// 2026-10-25). macOS: `NSRunningApplication`'s `activateWithOptions:` with no option (its main and key windows
+/// forward), which the active app may ask under macOS 14's cooperative activation, as QuestPump is at the click.
+/// Windows: its window restored where minimised, then `SetForegroundWindow`, which the foreground process (QuestPump at
+/// the click) may ask.
+pub(crate) fn back_to(front: crate::games::procs::Front) {
+	#[cfg(target_os = "macos")]
+	{
+		use objc2::runtime::AnyObject;
+		use objc2::{class, msg_send};
+		let Ok(pid) = i32::try_from(front.pid) else { return };
+		// SAFETY: NSRunningApplication's class method takes a pid and answers an autoreleased app or nil, checked before
+		// it is messaged; activateWithOptions: takes an NSUInteger of options (none) and answers a BOOL. This runs on the
+		// main thread.
+		let activated = unsafe {
+			let app: *mut AnyObject =
+				msg_send![class!(NSRunningApplication), runningApplicationWithProcessIdentifier: pid];
+			!app.is_null() && msg_send![app, activateWithOptions: 0usize]
+		};
+		if !activated {
+			log::info!("work mode: the app before the pump is gone, nothing to bring back");
+		}
+	}
+	#[cfg(windows)]
+	{
+		use ::windows::Win32::UI::WindowsAndMessaging::{
+			IsIconic, IsWindow, SW_RESTORE, SetForegroundWindow, ShowWindow,
+		};
+		let hwnd = crate::games::procs::front_window(&front);
+		// SAFETY: IsWindow checks the handle first (the window may have closed since it was noted; one that took its
+		// handle since is raised instead, harmlessly), and IsIconic, ShowWindow and SetForegroundWindow only read,
+		// restore and raise a window.
+		let raised = unsafe {
+			IsWindow(Some(hwnd)).as_bool() && {
+				if IsIconic(hwnd).as_bool() {
+					let _ = ShowWindow(hwnd, SW_RESTORE);
+				}
+				SetForegroundWindow(hwnd).as_bool()
+			}
+		};
+		if !raised {
+			log::info!("work mode: the app before the pump did not come back to the front");
+		}
+	}
 }
 
 /// Takes the page to `to` (a root's id or a Menu page's) once, `chosen` where the player chose that root in the View

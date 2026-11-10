@@ -120,6 +120,11 @@ struct PumpView {
 	swap: Option<SwapView>,
 	count: Option<CountView>,
 	result: Option<Earned>,
+	/// A work pump's Result reads Back to work (slice 67, `Run::back`): its Continue brings the app it came from back.
+	back: bool,
+	/// Work mode's work pump (slice 67, `Run::work`): its Pause menu holds Your body alone, never the offers' pauses
+	/// (`Desk::pump_pause` refuses them on it).
+	work: bool,
 	/// The pump ended done (`Run::ended_done`): an app pump over with a move done and no felt-unwell stop, which a
 	/// browser's Save offer and its `play` topic count (questpump-web `Play::seen`, docs/plan.md slice 63); never one
 	/// that ended before a move ran (a pain flag or a setup change over Ready that left no move).
@@ -2496,6 +2501,8 @@ fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
 		} else {
 			(run.stage == Stage::Done && !run.unwell && run.cut.is_none()).then(|| caught_up(run))
 		},
+		back: run.back,
+		work: run.work.is_some(),
 		ended_done: run.ended_done(),
 		reveal: run.reveal.clone(),
 		legend: run.legend,

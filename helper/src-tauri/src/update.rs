@@ -39,7 +39,7 @@ const RESTART: &str = "update-restart";
 
 /// A file of the updater's feed: the folder of its first endpoint (`plugins.updater.endpoints`, the public
 /// repository's permanent `helper-updater` release) with `name` in place of `latest.json` (the films' zip, the addon's
-/// `addon.json`, its signature and its zip).
+/// `addon-v2.json`, its signature and its zip).
 pub(crate) fn feed_file(app: &AppHandle, name: &str) -> Option<String> {
 	let endpoint = updater_config(app)?.get("endpoints")?.get(0)?.as_str()?;
 	let (folder, _) = endpoint.rsplit_once('/')?;

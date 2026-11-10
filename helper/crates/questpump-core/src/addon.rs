@@ -1,7 +1,9 @@
 //! The addon's release feed and its install on this computer (docs/companion.md, "The addon on this computer";
 //! rust-helper `mirror-installs-and-resets.md`, "The addon's feed and install"). Every addon tag puts three files on
-//! the public repository's permanent `helper-updater` release beside the helper's `latest.json`: `QuestPump-addon.zip`
-//! (the addon packager's zip, byte for byte the one the addon stores get), `addon.json` (`Feed`) and `addon.json.sig`,
+//! the public repository's permanent `helper-updater` release beside the helper's `latest.json`:
+//! `QuestPump-addon-v2.zip` (the release's three zips joined, the addon's own and its voice and figure packs', each
+//! file with the bytes the addon stores hand out: `tools/addon_feed.py`; docs/plan.md slice 71), `addon-v2.json`
+//! (`Feed`) and `addon-v2.json.sig`,
 //! made with the helper's own updater key by `tauri signer sign`, so `verify` checks it as `tauri-plugin-updater`
 //! checks a download: the signature's base64 text decoded, minisign's signature over the file's bytes against
 //! `plugins.updater.pubkey` (legacy signatures allowed, as the plugin allows them), and a version the trusted comment
@@ -12,9 +14,12 @@
 //! by file: those this computer holds already (`take_local`: the install's own, the desktop app's voice takes), by
 //! their sha256, then the rest out of the zip by byte ranges (`plan` on its central directory, `unpack_span` on each
 //! span fetched), else, whenever that cannot finish, the whole zip unpacked (`unpack`). Either way nothing is staged
-//! unless every check holds: each entry under one of the three folders the release ships (`FOLDERS`), no `..`, no
+//! unless every check holds: each entry under one of the folders a release ships (`FOLDERS`), no `..`, no
 //! absolute path, no link, every file of the feed's list there once with its size and sha256, and
-//! `QuestPump/QuestPump.toc`'s `## Version` the feed's (`check_version`). The helper keeps a record of each install it
+//! `QuestPump/QuestPump.toc`'s `## Version` the feed's (`check_version`). A job puts in only the folders that differ
+//! from the feed's (`Scope`, `differing`): a media pack another updater put in with the feed's own files stays as it
+//! is, and a missing pack is added to an install whose QuestPump another updater keeps. The helper keeps a record of
+//! each install it
 //! made (`Record`), which it manages only while the folders hold exactly the record's files (`tree`; a game that has no
 //! AddOns folder yet holds none); a folder that is or holds a link or a `.git` (a developer's `make link` folder, a
 //! clone) is never written. `swap` puts the staged folders in place by renames on the same volume (AddOns made first
@@ -34,10 +39,15 @@ use sha2::{Digest as _, Sha256};
 use crate::mirror::{rename_retried, toc_field};
 use crate::zip::{self, Archive, Entry, ZipError};
 
-/// The folders the release zip ships into `Interface/AddOns`, in the order a swap moves the old ones out; the new ones
-/// go in the other way round, QuestPump's own last, so a QuestPump folder of the new version means the others came
-/// first.
-pub const FOLDERS: [&str; 3] = ["QuestPump", "QuestPump_FigArmor", "QuestPump_Lines"];
+/// The folders a release ships into `Interface/AddOns` (the addon, its figure pack, its voice pack since slice 71,
+/// whose takes lay inside QuestPump until then, and the quests' lines; `tools/addon_feed.py` `FOLDERS`), in the order a
+/// swap moves the old ones out; the new ones go in the other way round, QuestPump's own last, so a QuestPump folder of
+/// the new version means the others came first. A feed need not hold every one (a release from before the packs has
+/// no voice folder).
+pub const FOLDERS: [&str; 4] = ["QuestPump", "QuestPump_FigArmor", "QuestPump_Voice", "QuestPump_Lines"];
+/// The media packs among them: downloads of their own beside the addon (docs/plan.md slice 71), which the helper also
+/// adds where one is missing from an install it does not keep.
+pub const PACKS: [&str; 2] = ["QuestPump_FigArmor", "QuestPump_Voice"];
 /// The addon's TOC in the zip, whose `## Version` must be the feed's.
 pub const TOC: &str = "QuestPump/QuestPump.toc";
 /// The staging folder beside AddOns in the flavour's `Interface` folder (the client walks AddOns alone): the zip or the
@@ -60,7 +70,7 @@ pub enum AddonError {
 	Io(#[from] std::io::Error),
 	#[error(transparent)]
 	Zip(#[from] ZipError),
-	#[error("addon.json: {0}")]
+	#[error("addon-v2.json: {0}")]
 	Json(#[from] serde_json::Error),
 	#[error("the signature: {0}")]
 	Signature(String),
@@ -72,7 +82,7 @@ fn bad(why: impl Into<String>) -> AddonError {
 	AddonError::Bad(why.into())
 }
 
-/// `addon.json`, as the release workflow writes it.
+/// `addon-v2.json`, as the release workflow writes it.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Feed {
 	/// The tag without its leading `v`, such as `1.0.0`.
@@ -122,7 +132,7 @@ impl Feed {
 
 	/// The feed's own rules: a version that parses, an interface, the zip at the release's own address (`zip_url`, the
 	/// feed's folder on github.com: the helper talks to no other host), sha256s in hex, and every file at a safe path
-	/// of the three folders, once, the TOC among them.
+	/// of the folders, once, the TOC among them.
 	fn check(&self, zip_url: &str) -> Result<(), AddonError> {
 		if version(&self.version).is_none() {
 			return Err(bad(format!("version {:?} does not read", self.version)));
@@ -186,7 +196,7 @@ fn from_base64(text: &str) -> Result<String, AddonError> {
 	String::from_utf8(bytes).map_err(|_| AddonError::Signature("not UTF-8".to_owned()))
 }
 
-/// `addon.json`'s bytes checked against its `.sig` (the file's text) and the updater's public key (the content of
+/// `addon-v2.json`'s bytes checked against its `.sig` (the file's text) and the updater's public key (the content of
 /// `plugins.updater.pubkey`), then read and its rules checked, the zip's address `zip_url` among them.
 ///
 /// # Errors
@@ -221,8 +231,80 @@ pub fn safe_path(path: &str, dir: bool) -> bool {
 	parts.iter().all(plain) && FOLDERS.contains(&parts[0]) && (dir || parts.len() > 1)
 }
 
+/// The folder of `FOLDERS` a release path is in.
+fn folder_of(path: &str) -> &str {
+	path.split('/').next().unwrap_or_default()
+}
+
+/// One folder's files out of paths with their sha256.
+fn in_folder<'a>(files: impl Iterator<Item = (&'a String, &'a String)>, folder: &str) -> BTreeMap<&'a str, &'a str> {
+	files.filter(|(path, _)| folder_of(path) == folder).map(|(path, sha256)| (path.as_str(), sha256.as_str())).collect()
+}
+
+/// The feed's folders that `tree` does not hold as the feed has them, missing or with other files: the ones an install
+/// or an update puts in. A folder whose files are exactly the feed's stays as it is (a pack another updater put in is
+/// never replaced by the same files), and a folder the feed does not hold is left alone. In a tree that is or holds a
+/// link every folder of the feed differs; the swap's check refuses such a tree first.
+#[must_use]
+pub fn differing(feed: &Feed, tree: &Tree) -> Vec<&'static str> {
+	FOLDERS
+		.into_iter()
+		.filter(|folder| {
+			let want = in_folder(feed.files.iter().map(|f| (&f.path, &f.sha256)), folder);
+			let Tree::Files(held) = tree else { return !want.is_empty() };
+			!want.is_empty() && want != in_folder(held.iter(), folder)
+		})
+		.collect()
+}
+
+/// Which of the feed's folders a job puts in.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Scope {
+	/// Every folder the install does not hold as the feed has it (`differing`): a first install, an update.
+	Differing,
+	/// The media packs alone (`PACKS`), each only where it is missing or still holds the files the helper itself put
+	/// in (`kept`, a record's files) while the feed's differ: an install whose QuestPump is current or another
+	/// updater's. A pack another updater put in is never touched.
+	Packs { kept: BTreeMap<String, String> },
+}
+
+impl Scope {
+	/// The folders to put in, as `tree` stands; none for a packs job in a tree that is or holds a link.
+	#[must_use]
+	pub fn folders(&self, feed: &Feed, tree: &Tree) -> Vec<&'static str> {
+		let differ = differing(feed, tree);
+		match (self, tree) {
+			(Self::Differing, _) => differ,
+			(Self::Packs { .. }, Tree::Linked) => Vec::new(),
+			(Self::Packs { kept }, Tree::Files(held)) => differ
+				.into_iter()
+				.filter(|folder| PACKS.contains(folder))
+				.filter(|folder| {
+					let on_disk = in_folder(held.iter(), folder);
+					on_disk.is_empty() || on_disk == in_folder(kept.iter(), folder)
+				})
+				.collect(),
+		}
+	}
+}
+
+/// A record's files once a job put `folders` in from `feed`: those folders' files the feed's, every other as it was.
+#[must_use]
+pub fn merged(files: Option<&BTreeMap<String, String>>, feed: &Feed, folders: &[&str]) -> BTreeMap<String, String> {
+	let mut out: BTreeMap<String, String> = files
+		.into_iter()
+		.flatten()
+		.filter(|(path, _)| !folders.contains(&folder_of(path)))
+		.map(|(path, sha256)| (path.clone(), sha256.clone()))
+		.collect();
+	out.extend(
+		feed.files.iter().filter(|f| folders.contains(&folder_of(&f.path))).map(|f| (f.path.clone(), f.sha256.clone())),
+	);
+	out
+}
+
 /// The zip's entries (its central directory, in its order) checked against the feed before anything is written: no
-/// link, every folder entry one of the three folders or under one, every file entry a file the feed lists, once, with
+/// link, every folder entry one of the folders or under one, every file entry a file the feed lists, once, with
 /// the feed's size, and every file the feed lists there.
 fn contents<'a>(entries: &'a [Entry], feed: &'a Feed) -> Result<Contents<'a>, AddonError> {
 	let wanted: BTreeMap<&str, &FeedFile> = feed.files.iter().map(|f| (f.path.as_str(), f)).collect();
@@ -305,11 +387,15 @@ pub fn unpack(zip_path: &Path, feed: &Feed, into: &Path) -> Result<(), AddonErro
 	check_version(into, feed)
 }
 
-/// The staged TOC's `## Version` is the feed's.
+/// The staged TOC's `## Version` is the feed's; nothing to check where QuestPump's own folder is not among those the
+/// job puts in (`Scope`: `swap` refuses a folder that is due and not staged).
 ///
 /// # Errors
 /// The TOC does not read or names another version.
 pub fn check_version(into: &Path, feed: &Feed) -> Result<(), AddonError> {
+	if !into.join(TOC).exists() {
+		return Ok(());
+	}
 	let toc = std::fs::read_to_string(into.join(TOC))?;
 	let shipped = toc_field(&toc, "Version").unwrap_or_default(); // copy-lint: not shown (a TOC field)
 	if !same(shipped, &feed.version) {
@@ -318,21 +404,29 @@ pub fn check_version(into: &Path, feed: &Feed) -> Result<(), AddonError> {
 	Ok(())
 }
 
-/// Stages into `into`, made anew, every file of the feed that this computer holds already, found by its sha256: in the
-/// three folders in `addons` (`tree`; none where they are or hold a link) and among the desktop app's own copies of the
-/// addon's voice takes (`voice`, a folder of files). Each is copied while its sha256 is taken and kept only when its
-/// size and sha256 are the feed's, so a file changed since it was read is fetched instead. Answers the feed's files
-/// still to fetch, in its order.
+/// Stages into `into`, made anew, every file of the folders the job puts in (`scope`, as `addons` stands) that this
+/// computer holds already, found by its sha256: in the folders in `addons` (`tree`; none where they are or hold a
+/// link) and among the desktop app's own copies of the addon's voice takes (`voice`, a folder of files). Each is copied
+/// while its sha256 is taken and kept only when its size and sha256 are the feed's, so a file changed since it was
+/// read is fetched instead. Answers those folders' files still to fetch, in the feed's order.
 ///
 /// # Errors
 /// `into` or a file in it cannot be made or written (a source that does not read is fetched instead).
-pub fn take_local(feed: &Feed, addons: &Path, voice: Option<&Path>, into: &Path) -> Result<Vec<FeedFile>, AddonError> {
+pub fn take_local(
+	feed: &Feed,
+	addons: &Path,
+	voice: Option<&Path>,
+	scope: &Scope,
+	into: &Path,
+) -> Result<Vec<FeedFile>, AddonError> {
 	if into.exists() {
 		std::fs::remove_dir_all(into)?;
 	}
 	std::fs::create_dir_all(into)?;
+	let read = tree(addons).unwrap_or(Tree::Linked);
+	let folders = scope.folders(feed, &read);
 	let mut held: BTreeMap<String, PathBuf> = BTreeMap::new();
-	if let Ok(Tree::Files(files)) = tree(addons) {
+	if let Tree::Files(files) = read {
 		for (path, sha256) in files {
 			held.entry(sha256).or_insert_with(|| addons.join(path));
 		}
@@ -346,7 +440,7 @@ pub fn take_local(feed: &Feed, addons: &Path, voice: Option<&Path>, into: &Path)
 		}
 	}
 	let mut wanted = Vec::new();
-	for file in &feed.files {
+	for file in feed.files.iter().filter(|f| folders.contains(&folder_of(&f.path))) {
 		let taken = match held.get(&file.sha256) {
 			Some(from) => copy_checked(from, file, into)?,
 			None => false,
@@ -510,7 +604,7 @@ pub enum Tree {
 	Files(BTreeMap<String, String>),
 }
 
-/// What the three folders in `addons` hold (an AddOns folder that is itself a link is `Linked`; one that is not there
+/// What the addon's folders in `addons` hold (an AddOns folder that is itself a link is `Linked`; one that is not there
 /// yet, as in a new install until an addon is put there, holds nothing).
 ///
 /// # Errors
@@ -577,6 +671,21 @@ impl Record {
 	pub fn matches(&self, tree: &Tree) -> bool {
 		matches!(tree, Tree::Files(files) if *files == self.files)
 	}
+
+	/// The record's files of the media packs that `tree` still holds exactly as recorded: what the helper goes on
+	/// keeping of an install whose other folders another updater rewrote.
+	#[must_use]
+	pub fn kept_packs(&self, tree: &Tree) -> BTreeMap<String, String> {
+		let Tree::Files(held) = tree else { return BTreeMap::new() };
+		let mut kept = BTreeMap::new();
+		for pack in PACKS {
+			let mine = in_folder(self.files.iter(), pack);
+			if !mine.is_empty() && mine == in_folder(held.iter(), pack) {
+				kept.extend(mine.into_iter().map(|(path, sha256)| (path.to_owned(), sha256.to_owned())));
+			}
+		}
+		kept
+	}
 }
 
 /// The staging folder of an AddOns folder: beside it in the flavour's `Interface`.
@@ -585,41 +694,43 @@ pub fn staging(addons: &Path) -> Option<PathBuf> {
 	Some(addons.parent()?.join(STAGING))
 }
 
-/// Puts the folders staged in `<staging>/new` in place of the ones in `addons` (made first where a new install has no
-/// AddOns folder yet): the old ones moved into `<staging>/old`, the names of the new ones written into `MOVING`, the
-/// new ones moved in, QuestPump's own last, then `DONE` written (each rename on the same volume, tried again on
-/// Windows while a file is held); on any error every folder moved goes back where it was.
+/// Puts `folders` (a `Scope`'s, of `FOLDERS`) from `<staging>/new` in place of the ones in `addons` (made first where a
+/// new install has no AddOns folder yet), and no other folder: the old ones moved into `<staging>/old`, the names of
+/// the new ones written into `MOVING`, the new ones moved in, QuestPump's own last where it is among them, then `DONE`
+/// written (each rename on the same volume, tried again on Windows while a file is held); on any error every folder
+/// moved goes back where it was. With no folder to put in it only writes `DONE`.
 ///
 /// # Errors
-/// No new QuestPump folder staged, the step that failed, and whether every old folder went back.
-pub fn swap(addons: &Path, staging: &Path) -> std::io::Result<()> {
+/// A folder of `folders` is not staged, the step that failed, and whether every old folder went back.
+pub fn swap(addons: &Path, staging: &Path, folders: &[&'static str]) -> std::io::Result<()> {
 	let (new, old) = (staging.join(NEW), staging.join(OLD));
-	// QuestPump's own goes in last, so `recover` reads `MOVING` with no QuestPump in `new` as a finished swap
-	if !new.join(FOLDERS[0]).is_dir() {
-		return Err(std::io::Error::other(format!("no {} folder staged", FOLDERS[0])));
+	// in the other way round, so the name `MOVING` lists last is the one that goes in last (QuestPump's own where it
+	// is among them): `recover` reads `MOVING` with that folder no longer in `new` as a finished swap
+	let coming: Vec<&'static str> = FOLDERS.into_iter().rev().filter(|name| folders.contains(name)).collect();
+	if let Some(name) = coming.iter().find(|name| !new.join(name).is_dir()) {
+		return Err(std::io::Error::other(format!("no {name} folder staged")));
 	}
 	std::fs::create_dir_all(addons)?;
 	std::fs::create_dir_all(&old)?;
 	let mut out: Vec<&str> = Vec::new();
 	let mut moved_in: Vec<&str> = Vec::new();
 	let mut step = || -> std::io::Result<()> {
-		for name in FOLDERS {
+		for name in FOLDERS.into_iter().filter(|name| folders.contains(name)) {
 			if std::fs::symlink_metadata(addons.join(name)).is_ok() {
 				rename_retried(&addons.join(name), &old.join(name))?;
 				out.push(name);
 			}
 		}
-		let coming: Vec<&str> = FOLDERS.into_iter().rev().filter(|name| new.join(name).is_dir()).collect();
 		std::fs::write(staging.join(MOVING), coming.join("\n"))?;
-		for name in coming {
+		for name in &coming {
 			rename_retried(&new.join(name), &addons.join(name))?;
 			moved_in.push(name);
 		}
 		Ok(())
 	};
 	let Err(e) = step() else {
-		// every folder is in: a marker that does not write leaves `MOVING` with no QuestPump in `new`, which `recover`
-		// reads the same way
+		// every folder is in: a marker that does not write leaves `MOVING` with its last folder no longer in `new`,
+		// which `recover` reads the same way
 		let _ = std::fs::write(staging.join(DONE), "");
 		return Ok(());
 	};
@@ -644,8 +755,8 @@ pub fn swap(addons: &Path, staging: &Path) -> std::io::Result<()> {
 /// What a swap left in `staging` put right, then the staging folder removed. A swap cut short (the helper quit or the
 /// computer stopped mid-rename) has each new folder `MOVING` names that is in `addons` and no longer in `new` moved
 /// back into `new`, then every old folder whose place in `addons` is empty put back, then `DONE` written. A finished
-/// swap (`DONE` there, or `MOVING` with QuestPump's own new folder, which goes in last, no longer in `new`: cut between
-/// that rename and the marker) only has the folder removed, never an old folder put back; `old` and `new` go before
+/// swap (`DONE` there, or `MOVING` with the folder it lists last, the one that goes in last, no longer in `new`: cut
+/// between that rename and the marker) only has the folder removed, never an old folder put back; `old` and `new` go before
 /// the markers, so a removal cut short still reads as finished. Answers the folders put back.
 ///
 /// # Errors
@@ -656,7 +767,9 @@ pub fn recover(addons: &Path, staging: &Path) -> std::io::Result<Vec<&'static st
 	}
 	let (new, old) = (staging.join(NEW), staging.join(OLD));
 	let moving = std::fs::read_to_string(staging.join(MOVING)).ok();
-	let done = staging.join(DONE).exists() || (moving.is_some() && !new.join(FOLDERS[0]).exists());
+	// the folder that went in last, as `swap` wrote it: one of ours, or the list says nothing
+	let last = moving.as_deref().and_then(|coming| coming.lines().last()).filter(|name| FOLDERS.contains(name));
+	let done = staging.join(DONE).exists() || last.is_some_and(|name| !new.join(name).exists());
 	let mut back = Vec::new();
 	if !done {
 		if let Some(coming) = &moving {

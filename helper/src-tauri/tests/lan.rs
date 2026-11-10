@@ -158,6 +158,7 @@ fn serve_on(listeners: Vec<tokio::net::TcpListener>, locked: bool, looping: bool
 							playing: false,
 							arms: false,
 							game_offer_at,
+							work: None,
 						});
 						let _ = done.send(SyncAnswer { rows_store: Some(String::new()), game_held: Vec::new() });
 					}
@@ -294,6 +295,7 @@ fn held(device: Device, t0: i64, since: u64) -> SyncRequest {
 		hold: None,
 		offer_taken: None,
 		game_offer_at: None,
+		work: None,
 		pro_proof: None,
 		wait: None,
 	}

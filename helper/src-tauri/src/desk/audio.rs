@@ -22,9 +22,10 @@
 //!   whether Big view shows the reps counted and the count step starts from them (`Desk::counts_chosen`), so a
 //!   screen reader or a skipped count never hides the number;
 //! - a move's guide (Ready's "Read How and Tips aloud", DESK-PUMP's schedule) reads the game's own takes of the move's
-//!   How and Tips from the QuestPump addon of the install the app follows (`Media/Voice/guide/`, which the app bundles
-//!   none of), each only where that install's VoiceClips.lua holds its id with the hash of the words the app shows and
-//!   its file is there (the take of the line whose words it says where the install shares one, `ns.VoiceFiles`), timed
+//!   How and Tips from the voice pack of the install the app follows (`QuestPump_Voice/Takes/guide/`, which the app
+//!   bundles none of; in an addon from before the packs, QuestPump's own `Media/Voice/guide/`: `Layout`), each only
+//!   where that install's list of its takes holds its id with the hash of the words the app shows and
+//!   its file is there (the take of the line whose words it says where the install shares one, its list's files), timed
 //!   by that install's own length of it (`guide_read`), on a player of its own beside the line's: a line stops none of
 //!   its takes, nor does a hush; it plays at the voice's level whatever the switches say (the player asked for it) and
 //!   never goes to the live region;
@@ -126,12 +127,38 @@ fn gain(level: u8) -> f32 {
 /// `guide/<part>.<key>[.<gear>].<n>`.
 const GUIDE: [&str; 2] = ["how", "tips"];
 
-/// The guide's `["guide/…"] = <value>,` lines of a table of an install's VoiceClips.lua (`ns.<table> = {` to its `}`),
-/// each its id and its value's text (a string's with its quotes).
-fn guide_lines<'a>(text: &'a str, table: &str) -> impl Iterator<Item = (&'a str, &'a str)> {
-	let head = format!("ns.{table} = {{");
+/// Where an install keeps the voice's takes and the list of them (tools/voice/voice.mjs writes both lists): the voice
+/// pack, a folder of its own beside QuestPump since slice 71, whose Manifest.lua lists what the pack holds, or, in an
+/// addon from before the packs (to 1.0.1), QuestPump's own VoiceClips.lua and `Media/Voice/`. The list's three tables
+/// by their first line: each id's hash, its take's length and the line whose take it plays.
+struct Layout {
+	list: PathBuf,
+	takes: PathBuf,
+	tables: [&'static str; 3],
+}
+
+/// An install's layouts, the voice pack's first.
+fn layouts(addons: &Path) -> [Layout; 2] {
+	let (pack, addon) = (addons.join("QuestPump_Voice"), addons.join("QuestPump"));
+	[
+		Layout {
+			list: pack.join("Manifest.lua"),
+			takes: pack.join("Takes"),
+			tables: ["QuestPumpVoice.clips = {", "QuestPumpVoice.seconds = {", "QuestPumpVoice.files = {"],
+		},
+		Layout {
+			list: addon.join("VoiceClips.lua"),
+			takes: addon.join("Media").join("Voice"),
+			tables: ["ns.VoiceClips = {", "ns.VoiceSeconds = {", "ns.VoiceFiles = {"],
+		},
+	]
+}
+
+/// The guide's `["guide/…"] = <value>,` lines of a table of an install's list of takes (from its first line, `head`,
+/// to its `}`), each its id and its value's text (a string's with its quotes).
+fn guide_lines<'a>(text: &'a str, head: &'static str) -> impl Iterator<Item = (&'a str, &'a str)> {
 	text.lines()
-		.skip_while(move |line| !line.starts_with(&head))
+		.skip_while(move |line| !line.starts_with(head))
 		.skip(1)
 		.take_while(|line| !line.starts_with('}'))
 		.filter_map(|line| line.trim().strip_prefix("[\"")?.split_once("\"] = "))
@@ -139,17 +166,17 @@ fn guide_lines<'a>(text: &'a str, table: &str) -> impl Iterator<Item = (&'a str,
 		.map(|(id, value)| (id, value.trim_end_matches(',')))
 }
 
-/// The guide's takes in an install's VoiceClips.lua: each id's hash (`ns.VoiceClips`), its take's length in seconds
-/// (`ns.VoiceSeconds`, by which the game times its guide: Speech.lua), a take with both alone, and the line whose take
-/// it plays where it says that line's words (`ns.VoiceFiles`, one take a sentence since 2026-11-05; an addon from
-/// before has no such table, and each line plays its own).
-fn guide_takes(text: &str) -> HashMap<String, Take> {
+/// The guide's takes in an install's list (`tables`: a `Layout`'s): each id's hash, its take's length in seconds (by
+/// which the game times its guide: Speech.lua), a take with both alone, and the line whose take it plays where it says
+/// that line's words (one take a sentence since 2026-11-05; an addon from before has no such table, and each line
+/// plays its own).
+fn guide_takes(text: &str, [clips, seconds, files]: [&'static str; 3]) -> HashMap<String, Take> {
 	let seconds: HashMap<&str, f64> =
-		guide_lines(text, "VoiceSeconds").filter_map(|(id, value)| Some((id, value.parse().ok()?))).collect();
-	let files: HashMap<&str, &str> = guide_lines(text, "VoiceFiles")
+		guide_lines(text, seconds).filter_map(|(id, value)| Some((id, value.parse().ok()?))).collect();
+	let files: HashMap<&str, &str> = guide_lines(text, files)
 		.filter_map(|(id, value)| Some((id, value.strip_prefix('"')?.strip_suffix('"')?)))
 		.collect();
-	guide_lines(text, "VoiceClips")
+	guide_lines(text, clips)
 		.filter_map(|(id, value)| {
 			let take = Take {
 				hash: value.parse().ok()?,
@@ -169,11 +196,12 @@ struct Take {
 	file: Option<String>,
 }
 
-/// An install's VoiceClips.lua as last read: its file, its modified time and its guide's takes (`guide_takes`; none
-/// where it did not read).
+/// An install's list of takes as last read: its file, its modified time, the folder of its takes and its guide's takes
+/// (`guide_takes`; none where it did not read).
 struct Installed {
 	file: PathBuf,
 	modified: SystemTime,
+	voice: PathBuf,
 	takes: HashMap<String, Take>,
 }
 
@@ -182,7 +210,7 @@ pub(crate) struct Audio {
 	jobs: mpsc::Sender<Job>,
 	/// The live region's last line.
 	announced: u64,
-	/// The followed install's VoiceClips.lua, read again once it changes (`guide_read`).
+	/// The followed install's list of takes, read again once it changes (`guide_read`).
 	installed: Option<Installed>,
 }
 
@@ -303,21 +331,19 @@ impl Audio {
 	}
 
 	/// The takes of move `key`'s guide (Speech.lua `GuideTakes`): How's, then Tips' from where `tips` says, each part
-	/// the implement's own (`gear`) where the voice has it, each take from the QuestPump addon of the install the app
-	/// follows (`followed`, its AddOns folder), timed by that install's own length of it, and only where that install's
-	/// VoiceClips.lua holds its id with the hash of the words the app shows (`tools/voice/clips.json`, the words of
+	/// the implement's own (`gear`) where the voice has it, each take from the voice of the install the app follows
+	/// (`followed`, its AddOns folder; `layouts`), timed by that install's own length of it, and only where that
+	/// install's list holds its id with the hash of the words the app shows (`tools/voice/clips.json`, the words of
 	/// `contract/moves.json`) and its file is there (the take of the line whose words it says where that install shares
-	/// one, else its own), so an addon of another version never reads other words; a part stops at its first take
+	/// one, else its own), so a voice of another version never reads other words; a part stops at its first take
 	/// without them, as the game's stops at the first id it lacks, so the voice skips no step the screen shows; none
 	/// without such an install.
 	pub(crate) fn guide_read(&mut self, followed: Option<&Path>, key: &str, gear: Option<&str>) -> GuideTakes {
-		let Some(addon) = followed.map(|addons| addons.join("QuestPump")) else {
+		let Some(Installed { voice, takes: installed, .. }) = followed.and_then(|addons| self.installed_guide(addons))
+		else {
 			return GuideTakes::default();
 		};
-		let Some(installed) = self.installed_guide(&addon.join("VoiceClips.lua")) else {
-			return GuideTakes::default();
-		};
-		let voice = addon.join("Media").join("Voice").join("guide");
+		let voice = voice.join("guide");
 		let mut guide = GuideTakes::default();
 		for part in GUIDE {
 			let own = format!("guide/{part}.{key}"); // copy-lint: not shown (a voice take's id)
@@ -346,21 +372,24 @@ impl Audio {
 		guide
 	}
 
-	/// The guide's takes of the install's VoiceClips.lua at `file` (`guide_takes`), read again only once it changes;
-	/// none where it is not there.
-	fn installed_guide(&mut self, file: &Path) -> Option<&HashMap<String, Take>> {
-		let modified = std::fs::metadata(file).and_then(|m| m.modified()).ok()?;
-		if !self.installed.as_ref().is_some_and(|i| i.file == file && i.modified == modified) {
-			let takes = std::fs::read_to_string(file).map_or_else(
+	/// The guide's takes of the install's list of takes (the first of `layouts` whose list is there; `guide_takes`),
+	/// read again only once it changes; none where neither is there.
+	fn installed_guide(&mut self, addons: &Path) -> Option<&Installed> {
+		let (layout, modified) = layouts(addons)
+			.into_iter()
+			.find_map(|layout| Some((std::fs::metadata(&layout.list).and_then(|m| m.modified()).ok()?, layout)))
+			.map(|(modified, layout)| (layout, modified))?;
+		if !self.installed.as_ref().is_some_and(|i| i.file == layout.list && i.modified == modified) {
+			let takes = std::fs::read_to_string(&layout.list).map_or_else(
 				|e| {
-					log::warn!("sound: {}: {e}", file.display());
+					log::warn!("sound: {}: {e}", layout.list.display());
 					HashMap::new()
 				},
-				|text| guide_takes(&text),
+				|text| guide_takes(&text, layout.tables),
 			);
-			self.installed = Some(Installed { file: file.to_owned(), modified, takes });
+			self.installed = Some(Installed { file: layout.list, modified, voice: layout.takes, takes });
 		}
-		self.installed.as_ref().map(|i| &i.takes)
+		self.installed.as_ref()
 	}
 }
 

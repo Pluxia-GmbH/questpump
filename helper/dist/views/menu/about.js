@@ -176,6 +176,9 @@ register("desk.menu.does", () => {
 		h("qp-card", {class: "qp-stack-small"}, words(t("desk.menu.does.game"), "body"), games, heard.client.line,
 			heard.logs.line, heard.shared.line, heard.saves.line, heard.screen.line, detect, heard.steam.line,
 			words(t("desk.menu.does.idle"), "body"),
+			// work mode's reads (slice 67, helper/src-tauri/src/presence.rs), each only while it runs
+			words(t("desk.menu.does.front"), "body"), words(t("desk.menu.does.calls"), "body"),
+			words(t("desk.menu.does.fullscreen"), "body"),
 			words(t("desk.menu.does.never"), "body")),
 		h("qp-section-label", {label: t("desk.menu.does.keeps")}), kept,
 		words(t("desk.menu.does.removes"), "meta"),

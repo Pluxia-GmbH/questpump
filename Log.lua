@@ -104,8 +104,8 @@ else
 end
 
 -- The login's summary, once the save is bound and the setup screen decided (a second after PLAYER_ENTERING_WORLD):
--- the build, the save and its rows by source, the companions, the helper's state, the sound the voice needs and the
--- figure pack; then what the mirror brought.
+-- the build, the save and its rows by source, the companions, the helper's state, the sound the voice needs, the
+-- voice pack and the figure pack; then what the mirror brought.
 local function saveState()
 	if ns.readOnly then return "read-only (a newer QuestPump's save)" end
 	if ns.svBroken then
@@ -148,10 +148,11 @@ ns.RegisterEvent("PLAYER_ENTERING_WORLD", function(isInitialLogin, isReloadingUi
 			return ns.Log("W", "%s: v%s, build %s: the save is not bound", how, ns.version, tostring(build))
 		end
 		local silence = ns.Speech.Silence()
-		ns.Log("I", "%s: v%s, build %s, interface %s, %s; save %s, %d rows (%s); %s; %s; voice %s; figures %s", how,
-			ns.version, tostring(build), tostring(toc), GetLocale(), saveState(), #ns.db.log,
+		ns.Log("I", "%s: v%s, build %s, interface %s, %s; save %s, %d rows (%s); %s; %s; voice %s, its pack %s; "
+			.. "figures %s", how, ns.version, tostring(build), tostring(toc), GetLocale(), saveState(), #ns.db.log,
 			sources(ns.RowsBySource(ns.db.log)), setupState(), helperState(),
-			not ns.profile.speech and "off" or silence and ("silent: " .. silence) or "on", tostring(ns.Figure.state))
+			not ns.profile.speech and "off" or silence and ("silent: " .. silence) or "on", tostring(ns.Speech.state),
+			tostring(ns.Figure.state))
 		-- what the helper's mirror brought at the bind (ns.BindDB): a reset newer than the save, the rows merged by source
 		local merge = ns.mirrorMerge or {}
 		if merge.resetAt then

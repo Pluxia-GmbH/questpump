@@ -110,7 +110,6 @@ function packLine(pack) {
 	switch (pack.state) {
 		case "installed": return t("desk.menu.computer.pack.installed");
 		case "missing": return t("desk.menu.computer.pack.missing");
-		case "other": return t("desk.menu.computer.pack.other", {pack: pack.pack, addon: pack.addon});
 		default: return t("desk.menu.computer.pack.notseen");
 	}
 }
@@ -221,6 +220,7 @@ register("desk.menu.computer", () => {
 	const reading = status(t("desk.menu.computer.screen"), "device_computer");
 	const mirror = status(t("desk.menu.computer.mirror"), "action_log");
 	const pack = status(t("desk.menu.computer.pack"), "action_character");
+	const voice = status(t("desk.menu.computer.voice"), "action_book");
 	// Add QuestPump to the game or Update now while the topic offers one, else its line alone
 	const addon = h("qp-row", {heading: t("desk.addon.row"), glyph: "action_pump", trailing: "shown"});
 	addon.addEventListener("click", () => {
@@ -242,7 +242,7 @@ register("desk.menu.computer", () => {
 	const size = sizeRow();
 
 	view.body.append(state, next, move, screen, access,
-		h("qp-card", {rows: true}, game, reading, mirror, addon, pack, animations, version),
+		h("qp-card", {rows: true}, game, reading, mirror, addon, pack, voice, animations, version),
 		h("qp-card", {rows: true}, folder), note, autostartCard, h("qp-card", {rows: true}, size.el));
 
 	watch(view, "menu.phones", (p) => {
@@ -280,6 +280,8 @@ register("desk.menu.computer", () => {
 		addon.value = offer ? t(offer === "add" ? "desk.addon.add" : "desk.addon.update") : null;
 		pack.hidden = c.pack.state === "absent";
 		pack.meta = packLine(c.pack);
+		voice.hidden = c.voice.state === "absent";
+		voice.meta = packLine(c.voice);
 		animations.meta = animationsLine(c.animations);
 		version.meta = versionLine(c.version);
 		const updateNow = c.version.update?.state === "ready" && c.version.update.now;

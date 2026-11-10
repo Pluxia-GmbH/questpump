@@ -272,6 +272,7 @@ fn held(client: &str, wait: Option<i64>) -> SyncRequest {
 		hold: None,
 		offer_taken: None,
 		game_offer_at: None,
+		work: None,
 		pro_proof: None,
 		wait,
 	}

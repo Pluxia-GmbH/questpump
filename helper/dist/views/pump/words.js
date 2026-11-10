@@ -65,9 +65,11 @@ export function sizes() {
 	];
 }
 
-/** The Result's Continue: a move pump returns where it started (the ladder's page, the move's window or page, the
+/** The Result's Continue: a work pump's Back to work, which brings the app that was in front back (`pump.back`, slice
+ * 67: on the computer alone); a move pump returns where it started (the ladder's page, the move's window or page, the
  * list); any other pump's Continue. */
 export function continueWords(pump) {
+	if (pump.back) return t("desk.pump.done.work");
 	switch (pump.what === "move" ? pump.from?.place : null) {
 		case "ladder": return t("pump.done.back.ladder");
 		case "move": return t("pump.done.back.move");

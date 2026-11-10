@@ -39,6 +39,7 @@ pub mod seams;
 pub mod settings;
 pub mod streak;
 pub mod sync;
+pub mod work;
 
 use questpump_core::body::Kept;
 use questpump_core::proof::Book;
@@ -74,6 +75,8 @@ pub struct Desk<P: Platform> {
 	pub pumps: pump::Pumps,
 	/// The sync between the player's devices, beside the account in the settings (slice 60).
 	pub sync: sync::SyncState,
+	/// Work mode's clock and its ask on this device, beside its shared state in the settings (slice 67).
+	pub work: work::WorkDesk,
 }
 
 impl<P: Platform> Desk<P> {
@@ -88,6 +91,7 @@ impl<P: Platform> Desk<P> {
 		engine: engine::Door<P>,
 	) -> Self {
 		let zone = p.zone();
+		let work = work::WorkDesk::kept(&settings);
 		Self {
 			p,
 			publisher,
@@ -100,6 +104,7 @@ impl<P: Platform> Desk<P> {
 			book_log: book::BookLog::default(),
 			pumps: pump::Pumps::default(),
 			sync: sync::SyncState::default(),
+			work,
 		}
 	}
 }
@@ -257,6 +262,7 @@ impl<P: Platform> Desk<P> {
 			"sync" => self.sync_intent(intent),
 			"email" => self.email_intent(intent),
 			"restore" => self.restore_intent(intent),
+			"work" => self.work_intent(intent),
 			_ => Err(intent.unknown()),
 		}
 	}
@@ -273,7 +279,7 @@ impl<P: Platform> Desk<P> {
 				| "share" | "log"
 				| "pump" | "sound"
 				| "sync" | "email"
-				| "restore"
+				| "restore" | "work"
 		)
 	}
 }

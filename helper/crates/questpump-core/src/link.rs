@@ -27,6 +27,7 @@ use crate::protocol::{Command, RowRecord, SheetRecord, Source};
 use crate::seal::NONCE;
 use crate::session::{BankMove, BankPump, CatchupMove, CatchupPump};
 use crate::verdict::{Outcome, Verdict};
+use crate::work::Work;
 
 /// The most rows one `GET /v1/history` or `GET /v1/app_rows` page carries.
 pub const HISTORY_PAGE: usize = 5_000;
@@ -100,8 +101,9 @@ const REACH_KEPT: usize = 256;
 const PUMP_TAG_CHARS: usize = 40;
 
 /// The furthest past the helper's clock an instant on a device's own clock may lie (a body field's `changed_at`, a
-/// request's `game_offer_at`; slice 35): a later one comes from a clock set wrong and is dropped, since it would win
-/// every later change, or gate every device's game offers, until that time.
+/// request's `game_offer_at`, slice 35; a heard work state's times, slice 67, `work::Work::merge`): a later one comes
+/// from a clock set wrong and is dropped, since it would win every later change, or gate every device's game offers,
+/// until that time.
 pub const AHEAD_MS: i64 = 86_400_000;
 
 /// Whether `at`, unix milliseconds on a device's own clock, lies no more than `AHEAD_MS` past the helper's `now`.
@@ -562,7 +564,7 @@ impl WristEvent {
 		}
 		let start = u32::try_from(self.start_at.div_euclid(1000)).ok()?;
 		let tier = self.tier.filter(|t| (1..=3).contains(t)).unwrap_or(2);
-		Some(BankPump { source, id: self.pump_id.clone(), start, tier, moves })
+		Some(BankPump { source, id: self.pump_id.clone(), start, tier, quest: 0, moves })
 	}
 }
 
@@ -620,6 +622,10 @@ pub struct SyncRequest {
 	/// for the phones' `link_gap_min` between their offers.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub game_offer_at: Option<i64>,
+	/// The device's work state (slice 67, `work::Work`), in every request once it holds one with a time: the helper
+	/// merges it into its own before it answers (`Desk::work_heard`). One that does not read is none.
+	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
+	pub work: Option<Work>,
 	/// A phone's Pro proof (slice 35): one that does not read is none, so a proof never fails the request it rides on.
 	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
 	pub pro_proof: Option<ProProof>,
@@ -747,6 +753,10 @@ pub struct SyncResponse {
 	/// The latest game offer the helper knows on any device, unix seconds (slice 35).
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub game_offer_at: Option<i64>,
+	/// The helper's work state after it merged the request's (slice 67, `work::Work`), once it holds one with a time;
+	/// the device merges it into its own.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub work: Option<Work>,
 	/// A World of Warcraft client with QuestPump runs on the computer (slice 35): the game asks the owed moves itself
 	/// on its next pump, so a catch-up that reaches the helper meanwhile pays none of them (its felt-unwell stop still
 	/// locks), and the devices offer none.

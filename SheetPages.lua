@@ -579,9 +579,10 @@ function Pages.RenderToday()
 	local day = p.day
 	ns.Streamer.FillDayBody(day, t, now)
 	-- the unfinished moves, as the HUD's line has them; under the felt-unwell lock the line only says why
-	local owed = d.unfinished > 0
+	local unfinished = HUD.OwedShown(d.unfinished)
+	local owed = unfinished > 0
 	if owed then
-		local line = owedLine(d.unfinished, Lc.Locked())
+		local line = owedLine(unfinished, Lc.Locked())
 		p.owedLine = line
 		p.owedRow.name:SetText(line.text)
 		p.owedRow.chevron:SetShown((line.action or line.menu) ~= nil)

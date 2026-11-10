@@ -211,7 +211,7 @@ pub struct Gate<'a> {
 	/// already paid, from before which League's lead counts no minutes (`Tunables::league_lead_s`). None before any.
 	pub moved_at: Option<i64>,
 	/// The end of the latest pause in this computer's input, unix seconds (`sitting::Sitting::kept`: a sleep, an input
-	/// pause of `sitting::AWAY_S`, the helper's first look in this run): no match counts minutes from before it, so a
+	/// pause of `sitting::away_s`, the helper's first look in this run): no match counts minutes from before it, so a
 	/// game left open overnight or through a day away offers at its close the minutes since the player came back (a
 	/// match played counts as input, `sitting::Sitting::look`, and is never cut). None before the first look.
 	pub back_at: Option<i64>,

@@ -89,8 +89,10 @@ audience." Click **More info**, check that the publisher reads Pluxia GmbH, then
 
 ## In this repository
 
-The add-on sits at the top of the repository, with its locales, media, the quests' lines in `QuestPump_Lines/` and the
-move figures in `QuestPump_FigArmor/`. QuestPump for Mac and Windows has a folder of its own, in Rust and Tauri.
+The add-on sits at the top of the repository, with its locales, its media and the quests' lines in `QuestPump_Lines/`.
+The move figures in `QuestPump_FigArmor/` and the voice pack in `QuestPump_Voice/` (its takes are in `Media/Voice/`)
+are each a download of their own beside the add-on. QuestPump for Mac and Windows has a folder of its own, in Rust and
+Tauri.
 `contract/` holds the files the add-on and the two apps share. The workflows in `.github/workflows/` release each part
 from a tag of its own.
 

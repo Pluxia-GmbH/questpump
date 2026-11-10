@@ -48,6 +48,7 @@ use questpump_core::pair::is_private;
 use questpump_core::protocol::Command;
 use questpump_core::seal::{Keys, Replay, Route, Way};
 use questpump_core::sync;
+use questpump_core::work::Work;
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -292,13 +293,18 @@ pub struct OfferFacts {
 	pub arms: bool,
 	/// The latest game offer on any device, unix seconds (slice 35).
 	pub game_offer_at: Option<i64>,
+	/// The helper's work state (slice 67, `Desk::work_heard` merged each request's into it first), once it holds one
+	/// with a time.
+	pub work: Option<Work>,
 }
 
 impl OfferFacts {
 	/// The part a waiting held or standing request answers at once on when it changes (slice 48's second fix round):
-	/// the ids taken back, `playing` and `arms`. The lock's end and the latest game offer ride with the next response.
+	/// the ids taken back, `playing`, `arms` and since slice 67 the work state (a Start, Stop, Later or block done here
+	/// reaches the phones at once, so two devices never ask for one block). The lock's end and the latest game offer
+	/// ride with the next response.
 	fn early(&self) -> Early {
-		(self.offer_withdrawn.clone(), self.playing, self.arms)
+		(self.offer_withdrawn.clone(), self.playing, self.arms, self.work.clone())
 	}
 }
 
@@ -307,7 +313,7 @@ impl OfferFacts {
 type GameShown = (Option<Wow>, Option<Sight>, Option<Step>, bool, Option<Ble>);
 
 /// The offer facts a waiting request answers at once on (`OfferFacts::early`).
-type Early = (Vec<String>, bool, bool);
+type Early = (Vec<String>, bool, bool, Option<Work>);
 
 /// What a held or standing request answers at once on while it differs from what its client last heard: the game as a
 /// response tells it and the offer facts' early part.
@@ -436,7 +442,8 @@ impl Lan {
 	}
 
 	/// The offer facts every sync response carries from now on (`OfferFacts`); a change of their early part (the ids
-	/// taken back, `playing`, `arms`) answers the waiting held and standing requests at once (`held`, `stand`).
+	/// taken back, `playing`, `arms`, the work state) answers the waiting held and standing requests at once (`held`,
+	/// `stand`).
 	pub fn set_offers(&self, offers: OfferFacts) {
 		let early = {
 			let mut s = lock(&self.shown);
@@ -981,6 +988,7 @@ async fn sync(
 		playing: offers.playing,
 		arms: offers.arms,
 		game_offer_at: offers.game_offer_at,
+		work: offers.work,
 		game_asks,
 		game_held,
 		unheld,

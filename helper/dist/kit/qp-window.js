@@ -1,18 +1,19 @@
 // Window: a modal card over the dim (docs/ui.md, "What stays native, and the kit"), centred or from the bottom
-// (`placement`): a heading, a round close, its content (the element's own children), an optional primary button
-// (`primary`, its words; `primary-state`, the PrimaryButton's) and under it an optional quiet one (`secondary`, its
-// words: the state with_secondary, the reminder offer's Not now), modal to a screen reader and named by its heading
-// (`label` names one whose content carries its own heading), entering with the window motion and leaving with windowOut
-// (Reduce Motion: a fade each way). A native <dialog> opened with showModal: the focus goes in, the page behind is
-// inert, and the focus goes back to its opener when it closes; its own polite live region says what lib/focus.js
-// announces while it is open (the page's is inert behind it). Escape closes it as the × does, never `locked`
-// (closedby="none": the place window, the check-in's joints), which has no × either and closes only by its own buttons
-// (keys.js keeps Escape from it where the engine lacks closedby). `dim`, on a window that only shows (a step's card),
-// closes it on a click on the dim around it as the × does; never on one that asks a choice, the safety, the pairing or
-// a confirmation. Opened again while it leaves, it stays. Fires qp-primary, qp-secondary, qp-dismiss as the player
-// closes it by its × or Escape (lib/sound.js sounds the close then, never at a close its owner makes, as the phones'
-// Window fires `.close` only from its own close), and, once closed, qp-closed. Its heading and its buttons stay put
-// while the content scrolls between them, with what the caller pins at its foot (`foot`: a step's card's and a move
+// (`placement`): a heading, what the caller puts beside it before the close (`aside`: work mode's (i) on its first
+// Start's sheet, as the iPhone's titleAside), a round close, its content (the element's own children), an optional
+// primary button (`primary`, its words; `primary-state`, the PrimaryButton's) and under it an optional quiet one
+// (`secondary`, its words: the state with_secondary, the reminder offer's Not now), modal to a screen reader and named
+// by its heading (`label` names one whose content carries its own heading), entering with the window motion and leaving
+// with windowOut (Reduce Motion: a fade each way). A native <dialog> opened with showModal: the focus goes in, the page
+// behind is inert, and the focus goes back to its opener when it closes; its own polite live region says what
+// lib/focus.js announces while it is open (the page's is inert behind it). Escape closes it as the × does, never
+// `locked` (closedby="none": the place window, the check-in's joints), which has no × either and closes only by its own
+// buttons (keys.js keeps Escape from it where the engine lacks closedby). `dim`, on a window that only shows (a step's
+// card), closes it on a click on the dim around it as the × does; never on one that asks a choice, the safety, the
+// pairing or a confirmation. Opened again while it leaves, it stays. Fires qp-primary, qp-secondary, qp-dismiss as the
+// player closes it by its × or Escape (lib/sound.js sounds the close then, never at a close its owner makes, as the
+// phones' Window fires `.close` only from its own close), and, once closed, qp-closed. Its heading and its buttons stay
+// put while the content scrolls between them, with what the caller pins at its foot (`foot`: a step's card's and a move
 // window's Start, a qp-start-block, so a greyed Start's reason and the "To get here" row never scroll away; the states
 // primary_note and primary_block). Opened from a tapped tile (`open`'s `origin`: a tree's node, a ladder page's step
 // row, a Moves tile; slice 46, the state grow) it grows out of that tile, its dim fading in with it, and the player's
@@ -29,12 +30,13 @@ class QpWindow extends KitElement {
 	build() {
 		this.head = h("h2", {class: "qp-type-heading"});
 		this.closer = h("qp-round-button", {icon: "close", "on:click": () => this.dismiss()});
+		this.asideEl = h("div", {class: "qp-window-aside"});
 		this.body = h("div", {class: "qp-window-body"}, ...this.childNodes);
 		this.primaryButton = h("qp-primary-button", {"on:click": () => emit(this, "qp-primary")});
 		this.secondaryButton = h("qp-quiet-button", {"on:click": () => emit(this, "qp-secondary")});
 		this.footEl = h("div", {class: "qp-window-foot"});
 		this.dialog = h("dialog", {class: "qp-window"},
-			h("header", {class: "qp-window-head"}, this.head, this.closer), this.body, this.primaryButton,
+			h("header", {class: "qp-window-head"}, this.head, this.asideEl, this.closer), this.body, this.primaryButton,
 			this.secondaryButton, this.footEl, h("div", {class: "qp-unseen", "aria-live": "polite", "data-live": ""}));
 		this.dialog.addEventListener("cancel", (e) => {
 			e.preventDefault();
@@ -70,6 +72,12 @@ class QpWindow extends KitElement {
 	get content() {
 		this.ensure();
 		return this.body;
+	}
+
+	/** What stands beside the heading before the close, for a caller that fills it (none shows while empty). */
+	get aside() {
+		this.ensure();
+		return this.asideEl;
 	}
 
 	/** What stays pinned at the window's foot under its buttons, for a caller that fills it (none shows while empty). */

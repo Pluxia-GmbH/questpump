@@ -13,20 +13,28 @@
 //! An area's items join the menu through `TrayLines::show` at their place, as the note does, and their events through
 //! `on_menu`'s match (one line per area). The one tray icon is built here, never by a `trayIcon` key in tauri.conf.json,
 //! which would make a second.
+//!
+//! Work mode (slice 67) leads the menu: off, Start work mode; on, its state line (Next pump in {n} min, the hold such
+//! as On a call, or Pump ready), Pump now and Stop work mode (`draw_work`, from the `work` topic's view the desk hands
+//! `Platform::work_changed`), and while it is on the mark wears a ring that fills with the block (`ring.rs`), drawn
+//! again as the view's minute or the mark's colour changes.
 
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use questpump_core::work::Hold;
 use questpump_desk::Intent;
 use questpump_desk::platform::FoundGame;
+use questpump_desk::work::{Phase, WorkView};
 use serde::Serialize;
 use tauri::image::Image;
 use tauri::menu::{IsMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager as _};
 
-use super::DeskAsk;
 use super::offers::{self, TrayItems};
 use super::windows::{self, Landing};
+use super::{DeskAsk, ring};
 use crate::copy;
 use crate::ui::{self, Access, Dot, Holder, Note, PhoneLine, Shared, View, WindowAsk};
 
@@ -35,8 +43,6 @@ const OPEN: &str = "tray.open";
 const QUIT: &str = "tray.quit";
 /// The phone's line, which opens the Phones page while no phone is paired.
 const PHONE: &str = "tray.phone";
-/// The note's place: under the state and the phone's lines.
-const NOTE_AT: usize = 2;
 
 /// What the tray draws, from the view.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -226,14 +232,19 @@ pub(crate) fn tone(dot: Dot) -> Tone {
 	}
 }
 
-fn dot_icon(dot: Dot) -> Option<Image<'static>> {
+/// The icon for the capture's state, with work mode's ring filled to `ring` (0 to 1) while it is on.
+fn dot_icon(dot: Dot, ring: Option<f64>) -> Option<Image<'static>> {
 	let bytes = match tone(dot) {
 		Tone::Off => DOTS.grey,
 		Tone::Reaching => DOTS.amber,
 		Tone::Ok => DOTS.green,
 		Tone::Stopped => DOTS.red,
 	};
-	Image::from_bytes(bytes).ok()
+	let mark = Image::from_bytes(bytes).ok()?;
+	Some(match ring {
+		Some(fill) => ring::ringed(&mark, fill),
+		None => mark,
+	})
 }
 
 /// The icon's tooltip: `QuestPump: <state>`.
@@ -287,8 +298,131 @@ fn on_menu(app: &AppHandle, event: &MenuEvent) {
 		QUIT => ui::quit(app),
 		id if offers::is_tray(id) => offers::on_tray(app, id),
 		id if id.starts_with("pump.") => on_pumps(app, id),
+		id if id.starts_with("work.") => on_work(app, id),
 		_ => {}
 	}
+}
+
+/// Work mode's tray items' ids, each its intent's type (`questpump-desk` `work.rs`) but the state line's.
+const WORK_START: &str = "work.start";
+const WORK_LINE: &str = "work.line";
+const WORK_NOW: &str = "work.now";
+const WORK_STOP: &str = "work.stop";
+
+/// Work mode's tray items, made once on the main thread (`draw_work`), and the ring the icon wears while it is on
+/// (its fill, in thousandths), which a change of the capture's colour draws again (`redraw`).
+struct WorkItems {
+	start: MenuItem<tauri::Wry>,
+	line: MenuItem<tauri::Wry>,
+	now: MenuItem<tauri::Wry>,
+	stop: MenuItem<tauri::Wry>,
+	shown: [AtomicBool; 4],
+	ring: Mutex<Option<u16>>,
+	dot: Mutex<Dot>,
+}
+
+/// The state line while work mode is on: the minutes left, the hold, or Pump ready.
+fn work_line(view: &WorkView) -> String {
+	match (view.phase, view.hold) {
+		(Phase::Due | Phase::Ask, _) => copy::work_due().to_owned(),
+		(_, Some(hold)) => hold_words(hold).to_owned(),
+		_ => copy::work_next(view.left_min.unwrap_or_else(|| i64::from(view.every))),
+	}
+}
+
+/// A hold's words (contract/copy/en.json `work.hold.*`, the page's `HOLDS` in kit/qp-work-card.js).
+fn hold_words(hold: Hold) -> &'static str {
+	match hold {
+		Hold::Call => copy::work_hold_call(),
+		Hold::Present => copy::work_hold_present(),
+		Hold::FullScreen => copy::work_hold_fullscreen(),
+		Hold::Game => copy::work_hold_game(),
+		Hold::Pump => copy::work_hold_pump(),
+		Hold::Quiet => copy::work_hold_quiet(),
+		Hold::Unwell => copy::work_hold_unwell(),
+	}
+}
+
+/// The ring's fill while work mode is on, in thousandths: the share of Every counted, whole once a pump is due.
+fn work_ring(view: &WorkView) -> Option<u16> {
+	if !view.on {
+		return None;
+	}
+	let every = i64::from(view.every.max(1));
+	Some(match (view.phase, view.left_min) {
+		(Phase::Due | Phase::Ask, _) => 1_000,
+		(_, Some(left)) => u16::try_from((every - left.clamp(0, every)) * 1_000 / every).unwrap_or(0),
+		_ => 0,
+	})
+}
+
+/// Work mode's part of the tray (on the main thread): its items at the menu's top, off Start work mode, on the state
+/// line, Pump now (greyed while anything holds the clock: a pump open, a call, a game, quiet hours, the felt-unwell
+/// lock, the line saying which) and Stop work mode; the icon's ring drawn again when its fill changed.
+pub(crate) fn draw_work(app: &AppHandle, view: &WorkView) {
+	let Some(lines) = app.try_state::<TrayLines>() else { return };
+	if app.try_state::<WorkItems>().is_none() {
+		let made = (|| {
+			Ok::<_, tauri::Error>(WorkItems {
+				start: MenuItem::with_id(app, WORK_START, copy::desk_tray_work_start(), true, None::<&str>)?,
+				line: MenuItem::with_id(app, WORK_LINE, "", false, None::<&str>)?,
+				now: MenuItem::with_id(app, WORK_NOW, copy::work_pumpnow(), true, None::<&str>)?,
+				stop: MenuItem::with_id(app, WORK_STOP, copy::desk_tray_work_stop(), true, None::<&str>)?,
+				shown: [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)],
+				ring: Mutex::new(None),
+				dot: Mutex::new(ui::view(app).shell.dot),
+			})
+		})();
+		match made {
+			Ok(items) => {
+				app.manage(items);
+			}
+			Err(e) => {
+				log::warn!("work mode: the tray's items: {e}");
+				return;
+			}
+		}
+	}
+	let Some(items) = app.try_state::<WorkItems>() else { return };
+	if view.on {
+		let _ = items.line.set_text(work_line(view));
+		let _ = items.now.set_enabled(view.hold.is_none());
+	}
+	lines.show(&items.start, &items.shown[0], 0, !view.on);
+	for (at, (item, shown)) in
+		[(&items.line, &items.shown[1]), (&items.now, &items.shown[2]), (&items.stop, &items.shown[3])]
+			.into_iter()
+			.enumerate()
+	{
+		lines.show(item, shown, at, view.on);
+	}
+	let ring = work_ring(view);
+	let changed = items.ring.lock().is_ok_and(|mut held| std::mem::replace(&mut *held, ring) != ring);
+	if changed && let (Some(tray), Ok(dot)) = (app.tray_by_id(TRAY), items.dot.lock()) {
+		let _ = tray.set_icon(dot_icon(*dot, ring.map(|r| f64::from(r) / 1_000.0)));
+	}
+}
+
+/// Work mode's tray items: Start work mode, Pump now and Stop work mode, each its intent from outside the window (a
+/// first Start opens its sheet in the window, Pump now the pump).
+fn on_work(app: &AppHandle, id: &str) {
+	if !matches!(id, WORK_START | WORK_NOW | WORK_STOP) {
+		return;
+	}
+	if let Ok(intent) = Intent::from_value(serde_json::json!({"type": id, "outside": true})) {
+		let (done, _) = tokio::sync::oneshot::channel();
+		app.state::<Shared>().ask(WindowAsk::Desk(DeskAsk::Intent { intent, done }));
+	}
+}
+
+/// The ring the icon wears now, with the capture's colour kept for the next ring (`draw_work`).
+fn ring_now(app: &AppHandle, dot: Dot) -> Option<f64> {
+	let items = app.try_state::<WorkItems>()?;
+	if let Ok(mut held) = items.dot.lock() {
+		*held = dot;
+	}
+	let ring = *items.ring.lock().ok()?;
+	ring.map(|r| f64::from(r) / 1_000.0)
 }
 
 /// The pump's tray items' ids, `pump.` and the intent's what.
@@ -369,7 +503,7 @@ pub(crate) fn build(app: &tauri::App) -> tauri::Result<()> {
 		.menu(&menu)
 		.show_menu_on_left_click(true)
 		.on_menu_event(|app, event| on_menu(app, &event));
-	if let Some(icon) = dot_icon(dot) {
+	if let Some(icon) = dot_icon(dot, None) {
 		tray = tray.icon(icon);
 	}
 	tray.build(app)?;
@@ -383,7 +517,7 @@ pub(crate) fn redraw(app: &AppHandle, before: &TrayState, now: &TrayState) {
 	if before.dot != now.dot
 		&& let Some(tray) = &tray
 	{
-		let _ = tray.set_icon(dot_icon(now.dot));
+		let _ = tray.set_icon(dot_icon(now.dot, ring_now(app, now.dot)));
 	}
 	if before.state != now.state {
 		if let Some(tray) = &tray {
@@ -402,6 +536,6 @@ pub(crate) fn redraw(app: &AppHandle, before: &TrayState, now: &TrayState) {
 		if let Some(note) = &now.note {
 			let _ = lines.note.set_text(note_line(note));
 		}
-		lines.show(&lines.note, &lines.note_shown, NOTE_AT, now.note.is_some());
+		lines.show(&lines.note, &lines.note_shown, lines.place_of(PHONE).map_or(0, |at| at + 1), now.note.is_some());
 	}
 }

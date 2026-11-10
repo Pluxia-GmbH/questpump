@@ -26,6 +26,7 @@ mod install;
 mod keep;
 pub mod lan;
 mod pairing;
+mod presence;
 mod runtime;
 mod secrets;
 mod settings;

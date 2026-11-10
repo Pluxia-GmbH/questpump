@@ -15,6 +15,12 @@ pub struct LuaError {
 	pub what: &'static str,
 }
 
+/// A Lua string as the helper keeps it, whether a saved file's literal or the client's CBOR brought it: text when its
+/// bytes are UTF-8, a byte string when they are not, so every reader finds a key or a name as text.
+pub(crate) fn string(bytes: Vec<u8>) -> Value {
+	String::from_utf8(bytes).map_or_else(|e| Value::Bytes(e.into_bytes()), Value::Text)
+}
+
 struct Reader<'a> {
 	b: &'a [u8],
 	at: usize,
@@ -140,10 +146,7 @@ impl Reader<'_> {
 				_ => out.push(c),
 			}
 		}
-		Ok(match String::from_utf8(out) {
-			Ok(s) => Value::Text(s),
-			Err(e) => Value::Bytes(e.into_bytes()),
-		})
+		Ok(string(out))
 	}
 
 	fn number(&mut self) -> Result<Value, LuaError> {

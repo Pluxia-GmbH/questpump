@@ -31,3 +31,4 @@ import "./log/day.js";
 import "./log/best.js";
 import "./games/games.js";
 import "./pump/session.js";
+import "./work/work.js";

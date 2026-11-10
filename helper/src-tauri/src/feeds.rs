@@ -37,7 +37,7 @@ const LOOK: Duration = Duration::from_mins(1);
 const FRESH: Duration = Duration::from_mins(10);
 
 /// The longest a feed's small file may take, from the connect to its last byte: the updater's `latest.json`, the
-/// addon's `addon.json` and its signature. The big downloads (QuestPump's own installer or app, the addon's zip) have
+/// addon's `addon-v2.json` and its signature. The big downloads (QuestPump's own installer or app, the addon's zip) have
 /// no such bound, only `READ_TIMEOUT` and `CONNECT_TIMEOUT`, so a slow line still brings them.
 pub const FILE_TIMEOUT: Duration = Duration::from_mins(2);
 /// The longest a feed's request waits for its next bytes (each read; a stalled download ends, and the next check

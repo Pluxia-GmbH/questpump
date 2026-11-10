@@ -73,24 +73,28 @@ end
 local Figure = { pack = "QuestPump_FigArmor" }
 ns.Figure = Figure
 local CRIMSON = { 0.7674, 0.3132, 0.3132 }
-local UNUSABLE = { MISSING = true, INTERFACE_VERSION = true, CORRUPT = true }
+local UNUSABLE = { MISSING = true, CORRUPT = true }
+
+-- A media pack's folder (this one, the voice's: Speech.lua) as the client lists it, read without loading it: "ok",
+-- "disabled" (the player's choice in the AddOns list), "outdated" (installed, but its TOC names another game version,
+-- so the client does not load it: the player updates it, never installs it again) or "missing" (not installed, or not
+-- loadable). Each pack is a download of its own since slice 71, and QuestPump plays without either.
+function ns.PackState(name)
+	if not C_AddOns.DoesAddOnExist(name) then return "missing" end
+	local reason = select(5, C_AddOns.GetAddOnInfo(name))
+	if reason == "DISABLED" then return "disabled" end
+	if reason == "INTERFACE_VERSION" then return "outdated" end
+	return reason and UNUSABLE[reason] and "missing" or "ok"
+end
 
 -- The pack's state, read at PLAYER_LOGIN without loading it: "ok", "old" (below figure_pack_min: it plays what it
--- has), "disabled" (the player's choice: the icons, no message) or "missing" (not installed or not loadable).
+-- has), "disabled" (the player's choice: the icons, no message), "outdated" (made for another game version) or
+-- "missing" (not installed or not loadable).
 function Figure.Check()
-	local name = Figure.pack
-	if not C_AddOns.DoesAddOnExist(name) then
-		Figure.state = "missing"
-		return Figure.state
-	end
-	local reason = select(5, C_AddOns.GetAddOnInfo(name))
-	if reason == "DISABLED" then
-		Figure.state = "disabled"
-	elseif reason and UNUSABLE[reason] then
-		Figure.state = "missing"
-	else
-		local v = tonumber(C_AddOns.GetAddOnMetadata(name, "X-QuestPump-Pack"))
-		Figure.state = (v or 0) < C.figure_pack_min and "old" or "ok"
+	Figure.state = ns.PackState(Figure.pack)
+	if Figure.state == "ok" then
+		local v = tonumber(C_AddOns.GetAddOnMetadata(Figure.pack, "X-QuestPump-Pack"))
+		if (v or 0) < C.figure_pack_min then Figure.state = "old" end
 	end
 	return Figure.state
 end
@@ -128,14 +132,16 @@ function Figure.Loop(moveId)
 	return beat, ends
 end
 
--- The one line a missing or older pack earns, once per session, as the session's one warning under the General
--- "Chat messages" setting (ns.Chat); a disabled pack says nothing.
+-- The one line a missing, older or out-of-date pack earns, once per session, as the session's one warning under the
+-- General "Chat messages" setting (ns.Chat); a disabled pack says nothing.
 function Figure.Notice()
 	if Figure.noticed then return end
 	if Figure.state == "missing" then
 		ns.Chat("warning", L["figure.missing"])
 	elseif Figure.state == "old" then
 		ns.Chat("warning", L["figure.old"])
+	elseif Figure.state == "outdated" then
+		ns.Chat("warning", L["figure.outdated"])
 	else
 		return
 	end

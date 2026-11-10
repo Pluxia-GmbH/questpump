@@ -23,6 +23,15 @@
 //!   63, "Where the browser keeps its secrets"). A link request's code is the link a phone's camera opens in the phone
 //!   app, shown only while the phone apps are in the stores. Sign out wipes the browser's data (`{"wipe": "out"}`), and
 //!   so does a removal from the account (`{"wipe": "removed"}`, with its state screen).
+//! - **Work mode** (slice 67, the desk's `questpump_desk::work`): its clock always runs down, the tab seen or not; the
+//!   tab's presence, the sitting clock's input (the page's `presence.seen`: the tab visible, or with `IdleDetector`
+//!   granted in the Start click, Chrome and Edge, the computer in use), says only whether somebody is there for a due
+//!   pump, which opens once somebody is; it reads
+//!   no call, presenting or full screen of other apps, so its holds are the desk's own (a pump open, quiet hours, the
+//!   felt-unwell lock). The work pump opens itself in the tab at its ask's moment (`Desk::work_open`), and since a tab
+//!   cannot come to the front the page is told (`{"work_opened": ask}`) and shows a notification while the tab is
+//!   hidden, whose click brings the tab forward (`lib/bridge.js`, `sw.js`'s `notificationclick`). Its banks are the
+//!   account's unfinished list (`Platform::ACCOUNT_BANKS`), which every device folds.
 //! - **The rest** is a browser's: no game, no devices, the films fetched by move as they show.
 
 use std::collections::HashMap;
@@ -30,6 +39,7 @@ use std::path::Path;
 
 use questpump_core::protocol::{Line, Source};
 use questpump_core::session::Effects;
+use questpump_core::sitting::Sitting;
 use questpump_core::sync::LinkCode;
 use questpump_desk::Platform;
 use questpump_desk::audio::Channel;
@@ -213,6 +223,10 @@ pub struct Web {
 	net: Net,
 	name: String,
 	phones: bool,
+	/// The sitting clock over the tab's presence (slice 67), and since when the page last said it is away (unix
+	/// seconds; none while present; away from the start until the page first says it is present).
+	sitting: Sitting,
+	away_since: Option<i64>,
 }
 
 impl Web {
@@ -242,7 +256,25 @@ impl Web {
 		publisher.publish(SHELL, &shell);
 		publish_figures(&publisher, &shell.resources);
 		let net = Net { base: sync, next: 0, pending: HashMap::new(), live: None };
-		Self { publisher, shell, net, name, phones }
+		Self { publisher, shell, net, name, phones, sitting: Sitting::default(), away_since: Some(0) }
+	}
+
+	/// The page's presence at unix second `now` (`presence.seen`): present, or away for `since_s` seconds already
+	/// (`IdleDetector`'s threshold, which says idle only that long after the last input).
+	pub fn presence_seen(&mut self, present: bool, since_s: i64, now: i64) {
+		self.away_since = match (present, self.away_since) {
+			(true, _) => None,
+			(false, Some(at)) => Some(at),
+			(false, None) => Some(now - since_s.max(0)),
+		};
+		self.presence_look(now);
+	}
+
+	/// The loop's look at the sitting clock (every 2 s, and at each `presence.seen`): its idle time the seconds since
+	/// the page went away, a page that never said it is present (its first look) a time away.
+	pub fn presence_look(&mut self, now: i64) {
+		let idle = self.away_since.map_or(0, |at| (now - at).max(0));
+		self.sitting.look(now, Some(u32::try_from(idle).unwrap_or(u32::MAX)), false);
 	}
 
 	/// A call's answer the Worker handed back: what it becomes, for `Desk::on_sync` (none for a call this platform no
@@ -329,6 +361,8 @@ impl Platform for Web {
 	const PUMP_IDS: &'static str = "b-";
 	const BY: u8 = questpump_core::codes::by::BROWSER;
 	const WIPES_ON_SIGN_OUT: bool = true;
+	/// A browser has no computer of the player's: its banks are the account's (slice 67).
+	const ACCOUNT_BANKS: bool = true;
 
 	#[expect(clippy::cast_possible_truncation, reason = "a unix time in milliseconds, far below 2^63")]
 	fn now_ms(&self) -> i64 {
@@ -461,5 +495,17 @@ impl Platform for Web {
 	fn engine_state(&mut self, state: EngineState, _fold: Option<Fold>) {
 		self.shell.engine = state;
 		self.publisher.publish(SHELL, &self.shell);
+	}
+
+	fn idle_s(&self) -> Option<u32> {
+		self.sitting.idle_s()
+	}
+
+	fn work_opened(&mut self, ask: &str) {
+		post(&json!({ "work_opened": ask }));
+	}
+
+	fn seated_s(&self, at: i64, last_move: Option<i64>) -> i64 {
+		self.sitting.sat_s(at, last_move, None, 0)
 	}
 }

@@ -73,7 +73,7 @@ info:
     429 with `Retry-After` in seconds; the device waits that long, and its line says `menu.sync.failed`.
 
     **The batch.** What a device pushes: the plain text is JSON, UTF-8, snake_case,
-    `{"v":1,"account":<id>,"device":<id>,"seq":<int>,"made_at":<unix ms>,"kind":"rows"|"device","body":{...}}`,
+    `{"v":1,"account":<id>,"device":<id>,"seq":<int>,"made_at":<unix ms>,"kind":"rows"|"device"|"work","body":{...}}`,
     compressed with raw DEFLATE (no zlib header), then sealed with the seal key and sent base64 (standard, with padding)
     in `Batch.sealed`. `seq` rises by one with each batch a device makes, from 1, and a retry sends the same seq and
     bytes. `kind` `rows`: `body` is a backup file's body (`contract/fixtures/backup.json`: `pumps`, `rows`, `game.rows`)
@@ -82,7 +82,11 @@ info:
     `{"name","kind","profile","stamps","sheets"}`, the device's own name, its kind (`ios`, `android`, `desktop`, `web`),
     its profile with the body stamps (merged field by field, the latest `changed_at` winning, the place fields kept each
     device's own) and each character's newest game sheet (`contract/sheet.json`), a field the device has none of left
-    out, never `null`; the server keeps only the newest `device` batch of each device. The desktop app adds two fields
+    out, never `null`; the server keeps only the newest `device` batch of each device. Since slice 67, `kind` `work`:
+    `body` is the device's work state after its last merge (`Work` in contract/companion-api.yaml, its merge rule
+    there), pushed whenever a Start, a Stop, a setting, a Later or a pump done changes it, never inside the `device`
+    batch (which would send the sheets again at every block); the server keeps only the newest `work` batch of each
+    device, as it keeps the `device` batch, and a device merges every device's into its own. The desktop app adds two fields
     to its bodies: `hid`, its install id (base64url), to both, and `chars` to a rows body whose `game.rows` name a
     character, an object from each character index those rows use to the character's GUID
     (`{"1":"Player-1305-0A1B2C3D"}`). A device that keeps another computer's game rows renumbers each into its own
@@ -92,9 +96,36 @@ info:
     any computer floors every device's game rows and app rows, and a computer takes another's reset as its own (its game
     resets at the next load, slice 26) without sending it again. A device that fetches a batch opens it with the seal
     key the batch's `kid` names, checks that the plain text's `account`, `device` and `seq` are the ones the server
-    listed, and takes the body in as a backup file (the union); a batch whose `v` is newer than it reads is kept unread
+    listed, and takes the body in as a backup file (the union), a `work` body by `Work`'s merge rule; a batch of a kind
+    it does not know (a newer device's) is skipped, neither counted nor retried, and never fails the page; a batch whose
+    `v` is newer than it reads is kept unread
     and read again after an update (`menu.sync.newer`); one that does not open or does not read is skipped and counted,
     never retried.
+
+    **The account's unfinished list** (docs/plan.md slice 67). Until slice 67 the unfinished moves were each
+    computer's (slices 58 and 60): a device banked only through the desktop app it links, and a device takes no other
+    computer's owed, banked or paid rows into its queue. Since slice 67 a device without a computer of the player's,
+    the browser and a phone not linked to the desktop app, banks a pump's moves itself (work mode's Later, a work or
+    match pump's Bank all and Bank the rest) into its own rows as the desktop app's `Session::bank` writes them
+    (contract/companion-api.yaml WristEvent `bank`): one game owed row a move, outcome banked (9), the device's bit
+    (the phone's 7; a browser's the phone's too, as its app rows carry it) and no app bit, char 0, the pump's tier, the
+    pump's start in unix seconds in `ts`, the move's ladder, rung and kind, `reps` 1 on an all-out window and a timed
+    move's seconds, and two keys of their own: `questID` the pump's bank number, `bank_quest_min` (contract/
+    library.json, 1073741824) plus the first eight hex digits of the pump id's UUID (the id after its `<letter>-`) read
+    as a number modulo `bank_quest_min` (`b-0a1b2c3d-…` banks under 1073741824 + 0x0a1b2c3d = 1243294781,
+    `f-ffffffff-…` under 1073741824 + 0x3fffffff = 2147483647), never a quest's id, and `slot` the move's place
+    among the pump's banked moves, made unique among the owed keys the device holds as `oweSlot` does. It pushes them
+    in its `rows` batch's `game.rows`. So the owed key (`ts:questID:slot`, DB.lua `ns.OwedKey`, which a paid row
+    repeats) of a bank of one device never meets another device's banked in the same second (its pump id differs, and
+    two UUIDs share their first 30 bits once in about a billion), nor a computer's own bank (quest 0) or a quest's owed
+    row (a quest's id, far below), and the key alone tells an account bank. Every device folds into its queue, of
+    every other device's rows, each owed and banked row whose `questID` is at least `bank_quest_min` and each paid row
+    that names such a key, whichever device wrote it: the desktop app takes them into its own store (so they ride its
+    pumps and reach the game through the mirror, its paid rows of them going out in its `rows` batch as any of its
+    game rows), a phone not linked to it and the browser fold them themselves, and the browser shows the unfinished
+    list slice 63 left out. A paid row of such a key from any device settles it everywhere. A computer's own banks
+    (quest 0) and a quest's owed rows stay that computer's (slice 60), and a phone linked to the desktop app banks
+    through it as before (the helper's list holding the account's too).
 
     **Live.** `GET /api/sync/v1/live` upgrades to a WebSocket (the Durable Object's hibernation API). The device sends
     its token as the first message, `{"token":<token>}`, within 10 s, or the socket closes with 4401; afterwards the
@@ -502,7 +533,7 @@ paths:
     delete:
       summary: Remove another device
       description: >-
-        Revokes its token and drops its `device` batch, its key and its wrap; the rows it sent stay. It makes a new R
+        Revokes its token and drops its `device` and `work` batches, its key and its wrap; the rows it sent stay. It makes a new R
         due (above, "The account's new key"): a device that removed another reads `GET /account/keys` at once (its own
         id signs it out, and the devices left hear it on their sockets).
       security: [{ device: [] }]
@@ -826,7 +857,7 @@ components:
       properties:
         seq: { type: integer, minimum: 1 }
         kid: { type: string }
-        kind: { type: string, enum: [rows, device] }
+        kind: { type: string, enum: [rows, device, work] }
         sealed: { type: string, description: "Base64 of the sealed, compressed plain text" }
     Pushed:
       type: object
@@ -842,7 +873,7 @@ components:
         device: { type: string }
         seq: { type: integer }
         kid: { type: string }
-        kind: { type: string, enum: [rows, device] }
+        kind: { type: string, enum: [rows, device, work] }
         sealed: { type: string }
     Page:
       type: object

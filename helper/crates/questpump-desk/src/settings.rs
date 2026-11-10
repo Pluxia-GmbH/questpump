@@ -175,6 +175,25 @@ pub struct Settings {
 	/// computer's own key in the secret store with the pairing key (`secrets`).
 	#[serde(default)]
 	pub sync: questpump_core::sync::Account,
+	/// Work mode's state as this computer holds it after its last merge (slice 67, `questpump_core::work::Work`: the
+	/// switch, Every, Moves per block, work mode's own equipment, the set and the clock's anchor), shared with every
+	/// device.
+	#[serde(default)]
+	pub work: questpump_core::work::Work,
+	/// Work mode was started here once: the first Start's sheet is shown no more (`work.sheet`).
+	#[serde(default)]
+	pub work_started: bool,
+	/// The block due on this device, kept so a restart or a reload starts its work clock due (`Clock::due_from`): the
+	/// anchor it came due after (unix ms) and the moment it came due (unix seconds); none while the block counts.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub work_due: Option<WorkDue>,
+}
+
+/// A due block as `Settings::work_due` keeps it.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WorkDue {
+	pub anchor_ms: i64,
+	pub at: i64,
 }
 
 /// The page's size at 100 %, its default step.
@@ -226,6 +245,9 @@ impl Default for Settings {
 			crash: CrashSettings::default(),
 			usage: Choice::default(),
 			sync: questpump_core::sync::Account::default(),
+			work: questpump_core::work::Work::default(),
+			work_started: false,
+			work_due: None,
 		}
 	}
 }

@@ -196,7 +196,7 @@ qp-round-button[small] .qp-round {
 	filter: brightness(0.8);
 }
 
-/* the back chevron (the phones' Chevron: a side of space10, strokes of space2) and the three dots */
+/* the back chevron (the phones' Chevron: a side of space10, strokes of space2), the three dots and work mode's (i) */
 .qp-chevron {
 	width: var(--qp-layout-space10);
 	height: var(--qp-layout-space10);
@@ -218,6 +218,28 @@ qp-round-button[small] .qp-round {
 	background: currentColor;
 	box-shadow: calc(var(--qp-surface-round-button-more-dot) * -2) 0 0 currentColor,
 		calc(var(--qp-surface-round-button-more-dot) * 2) 0 0 currentColor;
+}
+
+/* the (i), the iPhone's InfoMark: a stem three dots high under a dot, each a "···" dot wide, 0.75 of one apart, the
+ * whole mark centred in the button */
+.qp-info {
+	position: relative;
+	width: var(--qp-surface-round-button-more-dot);
+	height: calc(var(--qp-surface-round-button-more-dot) * 3);
+	border-radius: var(--qp-surface-round-button-more-dot);
+	background: currentColor;
+	transform: translateY(calc(var(--qp-surface-round-button-more-dot) * 0.875));
+}
+
+.qp-info::before {
+	content: "";
+	position: absolute;
+	top: calc(var(--qp-surface-round-button-more-dot) * -1.75);
+	left: 0;
+	width: var(--qp-surface-round-button-more-dot);
+	height: var(--qp-surface-round-button-more-dot);
+	border-radius: 50%;
+	background: currentColor;
 }
 
 qp-primary-button, qp-secondary-button, qp-quiet-button {
@@ -331,6 +353,16 @@ qp-primary-button, qp-secondary-button, qp-quiet-button {
 
 .qp-secondary.qp-destructive {
 	color: var(--qp-color-stop);
+}
+
+/* compact at a row's end (the work card's Start while off): as wide as its words, a quiet button's height */
+qp-secondary-button[compact] {
+	flex: none;
+}
+
+qp-secondary-button[compact] .qp-secondary {
+	width: auto;
+	min-height: var(--qp-layout-quiet-height);
 }
 
 .qp-secondary:disabled {
@@ -1187,8 +1219,20 @@ qp-empty-state qp-primary-button {
 }
 
 /* the close stays at the trailing edge where the content carries its own heading (a step's card) */
-.qp-window-head qp-round-button {
+.qp-window-head > qp-round-button {
 	margin-inline-start: auto;
+}
+
+/* what stands beside the heading, before the close (work mode's (i) on its first Start's sheet) */
+.qp-window-aside {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-window-aside:empty {
+	display: none;
 }
 
 .qp-window-head, .qp-window > qp-primary-button, .qp-window > qp-quiet-button, .qp-window-foot {
@@ -3022,6 +3066,177 @@ qp-streak-board > .qp-type-meta {
 	margin-top: var(--qp-layout-space8);
 }
 
+/* WorkCard: work mode's card on Pump home, and the WorkStrip of a set's blocks (slice 67) -------------------------- */
+
+qp-work-card {
+	display: block;
+}
+
+.qp-work-top {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-work-words {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--qp-layout-space6);
+	min-width: 0;
+}
+
+/* Work mode, and off its Start at the row's end */
+.qp-work-title {
+	display: flex;
+	align-items: center;
+	align-self: stretch;
+	gap: var(--qp-layout-space8);
+}
+
+.qp-work-title h2 {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Stop under the dots, at their leading edge in stop (the card's destructive step) */
+qp-quiet-button.qp-work-stop {
+	align-self: flex-start;
+}
+
+.qp-work-stop .qp-quiet {
+	width: auto;
+	padding-inline: 0;
+}
+
+/* the ring's user units are the tokens' pixels (qp-work-card.js sizes its viewBox by layout.tile and layout.space4) */
+.qp-work-ring {
+	position: relative;
+	flex: none;
+	width: var(--qp-layout-tile);
+	height: var(--qp-layout-tile);
+}
+
+.qp-work-ring > svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	transform: rotate(-90deg);
+}
+
+.qp-work-track, .qp-work-arc {
+	fill: none;
+	stroke-width: var(--qp-layout-space4);
+}
+
+.qp-work-track {
+	stroke: var(--qp-color-track);
+}
+
+.qp-work-arc {
+	stroke: var(--qp-color-gold);
+	stroke-linecap: round;
+}
+
+.qp-work-face {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+}
+
+.qp-work-face qp-art {
+	width: var(--qp-layout-space16);
+	height: var(--qp-layout-space16);
+	color: var(--qp-color-gold);
+}
+
+/* held: the ring dimmed, its minutes as they stood */
+.qp-work-ring.qp-held .qp-work-arc {
+	stroke: var(--qp-color-text3);
+}
+
+.qp-work-ring.qp-held .qp-work-face, .qp-work-ring.qp-held .qp-work-face qp-art {
+	color: var(--qp-color-text3);
+}
+
+.qp-work-dots {
+	display: flex;
+	align-items: center;
+	gap: var(--qp-layout-space6);
+}
+
+.qp-work-dots i, .qp-work-dot {
+	flex: none;
+	width: var(--qp-layout-space8);
+	height: var(--qp-layout-space8);
+	border-radius: 50%;
+	background: var(--qp-color-track);
+}
+
+.qp-work-dots i.qp-lit, .qp-work-dot {
+	background: var(--qp-color-gold);
+}
+
+.qp-work-dots i.qp-next {
+	background: none;
+	box-shadow: inset 0 0 0 var(--qp-layout-ring-width) var(--qp-color-gold);
+}
+
+.qp-work-dots i.qp-work-long, .qp-work-dot.qp-work-long {
+	width: var(--qp-layout-space12);
+	height: var(--qp-layout-space12);
+}
+
+/* due: Pump now and Later side by side under the block */
+.qp-work-buttons {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--qp-layout-space8);
+	margin-top: var(--qp-layout-space12);
+}
+
+.qp-work-buttons > * {
+	flex: 1;
+	min-width: 0;
+}
+
+.qp-work-refused {
+	margin-top: var(--qp-layout-space8);
+	text-align: center;
+}
+
+qp-work-strip {
+	display: flex;
+	gap: var(--qp-layout-space4);
+}
+
+.qp-work-block {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	min-width: 0;
+}
+
+.qp-work-bar-row {
+	display: flex;
+	align-items: center;
+	align-self: stretch;
+	gap: var(--qp-layout-space4);
+	min-height: var(--qp-layout-space12);
+}
+
+.qp-work-bar {
+	flex: 1;
+	height: var(--qp-layout-space6);
+	border-radius: var(--qp-layout-space6);
+	background: var(--qp-color-track);
+}
+
 /* VaultCard: the weekly vault on Hero (2026-10-09) ---------------------------------------------------------------- */
 
 qp-vault-card {
@@ -3851,8 +4066,9 @@ qp-step-reveal {
  * mark drawn by one: each takes the system's colours and keeps its state by its shape, an empty mark an outline, a done
  * or lit one filled in CanvasText, the one in play and a chosen control in Highlight */
 @media (forced-colors: active) {
-	/* the "···": two of its dots are the first's shadows, which only an unforced mark keeps */
-	.qp-dots {
+	/* the "···": two of its dots are the first's shadows, which only an unforced mark keeps; the (i)'s dot and stem
+	 * are backgrounds, kept the same way */
+	.qp-dots, .qp-info {
 		forced-color-adjust: none;
 		color: ButtonText;
 	}

@@ -57,6 +57,7 @@ import "./qp-step-reveal.js";
 import "./qp-start-block.js";
 import "./qp-move-window.js";
 import "./qp-streak-board.js";
+import "./qp-work-card.js";
 import "./qp-vault-card.js";
 import "./qp-slant-tag.js";
 import "./qp-day-strip.js";

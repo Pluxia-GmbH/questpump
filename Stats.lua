@@ -251,11 +251,13 @@ local function levelOf(xp)
 end
 
 -- The Log entry of a pump or of a turn-in owed on its own, by its time; with `app`, of an app pump (slice 26), which
--- no game pump's move ever joins, however close their times.
-local function entryAt(sh, ts, app)
+-- no game pump's move ever joins, however close their times, and with `device` too, of that device's app pump.
+local function entryAt(sh, ts, app, device)
 	for i = #sh.log, 1, -1 do
 		local e = sh.log[i]
-		if e.ts == ts and (e.source == E.source.app) == (app == true) then return e end
+		if e.ts == ts and (e.source == E.source.app) == (app == true) and (device == nil or e.device == device) then
+			return e
+		end
 	end
 end
 
@@ -567,10 +569,15 @@ end
 
 -- A Log entry; `mark` "ding" (an old save's level-up) or "death" (the death tax) for one that is no quest's pump. A
 -- pump row's source (ns.Source, slice 26) names a catch-up's or an app pump's entry with its device; a game entry
--- keeps neither.
+-- keeps neither. An app pump whose banked moves came first (logMove) takes the entry they opened.
 local function logEntry(sh, r, mark)
 	local source, device = ns.Source(r.flags)
 	if source == E.source.game then source = nil end
+	local held = source == E.source.app and not mark and entryAt(sh, r.ts, true, device)
+	if held then
+		held.questID, held.tier = r.questID, r.tier
+		return
+	end
 	sh.log[#sh.log + 1] = { ts = r.ts, questID = r.questID, tier = r.tier, ding = mark == "ding" or nil,
 		death = mark == "death" or nil, source = source, device = device, moves = {} }
 	if #sh.log > C.sheet_log_pumps then table.remove(sh.log, 1) end
@@ -593,11 +600,14 @@ local function doneMove(r)
 end
 
 -- A move joins its pump's entry (an app pump's move its app pump's, slice 26, never a game pump's however close their
--- times); an unfinished one written with a turn-in owed on its own (the same second) joins that turn-in's. One owed on
--- its own with quest 0 (no row at its second): the death tax's (its reason, slice 23) opens a death's entry, or joins
--- the last one while no pump came after it (an evening of deaths never pushes the pumps out of the Log's last
--- sheet_log_pumps); before ding_retired_ts any other opens a level-up's (a ding has no stretch), unless the pump in
--- progress is that ding; after it, it joins the pump in progress (an open stand-up move owed at a turn-in).
+-- times); an unfinished one written with a turn-in owed on its own (the same second) joins that turn-in's. A move a
+-- device banked (a match pump's Bank all, work mode's Later: slices 58 and 67, dated its app pump's start with the
+-- device's bit alone) joins that app pump's entry, which it opens where the fold meets it first (the mirror folds the
+-- game's rows first at a tie), never the game pump in progress. One owed on its own with quest 0 (no row at its
+-- second): the death tax's (its reason, slice 23) opens a death's entry, or joins the last one while no pump came
+-- after it (an evening of deaths never pushes the pumps out of the Log's last sheet_log_pumps); before
+-- ding_retired_ts any other opens a level-up's (a ding has no stretch), unless the pump in progress is that ding;
+-- after it, it joins the pump in progress (an open stand-up move owed at a turn-in).
 local function logMove(sh, r, done)
 	local pump = pumpOf(sh)
 	-- an unfinished move whose paid row came first takes the fate logPaid kept for it, as the fold skips its owed row
@@ -605,6 +615,14 @@ local function logMove(sh, r, done)
 	local fate = key and sh.paidEarly[key]
 	if fate then sh.paidEarly[key] = nil end
 	local entry = not done and entryAt(sh, r.ts)
+	local source, device = ns.Source(r.flags)
+	if not entry and not done and source == E.source.catchup then
+		entry = entryAt(sh, r.ts, true, device)
+		if not entry then
+			logEntry(sh, { ts = r.ts, questID = 0, tier = r.tier, flags = ns.WithFlag(r.flags, "app") })
+			entry = sh.log[#sh.log]
+		end
+	end
 	if not entry and not done and r.questID == 0 then
 		if r.outcome == O.owed and ns.Reason(r.flags) == E.owedBy.death then
 			local last = sh.log[#sh.log]
@@ -2226,6 +2244,7 @@ function ns.SheetSummary(state, now, savedAt, profile, horizon)
 	-- are those of vault_embers it reached), then when the week turns; a reader at or past that time reads every goal at 0
 	local vault, reset = ns.Vault(state, now)
 	local held = ns.OwedHeld(state, profile, now) -- the owed moves a catch-up may not pay now (absent when none)
+	local aside = select(3, ns.OwedAside(state, profile, now)) -- those of them no list shows (absent when none)
 	local title = ns.ChosenTitle(state, profile) -- every title's rule runs once, and only while one is chosen
 	local dx, dxFrom = dayXPs(sh, now)
 	-- ws: when the game week began (the region's reset; outside WoW Monday's game day), so the phones' weekly charts bin
@@ -2235,7 +2254,8 @@ function ns.SheetSummary(state, now, savedAt, profile, horizon)
 		ttl = title and E.title[title] or nil, fc = state.focus,
 		st = st, wk = wk, crit = math.floor(r.crit * 100 + 0.5), exp = r.expertise,
 		def = r.defense, streak = streak, tokens = tokens, lad = lad, ear = ear, nx = nx, mq = mq, mw = mw,
-		owed = ns.OwedCount(state), held = #held > 0 and held or nil, lk = lockedAfter(sh),
+		owed = ns.OwedCount(state), held = #held > 0 and held or nil, aside = #aside > 0 and aside or nil,
+		lk = lockedAfter(sh),
 		last = { p and p.xp or 0, p and p.pts or 0, p and p.stars or 0, p and p.fam or 0 }, ls = ls, lu = lu, ld = ld,
 		ad = sh.activeDays, rs = sh.streak, lx = loggedXP(sh), dx = dx, dxFrom = dxFrom, bd = bestDays(sh),
 		va = { vault[1].value, vault[2].value, vault[3].value, reset }, em = (ns.Embers(state, now)), lv = lv,

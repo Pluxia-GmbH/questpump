@@ -372,6 +372,9 @@ pub struct Constants {
 	/// A move ended under these reps or seconds counts nothing and is banked without a word (`Desk::pump_short`).
 	pub min_reps: i64,
 	pub min_seconds: i64,
+	/// A move's time in a pump as the game's owed tip estimates it (Sheet.lua), by which work mode's How page names a
+	/// pump's minutes (slice 67, `MenuWork::minutes`).
+	pub move_estimate_s: i64,
 	/// A saved move's result holds this long before the next move goes on by itself (`Pour::goes_on_at`).
 	pub record_hold_s: f64,
 	pub mark_s: i64,

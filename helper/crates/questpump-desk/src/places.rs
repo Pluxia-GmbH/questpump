@@ -11,15 +11,18 @@
 //! (`questpump_core::places::in_use`, in this computer's local time). The engine's profile takes its equipment and
 //! switches (`Desk::engine_profile`, again
 //! at each pump's start and at each start or end of a time, `Desk::places_tick`), and Your setup's place section,
-//! Start a pump's place row and Pump home's place button name it and change it. Each change of the body goes through
+//! Start a pump's place row and Pump home's place button name it and change it. While work mode is on (slice 67) every
+//! pump takes work mode's own equipment instead (`Desk::setup_in_force`), the place in use and its pick staying as
+//! they are, and those three name Work mode and open its page. Each change of the body goes through
 //! `Desk::body_changed`, stamped past the field's own (`setup::stamped`), so the latest change wins on every device.
 //!
 //! **The `places` topic**: `{list: [{id, template?, name?, glyph, gear, floor, space, quiet, home}], in_use, default,
 //! times: [{days, from, to, place}], most, name_most, times_most, templates: [{id, template, glyph, gear, floor, space,
-//! quiet}], empty: {glyph, gear, floor, space, quiet}, glyphs, words}`, Home first, then the others in the player's
-//! order; `default` the default place in force (Home where the plan's has left the list), `times` the schedule's in
-//! the player's order; `templates` Add a place's Start from (every template but Home), `words` the sheet's
-//! (`menu_pages::Words`: the equipment's names and groups and the switches' names).
+//! quiet}], empty: {glyph, gear, floor, space, quiet}, glyphs, words, work?: {gear, floor, space, quiet}}`, Home first,
+//! then the others in the player's order; `default` the default place in force (Home where the plan's has left the
+//! list), `times` the schedule's in the player's order; `templates` Add a place's Start from (every template but
+//! Home), `words` the sheet's (`menu_pages::Words`: the equipment's names and groups and the switches' names); `work`
+//! work mode's own equipment while it is on, which the place button and the place rows show as Work mode.
 //!
 //! **Intents**: `places.use {id}` (a pick: the place in use until the schedule's next start or end or the plan's next
 //! change), `places.save {id?, template?, name?, glyph, gear, floor, space, quiet, default?}` (a place's window's Save;
@@ -47,6 +50,21 @@ const TOPIC: &str = "places";
 
 /// Home's id where `contract/places.json` does not read (its own `home`).
 const HOME: &str = "home";
+
+/// Work mode's glyph (the pages' `WORK_GLYPH`), and the id its equipment stands under as a place where a timed pump
+/// keeps where it trained: no place's, so its card takes the fallback scene.
+const WORK_GLYPH: &str = "place_desk";
+const WORK_ID: &str = "work";
+
+/// Where a timed pump trains, as it began (its Result's line and its card): the place in use, or work mode's own
+/// equipment while it runs (`work`, which the pages name Work mode; slice 67).
+#[derive(Clone, PartialEq, Serialize)]
+pub struct TrainsAt {
+	#[serde(flatten)]
+	place: Place,
+	#[serde(skip_serializing_if = "std::ops::Not::not")]
+	work: bool,
+}
 
 /// A place as the page draws it.
 #[derive(Serialize)]
@@ -88,6 +106,8 @@ struct Topic<'a> {
 	empty: Option<&'a EmptyPlace>,
 	glyphs: &'a [String],
 	words: &'a Value,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	work: Option<PlaceSetup>,
 }
 
 /// Home's id.
@@ -175,7 +195,7 @@ impl<P: Platform> Desk<P> {
 		self.body.body.place_plan.as_ref().map_or_else(PlacePlan::default, |p| p.value.clone())
 	}
 
-	/// The place in use on this computer now (`places::in_use`): its id and its setup.
+	/// The place in use on this computer now (`places::in_use`'s): its id and its setup.
 	pub fn place_in_use(&self) -> (String, PlaceSetup) {
 		let others = self.other_places();
 		let home = home_id();
@@ -189,6 +209,12 @@ impl<P: Platform> Desk<P> {
 			Some(p) => (p.id, p.setup),
 			None => (home.to_owned(), self.home_setup()),
 		}
+	}
+
+	/// The setup every pump composed on this computer takes now: work mode's own equipment while it is on (slice 67,
+	/// `Desk::work_setup`), else the place in use's.
+	pub fn setup_in_force(&self) -> PlaceSetup {
+		self.work_setup().unwrap_or_else(|| self.place_in_use().1)
 	}
 
 	/// The loop's look (every few seconds): at a start or an end of a time the place in use changes on its own, and the
@@ -234,9 +260,39 @@ impl<P: Platform> Desk<P> {
 		})
 	}
 
-	/// The place in use changed as `change` does (Your setup's switches and equipment chips, the welcome's place):
-	/// Home's change goes into the body's `home` and this computer's own setup, another place's into the body's
-	/// `places`; nothing when it stays as it was. Asked no more where the player pumps (`Desk::place_changed`).
+	/// Where the pumps train now (`TrainsAt`): work mode's own equipment while it is on, else the place in use.
+	pub fn trains_at(&self) -> TrainsAt {
+		match self.work_setup() {
+			Some(setup) => TrainsAt {
+				place: Place {
+					id: WORK_ID.to_owned(),
+					template: None,
+					name: None,
+					glyph: WORK_GLYPH.to_owned(),
+					setup,
+				},
+				work: true,
+			},
+			None => TrainsAt { place: self.place_shown(), work: false },
+		}
+	}
+
+	/// The setup in force changed as `change` does (Your setup's switches and equipment chips, the welcome's place):
+	/// work mode's own equipment while it is on (`Desk::work_equip`), else the place in use's (`change_place`); asked no
+	/// more where the player pumps either way (`Desk::place_changed`).
+	pub fn change_setup(&mut self, change: impl FnOnce(&mut PlaceSetup)) {
+		if self.settings.work.on {
+			self.work_equip(change);
+			self.place_changed();
+		} else {
+			self.change_place(change);
+		}
+	}
+
+	/// The place in use changed as `change` does (the setup in force while work mode is off): Home's change goes into
+	/// the body's `home` and this computer's own setup, another place's into
+	/// the body's `places`; nothing when it stays as it was. Asked no more where the player pumps
+	/// (`Desk::place_changed`).
 	pub fn change_place(&mut self, change: impl FnOnce(&mut PlaceSetup)) {
 		let (id, before) = self.place_in_use();
 		let mut setup = before.clone();
@@ -451,6 +507,7 @@ impl<P: Platform> Desk<P> {
 			empty: p.map(|p| &p.empty),
 			glyphs: p.map_or(&[][..], |p| p.glyphs.as_slice()),
 			words: &WORDS,
+			work: self.work_setup(),
 		};
 		self.publisher.publish(TOPIC, &topic);
 	}

@@ -62,6 +62,8 @@ pub(crate) struct CountsState {
 	/// The player turned the strap or the walking pad on, and its first connection or failure is a pairing's
 	/// (`pairing`'s attempt).
 	trying: Vec<Kind>,
+	/// The game day work mode was last counted on (`counts_work_on`), so the loop's look counts it once a day.
+	work_day: Option<i64>,
 }
 
 impl CountsState {
@@ -75,6 +77,7 @@ impl CountsState {
 			dirty: false,
 			asking: false,
 			trying: Vec::new(),
+			work_day: None,
 		}
 	}
 }
@@ -268,6 +271,19 @@ impl Helper {
 		self.counts_active(Source::Desktop);
 		if let Some(facts) = self.counts_today(Source::Desktop) {
 			facts.features.insert(feature.to_owned());
+		}
+	}
+
+	/// Work mode on at a look (slice 67, `fitness_feature_day`'s `work`: counted on each game day work mode was on), once
+	/// a game day while the switch reads on, so the loop's look writes no file each time.
+	pub(crate) fn counts_work_on(&mut self) {
+		let today = self.counts_day(now().unix);
+		if self.counts.work_day == Some(today) {
+			return;
+		}
+		self.counts_feature("work");
+		if self.usage_on() {
+			self.counts.work_day = Some(today);
 		}
 	}
 
@@ -716,9 +732,10 @@ impl Helper {
 	}
 
 	/// This computer's setup (`setup_week`): the app's pumps at the balanced pace (an app pump's, apppump.lua), the
-	/// focus in force (`focus`, the engine's), the place's floor, room and quiet, and how much equipment it holds.
+	/// focus in force (`focus`, the engine's), the floor, room and quiet of the setup in force (the place in use's, work
+	/// mode's own equipment while it is on) and how much equipment it holds.
 	fn desk_setup(&self, focus: Option<u8>) -> Option<Point> {
-		let (_, place) = self.desk.place_in_use();
+		let place = self.desk.setup_in_force();
 		let focus = focus.and_then(|id| facts().focus(id)).map_or("unset", |f| f.key.as_str());
 		Point::new(
 			"setup_week",

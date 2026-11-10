@@ -1,6 +1,6 @@
 [package]
 name = "questpump-helper"
-version = "1.0.1"
+version = "1.1.0"
 description = "QuestPump for Mac and Windows (the helper): reads the addon's status strip, keeps your progress for the game and pairs your phone"
 edition.workspace = true
 rust-version.workspace = true
@@ -80,8 +80,9 @@ png = "0.18"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 screencapturekit = { version = "=11.1.1", features = ["macos_14_0"] }
-# the window list (CGWindow), and the input's idle time the reminders' sitting cue reads (desk/reminders.rs)
-objc2-core-graphics = { version = "0.3", features = ["CGWindow", "CGEventSource", "CGEventTypes"] }
+# the window list (CGWindow), the input's idle time the reminders' sitting cue reads (desk/reminders.rs), and the
+# displays in a mirror set, which hold work mode's clock (presence.rs, slice 67)
+objc2-core-graphics = { version = "0.3", features = ["CGWindow", "CGEventSource", "CGEventTypes", "CGDirectDisplay", "CGDisplayConfiguration", "CGError"] }
 # the window list's entries (games/procs.rs: the front window's owner, a game window's bounds, the program picker),
 # already in the graph through objc2-core-graphics
 objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFArray", "CFDictionary", "CFNumber", "CFString", "CFCGTypes"] }

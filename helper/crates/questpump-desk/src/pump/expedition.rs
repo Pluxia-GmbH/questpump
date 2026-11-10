@@ -19,7 +19,6 @@
 //! **Intents**: `expedition.length {minutes}` (the Menu's Quick pump length, one of `lengths`), `expedition.next` (the
 //! breather's Start now) and `expedition.stop` (End the expedition, on the breather or a round's More).
 
-use questpump_core::body::Place;
 use questpump_core::protocol::ExpeditionStage;
 use questpump_engine::{Engine, EngineError, ExpeditionStage as Leg};
 use serde::Serialize;
@@ -27,6 +26,7 @@ use serde_json::Value;
 
 use super::{Asking, Composed, Cut, Gate, Run, Stage, Started, Stop, What, new_id, rows, unix_s, view};
 use crate::facts::facts;
+use crate::places::TrainsAt;
 use crate::{Desk, Intent, Platform};
 
 const TOPIC: &str = "expedition";
@@ -48,8 +48,8 @@ pub(super) struct Trip {
 	minutes: u16,
 	/// When it began (ms).
 	began: i64,
-	/// The place it runs at, as it began.
-	place: Place,
+	/// Where it trains, as it began.
+	place: TrainsAt,
 	/// The stages planned, the `ExpeditionBar`'s segments: the dry run's at the start, decided again before each round.
 	legs: Vec<Leg>,
 	/// The stages begun so far.
@@ -239,7 +239,7 @@ struct DoneView {
 	minutes: i64,
 	rounds: u8,
 	early: bool,
-	place: Place,
+	place: TrainsAt,
 	most: Vec<u8>,
 	some: Vec<u8>,
 	moves: usize,
@@ -300,7 +300,7 @@ impl<P: Platform> Desk<P> {
 		self.pumps.trip = Some(Trip {
 			minutes,
 			began: now,
-			place: self.place_shown(),
+			place: self.trains_at(),
 			legs: Vec::new(),
 			at: 0,
 			last: None,
@@ -347,7 +347,7 @@ impl<P: Platform> Desk<P> {
 						h.pump_composed(
 							composed,
 							Some(started),
-							Asking { what, id, offer: None, outside, arms: None, riding: Vec::new() },
+							Asking { what, id, offer: None, outside, arms: None, riding: Vec::new(), work: None },
 						);
 					}
 					Ok((_, next)) => {
@@ -459,7 +459,15 @@ impl<P: Platform> Desk<P> {
 						h.pump_composed(
 							composed,
 							Some(started),
-							Asking { what, id, offer: None, outside: false, arms: None, riding: Vec::new() },
+							Asking {
+								what,
+								id,
+								offer: None,
+								outside: false,
+								arms: None,
+								riding: Vec::new(),
+								work: None,
+							},
 						);
 						// a Start now pressed before it came, or a ring that ran out meanwhile
 						if h.pumps.trip.as_ref().and_then(Trip::rest_until).is_some_and(|until| until <= h.p.now_ms()) {

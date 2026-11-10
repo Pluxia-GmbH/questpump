@@ -34,6 +34,7 @@
 use questpump_core::games::{Finish, MATCH, Watched};
 use questpump_core::offers::{self, Gate, Offer, Pause, Tunables};
 use questpump_core::protocol::{Command, Line};
+use questpump_core::work::Work;
 use questpump_desk::seams::Recalled;
 use questpump_desk::settings::GamesSettings;
 
@@ -350,8 +351,9 @@ impl Helper {
 	/// The offer facts every sync response carries as it leaves (`lan::OfferFacts`; slice 48's second fix round), told
 	/// to the routes at the end of each of the loop's turns and as it takes a sync: the felt-unwell lock's end while it
 	/// lies ahead, the ids taken back whose `match_end` has not expired, whether a watched game is in a match (at most
-	/// 3 hours of it), whether an aim game rests the arms now and the latest game offer. A change of the ids, `playing`
-	/// or `arms` answers the waiting held and standing requests at once (`Lan::set_offers`).
+	/// 3 hours of it), whether an aim game rests the arms now, the latest game offer and work mode's state (slice 67).
+	/// A change of the ids, `playing`, `arms` or the work state answers the waiting held and standing requests at once
+	/// (`Lan::set_offers`).
 	pub(super) fn tell_offers(&self, now: i64) {
 		self.lan.set_offers(OfferFacts {
 			locked_until: self.desk.session.locked_until(now),
@@ -359,6 +361,7 @@ impl Helper {
 			playing: self.desk.p.games.as_ref().is_some_and(|g| g.watcher.playing(now * 1_000)),
 			arms: self.desk.arms_now(),
 			game_offer_at: self.desk.settings.offers.last_game_offer_at,
+			work: Some(self.desk.settings.work.clone()).filter(Work::heard),
 		});
 	}
 }

@@ -52,10 +52,11 @@ return function(ns, opts)
 	end
 
 	-- The engine's profile from the phones' EngineProfile (its JSON keys: gear, floor, space, quiet, noJump, noStrain,
-	-- noHeadDown, experience and exclude { ids, groups }, with favourites, include, title and matchPace where set) over
-	-- the addon's defaults: the pace (Moves per quest) is Balanced, as every app pump's that is no match pump; the match
-	-- pace (`matchPace`, Moves per match: the body's match_pace, slice 48) sizes a pump composed with a match's facts
-	-- (Engine:compose), light, balanced or extreme, any other value or none Balanced (ns.Pace).
+	-- noHeadDown, experience and exclude { ids, groups }, with favourites, include, title, matchPace and workPace where
+	-- set) over the addon's defaults: the pace (Moves per quest) is Balanced, as every app pump's that is no match or
+	-- work pump; the match pace (`matchPace`, Moves per match: the body's match_pace, slice 48) sizes a pump composed with
+	-- a match's facts and the work pace (`workPace`, Moves per block: the work state's pace, slice 67) a work pump
+	-- (Engine:compose), each light, balanced or extreme, any other value or none Balanced (ns.Pace).
 	function A.profile(p)
 		local profile = CopyTable(ns.defaults)
 		for _, key in ipairs({ "floor", "space", "quiet", "noJump", "noStrain", "noHeadDown" }) do
@@ -68,6 +69,7 @@ return function(ns, opts)
 		for _, group in ipairs(assert(p.exclude.groups, "exclude.groups")) do exclude[group] = true end
 		profile.exclude, profile.include, profile.favourites = exclude, set(p.include), set(p.favourites)
 		profile.title, profile.pace, profile.matchPace = p.title, "balanced", ns.Pace(p.matchPace)
+		profile.workPace = ns.Pace(p.workPace)
 		return profile
 	end
 
@@ -81,7 +83,7 @@ return function(ns, opts)
 	end
 
 	-- The profile as the phones encode it (EngineProfile): favourites only where it marks some, the title only when
-	-- one is chosen and the match pace only when it is not Balanced.
+	-- one is chosen and the match and work paces only when not Balanced.
 	function A.profileJSON(profile)
 		local favourites = keys(profile.favourites)
 		return { gear = array(keys(profile.gear)), floor = profile.floor, space = profile.space, quiet = profile.quiet,
@@ -89,7 +91,8 @@ return function(ns, opts)
 			experience = profile.experience,
 			exclude = { ids = array(keys(profile.exclude, "number")), groups = array(keys(profile.exclude, "string")) },
 			include = array(keys(profile.include)), favourites = #favourites > 0 and array(favourites) or nil,
-			title = profile.title, matchPace = profile.matchPace ~= "balanced" and profile.matchPace or nil }
+			title = profile.title, matchPace = profile.matchPace ~= "balanced" and profile.matchPace or nil,
+			workPace = profile.workPace ~= "balanced" and profile.workPace or nil }
 	end
 
 	-- Slots ------------------------------------------------------------------------------------------------------------
@@ -348,14 +351,19 @@ return function(ns, opts)
 	-- turn), and `owed` (the rows of it the device may pay, oldest first, as the game's availableOwed) ride it where
 	-- they fit (Engine.lua pickRiders), dosed and placed as the game's riders. With `expedition` (slice 51: { stage,
 	-- regions }) an expedition's round, whose stage sets its tier and its kind of moves (ns.Compose), `family` and `tier`
-	-- aside.
-	function Engine:compose(family, tier, at, chosen, match, owed, queue, expedition)
+	-- aside. With `work` (a work pump, slice 67: { block, warm }, block its place in the set from 1 to work_set_blocks,
+	-- warm present only when true) it is sized by that place at the work pace (Moves per block, profile.workPace;
+	-- Engine.lua workQuota) whatever `tier`, with no all-out window of its own or owed and no closing window (calm), its
+	-- cardio at no active minutes, and with `warm` (the device's sitting clock held work_warm_min as it was asked) it
+	-- opens on a warm move, as a match pump does.
+	function Engine:compose(family, tier, at, chosen, match, owed, queue, expedition, work)
 		local minutes = match and match.minutes
 		local state = queue and setmetatable({ owed = queue }, { __index = self.state }) or self.state
 		return ns.Compose({ kind = "quest", quests = { quest(tier, family, minutes) }, owed = owed, state = state,
-			profile = self.profile, now = at, app = true, chosen = chosen, pace = A.matchPace(self.profile, match),
-			warm = match ~= nil and match.warm == true or nil, arms = match and match.arms == true or nil,
-			expedition = expedition })
+			profile = self.profile, now = at, app = true, chosen = chosen,
+			pace = work and self.profile.workPace or A.matchPace(self.profile, match),
+			warm = (match and match.warm == true or work and work.warm == true) or nil,
+			arms = match and match.arms == true or nil, expedition = expedition, work = work })
 	end
 
 	-- A typed count and its weight (tenths of a kg, nil none) against the game's limits (ns.Validate): "max" refused,
@@ -1671,6 +1679,24 @@ return function(ns, opts)
 		return array(out)
 	end
 
+	-- The owed rows the setup in force leaves out with no move of their level to stand in (ns.OwedAside, 2026-11-09),
+	-- which the unfinished list on the computer and its catch-up leave out: `rows` read as Engine:ridesAs reads them.
+	-- Returns their places in `rows` (from 0), in order.
+	function Engine:owedAside(rows, at)
+		local queue, order = {}, {}
+		for i, str in ipairs(rows) do
+			local r = owedRow(str, "owedAside")
+			queue[r.key] = r
+			order[i] = r.key
+		end
+		local aside = ns.OwedAside(setmetatable({ owed = queue }, { __index = self.state }), self.profile, at)
+		local places = {}
+		for i, key in ipairs(order) do
+			if aside[key] then places[#places + 1] = i - 1 end
+		end
+		return array(places)
+	end
+
 	-- Folds the rows from the baseline `base` on (nil: every row) as the save folds with its mirror: `saveSide` (the shown
 	-- focus and the game's kept rows, in their order) and `ownSide` (the app's own, in theirs) merged by time
 	-- (ns.MergeMirror: each side sorted at its running time, the game's row first within one second, a row both sides
@@ -2036,11 +2062,12 @@ return function(ns, opts)
 	local Pump = {}
 	Pump.__index = Pump
 
-	-- The queue a match pump composes with (slice 61) from the game's owed rows (`queue`, row texts: every owed row the
-	-- game's store keeps) and the rows of it the device may pay (`rows`, row texts as the helper's store keeps them,
-	-- Session::payable_kept), each read as the fold reads it (owedRow), a row of both one table: the queue by key, the
-	-- rows that may ride oldest first (ns.OwedList's order, the game's availableOwed), and each such row's place in
-	-- `rows` (from 1). Nil for none (a pump no match sizes, or a match pump while the queue is empty); a queue with no
+	-- The queue a pump that banks composes with (a match pump's, slice 61; a work pump's, slice 67) from the owed rows
+	-- (`queue`, row texts: every owed row the game's store keeps, and since slice 67 the account's) and the rows of it the
+	-- device may pay (`rows`, row texts as the helper's store keeps them, Session::payable_kept), each read as the fold
+	-- reads it (owedRow), a row of both one table: the queue by key, the rows that may ride oldest first (ns.OwedList's
+	-- order, the game's availableOwed), and each such row's place in `rows` (from 1). Nil for none (a pump that does not
+	-- bank, or one while the queue is empty); a queue with no
 	-- row the device may pay still keeps the pump's own picks off its moves, as the game's compose does.
 	local function riderQueue(rows, queue)
 		if not (rows and #rows > 0 or queue and #queue > 0) then return nil end
@@ -2064,23 +2091,26 @@ return function(ns, opts)
 	-- `kind` the plain kind's key (contract/kinds.json), "quick" or "move", `family` the engine's family for it,
 	-- `chosen` a move pump's move (A.pick), `match` a match pump's facts (slices 48 and 57, Engine:compose: { minutes =
 	-- the match's whole minutes, warm = true or none, arms = true or none }; nil for every other pump), which the pump
-	-- keeps for its recompose and its Swap. A pump a match sized (slice 61) takes `rows`, the owed row texts its device
-	-- may pay, and `queue`, every owed row text the game's store keeps (riderQueue): composed on a state holding the
-	-- queue, those of `rows` that fit ride it as the game's riders (Engine:compose), its slots of the pump's own and its
+	-- keeps for its recompose and its Swap. A pump that banks (a match's, slice 61, a work pump's, slice 67) takes
+	-- `rows`, the owed row texts its device may pay, and `queue`, every owed row text the device's queue keeps (the
+	-- game's store's on the desktop, the account's since slice 67; riderQueue): composed on a state holding the queue,
+	-- those of `rows` that fit ride it as the game's riders (Engine:compose), its slots of the pump's own and its
 	-- riders in the game's order, each rider paying its owed row (`slot.owed`), which A.ridersJSON names; the pump keeps
 	-- the queue (Swap reads it, Skip takes a rider out of it), the rows that may ride and their places. `expedition` is
 	-- an expedition round's (slice 51, A.expedition: { stage, regions }), which the pump keeps for its recompose and its
-	-- Swap. Returns the pump { id, kind, family, tier, chosen, match, expedition, slots, swapped, queue?, owed?, place? }
-	-- and the rows written.
-	function A.compose(E_, id, kind, family, tier, at, chosen, match, rows, queue, expedition)
+	-- Swap. `work` is a work pump's (slice 67, Engine:compose: { block, warm }; the kind key `work`, a Normal pump,
+	-- `tier` 2), which the pump keeps for its recompose, its Swap and its Ready views. Returns the pump { id, kind,
+	-- family, tier, chosen, match, expedition, work, slots, swapped, queue?, owed?, place? } and the rows written.
+	function A.compose(E_, id, kind, family, tier, at, chosen, match, rows, queue, expedition, work)
+		assert(not work or tier == 2, "compose: a work pump is a Normal pump")
 		local written = array({})
 		if not E_:hasRungs() then written = E_:startRows(at) end
 		local riding = riderQueue(rows, queue)
 		local slots = E_:compose(family, tier, at, chosen, match, riding and riding.owed, riding and riding.queue,
-			expedition)
+			expedition, work)
 		if #slots > 0 then written[#written + 1] = E_:pumpRow(slots, tier, at) end
 		local pump = setmetatable({ id = id, kind = kind, family = family, tier = tier, chosen = chosen, match = match,
-			expedition = expedition, slots = slots, swapped = {} }, Pump)
+			expedition = expedition, work = work, slots = slots, swapped = {} }, Pump)
 		if riding then pump.queue, pump.owed, pump.place = riding.queue, riding.owed, riding.place end
 		return pump, written
 	end
@@ -2242,7 +2272,9 @@ return function(ns, opts)
 		for k, slot in ipairs(riders) do
 			local i = slot.owed and place[slot.owed]
 			if i then pump.rider[i] = k end
-			if i and asking(slot) then
+			-- a move that runs by its time still takes its slot where it stands in for the owed one (ridesAs), so it runs
+			-- and pays as that move
+			if i and (asking(slot) or slot.move ~= slot.owed.move) then
 				pump.slots[i] = slot
 				asks[#asks + 1] = { index = i, slot = A.slotJSON(slot), move = pump:move(E_, i) }
 			end
@@ -2252,8 +2284,8 @@ return function(ns, opts)
 
 	-- Composed again for the same kind and size (a move pump for its move, Engine.lua's chosen compose: its backup at
 	-- its level where the new flag refuses it, else step jacks; a match pump with its match's facts as they were at its
-	-- start, slice 48, and its riders from the rows it may pay still queued, slice 61), its offered row standing and its
-	-- swaps undone: a pain flag set before any move was recorded.
+	-- start, slice 48, a work pump with its place in the set, slice 67, and its riders from the rows it may pay still
+	-- queued, slice 61), its offered row standing and its swaps undone: a pain flag set before any move was recorded.
 	function Pump:recompose(E_, at)
 		local owed
 		if self.owed then
@@ -2262,7 +2294,8 @@ return function(ns, opts)
 				if self.queue[r.key] then owed[#owed + 1] = r end
 			end
 		end
-		self.slots = E_:compose(self.family, self.tier, at, self.chosen, self.match, owed, self.queue, self.expedition)
+		self.slots = E_:compose(self.family, self.tier, at, self.chosen, self.match, owed, self.queue, self.expedition,
+			self.work)
 		self.swapped = {}
 	end
 
@@ -2291,8 +2324,8 @@ return function(ns, opts)
 		local state = E_.state
 		if self.queue then state = setmetatable({ owed = self.queue }, { __index = E_.state }) end
 		return ns.SwapOptions({ state = state, profile = E_.profile, now = at,
-			arms = self.match and self.match.arms == true or nil, expedition = self.expedition }, moves,
-			index, self.chosen ~= nil)
+			arms = self.match and self.match.arms == true or nil, expedition = self.expedition },
+			moves, index, self.chosen ~= nil)
 	end
 
 	-- The move at `i` dosed again as its Ready view opens (ns.ReadyGoal, Rapha, 2026-10-28; Events.lua Lc.Next): a

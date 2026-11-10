@@ -358,6 +358,7 @@
    "menu.link",
    "menu.phonegames",
    "menu.pumpfirst",
+   "menu.work",
    "setup.screen",
    "setup.experience",
    "setup.paste",
@@ -951,7 +952,7 @@
     "doubles": {}
    },
    "fitness_feature_day": {
-    "about": "One count a day for each feature about a pump or health a source used that day, fitness since 2026-11-01 (the release security review: health_sync went by the regional default): live the Live Activity or Live Update of a pump shown, strap a heart-rate strap and pad a walking pad connected on the computer, health_sync a pump saved as a workout in Apple Health or Health Connect, watch_app the watch's pumps reaching the phone, coach a coach line about a set or a week's pumps reaching the player. A phone keeps and sends it only with the player's own yes.",
+    "about": "One count a day for each feature about a pump or health a source used that day, fitness since 2026-11-01 (the release security review: health_sync went by the regional default): live the Live Activity or Live Update of a pump shown, strap a heart-rate strap and pad a walking pad connected on the computer, health_sync a pump saved as a workout in Apple Health or Health Connect, watch_app the watch's pumps reaching the phone, coach a coach line about a set or a week's pumps reaching the player, work work mode on at some moment of that game day (slice 67). A phone keeps and sends it only with the player's own yes.",
     "q": "features",
     "fitness": true,
     "cadence": "day",
@@ -967,7 +968,8 @@
       "pad",
       "health_sync",
       "watch_app",
-      "coach"
+      "coach",
+      "work"
      ]
     },
     "doubles": {}

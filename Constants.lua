@@ -379,6 +379,21 @@ ns.C = {
 	remind_own_max = 5, remind_window_min = 30, remind_retry_min = 30, remind_plan_days = 7,
 	remind_taper_days = 7, remind_taper_every = 3, remind_weekly_days = 21, remind_run_min = 60,
 	sit_after_min = 60, sit_steps = 250,
+	-- the sitting clock's time away (the desktop app's since slice 48; the work clocks' on every device since slice
+	-- 67): a pause in the input this long starts the minutes sat again at zero (the addon reads none)
+	sit_away_s = 300,
+	-- work mode (slice 67), exported for the desktop app, the phones and the browser (the addon reads none): a work pump
+	-- is due once the work clock counts work_every_min minutes of the player's time at it (the player picks one of
+	-- work_every_choices); every work_set_blocks-th pump of a set is the long one, one move more; once due and nothing
+	-- holds it, the ask comes at the first pause of work_moment_s seconds without input, at most work_late_s seconds
+	-- after it was due; a work pump opens on its warm move only once the device's sitting clock holds work_warm_min
+	work_every_min = 25, work_every_choices = { 25, 30, 45, 60 }, work_set_blocks = 4, work_moment_s = 30,
+	work_late_s = 120, work_warm_min = 60,
+	-- the account's unfinished list (slice 67): an owed row a device without a computer banks (the browser, a phone not
+	-- linked to the desktop app) carries in its questID a bank number from bank_quest_min up, never a quest's id
+	-- (contract/sync-api.yaml, "The account's unfinished list"), so two devices' banks of one second keep apart and
+	-- Lc.QuestTitle asks no title of it
+	bank_quest_min = 1073741824,
 	-- the phones' game links (slice 33), exported for them as the reminders are (the addon reads none): a look at every
 	-- link's feed each link_look_s while the app is in front, the background refresh's earliest spacing in minutes, the
 	-- age past which a finish offers nothing, the least spacing between two game offers, and the age from which an

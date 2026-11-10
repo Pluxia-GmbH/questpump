@@ -2,8 +2,10 @@
 // reader: the gear that opens the Menu, a page's way back, a pump's other choices ("···"), a window's close, Share and
 // the coach's flag, the streak page's earlier and later month (slice 51), a Carousel's previous and next (a chevron
 // each way), the Book's search (Moves, 2026-11-04) and Pump home's place button (2026-11-03: the place in use's own
-// glyph, contract/places.json `glyphs`), which `spoken` alone names; `spoken` names the others where their glyph's name
-// says too little (the Saga's Week tile's Share week). Hover lifts it, a press darkens it.
+// glyph, contract/places.json `glyphs`), which `spoken` alone names, and work mode's (i) beside its sheet's and its
+// page's title (slice 67: a dot over a stem drawn as the dots are, the iPhone's InfoMark), opening How work mode
+// works; `spoken` names the others where
+// their glyph's name says too little (the Saga's Week tile's Share week). Hover lifts it, a press darkens it.
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, h} from "./element.js";
@@ -16,6 +18,7 @@ const ICONS = {
 	share: {glyph: "mark_share", label: () => t("kit.share")},
 	search: {glyph: "mark_search", label: () => t("ladders.search")},
 	report: {glyph: "mark_report", label: () => t("coach.report.label")},
+	how: {label: () => t("work.how.title")},
 	earlier: {label: () => t("pump.streak.month.earlier")},
 	later: {label: () => t("pump.streak.month.later")},
 	previous: {},
@@ -28,10 +31,10 @@ const ICONS = {
 	place_peak: {glyph: "place_peak"},
 };
 
-/** The glyphs drawn in CSS: the chevron (its way by the button's icon) and the three dots. */
+/** The glyphs drawn in CSS: the chevron (its way by the button's icon), the three dots and the (i). */
 const DRAWN = {
 	back: "qp-chevron", earlier: "qp-chevron", later: "qp-chevron", previous: "qp-chevron", next: "qp-chevron",
-	more: "qp-dots",
+	more: "qp-dots", how: "qp-info",
 };
 
 class QpRoundButton extends KitElement {

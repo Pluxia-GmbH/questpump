@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.1.0]
+
+### Added
+
+- A choice of when pumps ask: "At the turn-in", as before, or "On my next flight". With "On my next flight" each
+  quest's pump waits, and your next flight opens them one after another. A pump that has not opened when you land goes
+  to your unfinished moves. You find the choice on the last page of Your setup and on the General page.
+- Work mode in QuestPump on your computer. You start it and you stop it. While it runs, a short pump opens every 25,
+  30, 45 or 60 minutes. Its clock just runs down, and it waits during calls, full screen and games. Bank all puts a
+  pump off. Work mode keeps its own equipment, set for an office at the start.
+- /qp status says whether the voice pack is installed, as it does for the move figures.
+
+### Changed
+
+- A much smaller download: about 2 MB, down from 238 MB. The voice and the moving figures are two more downloads,
+  QuestPump Voice and QuestPump Figures. QuestPump on your computer adds both for you. The add-on plays without them,
+  with a picture of each move and no voice.
+- Most updates now fetch only the small add-on. The voice and the figures come again only when they change.
+- An unfinished move your place cannot do now comes as a move of the same level that your place allows. With none, it
+  leaves your lists until your setup lets it in again.
+- On your computer, "How close to the goal pose?" stands over the pose's figure, no longer on a screen of its own.
+
+### Fixed
+
+- QuestPump on your computer now takes in the settings and the character sheet the game sends while you play. Before,
+  a setting you changed in the game reached it only when you reloaded or left the game.
+- Feedback you send from the game now arrives. QuestPump on your computer dropped it before.
+
 ## [1.0.1] - 2026-11-07
 
 ### Added

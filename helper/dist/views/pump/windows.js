@@ -9,11 +9,11 @@ import {t} from "../../lib/copy.js";
 import {figureName} from "../../lib/figure.js";
 import {topWindow} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
-import {whenStarted} from "../../lib/router.js";
+import {openMenu, whenStarted} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {gameName} from "../games/windows.js";
 import {openPlaces} from "../places/places.js";
-import {gearLine, inUse, placeName} from "../places/words.js";
+import {gearLine, placeName, placeShown} from "../places/words.js";
 import {kindName, recordWords, sizes} from "./words.js";
 
 /** An intent's failure goes to the console (Rust's handler logged why). */
@@ -112,12 +112,14 @@ export function move(pump) {
 
 /** The Ready bar's Pause (2026-11-05; the game's Panel.PauseMenu, opened above its button `from`): how long, the
  * Games tab's Pause offers' choices under its name (an hour, four hours, until the next game day, while the watched
- * game running now runs, while one runs, until resumed; none where this computer holds no offers), each pausing them and
- * ending the pump as its bar's Close does (`pump.pause`); then Your body: Something hurts while a joint is left
- * unflagged, its joints in a menu beside it under the game's question, one click flagging one (`pump.pain`), and I feel
- * unwell last, in the stop colour, what it does read after its name (`pump.unwell`). */
+ * game running now runs, while one runs, until resumed; none where this computer holds no offers or on a work pump,
+ * `topic.work`), each pausing them and ending the pump as its bar's Close does (`pump.pause`); then Your body:
+ * Something hurts while a joint is left unflagged, its joints in a menu beside it under the game's question, one click
+ * flagging one (`pump.pain`), and I feel unwell last, in the stop colour, what it does read after its name
+ * (`pump.unwell`). */
 export function pauseMenu(topic, from) {
-	const games = get("games");
+	// a work pump pauses no offer (Stop ends work mode, Later puts a pump off): its menu is Your body alone (slice 67)
+	const games = topic.work ? null : get("games");
 	const running = games?.tiles?.find((tile) => tile.running);
 	const pause = (kind) => () => heard(intent("pump.pause", {kind}));
 	const items = games ? [
@@ -172,22 +174,28 @@ let pumpId = null;
 
 /** Start a pump (the phones' StartWindow): what the player finished as the six plain kinds in ChoiceChips, the size as
  * a Segmented (the size Rust preset: an offer's tier, else Balanced), the place in use (slice 51: its Row opens the
- * places window) and Start; a match's offer chooses A match, a program's close none. A pump from an offer, or of A
+ * places window; while work mode runs Work mode with its equipment, slice 67, which closes the window and opens the
+ * Work mode page) and Start; a match's offer chooses A match, a program's close none. A pump from an offer, or of A
  * match, is a match's pump (slice 48's double-check): while every size takes the same moves (`one_size`: Moves per
  * match at Light) no size shows, the preset size still sent, and while an aim game rests the arms (`arms`, its name)
  * the window says so. */
 function choose(c) {
 	let kind = c.kinds.includes(c.kind) ? c.kind : null;
 	let size = String(c.size ?? 2);
-	const placeRow = h("qp-row", {tile: true, "on:click": () => openPlaces()});
+	let shownWin = null;
+	const placeRow = h("qp-row", {tile: true, "on:click": () => {
+		if (!placeShown(get("places"))?.work) return openPlaces();
+		shownWin?.close();
+		openMenu("desk.menu.work");
+	}});
 	const stop = subscribe("places", (p) => {
-		const shown = inUse(p);
+		const shown = placeShown(p);
 		placeRow.heading = placeName(shown);
 		placeRow.meta = gearLine(shown);
 		placeRow.glyph = shown?.glyph ?? null;
 	});
 	const matched = () => Boolean(c.offer) || kind === "match";
-	return openWindow({heading: t("pump.questdone.title"), placement: "bottom", primary: t("pump.questdone.start"),
+	shownWin = openWindow({heading: t("pump.questdone.title"), placement: "bottom", primary: t("pump.questdone.start"),
 		"primary-state": kind ? "normal" : "disabled"}, (content, win) => {
 		const sizeHead = h("p", {class: "qp-type-caps", text: t("pump.questdone.size")});
 		const segmented = h("qp-segmented", {value: size});
@@ -225,6 +233,7 @@ function choose(c) {
 		stop();
 		heard(intent("pump.dismiss", {window: "choose"}));
 	});
+	return shownWin;
 }
 
 /** "Speakers or headset?" before the first pump on this computer: the output picker asking it (its question heads the

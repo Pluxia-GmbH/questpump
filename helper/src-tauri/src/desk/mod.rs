@@ -32,6 +32,7 @@ pub(crate) mod offers;
 pub(crate) mod place;
 pub(crate) mod reel;
 pub(crate) mod reminders;
+pub(crate) mod ring;
 pub(crate) mod seams;
 pub(crate) mod shell;
 pub(crate) mod standing;

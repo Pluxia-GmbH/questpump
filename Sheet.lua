@@ -1658,6 +1658,13 @@ local function chipLine(p)
 			{ hint = L["tip.chip.click"] }) }
 end
 
+-- The pumps that wait for the flight (Lc.Waiting; "On my next flight", docs/plan.md slice 70): how many, never their
+-- moves, which each composes as it opens. A click starts the first now, as the chip's does.
+local function waitingLine(n)
+	return { text = ns.Plural("hud.wait", n):format(n), action = Lc.Demand,
+		tooltip = ns.Kit.Tip(L["tip.wait.title"], L["tip.wait.body"], { hint = L["tip.wait.click"] }) }
+end
+
 -- "since 14:02" today, "since 3 Oct" before (the HUD's unfinished moves, the pump card's reason line)
 local function since(ts)
 	return ns.day(ts) == ns.day() and clockTime(ts) or shortDate(ts)
@@ -1674,8 +1681,11 @@ end
 -- them to a Ready view, where Skip lives for the others; then the settings, where a switch or a flag lets them in.
 local function heldMenu(_, root)
 	root:CreateTitle(L["hud.held.title"])
+	local aside = ns.OwedAside(ns.state, ns.profile, ns.now())
 	for _, r in ipairs(ns.OwedHeldRows(ns.state, ns.profile, ns.now())) do
-		root:CreateButton(L["hud.held.skip"]:format(owedName(r.move), since(r.ts)), function() Lc.SkipHeld(r) end)
+		if not aside[r.key] then
+			root:CreateButton(L["hud.held.skip"]:format(owedName(r.move), since(r.ts)), function() Lc.SkipHeld(r) end)
+		end
 	end
 	root:CreateDivider()
 	root:CreateButton(L["hud.held.settings"], function() ns.Settings.Open() end)
@@ -1686,9 +1696,10 @@ end
 -- owed_tip_moves, "Push-up ×2 · Plank", then "+n more"), then in grey where they came from, where they go and the way
 -- out (Skip on a move's Ready view; for the ones the setup holds back, the line's menu).
 local function owedLine(owed, locked)
+	local aside, asideCount = ns.OwedAside(ns.state, ns.profile, ns.now())
 	local context = not locked and Lc.OwingContext()
 	local ready = locked and 0 or ns.RidersReady(ns.state, ns.profile, ns.now())
-	local waiting = (locked or ready == owed) and 0 or #ns.OwedHeldRows(ns.state, ns.profile, ns.now())
+	local waiting = (locked or ready == owed) and 0 or #ns.OwedHeldRows(ns.state, ns.profile, ns.now()) - asideCount
 	local line
 	if locked then
 		line = L["hud.owed.locked"]:format(owed, C.day_offset_h)
@@ -1705,10 +1716,12 @@ local function owedLine(owed, locked)
 		local order, count, banked = {}, {}, 0
 		local as = ns.RidesAs(ns.state, ns.profile, ns.now()) -- an owed backup by the move it rides as
 		for _, r in ipairs(ns.OwedList(ns.state)) do
-			local id = as[r.key] or r.move
-			if not count[id] then order[#order + 1] = id end
-			count[id] = (count[id] or 0) + 1
-			if r.outcome == O.banked then banked = banked + 1 end
+			if not aside[r.key] then
+				local id = as[r.key] or r.move
+				if not count[id] then order[#order + 1] = id end
+				count[id] = (count[id] or 0) + 1
+				if r.outcome == O.banked then banked = banked + 1 end
+			end
 		end
 		local names = {}
 		for i = 1, math.min(#order, C.owed_tip_moves) do
@@ -1740,12 +1753,20 @@ local function owedLine(owed, locked)
 end
 HUD.OwedLine = owedLine -- the Today tab's unfinished row too (SheetPages.lua)
 
+-- How many of the `owed` unfinished moves the lists show: all but those the place sets aside (ns.OwedAside).
+function HUD.OwedShown(owed)
+	if owed == 0 then return 0 end
+	return owed - select(2, ns.OwedAside(ns.state, ns.profile, ns.now()))
+end
+
 -- The lines as { text, action?, menu?, rightMenu?, glow?, tooltip? }, top to bottom (a menu opens on the click, the
 -- cheers' and the held unfinished moves'; a right menu on the right-click, the pause). Pure apart from what it reads.
 function HUD.Lines()
 	local out = {}
 	local p = Lc.pump
 	if p and CHIP[p.state] then out[#out + 1] = chipLine(p) end
+	local waiting = Lc.Waiting()
+	if waiting > 0 then out[#out + 1] = waitingLine(waiting) end
 	local pauseMode, pauseEnds = Lc.Paused()
 	local locked = Lc.Locked()
 	if ns.profile and ns.profile.enabled == false then
@@ -1758,7 +1779,7 @@ function HUD.Lines()
 		if not locked then out[#out + 1] = embersLine() end -- the felt-unwell lock asks for no cardio
 	end
 	if locked then out[#out + 1] = { text = L["hud.locked"]:format(C.day_offset_h) } end
-	local owed = ns.state and ns.OwedCount(ns.state) or 0
+	local owed = HUD.OwedShown(ns.state and ns.OwedCount(ns.state) or 0)
 	if owed > 0 then out[#out + 1] = owedLine(owed, locked) end
 	-- the pact and the duel, the party's moves today, the Join line, a finished pump to cheer, the guild's digest
 	-- (Social.lua)

@@ -190,19 +190,20 @@ impl<P: Platform> Desk<P> {
 
 	/// Where the player pumps on this computer, from the place step or the place window before the first own pump:
 	/// beside the desk (no floor moves and no room to move, as the addon's Office preset sets them) or with room to
-	/// lie down (both on; 2026-10-09), and quiet, asked no more (`Desk::place_changed`, which lets a start that
-	/// waited for it go on).
+	/// lie down (both on; 2026-10-09), and quiet, into the setup in force (work mode's own equipment while it is on,
+	/// which the pump that waited composes with) and asked no more (`Desk::change_setup`, which lets a start that waited
+	/// for it go on).
 	fn answer_place(&mut self, intent: &Intent) -> Result<(), String> {
 		let on = |name| intent.arg(name).and_then(Value::as_bool).ok_or(format!("{} takes {name}", intent.kind()));
 		let (floor, quiet) = (on("floor")?, on("quiet")?);
-		self.change_place(|place| (place.floor, place.space, place.quiet) = (floor, floor, quiet));
+		self.change_setup(|place| (place.floor, place.space, place.quiet) = (floor, floor, quiet));
 		Ok(())
 	}
 
 	/// `welcome` as it stands.
 	pub fn publish_welcome(&self) {
 		let desk = &self.settings.desk;
-		let (_, place) = self.place_in_use();
+		let place = self.setup_in_force();
 		let topic = Topic {
 			step: (!desk.onboarded && self.menu.found.ready).then_some(desk.welcome),
 			found: &self.menu.found,

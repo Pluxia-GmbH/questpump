@@ -29,7 +29,7 @@ import {t} from "../../lib/copy.js";
 import {h} from "../../kit/element.js";
 import {confirmWindow} from "../book/common.js";
 import {field, minutes} from "../menu/reminders.js";
-import {GLYPHS, PLACE, gearChip, gearGroups, toggle} from "../menu/setup.js";
+import {setupParts, toggle} from "../menu/setup.js";
 import {WEEK, daysLine, gearLine, glyphName, placeName, templateName, timeLine, weekday} from "./words.js";
 
 /** An intent's failure goes to the console (Rust's handler logged why). */
@@ -301,23 +301,15 @@ export function openPlace(place) {
 	parts.push(h("qp-card", {rows: true}, defaultRow));
 
 	// where you train and the equipment
-	const switches = h("qp-card", {rows: true}, ...PLACE.flatMap((key) => {
-		const word = p.words.switches[key];
-		if (!word) return [];
-		const row = toggle(word.name, GLYPHS[key], (on) => {
-			now[key] = on;
-			draw();
-			return Promise.resolve();
-		});
-		row.dataset.key = key;
-		return [row];
-	}));
-	const groups = gearGroups(p.words, (g) => gearChip(g, tooltip, () => {
-		now.gear = now.gear.includes(g.key) ? now.gear.filter((k) => k !== g.key) : [...now.gear, g.key];
+	const setup = setupParts(p.words, tooltip, (key, on) => {
+		now[key] = on;
 		draw();
-	}));
-	parts.push(h("qp-section-label", {label: t("menu.free.place")}), switches,
-		h("qp-section-label", {label: t("menu.free.equipment")}), groups.el);
+		return Promise.resolve();
+	}, (key, on) => {
+		now.gear = on ? [...now.gear, key] : now.gear.filter((k) => k !== key);
+		draw();
+	});
+	parts.push(...setup.nodes);
 	win.content.append(...parts);
 
 	// Delete place, never Home's or a new place's
@@ -333,9 +325,7 @@ export function openPlace(place) {
 	};
 	const ready = () => home || Boolean(name.value.trim());
 	function draw() {
-		for (const row of switches.children) row.checked = now[row.dataset.key];
-		for (const chip of groups.chips) chip.selected = now.gear.includes(chip.dataset.key);
-		groups.draw();
+		setup.draw(now);
 		defaultRow.checked = now.default;
 		for (const [i, icon] of icons.entries()) icon.setAttribute("aria-pressed", String(p.glyphs[i] === now.glyph));
 		nameNote.hidden = home || ready();

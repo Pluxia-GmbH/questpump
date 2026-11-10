@@ -673,9 +673,34 @@ qp-card.qp-pump-calm {
 	cursor: pointer;
 }
 
-.qp-saved .qp-big-figure {
+.qp-saved .qp-big-figure, .qp-marking .qp-big-figure {
 	opacity: 0.3;
 	transform: scale(0.96);
+}
+
+/* a pose's "How close to the goal pose?" (`desk.pump.marking`): over the dimmed figure, which shows through its answers,
+   never a page of its own, so the move's pour plays in the same places once it is answered */
+.qp-mark-ask {
+	grid-area: figure;
+	place-self: center;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space12);
+	box-sizing: border-box;
+	width: min(100%, var(--qp-wide-column));
+	max-height: 100%;
+	overflow-y: auto;
+}
+
+.qp-mark-ask qp-card {
+	background: color-mix(in srgb, var(--qp-surface-card-fill) 60%, transparent);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.qp-mark-ask qp-card {
+		background: var(--qp-surface-card-fill);
+	}
 }
 
 .qp-saved-bar {

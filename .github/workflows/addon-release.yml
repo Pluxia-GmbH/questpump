@@ -1,16 +1,41 @@
 name: Addon release
-# The add-on's release and its update feed (helper/README.md, "Releasing"). A pushed tag vX.Y.Z runs, in order:
+# The add-on's release and its update feed (helper/README.md, "Releasing"). The add-on ships as three zips, each a
+# project of its own on CurseForge and Wago (docs/plan.md slice 71): QuestPump itself with the quests' lines, the voice
+# pack (QuestPump_Voice) and the figure pack (QuestPump_FigArmor), so a release that changes code alone sends no media
+# again. The rule: a store never gets a QuestPump that needs packs the store does not have. A pushed tag vX.Y.Z runs:
+#   plan     what the run does, and whether it may: nothing starts while a pack's CurseForge project id or slug is
+#            not set (repository variables); a pack's Wago project may be missing, and Wago then lists QuestPump
+#            alone;
 #   check    the tag is vX.Y.Z, CHANGELOG.md has its section, the updater's key and PHONE_APPS are set, the permanent
 #            helper-updater release exists (a helper release makes it, so the helper goes first), and the packager's
-#            dry run passes tools/package-check.sh with the tag in its QuestPump.toc;
-#   release  the packager, pinned to a commit, in the environment addon-release: CurseForge (Forever and retail, from
-#            the TOC's two interfaces), Wago, and this repository's release of the tag with release.json, which takes
-#            Latest (the helper's releases never do);
-#   feed     addon.json for that release's zip (tools/addon_feed.py), signed with the updater's key like the desktop
-#            app's own updates (addon.json.sig), and the zip byte for byte as QuestPump-addon.zip, all three uploaded to
-#            helper-updater, where QuestPump on this computer reads them to install and update the add-on.
-# Run from the Actions tab (feed_only), it republishes addon.json and its signature for the newest vX.Y.Z release with
-# the current PHONE_APPS and no new version: the day the phone apps can be installed, or after a failed feed job.
+#            dry runs of the three zips pass tools/package-check.sh with the tag in QuestPump.toc;
+#   packs    each pack first, from its own staged tree (tools/addon_packs.py): its zip onto helper-updater, then to
+#            each store that does not hold this content yet. A pack's version is its own number, one up each time its
+#            content changes (v1, v2, ... in its TOC, its zip's name and the store's label), kept with the content's digest and what each store holds in pack-<name>.json on
+#            helper-updater (tools/release-state.sh), so an unchanged pack is sent nowhere and a run made again sends
+#            nothing twice. A store that answers "too large" (Wago's 413) is written down as refused at this digest:
+#            the job ends green with a warning and tries that store again only for other content or when asked;
+#   release  QuestPump's own zip, one store a step, each only once that store holds both packs at this tag's digests
+#            (Wago: holds it, refused it, or has no project for it) and has not taken this tag yet
+#            (addon-stores.json): CurseForge (Forever and retail, from the TOC's two interfaces), where it names the
+#            packs as required dependencies, then Wago, then this repository's release of the tag with release.json,
+#            which takes Latest (the helper's releases never do), and the packs' zips beside it;
+#   feed     addon-v2.json for that release's three zips joined into QuestPump-addon-v2.zip (tools/addon_feed.py),
+#            signed with the updater's key like the desktop app's own updates (addon-v2.json.sig), all three uploaded
+#            to helper-updater, where QuestPump on this computer reads them to install and update the add-on and its
+#            packs file by file. It needs the tag's release on GitHub alone, never a store's answer. The first feed
+#            (addon.json, QuestPump-addon.zip) stays as its last release left it, for the desktop apps from before
+#            the packs.
+# A failed run is made whole by running its failed jobs again (`gh run rerun <id> --failed`): every step reads the
+# state first.
+# Run from the Actions tab, on main alone, it makes no release of QuestPump:
+#   feed_only      republishes the feed for the newest vX.Y.Z release with the current PHONE_APPS (the day the phone
+#                  apps can be installed, or after a failed feed job);
+#   packs          sends the packs of main's commit to the stores that lack them and stops there: a pack's first file,
+#                  which a new CurseForge project needs for its approval before the first tag that names it, or a
+#                  pack whose content changed while QuestPump did not (feed_only afterwards brings it to the desktop
+#                  app). With retry_refused it sends again a pack a store refused at this digest. The environment
+#                  addon-release must admit main for it.
 # It runs only in the public repository Pluxia-GmbH/questpump; in any other repository every job is skipped. Every
 # action and tool is pinned, as in all of the repository's workflows.
 on:
@@ -19,19 +44,86 @@ on:
   workflow_dispatch:
     inputs:
       feed_only:
-        description: Republish addon.json with the current PHONE_APPS (a release runs only from a pushed vX.Y.Z tag)
+        description: Republish the feed with the current PHONE_APPS (a release runs only from a pushed vX.Y.Z tag)
         type: boolean
         default: true
+      packs:
+        description: Send the packs of main to the stores that lack them (no release of QuestPump, no feed)
+        type: boolean
+        default: false
+      retry_refused:
+        description: With packs, send again a pack a store refused as too large
+        type: boolean
+        default: false
 permissions: {}
 concurrency:
-  # one add-on release at a time: each one moves the feed on helper-updater
+  # one add-on release at a time: each one moves the state and the feed on helper-updater
   group: addon-release
   cancel-in-progress: false
 env:
   TAG: ${{ github.ref_name }}
 jobs:
+  plan:
+    if: github.repository == 'Pluxia-GmbH/questpump'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+    steps:
+      # the first job of every run: a tag, a feed and a packs run all stop here, before anything is sent
+      - name: What this run does, and whether it may
+        id: plan
+        env:
+          FEED_ONLY: ${{ inputs.feed_only }}
+          PACKS: ${{ inputs.packs }}
+          CURSEFORGE_VOICE_PROJECT_ID: ${{ vars.CURSEFORGE_VOICE_PROJECT_ID }}
+          CURSEFORGE_VOICE_SLUG: ${{ vars.CURSEFORGE_VOICE_SLUG }}
+          CURSEFORGE_FIGURES_PROJECT_ID: ${{ vars.CURSEFORGE_FIGURES_PROJECT_ID }}
+          CURSEFORGE_FIGURES_SLUG: ${{ vars.CURSEFORGE_FIGURES_SLUG }}
+          WAGO_VOICE_PROJECT_ID: ${{ vars.WAGO_VOICE_PROJECT_ID }}
+          WAGO_FIGURES_PROJECT_ID: ${{ vars.WAGO_FIGURES_PROJECT_ID }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            mode=release
+            if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::$TAG is not vX.Y.Z"; exit 1
+            fi
+          elif [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::run this from main, not $GITHUB_REF: its tools sign the feed and send the packs"; exit 1
+          elif [ "$PACKS" = true ]; then
+            mode=packs
+          elif [ "$FEED_ONLY" = true ]; then
+            mode=feed
+          else
+            echo "::error::an add-on release runs only from a pushed vX.Y.Z tag: run this with feed_only or packs"
+            exit 1
+          fi
+          missing=""
+          [[ "$CURSEFORGE_VOICE_PROJECT_ID" =~ ^[0-9]+$ ]] || missing="$missing CURSEFORGE_VOICE_PROJECT_ID"
+          [[ "$CURSEFORGE_FIGURES_PROJECT_ID" =~ ^[0-9]+$ ]] || missing="$missing CURSEFORGE_FIGURES_PROJECT_ID"
+          slug='^[a-z0-9]+(-[a-z0-9]+)*$'
+          [[ "$CURSEFORGE_VOICE_SLUG" =~ $slug ]] || missing="$missing CURSEFORGE_VOICE_SLUG"
+          [[ "$CURSEFORGE_FIGURES_SLUG" =~ $slug ]] || missing="$missing CURSEFORGE_FIGURES_SLUG"
+          if [ -n "$missing" ]; then
+            echo "::error::Nothing was sent. The packs' CurseForge projects are not set, or are no id or slug" \
+              "(repository variables:$missing). QuestPump goes to a store only with its voice and figure packs:" \
+              "create the two projects, set the variables, then run this again (helper/README.md, Releasing)."
+            exit 1
+          fi
+          for id in "$WAGO_VOICE_PROJECT_ID" "$WAGO_FIGURES_PROJECT_ID"; do
+            if [ -n "$id" ] && ! [[ "$id" =~ ^[A-Za-z0-9]+$ ]]; then
+              echo "::error::Nothing was sent. '$id' is no Wago project id (WAGO_VOICE_PROJECT_ID," \
+                "WAGO_FIGURES_PROJECT_ID; leave one empty while Wago has no project for that pack)."
+              exit 1
+            fi
+          done
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "This run: $mode"
+
   check:
-    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
+    needs: plan
+    if: needs.plan.outputs.mode == 'release'
     runs-on: ubuntu-latest
     # Signing secrets live in this environment, whose rules admit helper-v* and v* tags and main alone.
     environment: release-signing
@@ -52,11 +144,8 @@ jobs:
           if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
             echo "::error::$TAG is on $GITHUB_SHA, which is not a commit of main"; exit 1
           fi
-      - name: The tag is vX.Y.Z and CHANGELOG.md has its section
+      - name: CHANGELOG.md has the tag's section
         run: |
-          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::$TAG is not vX.Y.Z"; exit 1
-          fi
           v="${TAG#v}"
           if ! grep -qE "^## \[${v//./\\.}\]( - [0-9]{4}-[0-9]{2}-[0-9]{2})?$" CHANGELOG.md; then
             echo "::error::CHANGELOG.md has no '## [$v]' section: the packager sends it as the release's changelog"
@@ -87,22 +176,39 @@ jobs:
         run: |
           sudo apt-get install -y -qq --no-install-recommends subversion ||
             { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends subversion; }
-      - name: Package (dry run)
+      - name: Package the add-on (dry run)
         uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         env:
           # the clone holds HEAD's blobs alone and no token: a git command that needs another fails here at once
           GIT_NO_LAZY_FETCH: "1"
-          ZIPOPT: -n .ogg:.png
         with:
           args: -d
-      - name: Package check (all three folders, under 300 MB)
+      # v0: the dry run's alone, since the packs job gives each pack its own version
+      - name: Stage the packs
+        run: |
+          for pack in $(python3 -B tools/addon_packs.py list); do
+            python3 -B tools/addon_packs.py stage "$pack" --version v0 --out "$RUNNER_TEMP/packs/$pack"
+          done
+      - name: Package the voice pack (dry run)
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        env:
+          ZIPOPT: -n .ogg:.png
+        with:
+          args: -d -t ${{ runner.temp }}/packs/QuestPump_Voice -r ${{ github.workspace }}/.release
+      - name: Package the figure pack (dry run)
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        env:
+          ZIPOPT: -n .ogg:.png
+        with:
+          args: -d -t ${{ runner.temp }}/packs/QuestPump_FigArmor -r ${{ github.workspace }}/.release
+      - name: Package check (the three zips, under 300 MB together)
         run: sh tools/package-check.sh
-      - name: The zip's QuestPump.toc names the tag
+      - name: The add-on's QuestPump.toc names the tag
         # the packager takes the pushed tag even when helper-vX.Y.Z sits on the same commit
         run: |
-          zips=(.release/*.zip)
+          zips=(.release/QuestPump-*.zip)
           if [ "${#zips[@]}" -ne 1 ] || [ ! -f "${zips[0]}" ]; then
-            echo "::error::the dry run left ${#zips[@]} zips in .release/, not one"; exit 1
+            echo "::error::the dry run left ${#zips[@]} zips of the add-on in .release/, not one"; exit 1
           fi
           zip="${zips[0]}"
           got="$(unzip -p "$zip" QuestPump/QuestPump.toc | tr -d '\r' | sed -n 's/^## Version: *//p')"
@@ -110,15 +216,212 @@ jobs:
             echo "::error::$zip's QuestPump.toc says ## Version: $got, not $TAG"; exit 1
           fi
 
-  release:
-    if: github.repository == 'Pluxia-GmbH/questpump' && github.event_name == 'push'
-    needs: check
-    # CF_API_KEY and WAGO_API_TOKEN live in the environment addon-release, which admits v* tags alone
+  packs:
+    name: Pack (${{ matrix.pack }})
+    needs: [plan, check]
+    if: >-
+      !cancelled() && needs.plan.result == 'success'
+      && (needs.plan.outputs.mode == 'packs'
+        || (needs.plan.outputs.mode == 'release' && needs.check.result == 'success'))
+    # CF_API_KEY and WAGO_API_TOKEN live in the environment addon-release, which admits v* tags, and main for a
+    # packs run from the Actions tab
     environment: addon-release
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: write
+    strategy:
+      # a pack that fails never stops the other
+      fail-fast: false
+      matrix:
+        include:
+          - pack: QuestPump_Voice
+            curseforge: CURSEFORGE_VOICE_PROJECT_ID
+            wago: WAGO_VOICE_PROJECT_ID
+          - pack: QuestPump_FigArmor
+            curseforge: CURSEFORGE_FIGURES_PROJECT_ID
+            wago: WAGO_FIGURES_PROJECT_ID
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PACK: ${{ matrix.pack }}
+      # the pack's projects: the packager gets them as -p and -a, never the pack's TOC, so they change no content
+      CURSE_ID: ${{ vars[matrix.curseforge] }}
+      WAGO_ID: ${{ vars[matrix.wago] }}
+      STATE: pack-${{ matrix.pack }}.json
+      RETRY: ${{ inputs.retry_refused }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # release.sh itself, at the commit the packager action is pinned to (v2.6.1): run as a command, its output can
+      # be read for a store's answer, which a `uses:` step keeps to its log
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: BigWigsMods/packager
+          ref: e50a250f8705041e40f2fa1ddcb280a686d65aa0
+          path: .packager
+          persist-credentials: false
+      - name: The pack's version and what each store lacks
+        id: plan
+        env:
+          HAS_CF_API_KEY: ${{ secrets.CF_API_KEY != '' }}
+          HAS_WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN != '' }}
+        run: |
+          . tools/release-state.sh
+          digest="$(python3 -B tools/addon_packs.py digest "$PACK")"
+          mkdir state
+          state_get "$STATE" "state/$STATE"
+          held="$(jq -r '.digest // ""' "state/$STATE")"
+          last="$(jq -r '.version // "0"' "state/$STATE")"
+          if ! [[ "$last" =~ ^[0-9]+$ ]]; then
+            echo "::error::$STATE on helper-updater names the version '$last', which is no number"; exit 1
+          fi
+          # the same content keeps its version, so its files are the ones every store holds; other content is the next
+          if [ "$held" = "$digest" ]; then
+            version="$last"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            version="$((last + 1))"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$HAS_CF_API_KEY" != true ]; then
+            echo "::error::the environment addon-release has no CF_API_KEY"; exit 1
+          fi
+          if [ "$(jq -r '.curseforge // ""' "state/$STATE")" = "$digest" ]; then
+            echo "CurseForge holds $PACK $version already"
+            echo "curseforge=held" >> "$GITHUB_OUTPUT"
+          else
+            echo "curseforge=send" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -z "$WAGO_ID" ]; then
+            echo "::notice::$PACK has no Wago project (${{ matrix.wago }}): Wago lists QuestPump without it"
+            echo "wago=none" >> "$GITHUB_OUTPUT"
+          elif [ "$HAS_WAGO_API_TOKEN" != true ]; then
+            echo "::error::$PACK has a Wago project and the environment addon-release no WAGO_API_TOKEN"; exit 1
+          elif [ "$(jq -r '.wago // ""' "state/$STATE")" = "$digest" ]; then
+            echo "Wago holds $PACK $version already"
+            echo "wago=held" >> "$GITHUB_OUTPUT"
+          elif [ "$(jq -r '.wago_refused // ""' "state/$STATE")" = "$digest" ] && [ "$RETRY" != true ]; then
+            echo "::warning::Wago refused $PACK $version as too large before: not sent again (a packs run with" \
+              "retry_refused sends it; other content is sent by itself)"
+            echo "wago=refused" >> "$GITHUB_OUTPUT"
+          else
+            echo "wago=send" >> "$GITHUB_OUTPUT"
+          fi
+          jq --arg v "$version" --arg d "$digest" '. + {version: $v, digest: $d} | .curseforge //= ""
+            | .wago //= "" | .wago_refused //= ""' "state/$STATE" > state/next.json
+          mv state/next.json "state/$STATE"
+          {
+            echo "version=$version"
+            echo "digest=$digest"
+          } >> "$GITHUB_OUTPUT"
+          echo "$PACK $version, content $digest"
+      - name: Stage it and pack it (dry run)
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          python3 -B tools/addon_packs.py stage "$PACK" --version "v$VERSION" --out "$RUNNER_TEMP/pack"
+          bash .packager/release.sh -d -t "$RUNNER_TEMP/pack" -r "$GITHUB_WORKSPACE/.release"
+          sh tools/package-check.sh "$PACK"
+      # the zip, then the state that names it; an older version's zip goes once the state has moved on. From here the
+      # feed job and the tag's release take this pack, whatever a store answers below.
+      - name: The zip and its state on helper-updater
+        id: kept
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          CHANGED: ${{ steps.plan.outputs.changed }}
+        run: |
+          . tools/release-state.sh
+          zip="$PACK-v$VERSION.zip"
+          names="$(gh release view helper-updater --json assets --jq '.assets[].name')"
+          if [ "$CHANGED" = true ] || ! grep -qxF "$zip" <<< "$names"; then
+            gh release upload helper-updater ".release/$zip" --clobber
+          fi
+          state_put "$STATE" "state/$STATE"
+          { grep -E "^$PACK-v[0-9]+\.zip$" <<< "$names" || true; } | while IFS= read -r old; do
+            if [ "$old" != "$zip" ]; then
+              gh release delete-asset helper-updater "$old" --yes
+            fi
+          done
+      # one store a step, each with its own token alone, and what it took written down at once
+      - name: To CurseForge
+        id: curseforge
+        if: steps.plan.outputs.curseforge == 'send'
+        continue-on-error: true
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        run: bash .packager/release.sh -t "$RUNNER_TEMP/pack" -r "$RUNNER_TEMP/curseforge" -p "$CURSE_ID"
+      - name: CurseForge holds it
+        if: steps.curseforge.outcome == 'success'
+        run: |
+          . tools/release-state.sh
+          jq '.curseforge = .digest' "state/$STATE" > state/next.json
+          mv state/next.json "state/$STATE"
+          state_put "$STATE" "state/$STATE"
+      - name: To Wago
+        id: wago
+        if: steps.plan.outputs.wago == 'send'
+        continue-on-error: true
+        env:
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+        run: |
+          bash .packager/release.sh -t "$RUNNER_TEMP/pack" -r "$RUNNER_TEMP/wago" -a "$WAGO_ID" 2>&1 |
+            tee "$RUNNER_TEMP/wago.log"
+      # "Error! (413)" is the packager's line for a request the store's front found too large (release.sh,
+      # upload_wago): written down as refused at this digest, never as a failure of the run
+      - name: What Wago answered
+        id: answer
+        if: steps.plan.outputs.wago == 'send' && steps.kept.outcome == 'success'
+        env:
+          OUTCOME: ${{ steps.wago.outcome }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          . tools/release-state.sh
+          if [ "$OUTCOME" = success ]; then
+            jq '.wago = .digest | .wago_refused = ""' "state/$STATE" > state/next.json
+          elif grep -qF 'Error! (413)' "$RUNNER_TEMP/wago.log"; then
+            jq '.wago_refused = .digest' "state/$STATE" > state/next.json
+            echo "refused=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Wago refused $PACK $VERSION as too large (413). It is written down: Wago lists" \
+              "QuestPump without this pack, and no run sends this content there again unless asked (packs with" \
+              "retry_refused)."
+          else
+            exit 0
+          fi
+          mv state/next.json "state/$STATE"
+          state_put "$STATE" "state/$STATE"
+      - name: The verdict
+        if: always() && steps.kept.outcome == 'success'
+        env:
+          CURSEFORGE: ${{ steps.curseforge.outcome }}
+          WAGO: ${{ steps.wago.outcome }}
+          REFUSED: ${{ steps.answer.outputs.refused }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          failed=""
+          [ "$CURSEFORGE" != failure ] || failed="$failed CurseForge"
+          if [ "$WAGO" = failure ] && [ "$REFUSED" != true ]; then failed="$failed Wago"; fi
+          if [ -n "$failed" ]; then
+            echo "::error::$PACK $VERSION did not reach:$failed. Run the failed jobs again: what a store took is" \
+              "written down and is not sent twice."
+            exit 1
+          fi
+
+  release:
+    needs: [plan, check, packs]
+    if: >-
+      !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.mode == 'release'
+      && needs.check.result == 'success'
+    # CF_API_KEY and WAGO_API_TOKEN live in the environment addon-release
+    environment: addon-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
     steps:
       # without a token or an id the packager skips that store with no error: every one is required here
       - name: The store tokens and project ids are set
@@ -143,31 +446,146 @@ jobs:
           fetch-depth: 0
           filter: blob:none
           persist-credentials: false
+      # a store is ready once it holds both packs at this commit's digests; Wago also where it refused a pack as too
+      # large or has no project for it. A store that took this tag already is not sent it again.
+      - name: Which stores are ready for QuestPump
+        id: ready
+        env:
+          WAGO_VOICE: ${{ vars.WAGO_VOICE_PROJECT_ID }}
+          WAGO_FIGURES: ${{ vars.WAGO_FIGURES_PROJECT_ID }}
+        run: |
+          . tools/release-state.sh
+          mkdir state
+          state_get addon-stores.json state/addon-stores.json
+          zips=true
+          curseforge=true
+          wago=true
+          for pack in $(python3 -B tools/addon_packs.py list); do
+            digest="$(python3 -B tools/addon_packs.py digest "$pack")"
+            state_get "pack-$pack.json" "state/pack-$pack.json"
+            wago_id="$WAGO_FIGURES"
+            [ "$pack" != QuestPump_Voice ] || wago_id="$WAGO_VOICE"
+            at() { jq -r --arg k "$1" '.[$k] // ""' "state/pack-$pack.json"; }
+            [ "$(at digest)" = "$digest" ] || zips=false
+            [ "$(at curseforge)" = "$digest" ] || curseforge=false
+            if [ -n "$wago_id" ] && [ "$(at wago)" != "$digest" ] && [ "$(at wago_refused)" != "$digest" ]; then
+              wago=false
+            fi
+          done
+          for store in curseforge wago; do
+            ready="$curseforge"
+            [ "$store" != wago ] || ready="$wago"
+            if [ "$(jq -r --arg s "$store" '.[$s] // ""' state/addon-stores.json)" = "$TAG" ]; then
+              echo "$store took $TAG already"
+              echo "$store=took" >> "$GITHUB_OUTPUT"
+            elif [ "$zips" = true ] && [ "$ready" = true ]; then
+              echo "$store=send" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::$store does not hold both packs at this tag's content yet: QuestPump $TAG is not sent" \
+                "there. Run the failed jobs again once the packs job is green."
+              echo "$store=wait" >> "$GITHUB_OUTPUT"
+            fi
+          done
+          echo "zips=$zips" >> "$GITHUB_OUTPUT"
+      # CurseForge's relation of the add-on to each pack, a required dependency: its app and WowUp install a required
+      # dependency with the add-on (an optional one they only list), and the game loads QuestPump without either pack.
+      # The packager sends .pkgmeta's required-dependencies, slugs, to CurseForge alone (Wago's upload has no such
+      # field); the plan job checked both slugs.
+      - name: The packs as CurseForge dependencies
+        env:
+          VOICE: ${{ vars.CURSEFORGE_VOICE_SLUG }}
+          FIGURES: ${{ vars.CURSEFORGE_FIGURES_SLUG }}
+        run: |
+          cp .pkgmeta "$RUNNER_TEMP/pkgmeta.yaml"
+          printf 'required-dependencies:\n  - %s\n  - %s\n' "$VOICE" "$FIGURES" >> "$RUNNER_TEMP/pkgmeta.yaml"
       - name: Subversion
         run: |
           sudo apt-get install -y -qq --no-install-recommends subversion ||
             { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends subversion; }
-      # CurseForge, then Wago, then this repository's release (CHANGELOG.md as its notes, release.json beside the zip);
-      # one failed upload fails the job after the others ran: upload that store's file by hand from the release's zip
-      # and run this workflow from the Actions tab for the feed
-      - name: Package and upload
+      # one store a step, each with its own token alone: the packager uploads to a store only with its token
+      - name: To CurseForge
+        id: curseforge
+        if: steps.ready.outputs.curseforge == 'send'
+        continue-on-error: true
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        env:
+          GIT_NO_LAZY_FETCH: "1"
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        with:
+          # the id checked above, digits alone
+          args: -m ${{ runner.temp }}/pkgmeta.yaml -p ${{ vars.CURSEFORGE_PROJECT_ID }}
+      - name: CurseForge took it
+        if: steps.curseforge.outcome == 'success'
+        run: |
+          . tools/release-state.sh
+          jq --arg t "$TAG" '.curseforge = $t' state/addon-stores.json > state/next.json
+          mv state/next.json state/addon-stores.json
+          state_put addon-stores.json state/addon-stores.json
+      - name: To Wago
+        id: wago
+        if: steps.ready.outputs.wago == 'send'
+        continue-on-error: true
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        env:
+          GIT_NO_LAZY_FETCH: "1"
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+        with:
+          args: -m ${{ runner.temp }}/pkgmeta.yaml -a ${{ vars.WAGO_PROJECT_ID }}
+      - name: Wago took it
+        if: steps.wago.outcome == 'success'
+        run: |
+          . tools/release-state.sh
+          jq --arg t "$TAG" '.wago = $t' state/addon-stores.json > state/next.json
+          mv state/next.json state/addon-stores.json
+          state_put addon-stores.json state/addon-stores.json
+      # this repository's release of the tag (CHANGELOG.md as its notes, release.json beside the zip), made again
+      # without harm, then the packs' zips beside it, so a player who installs by hand finds the three in one place
+      - name: The tag's release on GitHub
+        id: github
+        if: steps.ready.outputs.zips == 'true'
         uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         env:
           GIT_NO_LAZY_FETCH: "1"
           GITHUB_OAUTH: ${{ github.token }}
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
         with:
-          # the ids checked above, digits and letters alone
-          args: -p ${{ vars.CURSEFORGE_PROJECT_ID }} -a ${{ vars.WAGO_PROJECT_ID }}
-      - name: Package check (the uploaded zip)
-        run: sh tools/package-check.sh
+          args: -m ${{ runner.temp }}/pkgmeta.yaml
+      - name: The packs' zips beside it
+        if: steps.github.outcome == 'success'
+        run: |
+          mkdir packs
+          for pack in $(python3 -B tools/addon_packs.py list); do
+            version="$(jq -r .version "state/pack-$pack.json")"
+            gh release download helper-updater --pattern "$pack-v$version.zip" --dir packs
+          done
+          gh release upload "$TAG" packs/*.zip --clobber
+      - name: Package check (the add-on's zip)
+        if: steps.github.outcome == 'success'
+        run: sh tools/package-check.sh QuestPump
+      - name: The verdict
+        if: always() && steps.ready.outcome == 'success'
+        env:
+          READY_CURSEFORGE: ${{ steps.ready.outputs.curseforge }}
+          READY_WAGO: ${{ steps.ready.outputs.wago }}
+          CURSEFORGE: ${{ steps.curseforge.outcome }}
+          WAGO: ${{ steps.wago.outcome }}
+          ZIPS: ${{ steps.ready.outputs.zips }}
+        run: |
+          open=""
+          if [ "$READY_CURSEFORGE" = wait ] || [ "$CURSEFORGE" = failure ]; then open="$open CurseForge"; fi
+          if [ "$READY_WAGO" = wait ] || [ "$WAGO" = failure ]; then open="$open Wago"; fi
+          [ "$ZIPS" = true ] || open="$open GitHub"
+          if [ -n "$open" ]; then
+            echo "::error::QuestPump $TAG did not reach:$open. Run the failed jobs again: a store that took it is" \
+              "written down and is not sent it twice."
+            exit 1
+          fi
 
   feed:
+    needs: [plan, check, packs, release]
     if: >-
-      github.repository == 'Pluxia-GmbH/questpump' && !cancelled()
-      && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success')
-    needs: [check, release]
+      !cancelled() && needs.plan.result == 'success'
+      && (needs.plan.outputs.mode == 'feed'
+        || (needs.plan.outputs.mode == 'release' && needs.check.result == 'success'))
     environment: release-signing
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -177,30 +595,21 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Only the feed runs from the Actions tab
-        if: github.event_name == 'workflow_dispatch' && !inputs.feed_only
-        run: |
-          echo "::error::an add-on release runs only from a pushed vX.Y.Z tag: run this with feed_only to republish" \
-            "the feed"
-          exit 1
-      # the feed is signed with the updater's key by this checkout's tools: from the Actions tab, main's alone
-      - name: A hand run is on main
-        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
-        run: |
-          echo "::error::republish the feed from main, not $GITHUB_REF"
-          exit 1
+      # the feed is signed with the updater's key by this checkout's tools: a tag's, or main's (the plan job let no
+      # other ref through)
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # the feed's writer and the updater's public key
+          # the feed's writer, the packs' list, the state's reader and the updater's public key
           sparse-checkout: |
             tools
             helper/src-tauri
-      - name: The newest vX.Y.Z release and its zip
+      - name: The newest vX.Y.Z release and its zips
         id: release
         env:
           PHONE_APPS: ${{ vars.PHONE_APPS }}
         run: |
+          . tools/release-state.sh
           case "$PHONE_APPS" in
             "") echo "phone_apps=false" >> "$GITHUB_OUTPUT" ;;
             true | false) echo "phone_apps=$PHONE_APPS" >> "$GITHUB_OUTPUT" ;;
@@ -214,21 +623,37 @@ jobs:
             echo "::error::there is no published vX.Y.Z release"; exit 1
           fi
           if [ "$GITHUB_EVENT_NAME" = push ] && [ "$newest" != "$TAG" ]; then
-            echo "::error::$TAG is not the newest add-on release ($newest): the feed stays on $newest"; exit 1
+            echo "::error::$TAG is not the newest add-on release on GitHub ($newest): either a newer one exists, or" \
+              "the release job did not publish $TAG yet. The feed stays on $newest; run the failed jobs again."
+            exit 1
           fi
+          # the add-on's own zip, which the packager's release.json names first
           gh release download "$newest" --pattern release.json --dir rel
           zip="$(jq -r '.releases[0].filename // ""' rel/release.json)"
-          if ! [[ "$zip" =~ ^[A-Za-z0-9._-]+\.zip$ ]]; then
-            echo "::error::$newest's release.json names no zip ('$zip')"; exit 1
+          if ! [[ "$zip" =~ ^QuestPump-[A-Za-z0-9._-]+\.zip$ ]]; then
+            echo "::error::$newest's release.json names no zip of the add-on ('$zip')"; exit 1
           fi
           gh release download "$newest" --pattern "$zip" --dir rel
+          # each pack's zip as its state on helper-updater names it (tools/addon_feed.py leaves a pack out where the
+          # add-on's own zip still carries its folder, a release from before the packs, and refuses a feed without
+          # figures or voice)
+          mkdir rel/packs state
+          for pack in $(python3 -B tools/addon_packs.py list); do
+            state_get "pack-$pack.json" "state/pack-$pack.json"
+            version="$(jq -r '.version // ""' "state/pack-$pack.json")"
+            if [ -n "$version" ]; then
+              gh release download helper-updater --pattern "$pack-v$version.zip" --dir rel/packs
+            else
+              echo "::notice::helper-updater holds no $pack yet"
+            fi
+          done
           {
             echo "tag=$newest"
             echo "version=${newest#v}"
             echo "zip=rel/$zip"
             echo "pub_date=$(gh release view "$newest" --json publishedAt --jq .publishedAt)"
           } >> "$GITHUB_OUTPUT"
-      - name: addon.json for it
+      - name: addon-v2.json and the joined zip for it
         env:
           ZIP: ${{ steps.release.outputs.zip }}
           V: ${{ steps.release.outputs.version }}
@@ -236,9 +661,13 @@ jobs:
           PHONE_APPS: ${{ steps.release.outputs.phone_apps }}
         run: |
           mkdir feed
-          python3 -B tools/addon_feed.py --zip "$ZIP" --version "$V" --pub-date "$PUB_DATE" \
-            --phone-apps "$PHONE_APPS" --repo "$GITHUB_REPOSITORY" --out feed/addon.json
-          cp "$ZIP" feed/QuestPump-addon.zip
+          packs=()
+          for pack in rel/packs/*.zip; do
+            [ ! -f "$pack" ] || packs+=(--pack "$pack")
+          done
+          python3 -B tools/addon_feed.py --zip "$ZIP" "${packs[@]}" --version "$V" --pub-date "$PUB_DATE" \
+            --phone-apps "$PHONE_APPS" --repo "$GITHUB_REPOSITORY" --merged feed/QuestPump-addon-v2.zip \
+            --out feed/addon-v2.json
       - name: The Tauri CLI, pinned to the tauri crate's version
         run: npm install -g @tauri-apps/cli@2.12.4
       - name: Signed with the updater's key
@@ -246,26 +675,26 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           V: ${{ steps.release.outputs.version }}
-        run: tauri signer sign --app-version "$V" feed/addon.json
+        run: tauri signer sign --app-version "$V" feed/addon-v2.json
       - name: The signature is by the key installed apps trust
         # as helper-release.yml's publish job: both are base64 of minisign's text, whose second line holds the key id
         # at bytes 2-9; the CLI signs with any key it is given
         run: |
           keyid() { base64 --decode | sed -n 2p | base64 --decode | od -An -tx1 -j2 -N8 | tr -d ' \n'; }
           trusted="$(jq -r .plugins.updater.pubkey helper/src-tauri/tauri.conf.json | keyid)"
-          signed="$(keyid < feed/addon.json.sig)"
+          signed="$(keyid < feed/addon-v2.json.sig)"
           if [ -z "$trusted" ] || [ "$signed" != "$trusted" ]; then
-            echo "::error::addon.json is signed with key '$signed', and installed apps trust '$trusted':" \
+            echo "::error::addon-v2.json is signed with key '$signed', and installed apps trust '$trusted':" \
               "TAURI_SIGNING_PRIVATE_KEY is not the updater's key"
             exit 1
           fi
       - name: Uploaded to helper-updater
-        # the zip first and addon.json last: an app that reads the old addon.json meanwhile finds a zip whose SHA-256
-        # differs and installs nothing until the next check
+        # the zip first and addon-v2.json last: an app that reads the old addon-v2.json meanwhile finds a zip whose
+        # SHA-256 differs and installs nothing until the next check
         env:
           TAG_NAME: ${{ steps.release.outputs.tag }}
         run: |
-          gh release upload helper-updater feed/QuestPump-addon.zip --clobber
-          gh release upload helper-updater feed/addon.json.sig --clobber
-          gh release upload helper-updater feed/addon.json --clobber
-          echo "::notice::helper-updater's feed names $TAG_NAME ($(jq -c '{version, phone_apps}' feed/addon.json))"
+          gh release upload helper-updater feed/QuestPump-addon-v2.zip --clobber
+          gh release upload helper-updater feed/addon-v2.json.sig --clobber
+          gh release upload helper-updater feed/addon-v2.json --clobber
+          echo "::notice::helper-updater's feed names $TAG_NAME ($(jq -c '{version, phone_apps}' feed/addon-v2.json))"

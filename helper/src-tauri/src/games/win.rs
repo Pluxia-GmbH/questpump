@@ -1,7 +1,8 @@
 //! Windows' own records as the games' readers read them (docs/plan.md slices 35 and 48): a text value of the registry,
-//! a key's subkeys, a known folder's path (Saved Games, `AppData\LocalLow`), whether another program holds a UDP
-//! port (the table of UDP listeners), a program file's product name (its version resource, read from the file with no
-//! process opened) and when Windows started. Read only, never written.
+//! a number value (work mode's microphone and camera, slice 67: `presence.rs`), a key's subkeys, a known folder's path
+//! (Saved Games, `AppData\LocalLow`), whether another program holds a UDP port (the table of UDP listeners), a program
+//! file's product name (its version resource, read from the file with no process opened) and when Windows started.
+//! Read only, never written.
 
 use std::path::{Path, PathBuf};
 
@@ -9,7 +10,9 @@ use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, ERROR_NO_MORE_ITEMS,
 use windows::Win32::NetworkManagement::IpHelper::{GetExtendedUdpTable, UDP_TABLE_OWNER_PID};
 use windows::Win32::Networking::WinSock::AF_INET;
 use windows::Win32::System::Com::CoTaskMemFree;
-use windows::Win32::System::Registry::{HKEY, KEY_READ, RRF_RT_REG_SZ, RegEnumKeyExW, RegGetValueW, RegOpenKeyExW};
+use windows::Win32::System::Registry::{
+	HKEY, KEY_READ, RRF_RT_REG_QWORD, RRF_RT_REG_SZ, RegEnumKeyExW, RegGetValueW, RegOpenKeyExW,
+};
 use windows::Win32::UI::Shell::{KF_FLAG_DEFAULT, SHGetKnownFolderPath};
 use windows::core::{GUID, HSTRING, Owned, PCWSTR, PWSTR};
 
@@ -39,8 +42,27 @@ pub(super) fn text(root: HKEY, key: PCWSTR, name: PCWSTR) -> Option<String> {
 	Some(text.trim_end_matches('\0').to_owned()).filter(|t| !t.is_empty())
 }
 
+/// A 64-bit number value of the registry (`REG_QWORD`); none when the key or the value is missing or another type.
+pub(crate) fn qword(root: HKEY, key: &str, name: &str) -> Option<u64> {
+	let (mut value, mut len) = (0u64, u32::try_from(size_of::<u64>()).ok()?);
+	// SAFETY: `value` holds the 8 bytes `len` names and lives for the call, which writes at most that many; the key's and
+	// the value's names live for the call too.
+	let e = unsafe {
+		RegGetValueW(
+			root,
+			&HSTRING::from(key),
+			&HSTRING::from(name),
+			RRF_RT_REG_QWORD,
+			None,
+			Some((&raw mut value).cast()),
+			Some(&raw mut len),
+		)
+	};
+	e.is_ok().then_some(value)
+}
+
 /// The names of a key's subkeys; none when the key cannot be opened for reading.
-pub(super) fn subkeys(root: HKEY, key: &str) -> Vec<String> {
+pub(crate) fn subkeys(root: HKEY, key: &str) -> Vec<String> {
 	let mut opened = HKEY::default();
 	// SAFETY: opens a key for reading; `opened` receives the handle, owned below once the call succeeded.
 	if !unsafe { RegOpenKeyExW(root, &HSTRING::from(key), None, KEY_READ, &raw mut opened) }.is_ok() {

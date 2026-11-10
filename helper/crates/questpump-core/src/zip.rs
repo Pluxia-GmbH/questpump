@@ -3,7 +3,9 @@
 //! sizes): each entry's name, method, sizes, where its local record starts and the mode a Unix-made archive records,
 //! and an entry's bytes streamed out of its local record, stored or deflated, with their sha256 taken as they come.
 //! Only what the desktop app's downloads need: the move figures' films (`tools/figures/publish.py --zip`, stored) and
-//! the addon's release zip (the addon packager's, deflated by Info-ZIP), read whole from a file (`Archive`) or, for the
+//! the addon's feed zip (`tools/addon_feed.py`'s, written by Python's zipfile, its `.ogg` and `.png` stored and the
+//! rest deflated; the addon packager's own, deflated by Info-ZIP, until slice 71), read whole from a file (`Archive`)
+//! or, for the
 //! addon, by byte ranges of the zip on its release (`directory` on the zip's last `TAIL` bytes, `entries` on the
 //! central directory, `copy_at` on an entry's bytes wherever they were put); an archive that needs encryption or
 //! spanning does not read. The central directory, never the local headers alone, names the entries: only it carries

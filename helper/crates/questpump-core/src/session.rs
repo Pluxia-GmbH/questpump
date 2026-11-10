@@ -148,6 +148,10 @@ pub struct People {
 	/// game also held every owed move before the player's first move, while its first pump asked the pain question.
 	#[serde(default)]
 	pub held: Vec<u16>,
+	/// Those of `held` the game's place leaves out with no move of their level to stand in (Engine.lua `ns.OwedAside`,
+	/// 2026-11-09): no list shows them nor counts them as held until the setup lets them in again.
+	#[serde(default)]
+	pub aside: Vec<u16>,
 	/// Each game install the helper has followed or taken a file in from, by its AddOns folder.
 	#[serde(default)]
 	pub installs: BTreeMap<String, Install>,
@@ -596,8 +600,33 @@ pub struct BankPump {
 	pub start: u32,
 	/// The pump's size, 1 Light, 2 Balanced, 3 Extreme, which every row carries.
 	pub tier: u8,
+	/// The rows' questID: 0 for a computer's own bank, a bank number for one of the account's unfinished list made on
+	/// a device without a computer (`bank_quest`, slice 67).
+	pub quest: u32,
 	/// The moves banked, in the pump's order.
 	pub moves: Vec<BankMove>,
+}
+
+/// The bank number of a pump a device without a computer banks (the browser, a phone not linked to the desktop app;
+/// contract/sync-api.yaml, "The account's unfinished list", slice 67): `bank_quest_min` plus the first eight hex digits
+/// of the pump id's UUID (after its `<letter>-`) modulo `bank_quest_min`, so two devices' banks of one second never
+/// share an owed key. None for an id of another shape or when the constants do not read.
+#[must_use]
+pub fn bank_quest(pump_id: &str) -> Option<u32> {
+	let min = library::constants()?.bank_quest_min;
+	let (letter, uuid) = pump_id.split_once('-')?;
+	let hex = uuid.get(..8).filter(|h| letter.len() == 1 && h.bytes().all(|b| b.is_ascii_hexdigit()))?;
+	let n = u32::from_str_radix(hex, 16).ok()?;
+	min.checked_add(n % min.max(1))
+}
+
+/// Whether a game row is one of the account's unfinished list (slice 67): an owed, banked or paid move row whose
+/// questID is a bank number, which every device folds whichever device wrote it.
+#[must_use]
+pub fn is_account_bank(row: &Row) -> bool {
+	kind::is_move(row.kind)
+		&& matches!(row.outcome, outcome::OWED | outcome::BANKED | outcome::PAID)
+		&& library::constants().is_some_and(|c| row.quest_id >= c.bank_quest_min)
 }
 
 /// A move a bank puts off, as its pump dosed it.
@@ -1196,6 +1225,35 @@ impl Session {
 		(kept, written.is_ok(), fx)
 	}
 
+	/// The account's unfinished list in another device's rows batch, whichever device wrote it (slice 67,
+	/// contract/sync-api.yaml "The account's unfinished list"): each owed, banked or paid row of a bank number
+	/// (`is_account_bank`) this store lacks, taken in at character 0 as its maker's (by its device bit; a game's as
+	/// another computer's), so it rides this device's pumps, reaches the game through the mirror and, paid anywhere,
+	/// settles its owed row; a row dated where none may be is skipped (`keep`). Its maker alone sends it (the desk's
+	/// `rows_due`). The rows taken.
+	pub fn take_account_banks(&mut self, rows: &[GameRow], now: &Now) -> (usize, Effects) {
+		let mut fx = Effects::default();
+		let mut held: HashSet<Row> = self.store.records().iter().map(RowRecord::row).filter(is_account_bank).collect();
+		let mut taken = 0;
+		for row in rows.iter().map(GameRow::row).filter(is_account_bank) {
+			let row = Row { char: 0, ..row };
+			if !held.insert(row) {
+				continue;
+			}
+			// a game's row (no device bit) is another computer's here, never this computer's game's
+			let source = match Source::from_flags(row.flags) {
+				Source::Game => Source::Computer,
+				other => other,
+			};
+			let record = RowRecord::new(&row, &now.rfc3339, source);
+			taken += usize::from(self.add(record, now.unix, &mut fx) != Added::Skipped);
+		}
+		if taken > 0 {
+			fx.due(MirrorDue::Now);
+		}
+		(taken, fx)
+	}
+
 	/// Another computer's characters as its `device` batch names them (slice 60): each by its index in that computer's
 	/// numbering, kept with its GUID (`People::far`, how an older desktop app's rows without `chars` find theirs), one
 	/// with a GUID this helper does not know yet made the helper's own, so its rows reach every mirror at an index of
@@ -1760,8 +1818,10 @@ impl Session {
 			})
 			.collect();
 		let payable = self.payable();
-		// the rest of the owed queue is what the game holds back (`payable` leaves only those out)
-		let held = self.store.owed().len() - payable.len();
+		// the rest of the owed queue is what the game holds back (`payable` leaves only those out), less what its place
+		// sets aside, which no list counts
+		let aside = self.store.owed().iter().filter(|r| self.people.aside.contains(&owed_now(r).move_id)).count();
+		let held = self.store.owed().len() - payable.len() - aside;
 		let owed: Vec<OwedMove> = payable.iter().map(OwedMove::of).collect();
 		Sheet {
 			unfinished: u32::try_from(owed.len()).unwrap_or(u32::MAX),
@@ -2180,6 +2240,7 @@ impl Session {
 				self.people.sheets.clear();
 				self.people.sheet_apps.clear();
 				self.people.held.clear();
+				self.people.aside.clear();
 				self.locked_until = self.lock_from_rows();
 				self.book.forget_before(row.ts);
 				if let Err(e) = self.sheet_log.reset(row.ts) {
@@ -2623,11 +2684,16 @@ impl Session {
 					let i = self.global(&self.load_install(load_id), i, fx);
 					let logged = SheetRecord::new(now.rfc3339.clone(), i, &sheet);
 					// the latest sheet says what the game holds back now (none when it lists nothing)
-					let held = blob::get(&value, "held").map(blob::to_json).unwrap_or_default();
-					self.people.held = held
-						.as_array()
-						.map(|a| a.iter().filter_map(|v| v.as_u64()?.try_into().ok()).collect())
-						.unwrap_or_default();
+					let moves = |key: &str| -> Vec<u16> {
+						blob::get(&value, key)
+							.map(blob::to_json)
+							.unwrap_or_default()
+							.as_array()
+							.map(|a| a.iter().filter_map(|v| v.as_u64()?.try_into().ok()).collect())
+							.unwrap_or_default()
+					};
+					self.people.held = moves("held");
+					self.people.aside = moves("aside");
 					if let Err(e) = logged.map_err(std::io::Error::from).and_then(|r| self.sheet_log.add(r)) {
 						fx.sheet_errors.push(e.to_string());
 					}
@@ -2964,14 +3030,14 @@ impl Session {
 		for (i, m) in bank.moves.iter().filter(|m| m.move_id > 0 && kind::is_move(m.kind)).enumerate() {
 			// the addon's oweSlot: keys (ts, questID, slot) stay unique in the owed queue
 			let mut slot = u8::try_from(i).unwrap_or(u8::MAX);
-			while slot < u8::MAX && self.store.is_owed((bank.start, 0, slot)) {
+			while slot < u8::MAX && self.store.is_owed((bank.start, bank.quest, slot)) {
 				slot += 1;
 			}
 			let timed = m.kind == kind::CARDIO || m.kind == kind::FLOW;
 			let row = Row {
 				ts: bank.start,
 				char: 0,
-				quest_id: 0,
+				quest_id: bank.quest,
 				tier: bank.tier,
 				slot,
 				ladder: m.ladder,

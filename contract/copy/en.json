@@ -1532,6 +1532,7 @@
     "pro.offer",
     "pump.done",
     "pump.ready",
+    "pumpfirst.door",
     "setup.pairing",
     "share.import",
     "watch.session",
@@ -2933,11 +2934,11 @@
    "note": "The animations line when the figures are there and match QuestPump."
   },
   "desk.menu.computer.pack.missing": {
-   "text": "Missing: install QuestPump again, its download brings them",
+   "text": "Missing: QuestPump adds it when the game is closed",
    "screens": [
     "desk.menu.computer"
    ],
-   "note": "The animations line when the figures are missing."
+   "note": "The animations line and the voice line when that download is missing from the game folder: the desktop app adds it from its own feed once the game is closed."
   },
   "desk.menu.computer.pack.notseen": {
    "text": "Not seen yet",
@@ -2945,17 +2946,6 @@
     "desk.menu.computer"
    ],
    "note": "The animations line before a game folder was found."
-  },
-  "desk.menu.computer.pack.other": {
-   "text": "From another download (animations {pack}, QuestPump {addon}): install QuestPump again",
-   "args": {
-    "pack": "string",
-    "addon": "string"
-   },
-   "screens": [
-    "desk.menu.computer"
-   ],
-   "note": "The animations line when the figures and QuestPump come from different downloads. {pack} and {addon} are their versions."
   },
   "desk.menu.computer.screen": {
    "text": "Screen reading",
@@ -3339,6 +3329,13 @@
    ],
    "note": "The version line on a Mac when this account may not replace the app. questpump.com/helper is the download page."
   },
+  "desk.menu.computer.voice": {
+   "text": "Voice",
+   "screens": [
+    "desk.menu.computer"
+   ],
+   "note": "A status line's label: the voice's download beside QuestPump in the game folder. Its states are the animations line's."
+  },
   "desk.menu.devices.pad": {
    "text": "Walking pad",
    "screens": [
@@ -3614,6 +3611,13 @@
    ],
    "note": "A row in the Menu's QuestPump group: what QuestPump watches, keeps, listens to and sends on this computer, and what it never does."
   },
+  "desk.menu.does.calls": {
+   "text": "Whether the microphone or the camera is in use, never what they hear or see, while work mode runs: to wait during calls.",
+   "screens": [
+    "desk.menu.does"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): What it watches: microphone and camera in use, kept on this computer."
+  },
   "desk.menu.does.client": {
    "text": "Whether a match runs, asked of {games} on this computer only.",
    "screens": [
@@ -3685,6 +3689,20 @@
     "desk.menu.does"
    ],
    "note": "A row on What QuestPump does on this computer, over the path of a file other apps keep too, to which QuestPump added only its own part (slice 48: Hearthstone's log.config, which the deck trackers share): it is never written whole or removed, by turning the game off or by uninstalling."
+  },
+  "desk.menu.does.front": {
+   "text": "Which app is in front, while work mode runs: to wait while a game is in front and to bring your app back after a pump.",
+   "screens": [
+    "desk.menu.does"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): What it watches: the front app, kept on this computer."
+  },
+  "desk.menu.does.fullscreen": {
+   "text": "Whether a window fills the screen or you present or mirror it, while work mode runs: to wait until you leave it.",
+   "screens": [
+    "desk.menu.does"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): What it watches: full screen, presenting and mirroring, kept on this computer."
   },
   "desk.menu.does.game": {
    "text": "The game's window: QuestPump reads only the small squares the addon shows in its corner.",
@@ -4398,9 +4416,10 @@
   "desk.menu.section.pumps": {
    "text": "Your pumps",
    "screens": [
-    "desk.menu"
+    "desk.menu",
+    "menu.settings"
    ],
-   "note": "The caps label over the Menu's card of the player's own pumps: Sound and voice, Your setup and Backup."
+   "note": "The caps label over the Menu's card of the player's own pumps: on the computer Sound and voice, Your setup, Work mode and Backup; on the phones over the Work mode row (docs/plan.md slice 67: Menu, Your pumps)."
   },
   "desk.menu.setup.body.reset": {
    "text": "Your Body switches, experience and moves on this computer could not be read, so they start empty. A paired phone sends them again when its app opens; check them below.",
@@ -4558,6 +4577,17 @@
     "desk.pump.done"
    ],
    "note": "Under a catch-up's moves on the computer when the game or another device paid them while it ran."
+  },
+  "desk.pump.done.work": {
+   "text": "Back to work",
+   "screens": [
+    "desk.pump.done"
+   ],
+   "platforms": [
+    "macos",
+    "windows"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a work pump's Result button in Continue's place: brings the app that was in front back, leaves the window open behind it, and the work clock starts over."
   },
   "desk.pump.focus": {
    "text": "Click to control the pump",
@@ -4947,6 +4977,20 @@
     "desk.tray"
    ],
    "note": "The tray icon's tooltip. QuestPump is the program's name; {state} is this computer's state as the tray menu's first line says it (Reading the game, Game found · progress kept, …)."
+  },
+  "desk.tray.work.start": {
+   "text": "Start work mode",
+   "screens": [
+    "desk.tray"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the tray's first item while work mode is off: turns it on with the last choices (the first time, opens the sheet)."
+  },
+  "desk.tray.work.stop": {
+   "text": "Stop work mode",
+   "screens": [
+    "desk.tray"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the tray's item while work mode runs: turns it off at once."
   },
   "desk.welcome.computer": {
    "text": "On this computer",
@@ -6049,9 +6093,11 @@
    "screens": [
     "desk.games",
     "desk.menu.setup",
-    "menu.free_mode"
+    "menu.free_mode",
+    "menu.work",
+    "desk.menu.work"
    ],
-   "note": "A Segmented choice, the default, the game's settings.pace.balanced. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace).",
+   "note": "A Segmented choice, the default, the game's settings.pace.balanced. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace). Since slice 67 also Moves per block on the Work mode page (menu.work, desk.menu.work), work mode's own pace.",
    "max": 12
   },
   "games.pace.extreme": {
@@ -6059,9 +6105,11 @@
    "screens": [
     "desk.games",
     "desk.menu.setup",
-    "menu.free_mode"
+    "menu.free_mode",
+    "menu.work",
+    "desk.menu.work"
    ],
-   "note": "A Segmented choice, the game's settings.pace.extreme. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace).",
+   "note": "A Segmented choice, the game's settings.pace.extreme. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace). Since slice 67 also Moves per block on the Work mode page (menu.work, desk.menu.work), work mode's own pace.",
    "max": 12
   },
   "games.pace.light": {
@@ -6069,9 +6117,11 @@
    "screens": [
     "desk.games",
     "desk.menu.setup",
-    "menu.free_mode"
+    "menu.free_mode",
+    "menu.work",
+    "desk.menu.work"
    ],
-   "note": "A Segmented choice, the game's settings.pace.light. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace).",
+   "note": "A Segmented choice, the game's settings.pace.light. Moves per match (slice 48, docs/computer-games.md §3): the twin of the game's Moves per quest (Locales/enUS.lua settings.pace*), on the desktop app's Games tab and Your setup and the phones' Your setup; it sizes every pump after a game's end, on every device (the body's match_pace). Since slice 67 also Moves per block on the Work mode page (menu.work, desk.menu.work), work mode's own pace.",
    "max": 12
   },
   "games.pause": {
@@ -12359,14 +12409,14 @@
    "note": "Android only: the notification channel of the game offers, in the system's settings (its own channel, so it pops up as the iPhone's banner does)."
   },
   "links.channel.about": {
-   "text": "A pump on offer when you finish a game on this phone, or a game or a stream on a linked site",
+   "text": "A pump on offer when you finish a game on this phone or on a linked site",
    "screens": [
     "system"
    ],
    "platforms": [
     "android"
    ],
-   "note": "Android only: the offers' channel's description, which also holds the question after a game on this phone (docs/phone-games.md B7)."
+   "note": "Android only: the offers' channel's description, which also holds the question after a game on this phone (docs/phone-games.md B7). It names no stream, so it holds while no page lists Twitch (contract/links.json's empty client id) and once one does."
   },
   "links.chesscom.name": {
    "text": "Your Chess.com username",
@@ -14343,9 +14393,11 @@
     "desk.menu.setup",
     "desk.places.place",
     "menu.free_mode",
-    "places.place"
+    "places.place",
+    "menu.work",
+    "desk.menu.work"
    ],
-   "note": "Section header: what the player has at hand to train with."
+   "note": "Section header: what the player has at hand to train with, in Your setup, a place's page and the Work mode page (slice 67, work mode's own equipment)."
   },
   "menu.free.experience.locked": {
    "text": "Your starting moves are set.",
@@ -14461,9 +14513,13 @@
     "desk.menu.setup",
     "desk.places.place",
     "menu.free_mode",
-    "places.place"
+    "places.place",
+    "work.sheet",
+    "menu.work",
+    "desk.work.sheet",
+    "desk.menu.work"
    ],
-   "note": "Section label in Your setup over the switches Floor moves, Room to move and Quiet mode."
+   "note": "Section label in Your setup, a place's page, the Work mode page and its first Start's sheet (slice 67, work mode's own equipment) over the switches Floor moves, Room to move and Quiet mode."
   },
   "menu.free.restart": {
    "text": "Start over in the app",
@@ -15054,12 +15110,10 @@
     "other": "{count} apps"
    },
    "screens": [
+    "menu.pumpfirst",
     "menu.settings"
    ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Android: the Pump first row's value while it is on: how many apps wait."
+   "note": "Android: the Pump first row's value on Your QuestPump while it is on: how many apps wait. The iPhone: the Apps that wait row's value on the Pump first page once apps are picked in Screen Time's picker, each app, category and site one."
   },
   "menu.questpump": {
    "text": "QuestPump",
@@ -16137,7 +16191,7 @@
    "args": {
     "place": "string"
    },
-   "note": "Read out only (TalkBack, the computer's screen reader and its tooltip) for Pump home's round place button, which shows the place in use's glyph and opens the places window: {place} is the place in use's name."
+   "note": "Read out only (TalkBack, the computer's screen reader and its tooltip) for Pump home's round place button, which shows the place in use's glyph and opens the places window: {place} is the place in use's name; while work mode runs, Work mode (work.title), the button then showing the desk glyph and opening the Work mode page."
   },
   "places.default.tag": {
    "text": "Default",
@@ -16683,7 +16737,7 @@
     "windows",
     "web"
    ],
-   "note": "Caps label of Start a pump's place row and of Your setup's place section: the place in use (its equipment and its three switches decide which moves a pump can ask)."
+   "note": "Caps label of Start a pump's place row and of Your setup's place section: the place in use (its equipment and its three switches decide which moves a pump can ask); while work mode runs, the row shows Work mode with work mode's equipment and opens the Work mode page."
   },
   "places.schedule": {
    "text": "Schedule",
@@ -17644,6 +17698,85 @@
     "device": "string"
    }
   },
+  "pro.remind.body": {
+   "text": "Keep Pro and the paid plan starts. Or cancel in Google Play and pay nothing.",
+   "screens": [
+    "system"
+   ],
+   "platforms": [
+    "android"
+   ],
+   "note": "The notification's body on Android: both choices, each in plain words. Google Play is the store's name."
+  },
+  "pro.remind.body.ios": {
+   "text": "Keep Pro and the paid plan starts. Or cancel in Settings, under your Apple Account, at least a day before and pay nothing.",
+   "screens": [
+    "system"
+   ],
+   "platforms": [
+    "ios"
+   ],
+   "note": "The notification's body on the iPhone: both choices, each in plain words. Apple asks for a cancel at least a day before the free time ends (pro.trial.ios). Settings and Apple Account as iOS names them."
+  },
+  "pro.remind.channel": {
+   "text": "Free time of Pro",
+   "screens": [
+    "system"
+   ],
+   "platforms": [
+    "android"
+   ],
+   "max": 40,
+   "note": "Android only: the notification channel's name in the system's settings, for the one reminder before Pro's free time ends. Pro is a product name."
+  },
+  "pro.remind.channel.about": {
+   "text": "One reminder before your free time of Pro ends",
+   "screens": [
+    "system"
+   ],
+   "platforms": [
+    "android"
+   ],
+   "note": "Android only: the channel's description in the system's settings."
+  },
+  "pro.remind.priming.title": {
+   "text": "Remind me before the free time ends?",
+   "screens": [
+    "pro.remind.priming"
+   ],
+   "note": "The heading of the window shown once after a purchase that started free time, before the phone asks about notifications: its question, over Remind me and Not now."
+  },
+  "pro.remind.title": {
+   "text": "Your free time of Pro ends in {days} days",
+   "plural": {
+    "one": "Your free time of Pro ends in {days} day",
+    "other": "Your free time of Pro ends in {days} days"
+   },
+   "args": {
+    "days": "int"
+   },
+   "screens": [
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android"
+   ],
+   "max": 44,
+   "note": "The title of the one notification a player gets before Pro's free time ends, when they asked for it on Pro's page: {days} is the whole days left as it shows, 2 as a rule, 1 where it comes a day late (pro.remind.title.today on the last day). Plain and calm: it tells a date, it does not push. Pro is a product name."
+  },
+  "pro.remind.title.today": {
+   "text": "Your free time of Pro ends today",
+   "screens": [
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android"
+   ],
+   "max": 44,
+   "note": "The same notification's title where it shows on the free time's last day (the phone was off or quiet until then). Plain and calm. Pro is a product name."
+  },
   "pro.renews": {
    "text": "Renews until you cancel it in Google Play.",
    "screens": [
@@ -17691,6 +17824,37 @@
     "ios"
    ],
    "note": "A quiet button on Pro's page: Apple's standard licence agreement."
+  },
+  "pro.timeline.charge": {
+   "text": "The paid plan starts: {charge}",
+   "args": {
+    "charge": "string"
+   },
+   "screens": [
+    "pro.offer"
+   ],
+   "note": "The timeline's last row, under the day the free time ends: the store charges the plan's price from then on. {charge} is the price and how often it is charged, such as \"$49.99 a year\" (pro.plan.year)."
+  },
+  "pro.timeline.remind": {
+   "text": "Remind me before the free time ends",
+   "screens": [
+    "pro.offer"
+   ],
+   "note": "A switch on the timeline's second row, under the day the reminder comes (two days before the free time ends): on, the phone sends one notification that day."
+  },
+  "pro.timeline.start": {
+   "text": "Pro starts. Nothing to pay.",
+   "screens": [
+    "pro.offer"
+   ],
+   "note": "The timeline's first row, under Today: the free time of QuestPump Pro begins and the store charges nothing yet. Pro is a product name."
+  },
+  "pro.timeline.today": {
+   "text": "Today",
+   "screens": [
+    "pro.offer"
+   ],
+   "note": "The first row's day in the free time's timeline under Pro's plans (the other rows show a date). Pro's free time begins on this day."
   },
   "pro.title": {
    "text": "QuestPump Pro",
@@ -21164,9 +21328,11 @@
     "pump.ready",
     "pump.running",
     "pump.timed_ask",
-    "pumpfirst.door"
+    "pumpfirst.door",
+    "work.shield",
+    "pumpfirst.shield"
    ],
-   "note": "Last row of a pump's More window (on a Ready view of the phones and the computer the last item of the menu of its Pause; a game pump's Ready view on the phones keeps it in its More window), in the stop colour with the heart: stops the pump at once and rests every pump until the next day; also the door's quiet last button, which opens the unwell window (title and its confirming primary are this key, then the line Apps open for the day), whose primary writes the same lock without a pump, so every app opens for the day."
+   "note": "Last row of a pump's More window (on a Ready view of the phones and the computer the last item of the menu of its Pause; a game pump's Ready view on the phones keeps it in its More window), in the stop colour with the heart: stops the pump at once and rests every pump until the next day; also the door's quiet last button, which opens the unwell window (title and its confirming primary are this key, then the line Apps open for the day), whose primary writes the same lock without a pump, so every app opens for the day. On the iPhone's Screen Time shields (work mode's ask and Pump first's) the second item of the second button's menu, where iOS allows one."
   },
   "pump.unwell.game": {
    "text": "Stop in the game too: click Pause, then I feel unwell.",
@@ -21270,10 +21436,7 @@
    "screens": [
     "menu.pumpfirst"
    ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Android: the label over the apps that wait for today's pump."
+   "note": "Android: the label over the apps that wait for today's pump. The iPhone: the row under the switch on the Pump first page, which asks Screen Time's question once and opens Screen Time's own picker for the apps that wait (docs/phone-games.md Part 3)."
   },
   "pumpfirst.battery": {
    "text": "Battery: Unrestricted",
@@ -21376,9 +21539,10 @@
    },
    "screens": [
     "pumpfirst.door",
-    "menu.pumpfirst"
+    "menu.pumpfirst",
+    "pumpfirst.shield"
    ],
-   "note": "The door's way out, one tap with no count and nothing unfinished, and the Way out row's value on the Pump first page; {minutes} is pump_first_open_min (15)."
+   "note": "The door's way out, one tap with no count and nothing unfinished, the Way out row's value on the Pump first page, and on the iPhone's shield over an app that waits its second button and that button's first menu item; {minutes} is pump_first_open_min (15)."
   },
   "pumpfirst.door.play": {
    "text": "Play now",
@@ -21390,9 +21554,10 @@
   "pumpfirst.door.pump": {
    "text": "Pump now",
    "screens": [
-    "pumpfirst.door"
+    "pumpfirst.door",
+    "pumpfirst.shield"
    ],
-   "note": "The door's gold primary over Quick pump: starts the Quick pump."
+   "note": "The door's gold primary over Quick pump, and the gold primary of the iPhone's shield over an app that waits: starts the Quick pump."
   },
   "pumpfirst.door.session": {
    "text": "Pump to play",
@@ -21404,9 +21569,15 @@
   "pumpfirst.door.title": {
    "text": "Pump to open your apps",
    "screens": [
-    "pumpfirst.door"
+    "pumpfirst.door",
+    "pumpfirst.shield",
+    "system"
    ],
-   "note": "The door's title when an app that waits opens before today's pump."
+   "platforms": [
+    "ios",
+    "android"
+   ],
+   "note": "The door's title when an app that waits opens before today's pump; on the iPhone also the title of Screen Time's shield over an app that waits (pumpfirst.shield) and of the notice its Pump now posts, whose tap opens QuestPump."
   },
   "pumpfirst.everytime": {
    "text": "Games ask each time they open",
@@ -21518,10 +21689,7 @@
    "screens": [
     "menu.pumpfirst"
    ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Android: the heading of the picker window of the apps that wait."
+   "note": "Android: the heading of the picker window of the apps that wait. The iPhone: the Apps that wait row's value before any app is picked."
   },
   "pumpfirst.rule.out": {
    "text": "Way out",
@@ -21595,14 +21763,14 @@
    "note": "The page's master switch (Pump first): the apps the player picks wait each day until the first pump."
   },
   "pumpfirst.usage.body": {
-   "text": "To ask for today's pump, QuestPump needs to see when an app you picked opens, also while it is closed. While Pump first is on, it checks which app is in front, keeps only the opens of your picked apps and games, and never tells us which apps you use. Android asks next.",
+   "text": "To ask for today's pump, and to count your minutes in work mode, QuestPump needs to see which app is in front, also while it is closed. While Pump first or work mode is on, it checks which app is in front, keeps only the opens and minutes of your picked apps and games, and never tells us which apps you use. Android asks next.",
    "screens": [
     "pumpfirst.priming"
    ],
    "platforms": [
     "android"
    ],
-   "note": "Android: the line of that window, Play's prominent disclosure for Pump first: what is read (which app is in front, about once a second while an app waits, also in the background) and what is kept."
+   "note": "Android: the line of that window, Play's prominent disclosure for Pump first and for work mode, which counts its minutes in the same picked apps through the same grant on a phone with a computer (slice 67): what is read (which app is in front, about once a second while an app waits and every 15 s while work mode counts, also in the background) and what is kept."
   },
   "pumpfirst.usage.title": {
    "text": "See when apps open",
@@ -22154,8 +22322,9 @@
   "reminders.offer.no": {
    "text": "Not now",
    "screens": [
-    "reminders.offer",
-    "desk.reminders.offer"
+    "desk.reminders.offer",
+    "pro.remind.priming",
+    "reminders.offer"
    ]
   },
   "reminders.offer.title": {
@@ -22168,8 +22337,9 @@
   "reminders.offer.yes": {
    "text": "Remind me",
    "screens": [
-    "reminders.offer",
-    "desk.reminders.offer"
+    "desk.reminders.offer",
+    "pro.remind.priming",
+    "reminders.offer"
    ]
   },
   "reminders.own": {
@@ -25267,7 +25437,7 @@
    "platforms": [
     "wearos"
    ],
-   "note": "A quiet line on the watch's pick page (slice 51): {place} is the place in use on the phone (its name, or its template's words), whose equipment and switches the watch's pumps follow. Never a button.",
+   "note": "A quiet line on the watch's pick page (slice 51): {place} is the place in use on the phone (its name, or its template's words), whose equipment and switches the watch's pumps follow, or, while work mode runs, work.title (Work mode), whose own equipment they follow then (slice 67). Never a button.",
    "args": {
     "place": "string"
    },
@@ -26288,6 +26458,500 @@
    ],
    "max": 20,
    "note": "The widget's name in the system's widget gallery."
+  },
+  "work.apps": {
+   "text": "Apps",
+   "screens": [
+    "menu.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the Work mode page's row of the apps whose minutes count on a phone with a computer (the phones only)."
+  },
+  "work.apps.count": {
+   "text": "{count} apps",
+   "args": {
+    "count": "int"
+   },
+   "plural": {
+    "one": "{count} app",
+    "other": "{count} apps"
+   },
+   "screens": [
+    "menu.work"
+   ],
+   "platforms": [
+    "ios"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the Apps row's value on the iPhone once the player picked apps in Screen Time's picker."
+  },
+  "work.apps.pick": {
+   "text": "Pick apps",
+   "screens": [
+    "menu.work"
+   ],
+   "platforms": [
+    "ios"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the Apps row's value on the iPhone before any app is picked: opens Screen Time's own picker."
+  },
+  "work.apps.same": {
+   "text": "Same as Pump first",
+   "screens": [
+    "menu.work"
+   ],
+   "platforms": [
+    "android"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the Apps row's value on Android: the apps Pump first lists count."
+  },
+  "work.ask.apps": {
+   "text": "Your apps · {minutes} min",
+   "args": {
+    "minutes": "int"
+   },
+   "noPlural": true,
+   "max": 24,
+   "screens": [
+    "pumpfirst.door",
+    "work.shield",
+    "watch.work",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "watchos",
+    "wearos"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the ask's line on a phone with a computer: the minutes in the work apps since the last pump."
+  },
+  "work.ask.line": {
+   "text": "Work · {minutes} min",
+   "args": {
+    "minutes": "int"
+   },
+   "noPlural": true,
+   "max": 18,
+   "screens": [
+    "pumpfirst.door",
+    "watch.work",
+    "desk.work.notify",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "watchos",
+    "wearos",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the ask's line: the minutes the player was at it since the last pump (the computer's presence, or plain time on a phone with no computer); in the browser the line of the notification that says a work pump opened while the tab is hidden."
+  },
+  "work.ask.title": {
+   "text": "Up for a pump?",
+   "max": 20,
+   "screens": [
+    "pumpfirst.door",
+    "work.shield",
+    "watch.work",
+    "desk.work.notify",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "watchos",
+    "wearos",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the ask once a work pump is due: the door's and the shield's title, the wrist's and the notification's; in the browser the title of the notification that says a work pump opened while the tab is hidden (the desktop app opens the pump in front and asks nothing)."
+  },
+  "work.control.about": {
+   "text": "Starts and stops work mode.",
+   "screens": [
+    "surface.work"
+   ],
+   "platforms": [
+    "ios"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the Control Center control's description in the controls gallery."
+  },
+  "work.due": {
+   "text": "Pump ready",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray",
+    "surface.live",
+    "surface.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the state while a work pump is due and its ask stands (the tray's state line, the card, the Lock Screen countdown, Android's tile)."
+  },
+  "work.every": {
+   "text": "Every",
+   "screens": [
+    "work.sheet",
+    "menu.work",
+    "desk.work.sheet",
+    "desk.menu.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the label over the work lengths (25, 30, 45 or 60 minutes of the player's time at it)."
+  },
+  "work.every.value": {
+   "text": "{minutes} min",
+   "args": {
+    "minutes": "int"
+   },
+   "noPlural": true,
+   "screens": [
+    "work.sheet",
+    "menu.work",
+    "menu.settings",
+    "desk.work.sheet",
+    "desk.menu.work",
+    "desk.menu"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): one length of Every in its Segmented, and the Menu row's value."
+  },
+  "work.hold.call": {
+   "text": "On a call",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray",
+    "surface.work"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "macos",
+    "windows"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: the microphone or the camera is in use (on the iPhone a phone or CallKit call alone); nothing counts and nothing asks until it ends."
+  },
+  "work.hold.fullscreen": {
+   "text": "In full screen",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray"
+   ],
+   "platforms": [
+    "macos",
+    "windows"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: a window fills the screen; the card comes when the player leaves it."
+  },
+  "work.hold.game": {
+   "text": "In a game",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray",
+    "surface.work"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "macos",
+    "windows"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: a game is in front, a match runs or a match's offer stands, which goes first."
+  },
+  "work.hold.present": {
+   "text": "Presenting",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray"
+   ],
+   "platforms": [
+    "android",
+    "macos",
+    "windows"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: the player presents or mirrors the screen; nothing counts and nothing asks."
+  },
+  "work.hold.pump": {
+   "text": "Pump in progress",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: a pump is open on this device."
+  },
+  "work.hold.quiet": {
+   "text": "Quiet hours",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray",
+    "surface.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: the player's quiet hours (the reminders' own)."
+  },
+  "work.hold.unwell": {
+   "text": "Resting today",
+   "max": 24,
+   "screens": [
+    "WorkCard",
+    "desk.tray",
+    "surface.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): a hold: the player said they feel unwell on this device; nothing asks until the next game day."
+  },
+  "work.how.bank": {
+   "text": "Bank all puts the pump off. Its moves come in your next pump.",
+   "screens": [
+    "desk.work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line on the computer and in the browser, where the work pump opens itself and its Ready view's Bank all (pump.ready.bank) puts it off; the phones' line names their ask's Later (work.how.later)."
+  },
+  "work.how.clock": {
+   "text": "Work for {minutes} minutes.",
+   "args": {
+    "minutes": "int"
+   },
+   "noPlural": true,
+   "screens": [
+    "desk.work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's first numbered line on the computer and in the browser, {minutes} the player's Every; their clock always runs down, so the phones' second sentence (work.how.every: only the time at it counts) is not said here."
+  },
+  "work.how.every": {
+   "text": "Work for {minutes} minutes. Only the time you are at it counts.",
+   "args": {
+    "minutes": "int"
+   },
+   "noPlural": true,
+   "screens": [
+    "work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's first numbered line on the phones, {minutes} the player's Every."
+  },
+  "work.how.later": {
+   "text": "Later banks the pump. Its moves come in your next pump.",
+   "screens": [
+    "work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line on the phones, whose ask has Later."
+  },
+  "work.how.long": {
+   "text": "Every fourth pump is a long one: {moves} moves.",
+   "args": {
+    "moves": "int"
+   },
+   "noPlural": true,
+   "screens": [
+    "work.how",
+    "desk.work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's third line: the set's last pump, one move more (2 at Light, 3 at Balanced, 4 at Extreme)."
+  },
+  "work.how.pump": {
+   "text": "Then a pump of {moves} moves, about {minutes} min.",
+   "args": {
+    "moves": "int",
+    "minutes": "string"
+   },
+   "plural": {
+    "one": "Then a pump of {moves} move, about {minutes} min.",
+    "other": "Then a pump of {moves} moves, about {minutes} min."
+   },
+   "screens": [
+    "work.how",
+    "desk.work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's second line: the short pump's moves at Moves per block and its minutes, the moves times contract/library.json's move_estimate_s rounded up to a minute; minutes is passed formatted as a string, since a plural with two integers does not number in Xcode's string catalog (apple-companion iphone-trees.md)."
+  },
+  "work.how.title": {
+   "text": "How work mode works",
+   "screens": [
+    "work.how",
+    "desk.work.how",
+    "work.sheet",
+    "menu.work",
+    "desk.work.sheet",
+    "desk.menu.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's title, and the spoken label of the (i) beside the sheet's and the Work mode page's title, which opens it."
+  },
+  "work.how.waits": {
+   "text": "It waits during calls, full screen and games.",
+   "screens": [
+    "desk.work.how"
+   ],
+   "platforms": [
+    "macos",
+    "windows"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's fifth line on the computer, which holds for each."
+  },
+  "work.how.waits.phone": {
+   "text": "It waits during calls and your quiet hours.",
+   "screens": [
+    "work.how"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's fifth line on the phones, which hold for calls and quiet hours."
+  },
+  "work.how.waits.web": {
+   "text": "It waits during your quiet hours.",
+   "screens": [
+    "desk.work.how"
+   ],
+   "platforms": [
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the How page's fifth line in the browser, which cannot tell a call."
+  },
+  "work.later": {
+   "text": "Later",
+   "max": 12,
+   "screens": [
+    "WorkCard",
+    "pumpfirst.door",
+    "work.shield",
+    "watch.work",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "watchos",
+    "wearos",
+    "macos",
+    "windows",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the ask's quiet button on the phones and the watches, and Pump home's card on every surface while a work pump is due: banks the work pump's moves (they ride the next pump) and starts the clock over. Banks, never skips."
+  },
+  "work.later.reset": {
+   "text": "Not banked: your progress was reset.",
+   "max": 60,
+   "screens": [
+    "WorkCard",
+    "pumpfirst.door",
+    "watch.work",
+    "system"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): Later could not bank: a reset came after the pump was due (on the watches too, where their Later asked the phone; on the phones also a notification in the place of the ask whose Later it answered outside the app)."
+  },
+  "work.later.unwell": {
+   "text": "Not banked: pumps rest today.",
+   "max": 60,
+   "screens": [
+    "WorkCard",
+    "pumpfirst.door",
+    "watch.work",
+    "system"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): Later could not bank: the felt-unwell lock holds on the device that banks (on the watches too, where their Later asked the phone; on the phones also a notification in the place of the ask whose Later it answered outside the app)."
+  },
+  "work.next": {
+   "text": "Next pump in {minutes} min",
+   "args": {
+    "minutes": "int"
+   },
+   "noPlural": true,
+   "max": 30,
+   "screens": [
+    "WorkCard",
+    "desk.tray",
+    "surface.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the state while the work clock counts: the minutes left to Every (the tray's state line, the ring's spoken label, Android's tile)."
+  },
+  "work.pace": {
+   "text": "Moves per block",
+   "screens": [
+    "menu.work",
+    "desk.menu.work"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the label over Light, Balanced and Extreme: the moves of each work pump (Light 1, Balanced 2, Extreme 3, and one more in every fourth). Moves per match's twin."
+  },
+  "work.pumpnow": {
+   "text": "Pump now",
+   "max": 20,
+   "screens": [
+    "WorkCard",
+    "pumpfirst.door",
+    "work.shield",
+    "desk.tray"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): opens the work pump that is due (the work card's gold button once the ring is full, the door's and the shield's primary, the tray's item while work mode runs)."
+  },
+  "work.set": {
+   "text": "Pump {block} of {blocks}",
+   "args": {
+    "block": "int",
+    "blocks": "int"
+   },
+   "screens": [
+    "WorkCard"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the spoken label of the work card's four dots: the next pump's place in the set and the set's size (the fourth the long one)."
+  },
+  "work.start": {
+   "text": "Start",
+   "max": 12,
+   "screens": [
+    "WorkCard",
+    "work.sheet",
+    "desk.work.sheet",
+    "watch.work",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "watchos",
+    "wearos",
+    "macos",
+    "windows",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the button that turns work mode on (the work card while off, the first Start's sheet, gold), and the ask's Start where it runs the work pump: the wrist's ask and the notification's action (the iPhone without Screen Time)."
+  },
+  "work.stop": {
+   "text": "Stop",
+   "max": 12,
+   "screens": [
+    "WorkCard",
+    "surface.live",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "macos",
+    "windows",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): turns work mode off at once, without a confirm (the work card while on, the Lock Screen countdown's button)."
+  },
+  "work.title": {
+   "text": "Work mode",
+   "max": 20,
+   "screens": [
+    "WorkCard",
+    "work.sheet",
+    "menu.work",
+    "menu.settings",
+    "surface.work",
+    "surface.live",
+    "desk.work.sheet",
+    "desk.menu.work",
+    "desk.menu",
+    "system"
+   ],
+   "platforms": [
+    "ios",
+    "android",
+    "macos",
+    "windows",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the work card's title on Pump home, the first Start's sheet and the Work mode page, the Menu's row in Your pumps, the iPhone's Control Center control and Android's Quick Settings tile, the countdown on the Lock Screen of a phone with no computer (Live Activity, Live Update) and its notification channel, and the phones' notice of a Later that banked nothing. A session the player starts and stops; never name the method it follows."
   }
  }
 }

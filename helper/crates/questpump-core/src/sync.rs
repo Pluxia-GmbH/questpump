@@ -427,6 +427,8 @@ pub enum Kind {
 	Rows,
 	/// The device's own name, kind, profile, body stamps and characters' sheets; the server keeps a device's newest.
 	Device,
+	/// The device's work state after its last merge (`work::Work`, slice 67); the server keeps a device's newest.
+	Work,
 }
 
 impl Kind {
@@ -435,6 +437,7 @@ impl Kind {
 		match self {
 			Self::Rows => "rows",
 			Self::Device => "device",
+			Self::Work => "work",
 		}
 	}
 }
@@ -649,6 +652,8 @@ pub struct Account {
 	pub game: Sent,
 	pub app: Sent,
 	pub device_digest: Option<String>,
+	/// The work batch last sent, its digest (slice 67: `Kind::Work`, sent again only when the work state changed).
+	pub work_digest: Option<String>,
 	/// Whether an email holds the account (the session's `email`), and its address when this computer linked it.
 	pub email: bool,
 	pub address: Option<String>,
@@ -692,6 +697,7 @@ impl Default for Account {
 			game: Sent::default(),
 			app: Sent::default(),
 			device_digest: None,
+			work_digest: None,
 			email: false,
 			address: None,
 			names: BTreeMap::new(),

@@ -67,10 +67,10 @@
 //! The offer after a match (slice 35) as the helper answers it: a `match_end` queued here counts as the latest game
 //! offer; a request's `offer_taken` takes its command off the link and lists its id in `offer_withdrawn` of every
 //! response until the command would have expired; every response names the latest game offer any device or the stand-in
-//! made (`game_offer_at`) and `playing` and `arms` as `/playing` set them, each as it stands when the response leaves,
-//! and a waiting held or standing request answers at once when the ids taken back, `playing` or `arms` change, as the
-//! helper's does (slice 48's second fix round). `POST /v1/body` merges a phone's body into one kept in memory, as the
-//! helper keeps `body.json`.
+//! made (`game_offer_at`), `playing` and `arms` as `/playing` set them and work mode's state merged from the requests'
+//! (slice 67), each as it stands when the response leaves, and a waiting held or standing request answers at once when
+//! the ids taken back, `playing`, `arms` or the work state change, as the helper's does (slice 48's second fix round).
+//! `POST /v1/body` merges a phone's body into one kept in memory, as the helper keeps `body.json`.
 //!
 //! The stand-in keeps no game rows: a catch-up pump pays the first owed entry of each move it ran, none while `/game`
 //! says the game asks the owed moves (every sync and sheet response says so then, `game_asks`, and the sync response
@@ -106,6 +106,7 @@ use questpump_core::protocol::{Command, Line};
 use questpump_core::seal::Keys;
 use questpump_core::session::{COUNTDOWN_TICKS, CatchupPump, Now, People, Session, Zone, pump_id};
 use questpump_core::store::Store;
+use questpump_core::work::{self, Work};
 use questpump_helper_lib::lan::{self, Ask, Lan, Links, OfferFacts, SyncAnswer, now_ms};
 use questpump_helper_lib::local_offset_at;
 use serde::{Deserialize, Serialize};
@@ -253,6 +254,8 @@ struct World {
 	playing: bool,
 	/// An aim game with its arms rest on runs (slice 48's double-check), as `/playing` set it.
 	arms: bool,
+	/// Work mode's state (slice 67), each request's merged into it as the helper's `Desk::work_heard` merges it.
+	work: Work,
 	/// The body every app device shares, as the helper keeps it.
 	body: Kept,
 	/// The sync account a phone's Add handed over (`PUT /v1/account`), which `GET /v1/account` answers (slice 60): the
@@ -297,6 +300,7 @@ impl World {
 			game_offer_at: None,
 			playing: false,
 			arms: false,
+			work: Work::default(),
 			body: Kept::default(),
 			account: None,
 		})
@@ -368,13 +372,16 @@ impl World {
 			}
 		}
 		self.game_offer_at = self.game_offer_at.max(request.game_offer_at);
+		if let (Some(heard), Some(t)) = (&request.work, work::tunables()) {
+			self.work.merge(heard, now, &t);
+		}
 		self.withdrawn.retain(|&(_, until)| until > now);
 		SyncAnswer { rows_store: Some(self.app.app_rows().id()), game_held }
 	}
 
 	/// The offer facts every response carries as it leaves, as the helper's `Helper::tell_offers` tells them: the lock,
-	/// the offers taken back whose command has not expired, `playing` and `arms` as `/playing` set them, and the latest
-	/// game offer.
+	/// the offers taken back whose command has not expired, `playing` and `arms` as `/playing` set them, the latest
+	/// game offer and the work state merged from the requests.
 	fn offers(&self, now: i64) -> OfferFacts {
 		OfferFacts {
 			locked_until: self.locked(now),
@@ -387,6 +394,7 @@ impl World {
 			playing: self.playing,
 			arms: self.arms,
 			game_offer_at: self.game_offer_at,
+			work: Some(self.work.clone()).filter(Work::heard),
 		}
 	}
 

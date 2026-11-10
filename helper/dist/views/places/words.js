@@ -1,9 +1,10 @@
 // A place's words on the computer (docs/plan.md slice 51, "Places"; contract/places.json): its name (the player's own,
 // else its template's words, places.template.<id>), its glyph's name for a screen reader (places.glyph.<the glyph less
 // place_>) and its meta line, the equipment's first three names and how many more (the phones' PlaceRow), from the
-// `places` topic (helper/crates/questpump-desk/src/places.rs); and a time of the places' schedule (2026-11-03): its days as
-// its title in this computer's weekday names (format.js' LOCALE, Monday first, three or more in a row as a span), and
-// its span and place as its meta line.
+// `places` topic (helper/crates/questpump-desk/src/places.rs); what the place button and the place rows name (slice
+// 67: Work mode while it runs, with work mode's own equipment); and a time of the places' schedule (2026-11-03): its
+// days as its title in this computer's weekday names (format.js' LOCALE, Monday first, three or more in a row as a
+// span), and its span and place as its meta line.
 
 import {get} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
@@ -33,9 +34,14 @@ const GLYPHS = {
 /** How many pieces of equipment the meta line names before "+ N more". */
 const NAMED = 3;
 
-/** A place's name: the player's own, else its template's words (Home's always). */
+/** Work mode's glyph: its Menu row's, and the place button's while it runs. */
+export const WORK_GLYPH = "place_desk";
+
+/** A place's name: the player's own, else its template's words (Home's always); Work mode for work mode's equipment
+ * (`placeShown`, and a timed pump's place that began while work mode ran). */
 export function placeName(place) {
 	if (!place) return "";
+	if (place.work) return t("work.title");
 	if (place.name) return place.name;
 	return TEMPLATES[place.template ?? place.id]?.() ?? "";
 }
@@ -60,8 +66,15 @@ export function gearLine(place) {
 }
 
 /** The place in use from the `places` topic (Home while the list does not hold it). */
-export function inUse(places) {
+function inUse(places) {
 	return places?.list.find((p) => p.id === places.in_use) ?? places?.list[0] ?? null;
+}
+
+/** What the place button and the place rows name from the `places` topic (slice 67): while work mode runs, work mode's
+ * own equipment as a place (`work`, Work mode's words and glyph), which every pump then takes, else the place in use;
+ * a click on one opens the Work mode page while `work` holds, else the places window. */
+export function placeShown(places) {
+	return places?.work ? {...places.work, work: true, glyph: WORK_GLYPH} : inUse(places);
 }
 
 /** The ISO weekdays, Monday first (1 Monday to 7 Sunday). */

@@ -4,7 +4,7 @@
 //! voice, `audio.rs`) or to the platform (`Platform`: the game, the offers, the audio's output). The desktop app's own
 //! seams (the game it follows, the match offers) are its `desk/seams.rs`.
 
-use questpump_core::protocol::RowRecord;
+use questpump_core::protocol::{RowRecord, Source};
 use serde::{Deserialize, Serialize};
 
 use crate::platform::{FoundGame, GuideTake, GuideTakes};
@@ -338,12 +338,26 @@ impl<P: Platform> Desk<P> {
 	/// The newest performed move any device made, among the rows the stores hold (unix seconds): the sitting clock's
 	/// start.
 	pub fn last_move_at(&self) -> Option<i64> {
+		self.last_move(|_| true)
+	}
+
+	/// The newest performed move made in the game this computer reads (unix seconds; `Source::Game`: its strip, mirror
+	/// and saves): work mode's anchor follows it (`Desk::work_moved`), the game being the one device that moves no
+	/// anchor itself; this device's own pumps move the anchor at their end, and every other device's at theirs, heard
+	/// in `work` (a phone's moves moving it here would end the ask its own work pump answers before that pump ends).
+	pub fn last_move_in_game(&self) -> Option<i64> {
+		self.last_move(|r| r.source == Source::Game)
+	}
+
+	/// The newest performed move among the stores' records `of` keeps (unix seconds).
+	fn last_move(&self, of: impl Fn(&RowRecord) -> bool) -> Option<i64> {
 		let f = crate::facts::facts();
 		self.session
 			.store()
 			.records()
 			.iter()
 			.chain(self.session.app_rows().records())
+			.filter(|r| of(r))
 			.map(RowRecord::row)
 			.filter(|row| {
 				questpump_core::codes::kind::is_move(row.kind)

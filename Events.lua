@@ -3,8 +3,9 @@
 -- day lock), the hub merge (a pump merges only the turn-ins made before it opens), the owed queue (moves banked,
 -- held through a logout, earned in an instance or a mixed party, every one paid with the next pump or at once on
 -- demand, or skipped by the player one at a time), a mixed party's choice (bank its turn-ins or pause while grouped),
--- the unsafe list, the popups and cinematics that pause a pump, and every row a pump writes. The panel, the HUD and
--- speech only draw what it announces through ns.Emit("State", pump).
+-- the player's choice of when pumps ask (at the turn-in, or held unopened for the next flight), the unsafe list, the
+-- popups and cinematics that pause a pump, and every row a pump writes. The panel, the HUD and speech only draw what
+-- it announces through ns.Emit("State", pump).
 
 local ADDON, ns = ...
 local C, E, L = ns.C, ns.Enum, ns.L
@@ -81,6 +82,32 @@ function Lc.OwingContext()
 	if inInstance and not ns.profile.instances then return "instance" end
 	if Lc.MixedParty() then return "party" end
 	return nil
+end
+
+-- When pumps ask, the player's own choice (docs/plan.md slice 70; David, 2026-11-10: "you do this"): the profile's
+-- `askWhen`, set on General and on Your setup's last page, nil until chosen. "turnin" is the rule and every player's
+-- start: each turn-in's pump asks at once. With "flight" a turn-in's pump is held, never banked: it takes its grace
+-- and its merge as ever, then waits unopened in the queue (park) with the pumps of the turn-ins after it, and a
+-- flight opens them one after another, each its own quest's pump, composed again as it begins and as it opens, with
+-- the rows, the XP and the count of any turn-in's pump (flightBegins, promote). What has not opened by the landing
+-- goes unfinished as a pump that never opened does (flightEnds), and so does what waits at a logout or a /reload
+-- (PLAYER_LOGOUT: nothing of a pump outlasts a load). The moment alone is the player's: nothing is merged, forgiven
+-- or made smaller.
+Lc.ASK_WHEN = { "turnin", "flight" }
+
+function Lc.AskWhen()
+	return ns.profile ~= nil and ns.profile.askWhen == "flight" and "flight" or "turnin"
+end
+
+-- Whether the choice holds the turn-ins' pumps back now: off a taxi, and on one while the game is off or this
+-- character paused, when a flight asks nothing and the pumps wait for the next.
+function Lc.FlightHolds()
+	return Lc.AskWhen() == "flight" and (Lc.Asleep() or not UnitOnTaxi("player"))
+end
+
+-- How many pumps wait for the flight (the HUD's line): the queue while the choice holds it, behind an open pump too.
+function Lc.Waiting()
+	return Lc.FlightHolds() and #Lc.queue or 0
 end
 
 local function frameShown(name)
@@ -165,7 +192,10 @@ local function availableOwed(except)
 		end
 	end
 	scan(Lc.pump)
-	for _, p in ipairs(Lc.queue) do scan(p) end
+	-- the pumps that wait for a flight hold no rider back: each is composed again as it begins (begin, Lc.Open)
+	if not Lc.FlightHolds() then
+		for _, p in ipairs(Lc.queue) do scan(p) end
+	end
 	local list = {}
 	for _, r in ipairs(ns.OwedList(ns.state)) do
 		if not taken[r.key] then list[#list + 1] = r end
@@ -326,6 +356,25 @@ local function ask(p)
 	Lc.Open()
 end
 
+-- A turn-in's pump the choice holds for the flight (Lc.FlightHolds): one not opened, not started and not asked for (a
+-- click on the HUD's line or /qp pump opens it at once). The stand-up move and a pump asked for are never held.
+local function waitsForFlight(p)
+	return p.kind == "quest" and not p.opened and not p.started and not p.asked and Lc.FlightHolds()
+end
+
+-- Parks it: out of the way and into the queue at its turn-ins' place (a pump's id rises with its first turn-in), as
+-- a queued pump is until it begins; the next turn-in then begins a pump of its own, with its own grace and merge.
+local function park(p)
+	cancelPumpTimers()
+	Lc.pump = nil
+	p.state = "settling"
+	local at = #Lc.queue + 1
+	while at > 1 and Lc.queue[at - 1].id > p.id do at = at - 1 end
+	table.insert(Lc.queue, at, p)
+	ns.Log("I", "pump %d waits for the next flight (%d waiting)", p.id, #Lc.queue)
+	ns.Emit("State", p)
+end
+
 function Lc.CheckSettle()
 	local p = Lc.pump
 	if not p or p.state ~= "settling" then return end
@@ -338,6 +387,7 @@ function Lc.CheckSettle()
 		if Lc.pump == p and p.state == "settling" and not next(Lc.npc) then
 			Lc.stillFor, Lc.movingFor = 0, 0
 			p.graceOver = true -- from here a turn-in begins the next pump
+			if waitsForFlight(p) then return park(p) end
 			setState(p, "ready")
 		end
 	end)
@@ -355,20 +405,30 @@ local function begin(p)
 end
 
 -- Whether a queued pump begins as the pump on screen ends (promote), the one rule of it: a turn-in's pump waits behind
--- it and the player is not where a turn-in is owed (an instance, a mixed party, the felt-unwell lock). The "State"
--- message of a pump's end comes before promote runs, so its listeners ask this to know whether a pump asks at once.
+-- it, the player is not where a turn-in is owed (an instance, a mixed party, the felt-unwell lock) and the choice
+-- does not hold it for a flight (Lc.FlightHolds). The "State" message of a pump's end comes before promote runs, so
+-- its listeners ask this to know whether a pump asks at once.
 function Lc.QueueBegins()
-	return #Lc.queue > 0 and not (Lc.Locked() or Lc.OwingContext())
+	return #Lc.queue > 0 and not (Lc.Locked() or Lc.OwingContext() or Lc.FlightHolds())
 end
 
--- The next queued pump begins (Lc.QueueBegins); else every queued pump is owed (a stand-up move is dropped).
+-- The next queued pump begins (Lc.QueueBegins); where a turn-in is owed every queued pump is owed (a stand-up move is
+-- dropped); else the choice holds them for a flight and they wait on.
 local function promote()
 	while #Lc.queue > 0 do
 		if Lc.QueueBegins() then return begin(table.remove(Lc.queue, 1)) end
+		if not (Lc.Locked() or Lc.OwingContext()) then return end
 		local p = table.remove(Lc.queue, 1)
 		if p.kind ~= "standup" then Lc.OweOpen(p) end
 		ns.Emit("Owed", p)
 	end
+end
+
+-- The pumps that waited begin once nothing holds them and none is on its way: at a take-off (flightBegins), a resume
+-- or the game switched on in the air, and the choice taken back (the "Settings" message). A pump's end and a fight's
+-- end need none: Lc.Finish promotes, and a pump begun in a fight waits it out as any does (begin).
+local function wake()
+	if ns.db and not Lc.pump then promote() end
 end
 
 function Lc.Finish(how)
@@ -451,10 +511,12 @@ end
 
 -- A quest's title, nil until the client has it cached: asked for once a session (a failed load keeps the caller's
 -- fallback), and "QuestTitle" goes out with the quest's id when it comes, so whatever showed the fallback draws again
--- (the Log's rows, the pump card's title).
+-- (the Log's rows, the pump card's title). Nil for a bank number (an unfinished move a phone or a browser banked,
+-- slice 67: C.bank_quest_min), which names no quest.
 local titleAsked = {}
 
 function Lc.QuestTitle(questID)
+	if questID >= C.bank_quest_min then return nil end
 	local title = C_QuestLog.GetTitleForQuestID(questID)
 	if not title and not titleAsked[questID] and QuestEventListener and QuestEventListener.AddCallback then
 		titleAsked[questID] = true
@@ -506,6 +568,7 @@ Lc.Asleep = asleep
 local function writePause(mode)
 	ns.AddRow({ kind = K.pause, reps = mode }) -- its "Row" redraws the HUD
 	Lc.pauseSaid = nil
+	if mode == 0 then wake() end -- a resume in the air: the pumps a flight is waited for begin
 end
 
 -- Pauses this character (ns.PAUSE: hour, fourHours, day, char, group) or, with 0, resumes it: a row, so the mirror
@@ -752,6 +815,8 @@ function Lc.Tick()
 		Lc.stuck = 0
 	end
 	if p.state == "settling" then return end
+	-- held for the flight after its grace: the choice made, a pause or a landing while it waited for its safe moment
+	if waitsForFlight(p) then return park(p) end
 	local moving = Lc.Moving()
 	if moving == nil then
 		Lc.stillFor = 0
@@ -1588,6 +1653,7 @@ end
 ns.On("Settings", function()
 	refilter()
 	Lc.ScheduleStandup()
+	wake() -- "At the turn-in" again, or the game switched on in the air: the pumps that waited ask
 end)
 
 -- Escape past an open pump's views (on them the key frame lets it through, so the game menu opens and nothing is
@@ -1690,9 +1756,10 @@ ns.On("Menu", function()
 	if ns.Menu.Shown() then cancel("advance") end
 end)
 
--- On demand: the HUD chip, the keybinding and /qp pump open the pending pump at once, or a pump of every owed move,
--- oldest first and spread after the latest set (Engine.lua spreadRiders), or with nothing owed one move that earns XP
--- and counts for the streak.
+-- On demand: the HUD chip, the keybinding and /qp pump open the pending pump at once, or the first of the pumps that
+-- wait for a flight (the HUD's line of them; one click, one pump, the others waiting on), or a pump of every owed
+-- move, oldest first and spread after the latest set (Engine.lua spreadRiders), or with nothing owed one move that
+-- earns XP and counts for the streak.
 function Lc.Demand()
 	if not ns.db then return end
 	if Setup.Blocks() then
@@ -1708,7 +1775,7 @@ function Lc.Demand()
 	if p and (VISIBLE[p.state] or p.state == "waiting" or p.state == "held") then return end
 	if Lc.Unsafe(true) then return ns.Print("chat.notnow") end
 	if not p then
-		p = newPump("demand")
+		p = table.remove(Lc.queue, 1) or newPump("demand") -- no pump on its way: the queue holds only what waits
 		Lc.pump = p
 		compose(p)
 	end
@@ -2166,7 +2233,7 @@ function Setup.Nudge(how)
 	if not m or Setup.seen or (m.setupShownAt and m.loginAt and m.setupShownAt >= m.loginAt) then return end
 	if m.nudgeAt and dayNumber() - dayNumber(m.nudgeAt) < C.nudge_every_days then return end
 	local key
-	if how ~= "done" and ns.OwedCount(ns.state) > 0 then
+	if how ~= "done" and ns.OwedCount(ns.state) > select(2, ns.OwedAside(ns.state, ns.profile, ns.now())) then
 		key = "status.nudge.owed"
 	elseif ns.Streak(ns.state, ns.now()) >= C.nudge_streak_days then
 		key = "status.nudge.streak"
@@ -2179,7 +2246,7 @@ ns.On("State", function(p, how)
 	if p and p.state == "done" then Setup.Nudge(how) end
 end)
 
--- A newer addon (2026-10-31, the release's addon feed): the helper reads its signed addon.json and names the newest
+-- A newer addon (2026-10-31, the release's addon feed): the helper reads its signed feed and names the newest
 -- version in the pairing block, `addon_latest`, with `addon_by` "helper" when it keeps this install up to date (it puts
 -- the new one in when the game closes) and "other" when the player updates it some other way. Versions compare as
 -- x.y.z with a leading "v" dropped; one that does not parse (a checkout's "dev", a build between tags) is never older
@@ -2495,6 +2562,45 @@ local function refreshTaxi()
 end
 ns.RegisterEvent("PLAYER_CONTROL_GAINED", refreshTaxi)
 ns.RegisterEvent("PLAYER_CONTROL_LOST", refreshTaxi)
+
+-- "On my next flight" (Lc.AskWhen): a flight opens the pumps that waited, and its landing owes what has not opened.
+-- The client has no event of a flight's own: PLAYER_CONTROL_LOST and PLAYER_CONTROL_GAINED come for a taxi as for a
+-- fear or a mind control (warcraft.wiki.gg, "PLAYER_CONTROL_LOST"), and nothing documents whether UnitOnTaxi already
+-- answers at them, so each is read settle_s later, and a flight counts only once the read after a loss found it
+-- (Lc.flying): a fear reads false and changes nothing.
+-- The take-off begins the first pump that waits (wake), which asks as any turn-in's pump does: its settle, then a
+-- second of standing still, which a taxi is (Lc.Moving), never over a chat box, an NPC window or a panel
+-- (Lc.Unsafe), without the keyboard on the taxi (Lc.Open's `taxi`), Bank all, Pause and Skip on it as ever; each
+-- pump's end begins the next (Lc.Finish, promote), and one begun in a fight waits it out (begin), so the flight is
+-- looked at again whenever what held a pump back ends. An open pump stays open through the landing, as any does.
+-- The landing owes every pump that has not opened, the queue and one still on its way, as the pumps of a player who
+-- enters an instance are owed (Lc.OweIfOwing): nothing is forgiven, and the moves ride the next pump as unfinished
+-- moves do. The pumps are never sized to the flight, whose length the client does not tell.
+local function flightBegins()
+	if not UnitOnTaxi("player") then return end
+	Lc.flying = true
+	wake()
+end
+
+local function flightEnds()
+	if not Lc.flying or UnitOnTaxi("player") then return end
+	Lc.flying = false
+	if not ns.db or Lc.AskWhen() ~= "flight" then return end
+	local p = Lc.pump
+	if p and waitsForFlight(p) then park(p) end
+	if #Lc.queue == 0 then return end
+	ns.Log("I", "landed: %d pumps that did not open go unfinished", #Lc.queue)
+	for _, q in ipairs(Lc.queue) do Lc.OweOpen(q) end
+	wipe(Lc.queue)
+	ns.Emit("Owed")
+end
+
+ns.RegisterEvent("PLAYER_CONTROL_LOST", function()
+	if Lc.AskWhen() == "flight" then after("takeoff", C.settle_s, flightBegins) end
+end)
+ns.RegisterEvent("PLAYER_CONTROL_GAINED", function()
+	if Lc.flying then after("landing", C.settle_s, flightEnds) end
+end)
 
 local function popupShown()
 	return StaticPopup_IsAnyDialogShown() or ns.Dialog.AnyShown() or frameShown("ReadyCheckFrame")
@@ -2825,7 +2931,12 @@ end
 
 -- The move figures' pack as Figure.Check read it at login: why the key poses show where the animation should.
 local FIGURE_STATUS = { ok = "cmd.status.figures.ok", old = "cmd.status.figures.old",
-	missing = "cmd.status.figures.missing", disabled = "cmd.status.figures.disabled" }
+	missing = "cmd.status.figures.missing", disabled = "cmd.status.figures.disabled",
+	outdated = "cmd.status.figures.outdated" }
+-- The voice pack as Speech.Pack reads it: why nothing, or not every line, is said.
+local VOICE_STATUS = { ok = "cmd.status.voice.ok", old = "cmd.status.voice.old",
+	missing = "cmd.status.voice.missing", disabled = "cmd.status.voice.disabled",
+	outdated = "cmd.status.voice.outdated", unplayable = "cmd.status.voice.unplayable" }
 -- The paired phone by the pairing block's id (ns.IsPaired knows these two).
 local PHONES = { ios = "cmd.status.phone.ios", android = "cmd.status.phone.android" }
 -- The helper by ns.HelperState, none for one that never wrote a pairing block ("on" names its version).
@@ -2860,6 +2971,8 @@ ns.AddCommand("status", function()
 		ns.Print("cmd.status.saving.unknown")
 	end
 	if FIGURE_STATUS[ns.Figure.state] then ns.Print(FIGURE_STATUS[ns.Figure.state]) end
+	local voicePack = VOICE_STATUS[ns.Speech.Pack()]
+	if voicePack then ns.Print(voicePack) end
 	local silence = ns.profile.speech and ns.Speech.Silence()
 	if silence then ns.Print("cmd.status.voice", L["speech.silent." .. silence]) end
 	-- each companion on its own line, as the setup screen's steps read them (truth-1, 2026-10-09), the phone's only

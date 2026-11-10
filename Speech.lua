@@ -6,12 +6,12 @@
 -- one button for both, reading on through the move's countdown and run, since 2026-10-10; the only way since
 -- 2026-10-13, when the setting that read them after the move's line went, David: "remove the autoplay setting for how
 -- and tips and make it default off").
--- The recordings sit in Media/Voice/ (tools/voice/, `make voice`: ElevenLabs Eleven v4, one stock voice), and
--- VoiceClips.lua lists each line with the hash of the words it says, so a line whose words change fails `make lint`
--- until it is recorded again. The quest's flavour line stays on the card as text. With no recording, or with speech
--- off, the pump's opening plays a sound instead.
+-- The recordings are the voice pack's (QuestPump_Voice, below; tools/voice/, `make voice`: ElevenLabs Eleven v4, one
+-- stock voice), and VoiceClips.lua lists each line with the hash of the words it says, so a line whose words change
+-- fails `make lint` until it is recorded again. The quest's flavour line stays on the card as text. With no recording
+-- (no pack, or a line it lacks), or with speech off, the pump's opening plays a sound instead.
 
-local ADDON, ns = ...
+local _, ns = ...
 local C, L = ns.C, ns.L
 local K = ns.Enum.kind
 local T = ns.Timers()
@@ -19,11 +19,79 @@ local T = ns.Timers()
 local Speech = {}
 ns.Speech = Speech
 
-local PATH = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Voice\\"
+-- The voice pack (docs/plan.md slice 71): the load-on-demand folder QuestPump_Voice, a download of its own, whose
+-- Manifest.lua fills QuestPumpVoice with what it holds (`clips`: each line's take by the hash of the words it says,
+-- `seconds`: its length, `files`: the line whose take a guide's line plays), the takes beside it as Takes/<id>.ogg.
+-- QuestPump plays without it and with one from another release: a line is said only where the pack's take says the
+-- line's words of today (ns.VoiceClips), so a take it lacks is silence, never other words than the card shows.
+local PACK = "QuestPump_Voice"
+local PATH = "Interface\\AddOns\\" .. PACK .. "\\Takes\\"
+local voice -- the pack's lists, once it loaded with all three
 
--- A move's guide, the parts the Ready view shows under How and Tips (Locales/enUS.lua, guide()), in
--- Media/Voice/guide/: each line of a part a take of its own, "<part>.<key>.<n>" (n its row on the card, from 1), or the
--- take of another guide line that says the same words (ns.VoiceFiles, VoiceClips.lua; 2026-11-05), cut
+-- The pack's state, read at PLAYER_LOGIN without loading it (ns.PackState): "ok", "disabled", "outdated" or "missing";
+-- later "unplayable" for the session, once the client would not play one of its files (play).
+function Speech.Check()
+	Speech.state = ns.PackState(PACK)
+	return Speech.state
+end
+
+ns.RegisterEvent("PLAYER_LOGIN", Speech.Check)
+
+-- The pack's lists, loaded on first need and only out of combat (as the figure pack's, Figure.Data); nil while it is
+-- not there or does not load, and nothing is said.
+local function pack()
+	if voice then return voice end
+	if Speech.tried or InCombatLockdown() or Speech.state ~= "ok" then return nil end
+	Speech.tried = true
+	local v = C_AddOns.LoadAddOn(PACK) and QuestPumpVoice
+	if type(v) == "table" and type(v.clips) == "table" and type(v.seconds) == "table" and type(v.files) == "table" then
+		voice = v
+	else
+		Speech.state = "missing" -- it would not load, or loaded without its lists: /qp status says so
+	end
+	return voice
+end
+
+-- The pack's take of line `id`: its file under Takes/ (another guide line's where the two say the same words) and its
+-- length in seconds, where the pack holds a take of the words the line says today; else nil (no pack, a pack from
+-- another release, a line not recorded).
+local function takeOf(id)
+	local hash = ns.VoiceClips[id]
+	local v = hash and pack()
+	if not v or v.clips[id] ~= hash then return nil end
+	return v.files[id] or id, v.seconds[id] or 0
+end
+
+-- A line's take's length in seconds, 0 without one: the line after it waits for it.
+local function seconds(id)
+	local _, length = takeOf(id)
+	return length or 0
+end
+
+-- The pack as /qp status names it: Speech.Check's state, or "old" for a loaded pack that lacks a take of some line's
+-- words of today (a pack from another release: those lines stay unsaid).
+function Speech.Pack()
+	local v = pack()
+	if not v then return Speech.state end
+	for id, hash in pairs(ns.VoiceClips) do
+		if v.clips[id] ~= hash then return "old" end
+	end
+	return "ok"
+end
+
+-- Whether a switch of the voice's switches anything (the General page's rows, Settings.lua): the pack is there to be
+-- heard and, for a row that needs another setting on (`setting`), that one is; else false and the key of the reason
+-- the row shows.
+function Speech.Heard(setting)
+	local state = Speech.Pack()
+	if state ~= "ok" and state ~= "old" then return false, "settings.needsVoicePack" end
+	if setting and not (ns.profile and ns.profile[setting]) then return false, "settings.needsVoice" end
+	return true
+end
+
+-- A move's guide, the parts the Ready view shows under How and Tips (Locales/enUS.lua, guide()), in the pack's
+-- Takes/guide/: each line of a part a take of its own, "<part>.<key>.<n>" (n its row on the card, from 1), or the
+-- take of another guide line that says the same words (the pack's `files`; 2026-11-05), cut
 -- from one recording of the part so the voice keeps its flow (tools/voice/voice.mjs; 2026-10-10, so a line said over
 -- the guide pauses it at a line and a pause resumes there); a part written for the implement that carries the move's
 -- load (Locales/enUS.lua implement(), 2026-10-09: the dumbbell's steps, not the bag's) has takes of its own,
@@ -42,9 +110,9 @@ function Speech.GuideTakes(moveId)
 	local takes, starts = {}, {}
 	for _, part in ipairs(GUIDE) do
 		local base = Speech.GuideId(part, ns.Library[moveId].key, ns.Panel.MoveGear(moveId, part))
-		if #takes > 0 and ns.VoiceClips[base .. ".1"] then starts[#takes + 1] = true end
+		if #takes > 0 and takeOf(base .. ".1") then starts[#takes + 1] = true end
 		local n = 1
-		while ns.VoiceClips[base .. "." .. n] do
+		while takeOf(base .. "." .. n) do
 			takes[#takes + 1] = base .. "." .. n
 			n = n + 1
 		end
@@ -115,7 +183,7 @@ local lineAt = -math.huge -- when the last line other than a count began: a coun
 local function freshTake(family)
 	local takes = {}
 	for _, take in ipairs(ns.CalloutTakes(family)) do
-		if ns.VoiceClips[take] then takes[#takes + 1] = take end
+		if takeOf(take) then takes[#takes + 1] = take end
 	end
 	if #takes > 1 then
 		for i = #takes, 1, -1 do
@@ -159,19 +227,28 @@ end
 local function nowPlaying(handle, id)
 	playing, playingId = handle, id
 	T.cancel("ended")
-	if id then T.after("ended", ns.VoiceSeconds[id] or 0, function() nowPlaying(nil, nil) end) end
+	if id then T.after("ended", seconds(id), function() nowPlaying(nil, nil) end) end
 	ns.Emit("Voice")
 end
 
--- Plays a take on the Dialog channel (the player's voice volume): true and its handle, or false, nil and why the client
--- did not play it (a key of `speech.silent`'s reasons, or nil), logged. A guide's line that says another guide line's
--- words plays that line's take (ns.VoiceFiles: one take a sentence since 2026-11-05, tools/voice/voice.mjs).
+-- Plays a line's take (takeOf) on the Dialog channel (the player's voice volume): true and its handle, or false, nil
+-- and why the client did not play it (a key of `speech.silent`'s reasons, or nil), logged; false alone without a take.
+-- A guide's line that says another guide line's words plays that line's take (one take a sentence since 2026-11-05,
+-- tools/voice/voice.mjs).
 local function play(id)
-	local file = ns.VoiceFiles[id] or id
+	local file = takeOf(id)
+	if not file then return false end
 	local willPlay, handle = PlaySoundFile(PATH .. (file:gsub("/", "\\")) .. ".ogg", "Dialog")
 	if willPlay then return true, handle end
 	local why = Speech.Silence()
 	ns.Log("W", "voice %s did not play: %s", id, why or "the client refused the file")
+	if not why then
+		-- the game's sound is on and the client will not play the pack's file (a pack put in or rewritten while the
+		-- game runs, a take gone): the list no longer says what can be heard, so the voice is silent for the session,
+		-- its guide's button goes (Panel.lua, on "Voice") and /qp status says why
+		voice, Speech.state = nil, "unplayable"
+		ns.Emit("Voice")
+	end
 	return false, nil, why
 end
 
@@ -219,8 +296,8 @@ local function readTake(i)
 		stopGuide()
 		return false, why
 	end
-	guide.i, guide.handle, guide.endsAt = i, handle, GetTime() + (ns.VoiceSeconds[id] or 0)
-	T.after("guide", (ns.VoiceSeconds[id] or 0) + (guide.starts[i + 1] and C.callout_gap_s or 0), function()
+	guide.i, guide.handle, guide.endsAt = i, handle, GetTime() + seconds(id)
+	T.after("guide", seconds(id) + (guide.starts[i + 1] and C.callout_gap_s or 0), function()
 		readTake(i + 1)
 	end)
 	return true
@@ -244,7 +321,8 @@ local function resumeGuide()
 	return ok, why
 end
 
--- Plays a line's recording, stopping the line before; false when speech is off or the line has no recording. A line
+-- Plays a line's recording, stopping the line before; false when speech is off or the line has no recording (the
+-- voice pack is not there, or lacks a take of the line's words). A line
 -- said while a move's guide reads holds the guide: the guide's line fades out and the guide goes on from it
 -- callout_gap_s after this one ends, except under a number (`count.<n>`: a rep's, a timer's mark), which plays over the
 -- guide (David, 2026-10-10: "the go all out audio etc. Basically all. Should overlay while lowering the audio of the
@@ -252,7 +330,7 @@ end
 -- sentence is heard as neither, and WoW cannot lower one sound under another). A line the client does not play returns
 -- false and the reason, a key of `speech.silent`'s reasons, or nil.
 function Speech.Say(id)
-	if not (ns.profile and ns.profile.speech) or not ns.VoiceClips[id] then return false end
+	if not (ns.profile and ns.profile.speech) or not takeOf(id) then return false end
 	local hold = guide ~= nil and not guide.paused and not id:find("^count%.")
 	if hold then
 		haltGuide()
@@ -261,7 +339,7 @@ function Speech.Say(id)
 	if playing then StopSound(playing) end
 	local willPlay, handle, why = play(id)
 	nowPlaying(handle, willPlay and id or nil)
-	if hold then T.after("guide", (willPlay and ns.VoiceSeconds[id] or 0) + C.callout_gap_s, resumeGuide) end
+	if hold then T.after("guide", (willPlay and seconds(id) or 0) + C.callout_gap_s, resumeGuide) end
 	if not willPlay then
 		if why then warnSilent() end
 		refused = why and id:find("^move%.") and { id = id, spoken = spoken } or nil
@@ -302,7 +380,7 @@ function Speech.ToggleGuide()
 	if guide and guide.paused and playingId and not playingId:find("^count%.") then
 		-- resumed while a line is said: held until it ends, as a line said over it holds it (Speech.Say)
 		guide.paused, guide.held = nil, true
-		T.after("guide", math.max(0, (ns.VoiceSeconds[playingId] or 0) - (GetTime() - lineAt)) + C.callout_gap_s,
+		T.after("guide", math.max(0, seconds(playingId) - (GetTime() - lineAt)) + C.callout_gap_s,
 			resumeGuide)
 		ns.Emit("Voice")
 		return true
@@ -399,9 +477,10 @@ end
 -- (Figure.Loop; the loop keeps to the same clock, Panel.lua showFigure); nil without the figure's pack. A counted set
 -- is a cardio slot. The switches decide it, never whether the voice is heard: the Running view's number and the count
 -- step's start and most (Panel.lua, Events.lua Lc.CountedBy) keep to it through a silenced game (Speech.Silence), a
--- missing take and a count skipped as late.
+-- missing take and a count skipped as late. Without the voice pack there is no count at all: nothing paces itself to
+-- a voice that cannot speak, so the Running view shows its clock and the dial starts empty.
 function Speech.RepCount(slot)
-	if slot.kind ~= K.rep or not (ns.profile.speech and ns.profile.countReps) then return nil end
+	if slot.kind ~= K.rep or not (ns.profile.speech and ns.profile.countReps) or not pack() then return nil end
 	local beat, ends = ns.Figure.Loop(slot.move)
 	if not beat then return nil end
 	return { beat = beat, ends = ends }
@@ -501,7 +580,7 @@ function follow(p, id, line)
 	if not (ns.profile and ns.profile.speech and ns.state) or playingId ~= line then return end
 	local take, family = calloutTake(p)
 	if not take then return end
-	T.after("callout", (ns.VoiceSeconds[line] or 0) + C.callout_gap_s, function()
+	T.after("callout", seconds(line) + C.callout_gap_s, function()
 		local q = ns.Lifecycle.pump
 		if not (q and q.state == "open" and q.view == "ready" and spoken == id) or next(ns.Lifecycle.holds) then
 			return

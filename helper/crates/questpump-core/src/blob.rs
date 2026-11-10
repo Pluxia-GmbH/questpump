@@ -1,6 +1,8 @@
 //! The profile, the sheet and a feedback message, which travel in chunks (`Bridge.lua` `B.Chunks`): each chunk carries
 //! the payload's total length, then 73 payload bytes; the payload is raw DEFLATE of CBOR, the addon's export codec
-//! (`C_EncodingUtil.CompressString` after `SerializeCBOR`).
+//! (`C_EncodingUtil.CompressString` after `SerializeCBOR`). The client writes every Lua string, a table's key too, as
+//! a CBOR byte string (major type 2), never as a text string (warcraft.wiki.gg, `API_C_EncodingUtil.SerializeCBOR`):
+//! `decode` hands each on as the text it is, which is what every reader here and of the kept values looks for.
 
 use std::collections::HashMap;
 use std::io::Read as _;
@@ -8,6 +10,7 @@ use std::io::Read as _;
 use ciborium::Value;
 
 use crate::codes::StripEvent;
+use crate::lua;
 use crate::strip::Chunk;
 
 /// A payload that arrived whole but does not decode.
@@ -60,7 +63,8 @@ impl Assembler {
 	}
 }
 
-/// Inflates a payload (raw DEFLATE; a zlib stream is read too) and decodes its CBOR.
+/// Inflates a payload (raw DEFLATE; a zlib stream is read too) and decodes its CBOR, its strings as `strings` reads
+/// them.
 ///
 /// # Errors
 /// When the bytes neither inflate nor decode.
@@ -70,12 +74,26 @@ pub fn decode(packed: &[u8]) -> Result<Value, BlobError> {
 		cbor.clear();
 		flate2::read::ZlibDecoder::new(packed).read_to_end(&mut cbor).map_err(BlobError::Inflate)?;
 	}
-	ciborium::from_reader(cbor.as_slice()).map_err(|e| BlobError::Cbor(e.to_string()))
+	ciborium::from_reader(cbor.as_slice()).map(strings).map_err(|e| BlobError::Cbor(e.to_string()))
+}
+
+/// A decoded payload with every byte string, a map's key too, as the Lua string it is (`lua::string`: text when it is
+/// UTF-8), the same value a saved file's reader makes of that string, so a profile the strip brought and one a file
+/// held compare and are written alike.
+fn strings(v: Value) -> Value {
+	match v {
+		Value::Bytes(b) => lua::string(b),
+		Value::Array(a) => Value::Array(a.into_iter().map(strings).collect()),
+		Value::Map(m) => Value::Map(m.into_iter().map(|(k, x)| (strings(k), strings(x))).collect()),
+		Value::Tag(tag, inner) => Value::Tag(tag, Box::new(strings(*inner))),
+		other => other,
+	}
 }
 
 /// A CBOR value as JSON, for the lines and `GET /v1/sheet`: map keys become strings (an integer key its digits), a
-/// map keyed 1 to n (how a Lua sequence may be written) an array, a byte string an array of numbers, a value JSON
-/// cannot hold (NaN, infinity, undefined) null. The phone apps' decoders apply the same rules to an imported export.
+/// map keyed 1 to n (how a Lua sequence may be written) an array, a byte string (`decode` leaves one only where a
+/// string is no UTF-8) an array of numbers, a value JSON cannot hold (NaN, infinity, undefined) null. The phone apps'
+/// decoders apply the same rules to an imported export.
 #[must_use]
 pub fn to_json(v: &Value) -> serde_json::Value {
 	use serde_json::Value as J;

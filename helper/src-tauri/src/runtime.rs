@@ -110,6 +110,7 @@ mod sitting;
 pub(crate) mod sync;
 mod updates;
 mod usage;
+mod work;
 
 use addon::AddonState;
 use ble_link::BleLinkState;
@@ -974,9 +975,22 @@ impl Helper {
 			}
 			Ask::Synced { request, transport, done } => {
 				let SyncRequest {
-					device, client, samples, events, rows, pro_proof, offer_taken, game_offer_at, ..
+					device,
+					client,
+					samples,
+					events,
+					rows,
+					pro_proof,
+					offer_taken,
+					game_offer_at,
+					work,
+					..
 				} = *request;
 				self.device_synced(device, &client);
+				// the device's work state merged before the response, which carries the merged one (slice 67)
+				if let Some(work) = &work {
+					self.desk.work_heard(work);
+				}
 				self.counts_transport(transport);
 				// a watch's 5-s windows are a heart-rate source even without a reading (the stream dropped); a phone has
 				// no heart rate of its own
@@ -1909,6 +1923,7 @@ impl Helper {
 				ui::update(&self.app, |v| {
 					v.computer.folder = ui::Folder::None;
 					v.computer.pack = ui::Pack::NotSeen;
+					v.computer.voice = ui::Pack::NotSeen;
 				});
 			}
 		}
@@ -2696,6 +2711,9 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		games,
 		standing: Standing::default(),
 		sitting,
+		work_hold: None,
+		front: None,
+		back_to: None,
 		pro: pro::Pro::load(&dir, settings.sync.account.as_deref()),
 		sync: sync_link,
 		out: Vec::new(),

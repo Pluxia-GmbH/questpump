@@ -13,8 +13,9 @@ fn is_false(b: &bool) -> bool {
 
 /// How the player trains, as the engine reads it (the phones' `EngineProfile`, DB.lua's profile): the equipment, the
 /// place and the Body switches, the experience question's answer, the moves left out and the opt-in moves checked,
-/// the favourites, the title chosen and "Moves per match" (`matchPace`: `light` or `extreme`, absent for `balanced`;
-/// slice 48), the pace of a pump composed with [`Match`] facts. Every other app pump is Balanced.
+/// the favourites, the title chosen, "Moves per match" (`matchPace`: `light` or `extreme`, absent for `balanced`;
+/// slice 48), the pace of a pump composed with [`Match`] facts, and "Moves per block" (`workPace`, the same values;
+/// slice 67), the pace of a work pump ([`Work`]). Every other app pump is Balanced.
 #[expect(
 	clippy::struct_excessive_bools,
 	reason = "the contract's profile: one switch a field, as the phones' EngineProfile"
@@ -42,6 +43,8 @@ pub struct Profile {
 	pub title: Option<String>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub match_pace: Option<String>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub work_pace: Option<String>,
 }
 
 /// What a pump started from a game's end, or a match picked by hand, composes with (`A.compose`'s `match`, slices 48
@@ -57,11 +60,21 @@ pub struct Match {
 	pub arms: bool,
 }
 
-/// The unfinished moves a pump a match sized carries (`A.compose`'s `rows` and `queue`, docs/plan.md slice 61): the
+/// What a work pump composes with (`A.compose`'s `work`, docs/plan.md slice 67): its place in the set (`block`, 1 to
+/// `work_set_blocks`, the last the long one), which sizes it at "Moves per block" with no all-out window, and whether
+/// it opens on its warm move (the device's sitting clock held `work_warm_min`; present only when true).
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Work {
+	pub block: u8,
+	#[serde(default, skip_serializing_if = "is_false")]
+	pub warm: bool,
+}
+
+/// The unfinished moves a pump that banks carries (`A.compose`'s `rows` and `queue`, docs/plan.md slices 61 and 67): the
 /// owed rows its device may pay (`owed`, row texts as `Session::payable_kept` orders them, which the engine takes
 /// oldest first as the game does, `ns.OwedList`; a `Rider`'s `row` is the place in this list) and every owed row the
-/// game's store keeps (`queue`), on which it is composed as the game composes a quest's pump, so no fresh pick takes a
-/// queued move, also where it may pay none. Empty for every other pump.
+/// game's store keeps with the account's (`queue`), on which it is composed as the game composes a quest's pump, so no
+/// fresh pick takes a queued move, also where it may pay none. Empty for a pump that does not bank.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 pub struct Unfinished {
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -1865,6 +1878,8 @@ pub(crate) struct Compose {
 	pub at: i64,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub r#match: Option<Match>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub work: Option<Work>,
 	#[serde(flatten)]
 	pub unfinished: Unfinished,
 }

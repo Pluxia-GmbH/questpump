@@ -2,9 +2,11 @@
 //! holds the feed's rules, the zip's checks, the record and the swap): the release feed fetched off the loop on the
 //! updater's schedule (`feeds`: 10 s after the start, then hourly, sooner again after a failure) and when the loop asks
 //! (`Checks::now`: the game closed, a game without QuestPump found, the player's Add QuestPump to the game before a
-//! feed came), `addon.json` and `addon.json.sig` from the updater's own `helper-updater` release checked against the
-//! updater's key (`update::pubkey`), each within `feeds::FILE_TIMEOUT`, the zip's address the same release's
-//! `QuestPump-addon.zip`; then, for the install the loop picked, the feed's files staged in the flavour's
+//! feed came), `addon-v2.json` and `addon-v2.json.sig` from the updater's own `helper-updater` release checked against
+//! the updater's key (`update::pubkey`), each within `feeds::FILE_TIMEOUT`, the zip's address the same release's
+//! `QuestPump-addon-v2.zip` (the addon with its voice and figure packs, one zip for every folder; the release's first
+//! feed, `addon.json`, stays there for the apps from before the packs: docs/plan.md slice 71); then, for the install the
+//! loop picked, the feed's files staged in the flavour's
 //! `Interface/.questpump-update/new/` (the same volume as AddOns, outside the folder the client walks) file by file:
 //! each file this computer holds already by its sha256 (the install's own, the desktop app's voice takes), the rest out
 //! of the zip by byte ranges (its end, its central directory, then the spans that hold them; a request that breaks off
@@ -30,12 +32,12 @@ use tokio::sync::mpsc;
 use crate::feeds::{self, Checks};
 use crate::update;
 
-/// The longest `addon.json` or its signature may be.
+/// The longest `addon-v2.json` or its signature may be.
 const MAX_FEED: u64 = 16 << 20;
 /// The files on the release, beside the updater's `latest.json`; the zip keeps its name in the staging folder.
-const FEED: &str = "addon.json";
-const SIG: &str = "addon.json.sig";
-const ZIP: &str = "QuestPump-addon.zip";
+const FEED: &str = "addon-v2.json";
+const SIG: &str = "addon-v2.json.sig";
+const ZIP: &str = "QuestPump-addon-v2.zip";
 /// The staging folder's file that holds the span of the zip fetched last (`by_ranges`).
 const PART: &str = "QuestPump-addon.part";
 /// The longest central directory the zip may have (6,775 entries took 651,563 bytes in 1.0.0).
@@ -51,8 +53,8 @@ pub enum News {
 	/// The zip staged for `addons` (its staging folder), none for a first install that a swap cut short had left
 	/// without QuestPump, which is back, or why not.
 	Staged { addons: PathBuf, result: Result<Option<PathBuf>, Failure> },
-	/// The swap ran: the folders are the new ones, or the old ones are back (and why).
-	Swapped { addons: PathBuf, result: Result<(), Failure> },
+	/// The swap ran: the folders it put in are the new ones, or the old ones are back (and why).
+	Swapped { addons: PathBuf, result: Result<Vec<&'static str>, Failure> },
 	/// The swap did not start: the game or a pump started after the loop let it go (nothing was changed).
 	Held { addons: PathBuf },
 	/// The staging folder of `addons` settled (`addon::recover`): the folders put back, or why not.
@@ -130,14 +132,14 @@ async fn small(client: &reqwest::Client, url: &str) -> anyhow::Result<Vec<u8>> {
 	Ok(body)
 }
 
-/// `addon.json` and its signature, checked, its zip at `zip`.
+/// `addon-v2.json` and its signature, checked, its zip at `zip`.
 async fn fetch(client: &reqwest::Client, feed: &str, sig: &str, zip: &str, key: &str) -> anyhow::Result<Feed> {
 	let body = small(client, feed).await?;
-	let sig = String::from_utf8(small(client, sig).await?).context("addon.json.sig is not text")?;
+	let sig = String::from_utf8(small(client, sig).await?).context("addon-v2.json.sig is not text")?;
 	Ok(addon::verify(&body, &sig, key, zip)?)
 }
 
-/// What the three folders in `addons` hold, off the loop, read in the loop's `epoch`.
+/// What the addon's folders in `addons` hold, off the loop, read in the loop's `epoch`.
 pub fn look(addons: PathBuf, epoch: u64, news: mpsc::UnboundedSender<News>) {
 	tauri::async_runtime::spawn(async move {
 		let at = addons.clone();
@@ -151,10 +153,18 @@ pub fn look(addons: PathBuf, epoch: u64, news: mpsc::UnboundedSender<News>) {
 
 /// Stages the feed for `addons`: a swap cut short before is put right first (`addon::recover`; a first install whose
 /// QuestPump that puts back stops there), then the feed's files come into the staging folder file by file (`staged`),
-/// every check made. `voice` is the desktop app's own folder of the addon's voice takes.
-pub fn stage(addons: PathBuf, feed: Feed, first: bool, voice: Option<PathBuf>, news: mpsc::UnboundedSender<News>) {
+/// every check made. `voice` is the desktop app's own folder of the addon's voice takes, `scope` the folders the job
+/// puts in.
+pub fn stage(
+	addons: PathBuf,
+	feed: Feed,
+	first: bool,
+	voice: Option<PathBuf>,
+	scope: addon::Scope,
+	news: mpsc::UnboundedSender<News>,
+) {
 	tauri::async_runtime::spawn(async move {
-		let result = staged(&addons, &feed, first, voice).await.map_err(|e| Failure::of(&e));
+		let result = staged(&addons, &feed, first, voice, scope).await.map_err(|e| Failure::of(&e));
 		let _ = news.send(News::Staged { addons, result });
 	});
 }
@@ -162,7 +172,13 @@ pub fn stage(addons: PathBuf, feed: Feed, first: bool, voice: Option<PathBuf>, n
 /// The feed's files into the staging folder's `new/`: those this computer holds already (`addon::take_local`), then
 /// the rest out of the zip by byte ranges (`by_ranges`), else, when that cannot finish, the whole zip as before
 /// (`whole`); the TOC's version checked last.
-async fn staged(addons: &Path, feed: &Feed, first: bool, voice: Option<PathBuf>) -> anyhow::Result<Option<PathBuf>> {
+async fn staged(
+	addons: &Path,
+	feed: &Feed,
+	first: bool,
+	voice: Option<PathBuf>,
+	scope: addon::Scope,
+) -> anyhow::Result<Option<PathBuf>> {
 	let staging = addon::staging(addons).context("the game folder has no Interface folder")?;
 	let (at, from) = (addons.to_path_buf(), staging.clone());
 	let back = tokio::task::spawn_blocking(move || addon::recover(&at, &from)).await??;
@@ -175,9 +191,9 @@ async fn staged(addons: &Path, feed: &Feed, first: bool, voice: Option<PathBuf>)
 	tokio::fs::create_dir_all(&staging).await.with_context(|| staging.display().to_string())?;
 	let into = staging.join(addon::NEW);
 	let (local, at, to) = (feed.clone(), addons.to_path_buf(), into.clone());
-	let wanted = tokio::task::spawn_blocking(move || addon::take_local(&local, &at, voice.as_deref(), &to)).await??;
-	let (all, here) = (feed.files.len(), feed.files.len() - wanted.len());
-	log::info!("addon: {}: {here} of its {all} files from this computer", feed.version);
+	let wanted =
+		tokio::task::spawn_blocking(move || addon::take_local(&local, &at, voice.as_deref(), &scope, &to)).await??;
+	log::info!("addon: {}: {} of its {} files to fetch", feed.version, wanted.len(), feed.files.len());
 	let client = client()?;
 	if !wanted.is_empty()
 		&& let Err(e) = by_ranges(&client, feed, &wanted, &staging).await
@@ -343,34 +359,35 @@ async fn download(client: &reqwest::Client, feed: &Feed, to: &Path) -> anyhow::R
 }
 
 /// The swap, off the loop: `check` first (the folders still as the loop found them: no link, no `.git`, and for a
-/// managed install still the record's files), then, unless `held` (the loop's "the game or a pump runs", kept current
+/// managed install still the record's files), which answers the folders to put in as they stand now, then, unless `held` (the loop's "the game or a pump runs", kept current
 /// at every look; none for a first install, which may go in while the game runs) says so now, after the folders' read,
 /// `addon::swap`.
 pub fn swap(
 	addons: PathBuf,
 	staging: PathBuf,
 	held: Option<Arc<AtomicBool>>,
-	check: impl FnOnce(&addon::Tree) -> Result<(), String> + Send + 'static,
+	check: impl FnOnce(&addon::Tree) -> Result<Vec<&'static str>, String> + Send + 'static,
 	news: mpsc::UnboundedSender<News>,
 ) {
 	tauri::async_runtime::spawn(async move {
 		let (at, from) = (addons.clone(), staging);
-		let result = tokio::task::spawn_blocking(move || -> anyhow::Result<bool> {
+		let result = tokio::task::spawn_blocking(move || -> anyhow::Result<Option<Vec<&'static str>>> {
 			let tree = addon::tree(&at)?;
-			check(&tree).map_err(anyhow::Error::msg)?;
+			let folders = check(&tree).map_err(anyhow::Error::msg)?;
 			if held.is_some_and(|held| held.load(Ordering::Relaxed)) {
-				return Ok(false);
+				return Ok(None);
 			}
-			addon::swap(&at, &from).with_context(|| at.display().to_string())?;
-			Ok(true)
+			addon::swap(&at, &from, &folders).with_context(|| at.display().to_string())?;
+			Ok(Some(folders))
 		})
 		.await
 		.map_err(anyhow::Error::from)
 		.and_then(|r| r)
 		.map_err(|e| Failure::of(&e));
 		let _ = news.send(match result {
-			Ok(false) => News::Held { addons },
-			result => News::Swapped { addons, result: result.map(|_| ()) },
+			Ok(None) => News::Held { addons },
+			Ok(Some(folders)) => News::Swapped { addons, result: Ok(folders) },
+			Err(failure) => News::Swapped { addons, result: Err(failure) },
 		});
 	});
 }

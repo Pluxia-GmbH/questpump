@@ -44,6 +44,10 @@
 //! The reminders show on the same window (`reminders.rs`, 2026-10-09): while no match offer stands (its card's Later
 //! or time past too: slice 48's double-check), the reminder that stands, on the main screen, with the offer's soft
 //! sound and never "Match over."; its Start opens the Quick pump at Ready, its Later and × end the reminder.
+//!
+//! Work mode's ask never shows here: its pump opens itself in front, as "Open the pump after each match" opens a
+//! match's (slice 67, `questpump-desk` `work.rs` `Desk::work_open`; David, 2026-11-10; the card showed the ask with
+//! Start and Later until then).
 
 use std::collections::HashMap;
 
@@ -357,11 +361,18 @@ fn open(app: &AppHandle, config: &WindowConfig, spot: Spot) {
 /// macOS: the window in front of the others on its screen, the app left inactive and the window never key.
 #[cfg(target_os = "macos")]
 fn order_in(window: &WebviewWindow, _spot: Spot) -> Result<(), String> {
+	order_front(window)
+}
+
+/// macOS: a window of QuestPump's in front of the other apps' windows without QuestPump being the active app (the
+/// card; the main window where macOS refused to make QuestPump active, `windows::forward`). On the main thread.
+#[cfg(target_os = "macos")]
+pub(super) fn order_front(window: &WebviewWindow) -> Result<(), String> {
 	use objc2::msg_send;
 	use objc2::runtime::AnyObject;
 	let ns_window: *mut AnyObject = window.ns_window().map_err(|e| e.to_string())?.cast();
-	// SAFETY: `ns_window` is the card's live NSWindow (Tauri hands it out while the window exists) and this runs on the
-	// main thread; orderFrontRegardless takes nothing and returns nothing.
+	// SAFETY: `ns_window` is the window's live NSWindow (Tauri hands it out while the window exists) and this runs on
+	// the main thread; orderFrontRegardless takes nothing and returns nothing.
 	unsafe {
 		let () = msg_send![ns_window, orderFrontRegardless];
 	}

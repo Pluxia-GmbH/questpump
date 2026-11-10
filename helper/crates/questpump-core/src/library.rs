@@ -8,7 +8,8 @@
 //! unfinished list's cap, `OwedMove::of`), the ladders that lost their first rung (`read_rung`: the rung a
 //! catch-up's move row takes from its owed row, `Session::catch_up`), each move's body part (`part`: the spread of
 //! a catch-up's owed moves, `Session::payable_kept`) and the times a row from outside the helper may carry
-//! (`row_timely`: every store's intake, `Session::keep`).
+//! (`row_timely`: every store's intake, `Session::keep`), and since slice 67 the sitting clock's pause
+//! (`sitting::away_s`), work mode's tunables (`work::tunables`) and the account's bank numbers (`session::bank_quest`).
 
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
@@ -53,6 +54,21 @@ pub(crate) struct Constants {
 	pub row_ahead_s: i64,
 	/// How far past it a row that floors or locks the stores may lie, in seconds (`row_timely`).
 	pub row_ahead_floor_s: i64,
+	/// The seconds of no input (or between two looks) after which the sitting clock starts again, and with it the work
+	/// clock's presence (`sitting::away_s`, slice 67).
+	pub sit_away_s: i64,
+	/// Work mode's (slice 67, `work::Tunables`): Every's default and its choices in minutes, the pumps of a set, the
+	/// seconds without input at which a due work pump asks and after which it asks anyway, and the sitting minutes
+	/// from which it opens on its warm move.
+	pub work_every_min: u16,
+	pub work_every_choices: Vec<u16>,
+	pub work_set_blocks: u8,
+	pub work_moment_s: i64,
+	pub work_late_s: i64,
+	pub work_warm_min: i64,
+	/// The least bank number, which an owed row of the account's unfinished list carries in its questID
+	/// (`session::bank_quest`, slice 67).
+	pub bank_quest_min: u32,
 }
 
 #[derive(Deserialize)]

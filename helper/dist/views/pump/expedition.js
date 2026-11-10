@@ -64,7 +64,7 @@ function musclesSaid(done) {
 }
 
 /** The timed pump card of the Result's expedition: its place's words and template (its scene's key; Home's id is its
- * template's), and the headline's facts. */
+ * template's, and work mode's none, so its card takes the fallback scene), and the headline's facts. */
 function card(done) {
 	return expeditionCard({minutes: done.minutes, place: placeName(done.place), scene: done.place.template ?? done.place.id,
 		moves: done.moves, records: done.records, colour: done.colour, record: done.record, longest: done.longest});

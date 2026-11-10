@@ -1417,6 +1417,7 @@ end
 
 -- The guide's button for the move on (`moveId`), once its guide has a take.
 local function renderGuide(b, moveId)
+	b.move = moveId
 	b:SetShown(#ns.Speech.GuideTakes(moveId) > 0)
 	guideArt(b)
 end
@@ -4376,8 +4377,9 @@ end
 
 -- How many moves per quest: the three paces as tiles (one, two or three key poses; the name with its count of moves),
 -- the strength training so far while it is asked (Setup.AsksExperience; a push-up from the wall to the floor beside
--- each answer, its name), the voice's "Count reps aloud" as a row, and before the start the safety note, word for word,
--- under them.
+-- each answer, its name), when pumps ask as two tiles (Lc.AskWhen, slice 70: at the turn-in or on the next flight; the
+-- General page's row and its tooltip's words), the voice's "Count reps aloud" as a row, and before the start the
+-- safety note, word for word, under them.
 function SU.Hard(s)
 	local v = Kit.Page(s, L["ui.setup.hard"])
 	v.paces = {}
@@ -4426,6 +4428,24 @@ function SU.Hard(s)
 		c.value = key
 		v.exp[i] = c
 	end
+	v.askHead = Kit.Section(v, L["settings.askWhen"])
+	v.ask = {}
+	local half, gap = Kit.Grid(2, TL.TEXT)
+	v.askGap = gap
+	for i, key in ipairs(Lc.ASK_WHEN) do
+		local c = Kit.Choice(v, half, 44, function()
+			if Lc.AskWhen() == key then return end
+			Style.Play("checkOn")
+			ns.Settings.Set("askWhen", key)
+		end, Kit.Tip(L["settings.askWhen"], L["settings.askWhen.tip"]))
+		c.name = Kit.Text(c, "bodyWhite", "LEFT", nil, half - 12 - 12 - 30)
+		c.name:SetPoint("LEFT", 12, 0)
+		c.name:SetText(L["settings.askWhen." .. key])
+		c.box = Kit.Box(c, 22)
+		c.box:SetPoint("RIGHT", -12, 0)
+		c.value = key
+		v.ask[i] = c
+	end
 	v.voiceHead = Kit.Section(v, L["settings.speech"])
 	v.voice = Kit.Choice(v, TL.TEXT, 44, function()
 		local on = ns.profile.countReps ~= true
@@ -4470,6 +4490,17 @@ function SU.RenderHard(_, v)
 		end
 		y = y + 24 + expH + 18
 	end
+	Kit.At(v.askHead, v, y)
+	local askWhen, askH = Lc.AskWhen(), 44
+	for _, c in ipairs(v.ask) do
+		Kit.Choose(c, askWhen == c.value)
+		askH = math.max(askH, c.name:GetStringHeight() + 12)
+	end
+	for i, c in ipairs(v.ask) do
+		c:SetHeight(askH)
+		Kit.At(c, v, y + 24, (i - 1) * (c:GetWidth() + v.askGap))
+	end
+	y = y + 24 + askH + 18
 	Kit.At(v.voiceHead, v, y)
 	Kit.Choose(v.voice, ns.profile.countReps == true)
 	v.voice:SetHeight(math.max(44, v.voice.name:GetStringHeight() + 12))
@@ -4679,6 +4710,9 @@ ns.On("Voice", function()
 	for _, name in ipairs({ "ready", "countdown", "running" }) do
 		local b = F.views[name] and F.views[name].guide
 		if b then
+			-- a guide whose takes went meanwhile (the client would not play the voice pack's file: Speech.lua play)
+			-- takes its button with it
+			if b.move and b:IsShown() and #ns.Speech.GuideTakes(b.move) == 0 then b:Hide() end
 			guideArt(b)
 			if GameTooltip:IsOwned(b) then guideTip(b) end
 		end

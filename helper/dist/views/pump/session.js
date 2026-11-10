@@ -3,7 +3,7 @@
 // and instants; the stage a change brings takes the keys and the focus (its primary), with the keys' half-second guard
 // again, Enter (and Space where the game's presses it) pressing its primary also where a click left the focus on no
 // control (`pressPrimary`), and a window a stage opened closes as the stage moves on. Big view (the countdown, a
-// running move, the timed ask, the count on its dial, a hold's longer ask, the pour) has the window's own full screen
+// running move, the timed ask, the count on its dial, a hold's longer ask, a pose's ask, the pour) has the window's own full screen
 // beside the steps, its toggle showing the window as it is now (`shell`'s `fullscreen_now`) and sent through the pump
 // (`pump.fullscreen`), so the pump's end leaves a full screen it put on.
 // The move's one figure plays from its Ready view through the countdown, the run and its count (Big view's PumpStage),

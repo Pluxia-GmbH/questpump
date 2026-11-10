@@ -1,0 +1,149 @@
+{
+  "about": "The one safety text of the store listings in the EU's 24 official languages (docs/tasks.md, \"Legal minimum\" and \"The listing's words\"; GPSR Art. 9(7) and 19(d): the safety information in the offer, in a language the consumers of each Member State easily understand). Each language holds the heading word for Safety, the safety text, the maker line and the contact line. English (en) is the original: the safety text is the add-on's L[\"safety.note\"] and contract/sheet.json's safety, the maker and the contact line are site/src/components/SafetyNote.astro's, and apple/fastlane/metadata/en-US/description.txt carries all four. The other 23 are translations made on 2026-11-10 without a native speaker's review: each keeps every symptom and condition, \"that day\" and \"first\", in the formal register of a consumer safety notice in its language, adds and drops no claim, and keeps the company's name, its address and the email address as they are (the country's name alone is translated). \"clinician\" is the word for a doctor in each, and \"a session\" the everyday word for an exercise session. 22 of the 24 stand in a listing, every language a Member State requires: Irish (ga) and Maltese (mt) are placed in none (ruled 2026-11-10; tools/store/locales.py's docstring has the sources), since Ireland's regulations ask for English (S.I. No. 726 of 2024, regulation 5) and English is relied on for Malta, which is not established at a primary source and David's to overrule; both translations stay here, since Malta's answer may change. The one source for tools/store/locales.py, which writes the App Store's localized listing folders (apple/fastlane/metadata/<locale>/) and Google Play's blocks (docs/store/play-listing-languages.md) and holds each to this file; after a change here, run `python3 -B tools/store/locales.py`.",
+  "languages": {
+    "bg": {
+      "heading": "Безопасност",
+      "safety": "Това е игра, а не медицински съвет. Спрете и потърсете помощ при болка в гърдите, припадане, необичаен задух или учестено сърцебиене. При силна мускулна болка, оток или тъмна урина след тренировка потърсете лекар още същия ден. Първо се консултирайте с лекар, ако имате сърдечно, белодробно, бъбречно или метаболитно заболяване или високо кръвно налягане, ако сте бременна или наскоро сте претърпели операция.",
+      "maker": "QuestPump е създаден от Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Швейцария.",
+      "contact": "Имате въпроси, проблем или нараняване, за което да съобщите? Пишете на contact@questpump.com."
+    },
+    "cs": {
+      "heading": "Bezpečnost",
+      "safety": "Toto je hra, ne lékařská rada. Při bolesti na hrudi, mdlobách, neobvyklé dušnosti nebo bušení srdce přestaňte a vyhledejte pomoc. Silná bolest svalů, otok nebo tmavá moč po cvičení vyžadují návštěvu lékaře ještě týž den. Nejprve se poraďte s lékařem, pokud máte onemocnění srdce, plic, ledvin nebo metabolické onemocnění či vysoký krevní tlak, jste těhotná nebo jste po nedávné operaci.",
+      "maker": "QuestPump vytvořila společnost Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Švýcarsko.",
+      "contact": "Máte dotaz, problém nebo chcete nahlásit zranění? Napište na contact@questpump.com."
+    },
+    "da": {
+      "heading": "Sikkerhed",
+      "safety": "Et spil, ikke lægelig rådgivning. Stop, og søg hjælp ved brystsmerter, besvimelse, usædvanlig åndenød eller hjertebanken. Stærke muskelsmerter, hævelse eller mørk urin efter en træning kræver, at du søger læge samme dag. Spørg først en læge, hvis du har en hjerte-, lunge-, nyre- eller stofskiftesygdom eller forhøjet blodtryk, er gravid eller for nylig er blevet opereret.",
+      "maker": "QuestPump er lavet af Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Schweiz.",
+      "contact": "Har du spørgsmål, et problem eller en skade, du vil indberette? Skriv til contact@questpump.com."
+    },
+    "de": {
+      "heading": "Sicherheit",
+      "safety": "Ein Spiel, keine medizinische Beratung. Hören Sie auf und holen Sie Hilfe bei Brustschmerzen, Ohnmacht, ungewöhnlicher Atemnot oder Herzrasen. Starke Muskelschmerzen, Schwellungen oder dunkler Urin nach einer Trainingseinheit erfordern noch am selben Tag einen Arztbesuch. Holen Sie vorher ärztlichen Rat ein, wenn Sie eine Herz-, Lungen-, Nieren- oder Stoffwechselerkrankung oder Bluthochdruck haben, schwanger sind oder vor Kurzem operiert wurden.",
+      "maker": "Hersteller von QuestPump: Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Schweiz.",
+      "contact": "Fragen, ein Problem oder eine Verletzung zu melden? Schreiben Sie an contact@questpump.com."
+    },
+    "el": {
+      "heading": "Ασφάλεια",
+      "safety": "Παιχνίδι, όχι ιατρική συμβουλή. Σταματήστε και ζητήστε βοήθεια σε περίπτωση πόνου στο στήθος, λιποθυμίας, ασυνήθιστης δύσπνοιας ή ταχυπαλμίας. Έντονος μυϊκός πόνος, πρήξιμο ή σκούρα ούρα μετά από μια προπόνηση απαιτούν επίσκεψη σε γιατρό την ίδια ημέρα. Συμβουλευτείτε πρώτα γιατρό αν έχετε καρδιακή, πνευμονική, νεφρική ή μεταβολική νόσο ή υψηλή αρτηριακή πίεση, αν είστε έγκυος ή αν υποβληθήκατε πρόσφατα σε χειρουργική επέμβαση.",
+      "maker": "Το QuestPump κατασκευάζεται από την Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Ελβετία.",
+      "contact": "Έχετε ερωτήσεις, κάποιο πρόβλημα ή έναν τραυματισμό να αναφέρετε; Γράψτε στο contact@questpump.com."
+    },
+    "en": {
+      "heading": "Safety",
+      "safety": "A game, not medical advice. Stop and get help for chest pain, fainting, unusual breathlessness or a racing heart. Severe muscle pain, swelling or dark urine after a session needs a doctor that day. Ask a clinician first if you have heart, lung, kidney or metabolic disease or high blood pressure, are pregnant or had recent surgery.",
+      "maker": "QuestPump is made by Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Switzerland.",
+      "contact": "Questions, a problem or an injury to report? Write to contact@questpump.com."
+    },
+    "es": {
+      "heading": "Seguridad",
+      "safety": "Un juego, no un consejo médico. Pare y busque ayuda en caso de dolor en el pecho, desmayo, falta de aire inusual o palpitaciones. Un dolor muscular intenso, hinchazón u orina oscura después de una sesión requieren acudir a un médico ese mismo día. Consulte antes a un médico si tiene una enfermedad cardíaca, pulmonar, renal o metabólica o hipertensión, si está embarazada o si se ha sometido recientemente a una operación.",
+      "maker": "QuestPump ha sido creado por Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Suiza.",
+      "contact": "¿Tiene preguntas, un problema o una lesión que comunicar? Escriba a contact@questpump.com."
+    },
+    "et": {
+      "heading": "Ohutus",
+      "safety": "See on mäng, mitte meditsiiniline nõuanne. Lõpetage ja otsige abi, kui tekib valu rinnus, minestus, ebatavaline õhupuudus või südamepekslemine. Kui pärast treeningut tekib tugev lihasvalu, turse või tume uriin, pöörduge samal päeval arsti poole. Pidage enne nõu arstiga, kui teil on südame-, kopsu-, neeru- või ainevahetushaigus või kõrge vererõhk, kui olete rase või teil on hiljuti olnud operatsioon.",
+      "maker": "QuestPumpi tootja on Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Šveits.",
+      "contact": "Kas teil on küsimusi, probleem või soovite teatada vigastusest? Kirjutage aadressil contact@questpump.com."
+    },
+    "fi": {
+      "heading": "Turvallisuus",
+      "safety": "Tämä on peli, ei lääketieteellinen neuvo. Lopeta ja hae apua, jos sinulla on rintakipua, pyörtymistä, epätavallista hengenahdistusta tai sydämentykytystä. Kova lihaskipu, turvotus tai tumma virtsa harjoituksen jälkeen vaatii lääkärissä käynnin samana päivänä. Kysy ensin lääkäriltä, jos sinulla on sydän-, keuhko-, munuais- tai aineenvaihduntasairaus tai korkea verenpaine, jos olet raskaana tai sinut on hiljattain leikattu.",
+      "maker": "QuestPumpin valmistaja on Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Sveitsi.",
+      "contact": "Onko sinulla kysyttävää, ongelma tai ilmoitettava loukkaantuminen? Kirjoita osoitteeseen contact@questpump.com."
+    },
+    "fr": {
+      "heading": "Sécurité",
+      "safety": "Un jeu, pas un avis médical. Arrêtez-vous et demandez de l'aide en cas de douleur dans la poitrine, d'évanouissement, d'essoufflement inhabituel ou de palpitations. Une douleur musculaire intense, un gonflement ou des urines foncées après une séance nécessitent de consulter un médecin le jour même. Consultez d'abord un médecin si vous avez une maladie cardiaque, pulmonaire, rénale ou métabolique ou de l'hypertension, si vous êtes enceinte ou si vous avez récemment subi une opération.",
+      "maker": "QuestPump est conçu par Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Suisse.",
+      "contact": "Des questions, un problème ou une blessure à signaler ? Écrivez à contact@questpump.com."
+    },
+    "ga": {
+      "heading": "Sábháilteacht",
+      "safety": "Cluiche atá ann, ní comhairle leighis. Stad agus faigh cabhair má bhíonn pian chliabhraigh ort, má thiteann tú i laige, má bhíonn giorra anála neamhghnách ort nó má bhíonn do chroí ag bualadh go han-tapa. Má thagann pian dhian sna matáin, at nó fual dorcha ort tar éis seisiúin, téigh chuig dochtúir an lá céanna. Labhair le dochtúir ar dtús má tá galar croí, scamhóg nó duán, galar meitibileach nó brú fola ard ort, má tá tú ag iompar clainne nó má bhí obráid agat le déanaí.",
+      "maker": "Tá QuestPump déanta ag Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, an Eilvéis.",
+      "contact": "Ceisteanna, fadhb nó gortú le tuairisciú? Scríobh chuig contact@questpump.com."
+    },
+    "hr": {
+      "heading": "Sigurnost",
+      "safety": "Ovo je igra, a ne medicinski savjet. Prestanite i potražite pomoć u slučaju boli u prsima, nesvjestice, neuobičajenog nedostatka zraka ili lupanja srca. Jaka bol u mišićima, oteklina ili tamna mokraća nakon vježbanja zahtijevaju posjet liječniku isti dan. Najprije se posavjetujte s liječnikom ako imate bolest srca, pluća, bubrega ili metaboličku bolest ili visoki krvni tlak, ako ste trudni ili ste nedavno imali operaciju.",
+      "maker": "QuestPump izrađuje tvrtka Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Švicarska.",
+      "contact": "Imate pitanja, problem ili želite prijaviti ozljedu? Pišite na contact@questpump.com."
+    },
+    "hu": {
+      "heading": "Biztonság",
+      "safety": "Ez játék, nem orvosi tanács. Hagyja abba, és kérjen segítséget mellkasi fájdalom, ájulás, szokatlan légszomj vagy heves szívdobogás esetén. Edzés utáni erős izomfájdalom, duzzanat vagy sötét vizelet esetén még aznap forduljon orvoshoz. Előbb kérje ki orvos tanácsát, ha szív-, tüdő-, vese- vagy anyagcsere-betegsége vagy magas vérnyomása van, ha várandós, vagy ha nemrég műtötték.",
+      "maker": "A QuestPump gyártója a Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Svájc.",
+      "contact": "Kérdése van, problémát vagy sérülést jelentene? Írjon a contact@questpump.com címre."
+    },
+    "it": {
+      "heading": "Sicurezza",
+      "safety": "Un gioco, non un parere medico. Si fermi e chieda aiuto in caso di dolore al petto, svenimento, affanno insolito o battito cardiaco accelerato. Forti dolori muscolari, gonfiore o urine scure dopo una sessione richiedono una visita medica il giorno stesso. Consulti prima un medico se soffre di malattie cardiache, polmonari, renali o metaboliche o di pressione alta, se è in gravidanza o ha subito di recente un intervento chirurgico.",
+      "maker": "QuestPump è realizzato da Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Svizzera.",
+      "contact": "Domande, un problema o un infortunio da segnalare? Scriva a contact@questpump.com."
+    },
+    "lt": {
+      "heading": "Sauga",
+      "safety": "Tai žaidimas, o ne medicininis patarimas. Sustokite ir kreipkitės pagalbos, jei skauda krūtinę, alpstate, neįprastai dūstate arba labai greitai plaka širdis. Jei po treniruotės stipriai skauda raumenis, atsirado patinimas arba patamsėjo šlapimas, tą pačią dieną kreipkitės į gydytoją. Pirmiausia pasitarkite su gydytoju, jei sergate širdies, plaučių, inkstų ar medžiagų apykaitos liga arba turite aukštą kraujospūdį, esate nėščia arba jums neseniai atlikta operacija.",
+      "maker": "QuestPump gamina Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Šveicarija.",
+      "contact": "Turite klausimų, problemą ar norite pranešti apie sužalojimą? Rašykite adresu contact@questpump.com."
+    },
+    "lv": {
+      "heading": "Drošība",
+      "safety": "Šī ir spēle, nevis medicīnisks padoms. Pārtrauciet un meklējiet palīdzību, ja rodas sāpes krūtīs, ģībonis, neparasts elpas trūkums vai sirdsklauves. Ja pēc treniņa rodas stipras muskuļu sāpes, pietūkums vai tumšs urīns, tajā pašā dienā vērsieties pie ārsta. Vispirms konsultējieties ar ārstu, ja jums ir sirds, plaušu, nieru vai vielmaiņas slimība vai augsts asinsspiediens, ja esat grūtniece vai jums nesen veikta operācija.",
+      "maker": "QuestPump ražotājs ir Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Šveice.",
+      "contact": "Vai jums ir jautājumi, problēma vai jāziņo par traumu? Rakstiet uz contact@questpump.com."
+    },
+    "mt": {
+      "heading": "Sigurtà",
+      "safety": "Din hija logħba, mhux parir mediku. Ieqaf u fittex l-għajnuna jekk ikollok uġigħ fis-sider, ħass ħażin, qtugħ ta' nifs mhux tas-soltu jew taħbit tal-qalb mgħaġġel. Uġigħ qawwi fil-muskoli, nefħa jew awrina skura wara sessjoni jeħtieġu tabib dakinhar stess. L-ewwel staqsi lil tabib jekk għandek mard tal-qalb, tal-pulmun, tal-kliewi jew metaboliku jew pressjoni għolja, jekk inti tqila jew kellek operazzjoni dan l-aħħar.",
+      "maker": "QuestPump huwa magħmul minn Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, l-Iżvizzera.",
+      "contact": "Għandek mistoqsijiet, problema jew korriment li trid tirrapporta? Ikteb lil contact@questpump.com."
+    },
+    "nl": {
+      "heading": "Veiligheid",
+      "safety": "Een spel, geen medisch advies. Stop en zoek hulp bij pijn op de borst, flauwvallen, ongewone kortademigheid of hartkloppingen. Ga bij hevige spierpijn, zwelling of donkere urine na een sessie dezelfde dag nog naar een arts. Raadpleeg eerst een arts als u een hart-, long-, nier- of stofwisselingsziekte of hoge bloeddruk heeft, zwanger bent of onlangs bent geopereerd.",
+      "maker": "QuestPump wordt gemaakt door Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Zwitserland.",
+      "contact": "Vragen, een probleem of een blessure te melden? Schrijf naar contact@questpump.com."
+    },
+    "pl": {
+      "heading": "Bezpieczeństwo",
+      "safety": "To gra, a nie porada medyczna. W razie bólu w klatce piersiowej, omdlenia, nietypowej duszności lub kołatania serca należy przerwać i poszukać pomocy. Silny ból mięśni, obrzęk lub ciemny mocz po sesji wymagają wizyty u lekarza tego samego dnia. Najpierw należy skonsultować się z lekarzem w przypadku choroby serca, płuc, nerek lub choroby metabolicznej albo nadciśnienia, ciąży lub niedawno przebytej operacji.",
+      "maker": "Producentem QuestPump jest Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Szwajcaria.",
+      "contact": "Pytania, problem lub uraz do zgłoszenia? Prosimy pisać na adres contact@questpump.com."
+    },
+    "pt": {
+      "heading": "Segurança",
+      "safety": "Um jogo, não um conselho médico. Pare e procure ajuda em caso de dor no peito, desmaio, falta de ar invulgar ou batimento cardíaco acelerado. Dores musculares intensas, inchaço ou urina escura após uma sessão exigem uma consulta médica no próprio dia. Consulte primeiro um médico se tiver uma doença cardíaca, pulmonar, renal ou metabólica ou tensão arterial alta, se estiver grávida ou se tiver feito uma cirurgia recentemente.",
+      "maker": "O QuestPump é feito pela Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Suíça.",
+      "contact": "Tem perguntas, um problema ou uma lesão a comunicar? Escreva para contact@questpump.com."
+    },
+    "ro": {
+      "heading": "Siguranță",
+      "safety": "Un joc, nu un sfat medical. Opriți-vă și cereți ajutor în caz de durere în piept, leșin, lipsă neobișnuită de aer sau bătăi rapide ale inimii. Durerile musculare severe, umflăturile sau urina închisă la culoare după o sesiune necesită consult medical în aceeași zi. Consultați mai întâi un medic dacă aveți o boală de inimă, de plămâni, de rinichi sau metabolică ori tensiune arterială mare, dacă sunteți însărcinată sau ați avut recent o operație.",
+      "maker": "QuestPump este realizat de Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Elveția.",
+      "contact": "Aveți întrebări, o problemă sau o accidentare de raportat? Scrieți la contact@questpump.com."
+    },
+    "sk": {
+      "heading": "Bezpečnosť",
+      "safety": "Toto je hra, nie lekárska rada. Pri bolesti na hrudi, mdlobách, nezvyčajnej dýchavičnosti alebo búšení srdca prestaňte a vyhľadajte pomoc. Silná bolesť svalov, opuch alebo tmavý moč po cvičení si vyžadujú návštevu lekára ešte v ten istý deň. Najprv sa poraďte s lekárom, ak máte ochorenie srdca, pľúc, obličiek alebo metabolické ochorenie či vysoký krvný tlak, ste tehotná alebo ste po nedávnej operácii.",
+      "maker": "QuestPump vytvorila spoločnosť Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Švajčiarsko.",
+      "contact": "Máte otázku, problém alebo chcete nahlásiť zranenie? Napíšte na contact@questpump.com."
+    },
+    "sl": {
+      "heading": "Varnost",
+      "safety": "To je igra, ne zdravniški nasvet. Prenehajte in poiščite pomoč ob bolečini v prsih, omedlevici, nenavadni zasoplosti ali razbijanju srca. Huda bolečina v mišicah, oteklina ali temen urin po vadbi zahtevajo obisk zdravnika še isti dan. Najprej se posvetujte z zdravnikom, če imate bolezen srca, pljuč, ledvic ali presnovno bolezen ali visok krvni tlak, če ste noseči ali ste bili nedavno operirani.",
+      "maker": "QuestPump izdeluje Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Švica.",
+      "contact": "Imate vprašanja, težavo ali želite prijaviti poškodbo? Pišite na contact@questpump.com."
+    },
+    "sv": {
+      "heading": "Säkerhet",
+      "safety": "Ett spel, inte medicinsk rådgivning. Sluta och sök hjälp vid bröstsmärta, svimning, ovanlig andfåddhet eller hjärtklappning. Svår muskelsmärta, svullnad eller mörk urin efter ett pass kräver att du söker läkare samma dag. Fråga först en läkare om du har hjärt-, lung-, njur- eller ämnesomsättningssjukdom eller högt blodtryck, är gravid eller nyligen har opererats.",
+      "maker": "QuestPump görs av Pluxia GmbH, c/o RB Swiss Group GmbH, Blegistrasse 7, 6340 Baar, Schweiz.",
+      "contact": "Har du frågor, ett problem eller en skada att rapportera? Skriv till contact@questpump.com."
+    }
+  }
+}

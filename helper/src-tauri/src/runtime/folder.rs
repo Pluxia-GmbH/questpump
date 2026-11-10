@@ -77,17 +77,17 @@ fn grant_note(outcome: &Outcome) -> Option<AdminNote> {
 	}
 }
 
-/// The move figures' line on This computer ("Exercise animations").
-fn pack_line(addons: &Path) -> ui::Pack {
+/// The move figures' line on This computer ("Exercise animations") and the voice pack's ("Voice").
+fn pack_lines(addons: &Path) -> (ui::Pack, ui::Pack) {
 	let state = install::addons_state(addons);
 	if state.questpump.is_none() {
-		return ui::Pack::Absent;
+		return (ui::Pack::Absent, ui::Pack::Absent);
 	}
-	match state.pack {
-		Pack::Same => ui::Pack::Installed,
+	let line = |pack| match pack {
+		Pack::Installed => ui::Pack::Installed,
 		Pack::Missing => ui::Pack::Missing,
-		Pack::Other { pack, addon } => ui::Pack::Other { pack, addon },
-	}
+	};
+	(line(state.pack), line(state.voice))
 }
 
 impl Helper {
@@ -95,10 +95,11 @@ impl Helper {
 	pub(super) fn show_folder(&mut self, addons: &Path) {
 		self.shown_folder = Some(addons.to_path_buf());
 		let folder = Folder::Found { path: addons.display().to_string(), label: install::label(addons) };
-		let pack = pack_line(addons);
+		let (pack, voice) = pack_lines(addons);
 		ui::update(&self.app, |v| {
 			v.computer.folder = folder;
 			v.computer.pack = pack;
+			v.computer.voice = voice;
 		});
 	}
 

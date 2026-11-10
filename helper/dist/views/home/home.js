@@ -10,7 +10,9 @@
 // computer for it and the game's window on the Games tab for the others; nothing before the first game played); the
 // standing figure taking the room the blocks leave, the streak (from the least of `streak_milestones`, a 7-day streak,
 // with its round Share, which opens the Share window on the streak card as it stands; slice 45; the whole board opens
-// the streak page since slice 51), under Up next (2026-11-03) the embers row (slice 55: Cardio moves today 2 of 3 with
+// the streak page since slice 51), work mode's card under it (slice 67, kit/qp-work-card.js: Start, the ring and
+// Stop, or Pump now and Later while a work pump is due, the foot's primary quiet meanwhile), under Up next
+// (2026-11-03) the embers row (slice 55: Cardio moves today 2 of 3 with
 // the cardio step's move's tile and three marks, the phones' pump.tab's, starting that move at once, the step's card
 // where Rust refuses the start; until 2026-11-03 it opened the card) and the step-up closest to done of all the ladders
 // (2026-11-02: the `book` topic's `closest`, questpump-desk/src/book.rs, its key line over the ring's share, book.js `nextRow`,
@@ -32,10 +34,11 @@
 // failed the line that pumps could not start, beside the Menu's report for help; while the engine folds the primary
 // alone, busy. The TopBar's round place button (2026-11-03, Rapha: the place "via an icon ... top right") shows the
 // place in use's own glyph from the `places` topic, which Rust changes at a start or an end of a time of the places'
-// schedule, and opens the places window. The pumps are DESK-PUMP's intents: `pump.quick`, `pump.catchup` and
-// `pump.start {kind, offer}` (an offer's Start: Ready at the offer's size since 2026-10-28, the Start a pump window
-// preset to its kind until then), this window's own click, never the card's `outside`; a banked move's Skip is
-// `home.skip`, the cardio row's start `pump.move` from `home`.
+// schedule, and opens the places window; while work mode runs (slice 67) it shows Work mode's (the desk glyph, read as
+// Place: Work mode) and opens the Work mode page, since every pump then takes work mode's own equipment. The pumps are
+// DESK-PUMP's intents: `pump.quick`, `pump.catchup` and `pump.start {kind, offer}` (an offer's Start: Ready at the
+// offer's size since 2026-10-28, the Start a pump window preset to its kind until then), this window's own click, never
+// the card's `outside`; a banked move's Skip is `home.skip`, the cardio row's start `pump.move` from `home`.
 
 /** What the recent games count in each span (`home.span`): the label over them and what a screen reader hears after a
  * game's name, and the count a game's tile shows. */
@@ -44,7 +47,7 @@ const SPANS = {
 	all: {label: "desk.home.games.all", count: "desk.home.games.count.all", of: (game) => game.all},
 };
 
-import {call, intent} from "../../lib/bridge.js";
+import {call, get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {keepFocus} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
@@ -52,13 +55,14 @@ import {goTop, openGame, openLadder, openMenu, openStep, push, register} from ".
 import {chapterWords, heroSpoken, movesLabel, number, stripSpoken, unit} from "../../lib/saga.js";
 import {openShare, streakCard} from "../../lib/share.js";
 import {h} from "../../kit/element.js";
+import {workDue} from "../../kit/qp-work-card.js";
 import {gameName, place} from "../games/windows.js";
 import {addonLine} from "../menu/computer.js";
 import {reportButton} from "../menu/menu.js";
 import {pairWindow} from "../menu/phones.js";
 import {page, watch, words} from "../page.js";
 import {openPlaces} from "../places/places.js";
-import {inUse, placeName} from "../places/words.js";
+import {placeName, placeShown} from "../places/words.js";
 import {loading, nextRow, rowsCard} from "../book/book.js";
 import {startMove} from "../book/card.js";
 import {lookup} from "../book/common.js";
@@ -244,35 +248,36 @@ function catchUp(home) {
 /** The Quick pump's button words and its start (Rust's gates hold it). */
 const QUICK = {label: () => t("pump.quick"), go: () => intent("pump.quick").catch(console.error)};
 
-/** The foot's buttons for the primary Rust chose: the gold one first, then the quiet ways. */
-function foot(home) {
+/** The primary Rust chose as its words, its start and its glyph. */
+function primaryOf(home) {
+	const p = home.primary;
+	switch (p.kind) {
+		case "grant":
+			return {label: t(p.asked ? "desk.menu.computer.screen.settings" : "desk.menu.computer.screen.allow"),
+				go: () => call("allow_screen").catch(console.error)};
+		case "firewall":
+			return {label: t("desk.menu.phones.firewall.allow"), go: () => call("allow_network").catch(console.error)};
+		case "catchup":
+			return {label: t("pump.waiting.catchup"), go: () => intent("pump.catchup").catch(console.error)};
+		case "offer":
+			return offerStart(home.offer);
+		default:
+			return {label: QUICK.label(), go: QUICK.go, glyph: "action_pump"};
+	}
+}
+
+/** The foot's buttons for the primary Rust chose: the gold one first, then the quiet ways; with `quietFirst` (a work
+ * pump due, whose Pump now is the page's gold, slice 67) that primary quiet too. */
+function foot(home, quietFirst) {
 	const p = home.primary;
 	if (!p) return [];
 	const busy = home.engine === "busy";
 	const pumping = p.kind === "catchup" || p.kind === "offer" || p.kind === "quick";
 	const state = pumping && busy ? "busy" : p.kind === "catchup" && !p.payable ? "disabled" : "normal";
-	let primary;
-	switch (p.kind) {
-		case "grant":
-			primary = h("qp-primary-button", {label: t(p.asked ? "desk.menu.computer.screen.settings"
-				: "desk.menu.computer.screen.allow"), "on:click": () => call("allow_screen").catch(console.error)});
-			break;
-		case "firewall":
-			primary = h("qp-primary-button", {label: t("desk.menu.phones.firewall.allow"),
-				"on:click": () => call("allow_network").catch(console.error)});
-			break;
-		case "catchup":
-			primary = h("qp-primary-button", {label: t("pump.waiting.catchup"), state,
-				"on:click": () => intent("pump.catchup").catch(console.error)});
-			break;
-		case "offer": {
-			const start = offerStart(home.offer);
-			primary = h("qp-primary-button", {label: start.label, state, "on:click": start.go});
-			break;
-		}
-		default:
-			primary = h("qp-primary-button", {label: QUICK.label(), glyph: "action_pump", state, "on:click": QUICK.go});
-	}
+	const first = primaryOf(home);
+	const primary = quietFirst
+		? h("qp-quiet-button", {label: first.label, disabled: state !== "normal", "on:click": first.go})
+		: h("qp-primary-button", {label: first.label, glyph: first.glyph, state, "on:click": first.go});
 	const quiet = [];
 	// Quick pump beside a primary of another kind, as the phones' foot keeps it under Catch up; under another primary
 	// a standing offer keeps its Start; none while the engine folds, when the busy primary shows alone
@@ -294,8 +299,9 @@ function foot(home) {
 register("pump", () => {
 	const view = page({heading: t("bar.pump"), root: true});
 	view.el.classList.add("qp-home");
-	// the place in use's glyph left of the gear, opening the places window
-	const placeButton = h("qp-round-button", {icon: "place_home", "on:click": () => openPlaces()});
+	// the place in use's glyph left of the gear, opening the places window (Work mode's while it runs, opening its page)
+	const placeButton = h("qp-round-button", {icon: "place_home",
+		"on:click": () => (placeShown(get("places"))?.work ? openMenu("desk.menu.work") : openPlaces())});
 	view.bar.action = placeButton;
 	let chipTo = "desk.menu.computer";
 	let chipParams;
@@ -320,6 +326,15 @@ register("pump", () => {
 	const figure = h("qp-figure-stage", {move: STANDING, calm: true, "data-hero": ""});
 	const board = h("qp-streak-board", {"on:qp-share": () => openShare(streakCard(board.days)),
 		"on:qp-open": () => push("desk.streak")});
+	// work mode's card under the StreakBoard (slice 67): Start, Pump now, Later and Stop ask Rust (`work.*`), whose
+	// answer the `work` topic brings, Pump now and Later naming the ask they answer (`ask`, so one that stands no more
+	// writes nothing); hidden while work mode is off and pumps rest
+	const workCard = h("qp-work-card", {hidden: true,
+		"on:qp-start": () => intent("work.start").catch(console.error),
+		"on:qp-now": () => intent("work.now", {ask: work?.ask}).catch(console.error),
+		"on:qp-later": () => intent("work.later", {ask: work?.ask}).catch(console.error),
+		"on:qp-stop": () => intent("work.stop").catch(console.error)});
+	let work = null;
 	// today's embers (slice 55) under Up next: a click starts the cardio step's move (2026-11-03), its card where Rust
 	// refuses the start (a gate, the game asking the pumps), which says why
 	let embersTo = null;
@@ -411,8 +426,8 @@ register("pump", () => {
 			"on:click": () => openMenu("desk.menu.email", {save: true})}),
 		h("qp-quiet-button", {label: t("menu.sync.notnow"),
 			"on:click": () => intent("play.later").catch(console.error)}));
-	const column = h("qp-hero-column", {least: STAGE_LEAST, most: STAGE_MOST}, status, recent, figure, board, upNext,
-		rest, waiting, todayBlock, checkin.el, save, pair.el, addon.el);
+	const column = h("qp-hero-column", {least: STAGE_LEAST, most: STAGE_MOST}, status, recent, figure, board, workCard,
+		upNext, rest, waiting, todayBlock, checkin.el, save, pair.el, addon.el);
 	view.body.append(column);
 
 	const gameLine = words(t("pump.waiting.game"), "meta");
@@ -435,11 +450,12 @@ register("pump", () => {
 		const home = homeShown;
 		if (!home) return;
 		// the foot is made again only when what it offers changed, so a hover, a press or the focus stays
-		const offers = JSON.stringify([home.primary, home.game, home.engine, home.offer, catchUp(home)]);
+		const due = workDue(work);
+		const offers = JSON.stringify([home.primary, home.game, home.engine, home.offer, catchUp(home), due]);
 		if (offers !== shown) {
 			shown = offers;
 			const focused = buttons.contains(document.activeElement);
-			buttons.replaceChildren(...foot(home));
+			buttons.replaceChildren(...foot(home, due));
 			if (focused) buttons.querySelector("qp-primary-button")?.focus({preventScroll: true});
 		}
 	}
@@ -522,6 +538,17 @@ register("pump", () => {
 		save.hidden = p.offer !== "home";
 	});
 
+	/** The work card from the last `work` and whether pumps rest. */
+	const drawWork = () => {
+		workCard.work = work;
+		workCard.hidden = !work || (locked && !work.on);
+	};
+	watch(view, "work", (value) => {
+		work = value;
+		drawWork();
+		drawFoot();
+	});
+
 	watch(view, "home", (home) => {
 		fix = home.fix ?? null;
 		games = home.recent.games;
@@ -539,6 +566,7 @@ register("pump", () => {
 		board.share = home.milestones.length > 0 && home.streak.days >= Math.min(...home.milestones);
 		embersTo = home.embers ?? null;
 		drawUp();
+		drawWork();
 		rest.hidden = !locked;
 		if (locked) restLine.textContent = t("pump.rest.line", {time: time(home.locked_until)});
 		const wait = home.waiting;
@@ -569,12 +597,14 @@ register("pump", () => {
 		}
 		drawFoot();
 	});
-	// the place in use on the TopBar's button: its glyph (Home's where the button has none for it) and its name
+	// the place in use on the TopBar's button: its glyph (Home's where the button has none for it) and its name; Work
+	// mode while it runs
 	watch(view, "places", (p) => {
-		const place = inUse(p);
+		const place = placeShown(p);
 		placeButton.icon = p.glyphs.includes(place?.glyph) ? place.glyph : "place_home";
 		placeButton.spoken = t("places.button", {place: placeName(place)});
 	});
-	view.primary = () => buttons.querySelector("qp-primary-button") ?? (status.hidden ? null : status);
+	view.primary = () => (workDue(work) ? workCard.querySelector("qp-primary-button") : null)
+		?? buttons.querySelector("qp-primary-button") ?? (status.hidden ? null : status);
 	return view;
 });
