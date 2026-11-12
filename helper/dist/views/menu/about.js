@@ -21,6 +21,7 @@ import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {LOCALE} from "../../lib/format.js";
 import {push, register} from "../../lib/router.js";
+import {feedback} from "../../lib/sound.js";
 import {h} from "../../kit/element.js";
 import {page, resultLine, say, watch, words} from "../page.js";
 import {pairWindow} from "./phones.js";
@@ -102,7 +103,10 @@ register("desk.menu.pro", () => {
 	const state = h("p", {class: "qp-type-body-strong", role: "status"});
 	const failed = resultLine();
 	let latest = null;
+	// Get Pro was pressed on this page: Pro coming on after it is the purchase completed (slice 72)
+	let buying = false;
 	const getPro = () => {
+		buying = true;
 		if (latest?.sync) {
 			intent("pro.get").catch(console.error);
 			return;
@@ -131,6 +135,8 @@ register("desk.menu.pro", () => {
 	watch(view, "menu.pro", (p) => {
 		latest = p;
 		const on = p.state === "on";
+		if (on && buying) feedback("unlockUncommon");
+		if (on) buying = false;
 		// On (from questpump.com, or through a phone's store), or the paired phone's Pro not confirmed here
 		state.hidden = !on && p.state !== "refused";
 		state.textContent = !on ? t("desk.menu.pro.refused") :
@@ -142,7 +148,7 @@ register("desk.menu.pro", () => {
 		pair.hidden = p.state !== null;
 		// where Pro comes from while the computer offers no Get Pro
 		comes.hidden = on || p.get;
-		say(failed, p.failed ? t("menu.sync.unanswered") : null);
+		say(failed, p.failed ? t("menu.sync.unanswered") : null, "error");
 	});
 	intent("pro.look").catch(console.error);
 	view.primary = () => [get, manage, pair].find((b) => !b.hidden) ?? null;

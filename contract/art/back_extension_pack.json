@@ -1,0 +1,60 @@
+{
+  "move": "back_extension_pack",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["abdomen", "thigh"],
+  "items": [{"kind": "backpack", "on": "back"}],
+  "props": [
+    {"kind": "mat", "f0": -76, "f1": 100},
+    {"kind": "bench", "f0": -114, "f1": -72, "u": 28},
+    {"kind": "step", "f0": -22, "f1": 8, "u": 14, "l0": -30, "l1": 30}
+  ],
+  "poses": {
+    "down": {
+      "pelvis": [0, 28.6, 0],
+      "trunk": [96, 0, 0],
+      "chest": [7, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [0.4, 12.8, 27.7], "rel": "neck", "pole": [0, 0.1, 1], "hand": [0.1, 0.45, -0.89]},
+      "legs": {"fk": [19.8, 3, 0, -103.8]},
+      "contacts": ["pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "line": {
+      "from": "down",
+      "trunk": [76.2, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "legs": {"fk": [0, 3, 0, -103.8]}
+    },
+    "arched": {
+      "from": "line",
+      "trunk": [81.5, 0, 0],
+      "chest": [-20, 0, 0],
+      "head": [29, 0, 0],
+      "arms": {"ik": [6.6, 11.2, 27.7], "rel": "neck", "pole": [0, -0.08, 1], "hand": [0.31, 0.35, -0.89]},
+      "legs": {"fk": [5.3, 3, 0, -103.8]}
+    }
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"to": "line", "s": 1.2, "phase": "lift", "effort": 0.8},
+    {"hold": 0.6, "phase": "hold", "effort": 0.85},
+    {"to": "down", "s": 1.4, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "line",
+  "fault": {
+    "pose": "arched",
+    "caption": "low_back_arches",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "line", "check": "angle", "joints": ["ankle_near", "hip_near", "shoulder_near"], "min": 174},
+    {"at": "line", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "line", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 172},
+    {"at": "line", "check": "angle", "joints": ["waist", "neck", "head"], "min": 165},
+    {"at": "line", "check": "height", "joint": "neck", "max": 44},
+    {"at": "line", "check": "height", "joint": "ankle_near", "max": 9},
+    {"at": "down", "check": "height", "joint": "neck", "max": 22}
+  ],
+  "note": "The back extension with a loaded pack worn high and snug on the back: heels hooked under the sofa's edge, hips on the cushion, fingertips at the temples with the elbows wide, the chest sinks toward the floor, lifts to one straight line and no higher, pauses there and lowers slowly."
+}

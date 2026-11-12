@@ -794,9 +794,10 @@ pub struct SheetCharacter {
 	pub sheet: Option<serde_json::Value>,
 }
 
-/// An owed move as the unfinished list shows it, in the order a catch-up pump pays them: the move, its kind, a cardio
-/// or flow move's planned seconds, the ladder and rung it was owed at, and whether a cardio move is an all-out window of
-/// its own move (a finisher's, or a closing move's since 2026-10-15).
+/// An owed move as the unfinished list shows it, in the order a catch-up pump pays them, each as it is owed now
+/// (`session::owed_now`: a row of reps or a hold whose move is timed now is that move's flow row at its own seconds):
+/// the move, its kind, a cardio or flow move's planned seconds, the ladder and rung it is owed at, and whether a
+/// cardio move is an all-out window of its own move (a finisher's, or a closing move's since 2026-10-15).
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct OwedMove {
 	#[serde(rename = "move")]
@@ -806,7 +807,8 @@ pub struct OwedMove {
 	pub seconds: Option<u16>,
 	/// The owed row's ladder (0: a move on none) and rung (since 2026-10-12), at which a catch-up doses the move as the
 	/// game doses an owed one (Engine.lua `riderSlot`: an owed anchor at its ladder's rung now is the rung's attempt)
-	/// and asks its count. Absent from an older helper: a catch-up then asks no count.
+	/// and asks its count; a timed move's own where the row was owed as reps or a hold (`session::owed_now`). Absent
+	/// from an older helper: a catch-up then asks no count.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub ladder: Option<u8>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]

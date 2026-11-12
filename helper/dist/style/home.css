@@ -262,3 +262,14 @@ qp-card.qp-rest > qp-art {
 		background: Highlight;
 	}
 }
+
+/* the banked moves the pumps here just paid (slice 72, home.js `showPaid`): once more with their checks for `pulse`,
+   as the phones' rows stand, then gone over `chip`; under reduced motion they go without the fade */
+.qp-paid {
+	animation: qp-fade-out var(--qp-motion-chip) var(--qp-motion-pulse-duration) both;
+}
+
+/* the embers' new mark lighting as Pump home next shows (a reward carried home), as a Result row's day lights */
+.qp-home qp-day-pips i.qp-brought {
+	animation: qp-pip-lit var(--qp-motion-carry) both;
+}

@@ -89,10 +89,11 @@ ns.Enum = {
 	device = { phone = 1, watch = 2, computer = 3 },
 	-- One ladder a family (slice 21). The pull ladder (3) and the core hold (5) split in two on 2026-10-04 (the pull-up
 	-- and the row, the core and the side): their ids are retired, never reused, and the fold reads their rows on the
-	-- ladders that took their moves (DB.lua, ns.Translate). 20-23 are slice 22's families, 24 the sit-up (2026-10-17).
+	-- ladders that took their moves (DB.lua, ns.Translate). 20-23 are slice 22's families, 24 the sit-up (2026-10-17),
+	-- 25 the lower back (2026-11-10).
 	ladder = { push = 1, squat = 2, hinge = 4, cardio = 6, wallsit = 7, pullup = 8, row = 9, core = 10, side = 11,
 		frontsplit = 12, midsplit = 13, pike = 14, backbend = 15, twist = 16, ankle = 17, balance = 18,
-		armbalance = 19, handstand = 20, lsit = 21, planche = 22, power = 23, situp = 24 },
+		armbalance = 19, handstand = 20, lsit = 21, planche = 22, power = 23, situp = 24, lowerback = 25 },
 	retired = { pull = 3, corehold = 5 },
 	-- The pain flags' joints, in the library's tag order; a pain row carries the id in `move`.
 	joint = { wrist = 1, elbow = 2, knee = 3, achilles = 4, back = 5, shoulder = 6, neck = 7, hip = 8 },
@@ -137,16 +138,16 @@ ns.Enum = {
 local LAD = ns.Enum.ladder
 ns.CARDIO = LAD.cardio
 ns.STRENGTH_ORDER = { LAD.push, LAD.squat, LAD.pullup, LAD.row, LAD.hinge, LAD.core, LAD.side, LAD.wallsit,
-	LAD.planche, LAD.power, LAD.lsit, LAD.handstand, LAD.situp }
+	LAD.planche, LAD.power, LAD.lsit, LAD.handstand, LAD.situp, LAD.lowerback }
 ns.STRENGTH = {}
 for _, l in ipairs(ns.STRENGTH_ORDER) do ns.STRENGTH[l] = true end
 ns.POSE_ORDER = { LAD.frontsplit, LAD.midsplit, LAD.pike, LAD.backbend, LAD.twist, LAD.ankle, LAD.balance,
 	LAD.armbalance }
 ns.POSE = {}
 for _, l in ipairs(ns.POSE_ORDER) do ns.POSE[l] = true end
-ns.LADDER_ORDER = { LAD.push, LAD.squat, LAD.pullup, LAD.row, LAD.hinge, LAD.planche, LAD.situp, LAD.cardio, LAD.power,
-	LAD.core, LAD.side, LAD.wallsit, LAD.lsit, LAD.balance, LAD.armbalance, LAD.handstand, LAD.frontsplit, LAD.midsplit,
-	LAD.pike, LAD.backbend, LAD.twist, LAD.ankle }
+ns.LADDER_ORDER = { LAD.push, LAD.squat, LAD.pullup, LAD.row, LAD.hinge, LAD.lowerback, LAD.planche, LAD.situp,
+	LAD.cardio, LAD.power, LAD.core, LAD.side, LAD.wallsit, LAD.lsit, LAD.balance, LAD.armbalance, LAD.handstand,
+	LAD.frontsplit, LAD.midsplit, LAD.pike, LAD.backbend, LAD.twist, LAD.ankle }
 
 -- The ladders as three talent trees (docs/plan.md slice 36; David, 2026-10-13: "The three trees are great. Let's go
 -- with this."), named as the focus is but read by no focus rule: each tree its branches, each branch its ladders in
@@ -158,7 +159,7 @@ ns.TREES = {
 		{ key = "pull", ladders = { LAD.pullup, LAD.row } },
 		{ key = "legs", ladders = { LAD.squat, LAD.hinge, LAD.situp } } } },
 	{ key = "endurance", branches = { { key = "cardio", ladders = { LAD.cardio, LAD.power } },
-		{ key = "core", ladders = { LAD.core, LAD.side, LAD.lsit, LAD.wallsit } } } },
+		{ key = "core", ladders = { LAD.core, LAD.side, LAD.lowerback, LAD.lsit, LAD.wallsit } } } },
 	{ key = "flexibility", branches = {
 		{ key = "hips", ladders = { LAD.frontsplit, LAD.midsplit, LAD.pike, LAD.ankle } },
 		{ key = "spine", ladders = { LAD.backbend, LAD.twist } },

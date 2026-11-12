@@ -263,6 +263,24 @@ export function follow(w, root, move) {
 	});
 }
 
+/** A ladder's climb as its marks draw it (the path's ring, the list's bar), read as a set starts from a step's card:
+ * its rung and its ring's share (per mille; none at the top). */
+export function climbOf(book, ladder) {
+	const row = book?.ladders.find((l) => l.ladder === ladder && !l.opens);
+	return row ? {rung: row.rung, fill: row.ring?.fill ?? null} : null;
+}
+
+/** What the return after that set plays once its pump has gone (slice 72; the phones' and the game's: motion.ringFill,
+ * nodeFlash, glowMove), from the climb as the set started (`was`) and as it stands (`now`): `{fill}`, the share the
+ * mark fills from, on the same step with its share grown; `{opened: true}` where the set opened a step, whose mark
+ * shows its new share at once while the step flashes; none where nothing grew (a share that fell shows at once). */
+export function returnOf(was, now) {
+	if (!was || !now) return null;
+	if (now.rung > was.rung) return {opened: true};
+	if (now.rung === was.rung && was.fill !== null && now.fill !== null && now.fill > was.fill) return {fill: was.fill};
+	return null;
+}
+
 /** The confirmation before a step that cannot be undone (a record cleared, a ladder started over, a place deleted, a
  * device removed from sync, the account deleted): its question (`heading`), what goes and what stays (`body`, none
  * where the question says it all), and the step's destructive button (`confirm`), which acts and closes it; its ×,

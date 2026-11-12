@@ -1,0 +1,115 @@
+{
+  "move": "swimmer_lifts",
+  "view": "side",
+  "camera": {"yaw": 24, "pitch": 18},
+  "working": ["abdomen", "thigh", "pauldron"],
+  "props": [
+    {"kind": "mat", "f0": -112, "f1": 124},
+    {"kind": "step", "f0": -14, "f1": 18, "u": 6, "l0": -31, "l1": 31}
+  ],
+  "poses": {
+    "flat": {
+      "pelvis": [0, 20.5, 0],
+      "trunk": [97, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-5, 0, 0],
+      "arms": {"fk": [176, 12, 0, 0, 2]},
+      "legs": {"fk": [20.5, 4, 6.8, -96.7]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    },
+    "near_up": {
+      "from": "flat",
+      "arm_near": {"fk": [184.5, 12, 0, 0, 0]},
+      "leg_far": {"fk": [11, 4, 0, -93]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_far",
+        "wrist_far",
+        "hand_tip_far",
+        "knee_near",
+        "toe_near",
+        "ankle_near"
+      ]
+    },
+    "far_up": {
+      "from": "flat",
+      "arm_far": {"fk": [184.5, 12, 0, 0, 0]},
+      "leg_near": {"fk": [11, 4, 0, -93]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_near",
+        "wrist_near",
+        "hand_tip_near",
+        "knee_far",
+        "toe_far",
+        "ankle_far"
+      ]
+    },
+    "chin": {
+      "from": "near_up",
+      "head": [-32, 0, 0],
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "elbow_far",
+        "wrist_far",
+        "hand_tip_far",
+        "knee_near",
+        "toe_near",
+        "ankle_near"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"to": "near_up", "s": 1.4, "phase": "lift", "effort": 0.7},
+    {"hold": 2.0, "phase": "hold", "effort": 0.8},
+    {"to": "flat", "s": 1.4, "phase": "lower", "effort": 0.3},
+    {"to": "far_up", "s": 1.4, "phase": "switch", "effort": 0.7},
+    {"hold": 2.0, "phase": "hold", "effort": 0.8},
+    {"to": "flat", "s": 1.4, "phase": "lower", "effort": 0.3}
+  ],
+  "key": "near_up",
+  "fault": {
+    "pose": "chin",
+    "caption": "chin_leads",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
+  },
+  "targets": [
+    {"at": "near_up", "check": "height", "joint": "wrist_near", "min": 9, "max": 16},
+    {"at": "near_up", "check": "height", "joint": "ankle_far", "min": 10, "max": 18},
+    {"at": "near_up", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "near_up", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 170},
+    {"at": "near_up", "check": "angle", "joints": ["waist", "neck", "head"], "min": 160},
+    {"at": "near_up", "check": "height", "joint": "neck", "max": 16},
+    {"at": "near_up", "check": "height", "joint": "pelvis", "max": 22},
+    {"at": "far_up", "check": "height", "joint": "wrist_far", "min": 9, "max": 16},
+    {"at": "far_up", "check": "height", "joint": "ankle_near", "min": 10, "max": 18},
+    {"at": "far_up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170}
+  ],
+  "note": "Face down on the mat, a folded pillow (the low box) under the belly, both arms past the head, the legs straight, the eyes on the floor: one arm and the other side's leg lift a hand's width and hold for a count of 2, lower, then the other arm and leg; slow, low lifts, never a flutter. A lift on each side is one rep, so the loop is one."
+}

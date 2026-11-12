@@ -860,11 +860,23 @@ fn paid_rows(moves: &[CatchupMove], queue: &[Row]) -> Vec<Option<(usize, bool)>>
 	picks
 }
 
-/// An owed row as it is owed now: a merged move's names the move that took it (`moves::current`), the id the unfinished
-/// list, the game's `held` list and the devices' catch-ups and skips name; the rest as kept.
+/// A row of the owed queue (owed or banked) as it is owed now, by the fold's two rules for the move it names (DB.lua
+/// `ns.Translate`'s `mergedMove` and `timedNow`). A merged move's names the move that took it (`moves::current`), the
+/// id the unfinished list, the game's `held` list and the devices' catch-ups and skips name. One of reps or a hold
+/// whose move runs by its time now (`library::flow`: the carries, the good morning, since 2026-11-11 the bird dog and
+/// its kin, which reach no form failure) is the row a bank of that move writes today: a flow row at the ladder and
+/// rung a fresh pick of it carries and at the move's own seconds, a side move's on each side. The unfinished list, a
+/// catch-up and its payment take it as the timed move, never as a set one step past the record its old sets left. The
+/// rest as kept; a set done is never read here and stays as written.
 #[must_use]
 pub fn owed_now(r: &Row) -> Row {
-	Row { move_id: moves::current(r.move_id), ..*r }
+	let now = Row { move_id: moves::current(r.move_id), ..*r };
+	match library::flow(now.move_id) {
+		Some(f) if now.kind == kind::REP || now.kind == kind::HOLD => {
+			Row { kind: kind::FLOW, ladder: f.ladder, rung: f.rung, seconds: f.seconds, ..now }
+		}
+		_ => now,
+	}
 }
 
 impl OwedMove {
@@ -1709,18 +1721,19 @@ impl Session {
 	/// straight after an effort of its own body part while another can go there (`spread`, after the player's latest
 	/// set), then every all-out window oldest first, a pump's all-out windows always its last efforts, as in the game
 	/// (Engine.lua `pickRiders`, `spreadRiders`).
-	/// Each names the move it is owed as now (`owed_now`: a merged move's row is the merged-into move's), the id the
-	/// game's `held` list, the devices and their catch-up pumps use; its paid row repeats the owed row's key, which holds
-	/// no move.
+	/// Each is the row as it is owed now (`owed_now`: a merged move's row is the merged-into move's, the id the game's
+	/// `held` list, the devices and their catch-up pumps use, and one of reps or a hold whose move is timed now is that
+	/// move's flow row); its paid row repeats the owed row's key, which holds no move.
 	#[must_use]
 	pub fn payable(&self) -> Vec<Row> {
 		self.payable_kept().iter().map(owed_now).collect()
 	}
 
-	/// The rows `payable` lists, each as the store keeps it (a merged move's under its own old id), which a fold reads
-	/// as it reads that owed row (DB.lua `ns.Translate`: the merged-into move, on that move's own rung where the row sat
-	/// above it): what the engine doses a catch-up on the computer from (`Engine::catch_up`), and what a catch-up's move
-	/// row repeats (`Session::catch_up`).
+	/// The rows `payable` lists, each as the store keeps it (a merged move's under its own old id, one whose move is
+	/// timed now with the kind and ladder it was owed with), which a fold reads as it reads that owed row (DB.lua
+	/// `ns.Translate`: the merged-into move, on that move's own rung where the row sat above it; the timed move's flow
+	/// row): what the engine doses a catch-up on the computer from (`Engine::catch_up`), and what a catch-up's move row
+	/// is written from (`Session::catch_up`).
 	#[must_use]
 	pub fn payable_kept(&self) -> Vec<Row> {
 		let (plain, windows): (Vec<Row>, Vec<Row>) = self
@@ -2843,7 +2856,9 @@ impl Session {
 	/// it (`payable_kept`: a merged move's under its old id and rung, a retired ladder's on it), so every fold reads it
 	/// as it reads that owed row (DB.lua `ns.Translate`): a merged move's as the move that took it, on that move's own
 	/// rung and ladder; the rung of a ladder that lost its first rung after the owed row is written as that row reads
-	/// (`library::read_rung`), since the move row's own time is after the loss; since 2026-10-26 a move run in the
+	/// (`library::read_rung`), since the move row's own time is after the loss, and a row of reps or a hold whose move
+	/// is timed now as the flow row it is owed as (`owed_now`: its kind, ladder and rung), since a fold reads only an
+	/// unfinished row that way (DB.lua `timedNow`) and a set done as written; since 2026-10-26 a move run in the
 	/// owed move's place (its `ran`, a move of the grammar: Swap's, or an owed backup's stand-in since 2026-10-29)
 	/// writes its move row as that move, its kind, ladder and rung,
 	/// with the easier bit on Swap's easier version, as the game's `Lc.WriteResult` writes a swapped owed slot's, its
@@ -2908,10 +2923,12 @@ impl Session {
 				seconds: m.seconds,
 				outcome: outcome::DONE,
 				flags: bit | flags::OWED | swapped.map_or(0, CatchupRan::bits),
-				// the move run in its place as the device names it, else the owed row, dated now, on the rung that row
-				// reads (a ladder that lost its first rung since)
+				// the move run in its place as the device names it, else the owed row under the id the store keeps,
+				// dated now, with the kind and ladder it is owed with now (a set done is read as written, so one whose
+				// move is timed now is written as the flow row it reads as), on the rung that row reads (a ladder that
+				// lost its first rung since)
 				..swapped.map_or_else(
-					|| Row { rung: library::read_rung(kept[i].ladder, kept[i].rung, kept[i].ts), ..kept[i] },
+					|| Row { move_id: kept[i].move_id, rung: library::read_rung(r.ladder, r.rung, r.ts), ..*r },
 					|x| x.row(&kept[i]),
 				)
 			};

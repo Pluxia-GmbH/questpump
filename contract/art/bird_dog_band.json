@@ -1,0 +1,72 @@
+{
+  "move": "bird_dog_band",
+  "view": "side",
+  "camera": {"yaw": -6, "pitch": 26},
+  "working": ["abdomen", "thigh"],
+  "items": [
+    {
+      "kind": "band",
+      "strands": [
+        [{"at": "sole_far", "off": [0, 0, -9]}, {"at": "elbow_near", "off": [-71.8, -22.3, 35]}],
+        [{"at": "elbow_near", "off": [-71.8, -22.3, 35]}, "grip_near"]
+      ]
+    }
+  ],
+  "props": [{"kind": "mat", "f0": -75, "f1": 82}],
+  "poses": {
+    "quad": {
+      "pelvis": [0, 55, 0],
+      "trunk": [86, 0, 0],
+      "head": [4, 0, 0],
+      "arms": {"ik": [47, 4.3, 24], "pole": [-1, 0.2, 0.4], "hand": [1, -0.14, 0]},
+      "legs": {"foot": [-42.7, 17], "y": -2, "turn": 180, "lift": 0, "knee_out": 0, "pole": [0, -1, 0.1]},
+      "contacts": [
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far"
+      ]
+    },
+    "reach": {
+      "from": "quad",
+      "arm_near": {"fk": [176, 4, 0, 0, 0]},
+      "leg_far": {"fk": [-4, 4, 0, -60]},
+      "contacts": ["knee_near", "toe_near", "ankle_near", "wrist_far", "hand_tip_far"]
+    },
+    "tipped": {
+      "from": "reach",
+      "pelvis": [-0.3, 58.9, 0],
+      "trunk": [115.0, 87.7, -87.9],
+      "chest": [0, 0, -25],
+      "arm_near": {"fk": [181, 4, 0, 0, 0]},
+      "head": [-1, 0, 0],
+      "leg_far": {"fk": [1.5, 4, 0, -52]}
+    }
+  },
+  "timeline": [
+    {"pose": "quad"},
+    {"hold": 0.4, "phase": "hands_and_knees"},
+    {"to": "reach", "s": 1.4, "phase": "reach_long", "effort": 0.8},
+    {"hold": 1.0, "phase": "hips_level", "effort": 0.9},
+    {"to": "quad", "s": 1.6, "phase": "back_in", "effort": 0.5}
+  ],
+  "key": "reach",
+  "fault": {
+    "pose": "tipped",
+    "caption": "hips_twist",
+    "breaks": {"check": "offset", "joint": "hip_far", "from": "hip_near", "axis": "u", "min": -3, "max": 3}
+  },
+  "targets": [
+    {"at": "reach", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 172},
+    {"at": "reach", "check": "height", "joint": "ankle_far", "min": 45},
+    {"at": "reach", "check": "height", "joint": "wrist_near", "min": 50},
+    {"at": "reach", "check": "offset", "joint": "hip_far", "from": "hip_near", "axis": "u", "min": -3, "max": 3}
+  ],
+  "note": "The bird dog on one side with a flat loop band from the arch of the working leg's foot to the palm of the other side's hand: on hands and knees the band lies along the floor between the knees; that arm reaches forward and that leg back against it until both are level, the band stretched under the body, the hips level, and both come back slowly. The band is two strands that meet at a point riding with the reaching elbow, low by the foot on hands and knees and under the belly at the reach, where the body holds the real band down."
+}

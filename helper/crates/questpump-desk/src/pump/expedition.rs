@@ -210,6 +210,9 @@ pub(super) struct TripView {
 	stage: &'static str,
 	round: Option<u8>,
 	count: usize,
+	/// A move is done in a stage that ended: "Leave this pump?" then says the moves done are kept, on a later stage
+	/// whose own moves are all still to do.
+	moved: bool,
 	rest: Option<RestView>,
 	done: Option<DoneView>,
 }
@@ -347,7 +350,7 @@ impl<P: Platform> Desk<P> {
 						h.pump_composed(
 							composed,
 							Some(started),
-							Asking { what, id, offer: None, outside, arms: None, riding: Vec::new(), work: None },
+							Asking { what, id, offer: None, outside, arms: None, riding: Vec::new(), work: false },
 						);
 					}
 					Ok((_, next)) => {
@@ -466,7 +469,7 @@ impl<P: Platform> Desk<P> {
 								outside: false,
 								arms: None,
 								riding: Vec::new(),
-								work: None,
+								work: false,
 							},
 						);
 						// a Start now pressed before it came, or a ring that ran out meanwhile
@@ -578,7 +581,7 @@ impl<P: Platform> Desk<P> {
 			run.swaps = None;
 		}
 		if whole {
-			run.reveal = Some(view::Reveal::plan(now, &joined, true));
+			run.reveal = Some(view::Reveal::plan(now, &joined));
 		} else {
 			run.cut = Some(Cut::Left);
 			run.reveal = None;
@@ -645,6 +648,7 @@ impl<P: Platform> Desk<P> {
 			stage,
 			round,
 			count: trip.count(),
+			moved: !trip.done.is_empty(),
 			rest,
 			done,
 		})

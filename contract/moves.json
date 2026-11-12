@@ -757,19 +757,19 @@
     },
     "137": {
       "cue": "Hands together, chop from high on one side to low on the other. Breathe out on the chop.",
-      "dose": "rep",
+      "dose": "flow",
       "how": [
         "Clear an arm's length around you, stand with feet shoulder-width apart, hands clasped.",
         "Raise your hands high above one shoulder, arms long, chest turned that way.",
         "Chop down across your body to outside the opposite knee, bending your knees as you go.",
         "Rise back up slowly after each chop, breathing out on the chop.",
-        "Count each chop; do every rep to one side, then press Switch sides."
+        "The clock times each side, then counts you in to switch."
       ],
       "key": "wood_chopper",
       "name": "Wood-chopper",
       "setup": "Clear arm's length around you.",
       "side": true,
-      "stop": "Stop when your hips swing with your arms. Count the weaker side.",
+      "stop": "Stop when your hips swing with your arms.",
       "tips": [
         "Let your chest and arms turn, but keep your hips facing forward.",
         "Keep your arms long and let your eyes follow your hands.",
@@ -778,13 +778,13 @@
     },
     "138": {
       "cue": "Hands together overhead, chop down to your knees, ribs down. Breathe out on the chop.",
-      "dose": "rep",
+      "dose": "flow",
       "how": [
         "Check the space above and in front of you is clear, feet shoulder-width apart.",
         "Clasp your hands, arms straight overhead, ribs pulled down so your lower back stays flat.",
         "Chop down to your knees, hinging at the hips and bending your knees.",
         "Breathe out on the chop, breathe in as you rise slowly back overhead.",
-        "Count each chop from overhead to your knees and back as one rep."
+        "Keep a slow, even rhythm until the clock ends."
       ],
       "key": "overhead_chop",
       "name": "Overhead chop",
@@ -2408,11 +2408,11 @@
       "cue": "Pull your chest to the frame on one arm. Count out loud, breathe out as you pull.",
       "dose": "rep",
       "how": [
-        "Face the frame's edge on the side without hinges and wrap one hand around it.",
-        "Set your toes a hand's length from the base and lean back until the arm is straight.",
-        "Pull your chest to the frame, elbow close to your side, then lower slowly.",
-        "Breathe out as you pull and in as you lean back.",
-        "Each pull counts as one rep; do one side, press Switch sides, then the other."
+        "Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+        "Wrap that hand around it, toes a hand's length from the base; lean back to a straight arm.",
+        "Pull your chest to the frame, elbow close, breathing out; lower slowly, breathing in.",
+        "Each pull counts as one rep; do one side, then press Switch sides.",
+        "For the other arm, go through the doorway and turn round: the doorway is on that side."
       ],
       "key": "one_arm_doorframe_row",
       "name": "One-arm doorframe row",
@@ -2429,11 +2429,11 @@
       "cue": "Lean back far on one arm, pull, lower in 3 s. Count out loud, breathe out as you pull.",
       "dose": "rep",
       "how": [
-        "Face the frame's edge on the side without hinges and wrap one hand around it.",
-        "Put your toes against the base and lean back until the arm is straight.",
-        "Pull your chest to the frame in 1 s, then lower over three slow beats.",
-        "Breathe out as you pull and in as you lower.",
-        "Each pull counts as one rep. Do every rep on one side, then press Switch sides."
+        "Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+        "Wrap that hand around it, toes against the base; lean back until the arm is straight.",
+        "Pull your chest to the frame in 1 s, breathing out; lower over three slow beats.",
+        "Each pull counts as one rep; do one side, then press Switch sides.",
+        "For the other arm, go through the doorway and turn round: the doorway is on that side."
       ],
       "key": "steep_doorframe_row",
       "name": "Steep one-arm doorframe row",
@@ -10899,10 +10899,11 @@
       "key": "hinge_hold",
       "name": "Hinge hold",
       "setup": "Feet hip-width apart, knees soft, nothing in your hands.",
-      "stop": "Stop when your back rounds or your lower back aches.",
+      "stop": "Stop when your back rounds.",
       "tips": [
         "Keep your neck long, your eyes on the floor a step in front of you.",
-        "Squeeze your seat and feel the muscles beside your spine working."
+        "Squeeze your seat and feel the muscles beside your spine working.",
+        "Try it first with a broomstick held along your spine: head, upper back, tailbone touch it."
       ]
     },
     "64": {
@@ -10926,38 +10927,39 @@
       ]
     },
     "640": {
-      "cue": "Lift your arms, chest and legs a little off the floor. Count out loud.",
+      "cue": "Lift your arms, chest and legs a hand's width off the floor. Count out loud.",
       "dose": "hold",
       "how": [
-        "Lie face down on a mat, arms straight out past your head, legs straight.",
+        "Lie face down with a folded pillow under your hips, arms straight out past your head.",
         "Squeeze your seat and lift your arms, chest and legs a hand's width off the floor.",
-        "Keep your neck long, your eyes on the floor just ahead of your hands.",
+        "Keep your neck long and your eyes on the floor under your face.",
         "Hold still and breathe slowly, counting out loud.",
         "The clock times how long you hold the lift, then lower everything slowly."
       ],
       "key": "superman_hold",
       "name": "Superman hold",
-      "setup": "Lie face down on the floor, arms reaching past your head.",
-      "stop": "Stop when your lower back aches or your legs drop.",
+      "setup": "Lie face down on the floor, a folded pillow under your hips, arms past your head.",
+      "stop": "Stop when your legs drop or your chin lifts.",
       "tips": [
+        "Lift low: hands and thighs only just clear the floor.",
         "Lift with your seat and back, never by throwing your head back.",
         "Reach long through your fingers and toes rather than high."
       ]
     },
     "641": {
-      "cue": "Reach one arm and the other leg level with your back and hold. Count out loud.",
-      "dose": "hold",
+      "cue": "Reach one arm and the other leg level with your back and hold. Breathe slowly.",
+      "dose": "flow",
       "how": [
         "Kneel on the floor, hands under your shoulders, knees under your hips, back flat.",
         "Reach one arm forward and the other leg back until both are level with your back.",
-        "Hold still with your hips level, breathing slowly and counting out loud.",
-        "When this side ends, press Switch sides and reach the other arm and leg."
+        "Hold still with your hips level, breathing slowly.",
+        "The clock times each side, then counts you in to switch."
       ],
       "key": "bird_dog_hold",
       "name": "Bird dog hold",
       "setup": "Hands and knees on the floor, a folded towel under your knees if it is hard.",
       "side": true,
-      "stop": "Stop when your hips rotate or your back sags. Count the weaker side.",
+      "stop": "Stop when your hips rotate or your back sags.",
       "tips": [
         "Push the heel back as if pressing a wall behind you, not up to the ceiling.",
         "Keep both hip bones pointing at the floor the whole hold."
@@ -11084,19 +11086,19 @@
       "cue": "Pull your chest to the frame on one arm. Count out loud, breathe out as you pull.",
       "dose": "rep",
       "how": [
-        "Face the frame's edge on the side without hinges and wrap one hand around it.",
-        "Set your toes one foot's length from the base and lean back until the arm is straight.",
-        "Pull your chest to the frame, elbow close to your side, then lower slowly.",
-        "Breathe out as you pull and in as you lean back.",
-        "Each pull counts as one rep; do one side, press Switch sides, then the other."
+        "Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+        "Wrap that hand around it, toes a foot's length from the base; lean back to a straight arm.",
+        "Pull your chest to the frame, elbow close, breathing out; lower slowly, breathing in.",
+        "Each pull counts as one rep; do one side, then press Switch sides.",
+        "For the other arm, go through the doorway and turn round: the doorway is on that side."
       ],
       "key": "one_arm_doorframe_row_back",
-      "name": "One-arm doorframe row, feet back",
+      "name": "Shallow one-arm doorframe row",
       "setup": "One hand on a solid doorframe edge at chest height, toes a foot's length from its base.",
       "side": true,
       "stop": "Stop when your hand slips or your hips twist. Count the weaker side.",
       "tips": [
-        "Measure the gap once with your own foot and stand there every time.",
+        "You stand further from the frame than in the one-arm doorframe row, so you pull less.",
         "Keep the free hand hovering by the frame, ready to catch you.",
         "Grip only where your whole hand closes around the frame, never trim with fingertips."
       ]
@@ -11105,11 +11107,11 @@
       "cue": "Pull to the frame on one arm and hold, elbow back. Count out loud, keep breathing.",
       "dose": "hold",
       "how": [
-        "Face the frame's edge on the side without hinges and wrap one hand around it.",
-        "Set your toes a hand's length from the base and lean back until the arm is straight.",
-        "Pull your chest to the frame and hold there, elbow back and shoulder down.",
-        "Keep breathing slowly and count out loud through the whole hold.",
-        "The clock counts up: hold until your chest sinks, then press Switch sides."
+        "Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+        "Wrap that hand around it, toes a hand's length from the base; lean back to a straight arm.",
+        "Pull your chest to the frame and hold, elbow back, shoulder down, breathing slowly.",
+        "The clock counts up: hold until your chest sinks, then press Switch sides.",
+        "For the other arm, go through the doorway and turn round: the doorway is on that side."
       ],
       "key": "one_arm_doorframe_hold",
       "name": "One-arm doorframe row hold",
@@ -11310,6 +11312,82 @@
         "Keep the same load and seat each time: the game says when to go heavier."
       ]
     },
+    "656": {
+      "cue": "Lift one straight leg level with your back, then the other. Breathe out as you lift.",
+      "dose": "flow",
+      "how": [
+        "Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+        "Hold the far edge of the mattress, or fold your arms under your head.",
+        "Start with both legs straight and your toes on the floor.",
+        "Lift one straight leg until it is level with your back, pause at the line, lower it.",
+        "Then lift the other leg, breathing out as you lift; take turns until the clock ends."
+      ],
+      "key": "reverse_hyper_one_leg",
+      "name": "One-leg reverse hyper",
+      "setup": "Lie face down across your bed, hips at the edge, both feet on the floor.",
+      "stop": "Stop when your hips turn or a leg swings past level.",
+      "tips": [
+        "Lift to level and no higher, so your lower back stays flat.",
+        "Keep both hip bones pressed into the bed as the leg rises."
+      ]
+    },
+    "657": {
+      "cue": "Squeeze your seat, lift both knees until your thighs are level. Breathe out as you lift.",
+      "dose": "rep",
+      "how": [
+        "Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+        "Hold the far edge of the mattress, or fold your arms under your head.",
+        "Bend your knees to a right angle and rest your toes on the floor.",
+        "Squeeze your seat and lift both knees until your thighs are level with your back.",
+        "Pause at the line, then lower slowly until your toes touch; each lift counts one."
+      ],
+      "key": "reverse_hyper_tuck",
+      "name": "Tuck reverse hyper",
+      "setup": "Lie face down across your bed, hips at the edge, knees bent, toes on the floor.",
+      "stop": "Stop when your legs swing up or your thighs stop short of level.",
+      "tips": [
+        "Keep your knees bent at a right angle the whole time.",
+        "Lift to level and no higher, with no swing to help."
+      ]
+    },
+    "658": {
+      "cue": "Lift both straight legs level with your back and hold them there. Count out loud.",
+      "dose": "hold",
+      "how": [
+        "Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+        "Hold the far edge of the mattress, or fold your arms under your head.",
+        "Squeeze your seat and lift both straight legs until they are level with your back.",
+        "Hold them still at the line, breathing slowly and counting out loud.",
+        "The clock times how long your legs stay level, then lower them slowly."
+      ],
+      "key": "reverse_hyper_hold",
+      "name": "Reverse hyper hold",
+      "setup": "Lie face down across your bed, hips at the edge, legs straight, toes on the floor.",
+      "stop": "Stop when your legs sink below level or your knees bend.",
+      "tips": [
+        "Hold at level and no higher, so your lower back stays flat.",
+        "Press your legs together and reach your heels to the far wall."
+      ]
+    },
+    "659": {
+      "cue": "Lift both straight legs to level, lower slowly. Count out loud, breathe out as you lift.",
+      "dose": "rep",
+      "how": [
+        "Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+        "Hold the far edge of the mattress, or fold your arms under your head.",
+        "Start with both legs straight and your toes on the floor.",
+        "Squeeze your seat and lift both legs until they are level with your back.",
+        "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "key": "reverse_hyper",
+      "name": "Reverse hyper",
+      "setup": "Lie face down across your bed, hips at the edge, legs straight, toes on the floor.",
+      "stop": "Stop when your knees bend or your legs swing past level.",
+      "tips": [
+        "Lift to level and no higher, with no swing to help.",
+        "Keep your knees straight and reach your heels to the far wall."
+      ]
+    },
     "66": {
       "cue": "Start at the top, lower yourself as slowly as you can. Count out loud.",
       "dose": "rep",
@@ -11330,6 +11408,233 @@
         "Keep your shoulders down and back as you lower, away from your ears."
       ]
     },
+    "660": {
+      "cue": "Lift your chest a hand's width, hold for 3 seconds, lower. Breathe out as you lift.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor with a folded pillow under your lower belly.",
+        "Rest your fingertips at your temples, elbows wide, legs straight, feet on the floor.",
+        "Breathe out and lift your chest a hand's width off the floor, eyes on the floor.",
+        "Hold for a count of 3, then lower slowly and breathe in.",
+        "Each lift with its hold counts as one rep."
+      ],
+      "key": "chest_lift",
+      "name": "Chest lift",
+      "setup": "Lie face down on the floor, a folded pillow under your belly, fingertips at your temples.",
+      "stop": "Stop when your chin lifts or your feet leave the floor.",
+      "tips": [
+        "The pillow keeps your lower back long; a low lift is the whole move.",
+        "Keep your chin a little tucked, never looking up.",
+        "Press the tops of your feet into the floor so your legs stay down."
+      ]
+    },
+    "661": {
+      "cue": "Lower your chest to the floor, lift to one straight line. Count out loud, breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+        "Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+        "Keep your arms by your sides and let your chest sink to the floor.",
+        "Breathe out and lift until your head, hips and heels line up, and no higher.",
+        "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "key": "back_extension",
+      "name": "Back extension",
+      "setup": "Heels under a heavy sofa or bed; hips on a firm cushion, arms by your sides.",
+      "stop": "Stop when you rise past a straight line or jerk your way up.",
+      "tips": [
+        "Squeeze your seat first, then lift, with no swing to help.",
+        "Keep your eyes on the floor so your neck stays long.",
+        "The cushion lets your chest sink below the line; without it every lift goes too high."
+      ]
+    },
+    "662": {
+      "cue": "Lift both legs level, hold for 3 seconds, lower slowly. Count out loud, breathe steadily.",
+      "dose": "rep",
+      "how": [
+        "Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+        "Hold the far edge of the mattress, or fold your arms under your head.",
+        "Squeeze your seat and lift both straight legs until they are level with your back.",
+        "Hold them at the line for a count of 3, then lower slowly until your toes touch.",
+        "Each lift with its hold counts as one, counted out loud."
+      ],
+      "key": "reverse_hyper_pause",
+      "name": "Paused reverse hyper",
+      "setup": "Lie face down across your bed, hips at the edge, legs straight, toes on the floor.",
+      "stop": "Stop when your legs sink before the count of 3 or your knees bend.",
+      "tips": [
+        "Count the 3 seconds out loud; a lift without its hold does not count.",
+        "Lift to level and no higher, with no swing to help."
+      ]
+    },
+    "663": {
+      "cue": "Lift until your body is one straight line and hold it there. Count out loud.",
+      "dose": "hold",
+      "how": [
+        "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+        "Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+        "Rest your fingertips at your temples and lift until head, hips and heels line up.",
+        "Hold still at the line, breathing slowly and counting out loud.",
+        "The clock times how long you hold the line, then lower slowly."
+      ],
+      "key": "back_extension_hold",
+      "name": "Back extension hold",
+      "setup": "Heels under a heavy sofa or bed; hips on a firm cushion, fingertips at your temples.",
+      "stop": "Stop when your chest sinks below the line of your legs.",
+      "tips": [
+        "Hold a straight line and no higher; squeeze your seat the whole time.",
+        "Keep your eyes on the floor so your neck stays long."
+      ]
+    },
+    "664": {
+      "cue": "Arms by your ears, lift to a straight line, lower slowly. Count out loud, breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+        "Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+        "Reach both arms straight past your head, upper arms by your ears.",
+        "Breathe out and lift until your arms, hips and heels line up, and no higher.",
+        "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "key": "back_extension_long",
+      "name": "Long back extension",
+      "setup": "Heels under a heavy sofa or bed; hips on a firm cushion, arms straight past your head.",
+      "stop": "Stop when your arms drop, the sofa lifts or you rise past a straight line.",
+      "tips": [
+        "Keep your arms by your ears the whole way; when they drop, the set is over.",
+        "Squeeze your seat first, then lift, with no swing to help.",
+        "If the sofa lifts, hook your heels under your bed's frame instead."
+      ]
+    },
+    "665": {
+      "cue": "Grip the weight, lift both legs level, lower slowly. Count out loud, breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Put the weight on the floor by your bed: a full bottle, a heavy book or a dumbbell.",
+        "Lie face down across the bed, hip crease at the edge; hold the far edge or fold your arms.",
+        "Grip the weight between your feet and keep your legs straight.",
+        "Squeeze your seat and lift both legs until they are level with your back.",
+        "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "hows": {
+        "ball": [
+          "Put the medicine ball on the floor by your bed.",
+          "Lie face down across the bed, hip crease at the edge; hold the far edge or fold your arms.",
+          "Grip the ball between your feet and keep your legs straight.",
+          "Squeeze your seat and lift both legs until they are level with your back.",
+          "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+        ],
+        "dumbbells": [
+          "Stand one dumbbell on end on the floor by your bed.",
+          "Lie face down across the bed, hip crease at the edge; hold the far edge or fold your arms.",
+          "Grip its handle between your feet, under the top end, and keep your legs straight.",
+          "Squeeze your seat and lift both legs until they are level with your back.",
+          "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+        ]
+      },
+      "key": "reverse_hyper_weight",
+      "name": "Weighted reverse hyper",
+      "setup": "Hips at the edge of your bed; a weight of 2-5 kg gripped between your feet.",
+      "setups": {
+        "ball": "Hips at the edge of your bed; a medicine ball of 2-5 kg gripped between your feet.",
+        "dumbbells": "Hips at the edge of your bed; one dumbbell of 2-5 kg on end between your feet."
+      },
+      "stop": "Stop when the weight slips or your legs swing past level.",
+      "tips": [
+        "Pick a weight you can lift 6 to 10 times; the game says when to go heavier.",
+        "Squeeze your feet together the whole way so the weight cannot slip.",
+        "Lift to level and no higher, with no swing to help."
+      ]
+    },
+    "666": {
+      "cue": "Fingertips at your temples, lift to one straight line. Count out loud, breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Put on the loaded pack, both straps on, worn high and snug on your back.",
+        "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+        "Put a firm cushion under your hips, fingertips at your temples, let your chest sink.",
+        "Breathe out and lift until your head, hips and heels line up, and no higher.",
+        "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "hows": {
+        "vest": [
+          "Put on the weighted vest, snug and even.",
+          "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+          "Put a firm cushion under your hips, fingertips at your temples, let your chest sink.",
+          "Breathe out and lift until your head, hips and heels line up, and no higher.",
+          "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+        ]
+      },
+      "key": "back_extension_pack",
+      "name": "Back extension with a pack",
+      "setup": "Heels under a heavy sofa or bed; hips on a firm cushion; a 5-10 kg pack on your back.",
+      "setups": {
+        "vest": "Heels under a heavy sofa or bed; hips on a firm cushion; a 5-10 kg vest on, snug."
+      },
+      "stop": "Stop when the pack slides, the sofa lifts or you rise past a straight line.",
+      "tips": [
+        "Pick a weight you can lift 6 to 10 times; the game says when to go heavier.",
+        "Tighten the straps; hands stay at your temples, never overhead, so the pack cannot slide.",
+        "If the sofa lifts, hook your heels under your bed's frame instead."
+      ]
+    },
+    "667": {
+      "cue": "Back flat at a slant: lower your chest toward level, lift it back. Breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Kneel on a folded towel or a mat, knees hip-width, toes tucked or flat, as is steadier.",
+        "Push your seat back until it is above your heels, never resting on them.",
+        "Tip your chest forward to a slant, back flat, arms straight back along your sides.",
+        "Breathe in, lower your chest toward level, pause, then breathe out and lift to the slant.",
+        "Stay at the slant between lifts, never upright; each lift counts one."
+      ],
+      "key": "kneeling_back_raise",
+      "name": "Kneeling back raise",
+      "setup": "Kneel on a folded towel, seat back above your heels, arms straight back by your sides.",
+      "stop": "Stop when your back rounds or your seat rests on your heels.",
+      "tips": [
+        "Keep your head in line with your back, eyes on the floor ahead of your knees.",
+        "Lower only as far as your back stays flat."
+      ]
+    },
+    "668": {
+      "cue": "Seat back, chest forward and down, back flat. Hold 3 seconds, rise tall. Breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Kneel tall on a folded towel or a mat, knees hip-width, toes tucked or flat.",
+        "Rest your fingertips at your temples, elbows wide, head in line with your back.",
+        "Push your seat back as your chest goes forward and down, your back flat.",
+        "Hold the fold for a count of 3, then breathe out and rise tall.",
+        "Each fold with its hold counts as one rep."
+      ],
+      "key": "kneeling_good_morning",
+      "name": "Kneeling good morning",
+      "setup": "Kneel tall on a folded towel, fingertips at your temples, elbows wide.",
+      "stop": "Stop when your back rounds or your seat rests on your heels.",
+      "tips": [
+        "Fold only as far as your back stays flat.",
+        "Your seat goes back toward your heels and never rests on them."
+      ]
+    },
+    "669": {
+      "cue": "Lift one arm and the other leg a hand's width, hold 2 seconds, switch. Breathe steadily.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor with a folded pillow under your belly.",
+        "Reach both arms past your head, legs straight, eyes on the floor.",
+        "Lift one arm and the other leg a hand's width off the floor and hold for a count of 2.",
+        "Lower them, then lift the other arm and leg and hold again.",
+        "Breathe steadily; a lift on each side counts one."
+      ],
+      "key": "swimmer_lifts",
+      "name": "Swimmer lifts",
+      "setup": "Lie face down on the floor, a folded pillow under your belly, arms past your head.",
+      "stop": "Stop when your chin lifts or the lifts become a flutter. A lift on each side counts one.",
+      "tips": [
+        "Lift low and hold each lift: a fast flutter does not count.",
+        "Keep your chin a little tucked, never looking up."
+      ]
+    },
     "67": {
       "cue": "Pull your chin over the bar, lower with control. Count out loud, breathe out as you pull.",
       "dose": "rep",
@@ -11348,6 +11653,221 @@
         "Pull your elbows down towards your ribs as if bending the bar.",
         "Lower all the way to straight arms before the next pull.",
         "Keep your chest up and aim it at the bar as you pull."
+      ]
+    },
+    "670": {
+      "cue": "Reach the banded arm forward and leg back, hips level. Breathe out as you reach.",
+      "dose": "rep",
+      "how": [
+        "Use a long flat loop band, never a tube with handles.",
+        "On hands and knees, loop it round the arch of one foot and the palm of the other hand.",
+        "Reach that arm forward and that leg back against the band to level; hold for 1 second.",
+        "Come back slowly, hips level; breathe out as you reach, and count each reach.",
+        "Finish one side, press Switch sides, then move the band to the other foot and hand."
+      ],
+      "key": "bird_dog_band",
+      "name": "Band bird dog",
+      "setup": "On hands and knees; a loop band round one foot and the palm of the other hand.",
+      "side": true,
+      "stop": "Stop when your hips tip or your back sags. Count the weaker side.",
+      "tips": [
+        "Check the band for nicks before you start.",
+        "Keep your eyes on the floor and both hip bones pointing at it as the band pulls."
+      ]
+    },
+    "671": {
+      "cue": "Seat back, fold forward slowly, back flat. Hold for 3 seconds, rise tall. Breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Kneel tall on a folded towel or a mat, knees hip-width, toes tucked or flat.",
+        "Reach both arms straight up, upper arms by your ears.",
+        "Push your seat back and fold forward slowly, arms and back in one flat line.",
+        "Hold the fold for a count of 3, then breathe out and rise tall.",
+        "Each fold with its hold counts as one rep."
+      ],
+      "key": "kneeling_good_morning_long",
+      "name": "Long kneeling good morning",
+      "setup": "Kneel tall on a folded towel, both arms straight up by your ears.",
+      "stop": "Stop when your arms drop from your ears or your back rounds.",
+      "tips": [
+        "Keep your arms by your ears the whole way; when they drop, the set is over.",
+        "Fold only as far as your back stays flat; your seat never rests on your heels."
+      ]
+    },
+    "672": {
+      "cue": "Lift both straight legs until your knees just clear the floor. Hold for 3. Count out loud.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor with a folded pillow under your hips.",
+        "Rest your forehead on your hands, legs straight and together.",
+        "Squeeze your seat and lift both legs until your knees just clear the floor.",
+        "Hold for a count of 3, then lower slowly.",
+        "Each lift with its hold counts as one, counted out loud."
+      ],
+      "key": "floor_leg_lift",
+      "name": "Floor leg lift",
+      "setup": "Lie face down on the floor, a folded pillow under your hips, forehead on your hands.",
+      "stop": "Stop when your knees bend or your legs swing up.",
+      "tips": [
+        "Lift low: your knees only just clear the floor, with no swing.",
+        "The pillow keeps your lower back long; a low lift is the whole move.",
+        "Keep your legs straight and pressed together."
+      ]
+    },
+    "673": {
+      "cue": "Lie across it, hips at the edge, lift both legs to level. Count out loud, breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Lean on the edge, then pull gently: if the table lifts, slides or creaks, stop.",
+        "Lay a folded towel on the edge and lie across the table, chest and belly on the top.",
+        "Set your hip crease at the edge, hold the far edge, legs straight and hanging.",
+        "Squeeze your seat and lift both legs until they are level with your back.",
+        "Pause at the line, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "key": "reverse_hyper_table",
+      "name": "Table reverse hyper",
+      "setup": "A heavy table on four legs; never glass, folding, a standing desk or one with monitors.",
+      "stop": "Stop when your legs swing past level or the table moves.",
+      "tips": [
+        "Never with a weight at your feet.",
+        "Lift to level and no higher, with no swing to help.",
+        "Keep your knees straight and reach your heels to the far wall."
+      ]
+    },
+    "674": {
+      "cue": "Arms by your ears, lift your chest a hand's width, hold for 3 seconds. Count out loud.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor with a folded pillow under your lower belly.",
+        "Reach both arms straight past your head, upper arms by your ears, feet on the floor.",
+        "Breathe out and lift your chest and arms a hand's width off the floor, eyes down.",
+        "Hold for a count of 3, then lower slowly and breathe in.",
+        "Each lift with its hold counts as one, counted out loud."
+      ],
+      "key": "chest_lift_long",
+      "name": "Long chest lift",
+      "setup": "Lie face down on the floor, a folded pillow under your belly, arms past your head.",
+      "stop": "Stop when your arms drop from your ears, your chin lifts or your feet leave the floor.",
+      "tips": [
+        "Keep your arms by your ears the whole way; when they drop, the set is over.",
+        "The pillow keeps your lower back long; a low lift is the whole move.",
+        "Keep your chin a little tucked, never looking up."
+      ]
+    },
+    "675": {
+      "cue": "Fingertips at your temples, lift your chest a hand's width, hold for 3. Count out loud.",
+      "dose": "rep",
+      "how": [
+        "Put on the loaded pack, both straps on, worn high and snug on your back.",
+        "Lie face down on the floor with a folded pillow under your lower belly.",
+        "Rest your fingertips at your temples, elbows wide, legs straight, feet on the floor.",
+        "Breathe out and lift your chest a hand's width off the floor, eyes on the floor.",
+        "Hold for a count of 3, then lower slowly; each lift counts one, counted out loud."
+      ],
+      "hows": {
+        "vest": [
+          "Put on the weighted vest, snug and even.",
+          "Lie face down on the floor with a folded pillow under your lower belly.",
+          "Rest your fingertips at your temples, elbows wide, legs straight, feet on the floor.",
+          "Breathe out and lift your chest a hand's width off the floor, eyes on the floor.",
+          "Hold for a count of 3, then lower slowly; each lift counts one, counted out loud."
+        ]
+      },
+      "key": "chest_lift_pack",
+      "name": "Chest lift with a pack",
+      "setup": "Lie face down, a folded pillow under your belly; a 5-10 kg pack worn with both straps.",
+      "setups": {
+        "vest": "Lie face down, a folded pillow under your belly; a 5-10 kg vest on, snug and even."
+      },
+      "stop": "Stop when your chin lifts, your feet leave the floor or the pack slides towards your neck.",
+      "tips": [
+        "Start light, at about 5 kg; the game says when to go heavier.",
+        "Tighten the straps so the pack cannot slide towards your neck.",
+        "The pillow keeps your lower back long; a low lift is the whole move."
+      ]
+    },
+    "676": {
+      "cue": "Arms by your ears, lift to one straight line and hold it there. Count out loud.",
+      "dose": "hold",
+      "how": [
+        "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+        "Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+        "Reach both arms straight past your head, upper arms by your ears.",
+        "Lift until your arms, hips and heels line up, and hold still, counting out loud.",
+        "The clock times how long you hold the line, then lower slowly."
+      ],
+      "key": "back_extension_long_hold",
+      "name": "Long back extension hold",
+      "setup": "Heels under a heavy sofa or bed; hips on a firm cushion, arms straight past your head.",
+      "stop": "Stop when your arms drop, the sofa lifts or your chest sinks below the line.",
+      "tips": [
+        "Hold a straight line and no higher; squeeze your seat the whole time.",
+        "Keep your arms by your ears the whole hold; when they drop, the hold is over.",
+        "If the sofa lifts, hook your heels under your bed's frame instead."
+      ]
+    },
+    "677": {
+      "cue": "Seat back, chest toward level, hold 2 seconds, rise. Count out loud, breathe out up.",
+      "dose": "rep",
+      "how": [
+        "Kneel tall on a folded towel or a mat, knees hip-width, toes tucked or flat.",
+        "Hug the weight tight to your chest with both hands, the whole way.",
+        "Seat back, tip your chest forward to level, or only as far as your back stays flat.",
+        "Hold for a count of 2, then breathe out and rise tall.",
+        "Each fold with its hold counts as one, counted out loud."
+      ],
+      "key": "kneeling_good_morning_weight",
+      "name": "Kneeling good morning with a weight",
+      "setup": "Kneel tall on a folded towel; hug a weight of 5-10 kg to your chest: a bag or a jug.",
+      "setups": {
+        "dumbbells": "Kneel tall on a folded towel; hold one dumbbell of 5-10 kg upright against your chest.",
+        "kettlebell": "Kneel tall on a folded towel; hold a kettlebell of 5-10 kg to your chest by its horns."
+      },
+      "stop": "Stop when your back rounds or your seat rests on your heels.",
+      "tips": [
+        "Start light, at about 5 kg; the game says when to go heavier.",
+        "If you tip forward, set the weight down and take less.",
+        "Never kneel with a pack on your back or a bar: the weight stays at your chest."
+      ]
+    },
+    "678": {
+      "cue": "Arms by your ears, lift to a straight line, hold for 3, lower for 3. Count out loud.",
+      "dose": "rep",
+      "how": [
+        "Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+        "Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+        "Reach both arms straight past your head, upper arms by your ears.",
+        "Breathe out and lift until your arms, hips and heels line up, and no higher.",
+        "Hold the line for a count of 3, then lower for a count of 3; each lift counts one."
+      ],
+      "key": "back_extension_long_slow",
+      "name": "Slow long back extension",
+      "setup": "Heels under a heavy sofa or bed; hips on a firm cushion, arms straight past your head.",
+      "stop": "Stop when your arms drop, the sofa lifts or you rise past a straight line.",
+      "tips": [
+        "Count the 3 seconds out loud, at the line and on the way down.",
+        "Keep your arms by your ears the whole way; when they drop, the set is over.",
+        "If the sofa lifts, hook your heels under your bed's frame instead."
+      ]
+    },
+    "679": {
+      "cue": "Lift both straight legs to level against the band, pause, lower slowly. Count out loud.",
+      "dose": "rep",
+      "how": [
+        "Thread a long band round a leg of the bed, right under the edge, and through itself.",
+        "Step both ankles into the loop, then lie face down across the bed, hip crease at the edge.",
+        "Hold the far edge, squeeze your seat and lift both straight legs until they are level.",
+        "Pause at the line, then lower slowly against the band.",
+        "Each lift counts one, counted out loud."
+      ],
+      "key": "reverse_hyper_band",
+      "name": "Band reverse hyper",
+      "setup": "Hips at the edge of your bed; a band round both ankles and a leg of the bed under you.",
+      "stop": "Stop when your knees bend or your legs swing past level.",
+      "tips": [
+        "Start with a light band and check it for nicks; take a thicker one when 15 is easy.",
+        "Lift to level and no higher, with no swing to help.",
+        "If no leg of the bed is in reach under the edge, skip this move."
       ]
     },
     "68": {
@@ -11574,18 +12094,18 @@
     },
     "78": {
       "cue": "Reach one arm and the opposite leg, hips level, alternate sides. Breathe out as you reach.",
-      "dose": "rep",
+      "dose": "flow",
       "how": [
         "Kneel on the floor, hands under your shoulders, knees under your hips, back flat.",
         "Reach one arm forward and the opposite leg back until both are level with your back.",
         "Hold the reach for 1 s with your hips level, then come back.",
         "Breathe out as you reach, breathe in as you come back.",
-        "Alternate sides every rep; a reach with one side and then the other counts one."
+        "Switch sides after every reach and keep a slow, even rhythm until the clock ends."
       ],
       "key": "bird_dog",
       "name": "Bird dog",
       "setup": "Hands and knees on the floor, a folded towel under your knees if it is hard.",
-      "stop": "Stop when your hips rotate or your back sags. A reach on each side counts one.",
+      "stop": "Stop when your hips rotate or your back sags.",
       "tips": [
         "Push the heel back as if pressing a wall behind you, not up to the ceiling.",
         "Keep both hip bones pointing at the floor as the leg reaches back.",

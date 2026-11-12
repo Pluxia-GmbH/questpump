@@ -63,7 +63,9 @@ register("desk.menu.linkdevice", () => {
 			: l.state === "linked" ? t("menu.linkdevice.linked")
 				: l.state === "failed" ? t("menu.sync.unanswered")
 					: l.state === "other" ? t("desk.menu.link.other")
-						: l.state === "rekey" ? t("menu.sync.rekey") : "");
+						: l.state === "rekey" ? t("menu.sync.rekey") : "",
+		// a device linked is a commitment that succeeded; a link that did not come about, an error (slice 72)
+		l.state === "linked" ? "commit" : l.state === "linking" ? null : "error");
 	});
 	intent("sync.link.start").catch(console.error);
 	view.stops.push(() => intent("sync.link.stop").catch(console.error));

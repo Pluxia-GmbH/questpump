@@ -18,10 +18,12 @@ import {figureName} from "../../lib/figure.js";
 import {announce} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
 import {guardMs} from "../../lib/keys.js";
-import {openMenu, over} from "../../lib/router.js";
+import {morph} from "../../lib/morph.js";
+import {openMenu, over, tabOf} from "../../lib/router.js";
 import {openShare, streakCard} from "../../lib/share.js";
-import {h, qualityName} from "../../kit/element.js";
-import {shifted, turned} from "../../kit/qp-count-bar.js";
+import {animationMs, h, qualityName, token} from "../../kit/element.js";
+import {flyMs, shifted, turned} from "../../kit/qp-count-bar.js";
+import {fanfareWords} from "../../kit/qp-fanfare.js";
 import {countUnit} from "../../kit/qp-stepper.js";
 import {rest, tripResult} from "./expedition.js";
 import {howAndTips, stopLine} from "../../kit/move-how.js";
@@ -99,9 +101,11 @@ function guideButton(pump) {
 	return {el, show};
 }
 
-/** Big view's foot under its primary: the read-aloud button beside Back. */
-function ways(guide, pump) {
-	return h("div", {class: "qp-pump-ways"}, ...[guide.el, back(pump)].filter(Boolean));
+/** Big view's foot under its primary, one row of quiet ways: `lead` (the count's Could not do one and Change it),
+ * then the read-aloud button beside Back. The primary alone stands over it, so the foot is as high on every stage of a
+ * move and the stage above it never changes its size between them. */
+function ways(guide, pump, ...lead) {
+	return h("div", {class: "qp-pump-ways"}, ...[...lead, guide.el, back(pump)].filter(Boolean));
 }
 
 // Ready -------------------------------------------------------------------------------------------------------------
@@ -603,11 +607,14 @@ function tipOf(ring, share) {
  * dimmed, what it saved (a set of reps' reps, a hold's seconds, a counted set's clean reps, a timed move's seconds)
  * pouring one grain a unit from the dial's tip into their places on the CountBar beside it, the dial emptying as they
  * leave, its number counting each landing unit (m:ss for seconds), the record chip once past the record and the top's
- * flash and sparks; then, where the save opened a step, the StepReveal over the figure's room folding into its unlock
- * row while the bar rolls over to the next step's; then the move's own rows, in place of the dial on a wide window and
- * of the figure on a tall one, the next move coming by itself the game's record_hold_s after them, or after the last
+ * flash and sparks; then, where the save opened a step, the StepReveal over the figure's room, its hero landing on its
+ * unlock row's tile, which pops and shines as the bar rolls over to the next step's; then the move's own rows, laid in
+ * their places at once and shown one by one (so no row moves as the next comes), under the dial, which gives way to
+ * them as its count alone, on a wide window and in the figure's place on a tall one (one move, lib/morph.js), the
+ * next move coming by itself the game's record_hold_s after them, or after the last
  * window over the stage closed, never under one (Rust's `Pour::goes_on_at`; Rapha, 2026-11-04). `Next: {move}` (Finish
- * on the pump's last move) is the primary from the first frame (Enter); a click on the stage lands one stage (the pour, then the
+ * on the pump's last move) is the primary from the first frame (Enter), filling from its leading edge over the wait
+ * before the move goes on by itself (Rust's `goes_on`; Rapha, 2026-11-11); a click on the stage lands one stage (the pour, then the
  * reveal); Back and Escape take the move back to its Ready view, nothing saved, while the pour runs. Rust plans every
  * instant and plays the sounds; under Reduce Motion the end state at once. */
 export function saved(pump, topic, ctx) {
@@ -642,29 +649,36 @@ export function saved(pump, topic, ctx) {
 	let folded = false;
 	let shownRows = 0;
 	let rowEls = [];
-	let earnedFor = null;
+	let laid = false;
 	if (matchMedia("(prefers-reduced-motion: reduce)").matches && !s.landed) {
 		heard(intent("pump.saved.land", {still: true}));
 	}
 	const landedCount = (now) => (s.landed ? s.value : s.starts.filter((at) => at + s.fly <= now).length);
+	/** Lays every row in its place, unseen, as the first one's turn comes: the dial gives way to them in one move, and
+	 * no row moves again as the others come in. */
+	const lay = (e) => {
+		rowEls = e.rows.map((row) => {
+			const r = h("qp-reward-row", {waits: true});
+			r.reward = reward(row.reward);
+			r.move = row.move;
+			return r;
+		});
+		heard(morph(() => {
+			rows.replaceChildren(...rowEls);
+			rows.hidden = false;
+			stage.classList.add("qp-saved-rows-in");
+			laid = true;
+		}));
+	};
 	const showRows = (now, e) => {
-		if (earnedFor !== e) {
-			earnedFor = e;
-			rowEls = e.rows.map((row) => {
-				const r = h("qp-reward-row");
-				r.reward = reward(row.reward);
-				r.move = row.move;
-				return r;
-			});
-		}
+		if (!rowEls.length && e.rows.length && now >= e.rows_at[0]) lay(e);
+		if (!laid) return;
 		while (shownRows < rowEls.length && now >= e.rows_at[shownRows]) {
+			rowEls[shownRows].waits = false;
 			rowEls[shownRows].shown = true;
-			rows.append(rowEls[shownRows]);
 			shownRows += 1;
 		}
-		rows.hidden = shownRows === 0;
-		stage.classList.toggle("qp-saved-rows-in", shownRows > 0);
-		if (shownRows === 1 && !rows.dataset.said) {
+		if (shownRows >= 1 && !rows.dataset.said) {
 			rows.dataset.said = "";
 			announce(rowEls.flatMap((row) => row.spoken()).filter(Boolean).join(". "));
 		}
@@ -691,6 +705,10 @@ export function saved(pump, topic, ctx) {
 			return true;
 		},
 		frame(now) {
+			// Next fills over the wait before the move goes on by itself, empty while that is not known
+			const [from, to] = s.goes_on ?? [];
+			next.progress = s.goes_on ? Math.min(1, Math.max(0, (now - from) / Math.max(1, to - from))) : null;
+			const waits = s.goes_on != null && now < to;
 			const n = s.value;
 			const started = s.landed ? n : s.starts.filter((at) => at <= now).length;
 			// the grains that have left and not yet flown, each once
@@ -710,7 +728,7 @@ export function saved(pump, topic, ctx) {
 				if (!s.landed) bar.flash();
 			}
 			const e = s.earned;
-			if (!e) return !s.landed;
+			if (!e) return !s.landed || waits;
 			const r = e.reveal;
 			if (r && !reveal && !folded && !r.landed) {
 				reveal = h("qp-step-reveal");
@@ -720,21 +738,33 @@ export function saved(pump, topic, ctx) {
 			}
 			const folds = r && (r.landed || now >= r.folds);
 			if (!r || folds) showRows(now, e);
-			// the hero folds into its row's tile once that row is in (at once where the reveal landed)
-			const row = unlockRow();
-			if (r && folds && !folded && (r.landed || !row || row.isConnected)) {
+			// the hero flies to its row's tile once that row is shown in its place (at once where the reveal landed, or
+			// no row is its own), and the bar turns over as it lands
+			const row = e.rows.length ? unlockRow() : null;
+			if (r && folds && !folded && (r.landed || !e.rows.length || (laid && (!row || row.shown)))) {
 				folded = true;
-				const tile = row?.isConnected ? row.querySelector("qp-move-tile") : null;
-				reveal?.fold(tile?.getBoundingClientRect() ?? null);
-				if (e.next_bar) {
-					if (r.landed) {
-						bar.held = 0;
-						bar.bar = e.next_bar;
-					} else bar.roll(e.next_bar);
+				const turn = () => {
+					if (!e.next_bar) return;
+					if (r.landed) bar.turn(e.next_bar);
+					else bar.roll(e.next_bar);
+				};
+				const tile = laid && row?.shown && reveal && !r.landed ? row.querySelector("qp-move-tile") : null;
+				if (tile) {
+					// where the tile stands once its row's own arrival, which still shifts it, is over
+					const box = tile.getBoundingClientRect();
+					const lift = new DOMMatrixReadOnly(getComputedStyle(row).transform).m42;
+					const caught = row.catches(flyMs());
+					reveal.fold(new DOMRect(box.x, box.y - lift, box.width, box.height), () => {
+						caught();
+						turn();
+					});
+				} else {
+					reveal?.fold(null);
+					turn();
 				}
 			}
 			const last = e.rows_at[e.rows_at.length - 1] ?? 0;
-			return shownRows < rowEls.length || now < last || !s.landed;
+			return shownRows < rowEls.length || now < last || !s.landed || waits;
 		},
 	};
 }
@@ -819,7 +849,7 @@ function formStep(pump, topic, ctx) {
 	const change = c.check ? button("qp-quiet-button", c.change, () => heard(intent("pump.count.clear"))) : null;
 	const guide = guideButton(pump);
 	const {el} = frame({head: steps(pump, ctx, {big: true}), body: mid.parts,
-		foot: [yes, change, ways(guide, pump)].filter(Boolean)});
+		foot: [yes, ways(guide, pump, change)].filter(Boolean)});
 	let fresh = true; // the count the step started from: the first digit typed replaces it
 	let asking = false;
 	const settle = () => {
@@ -913,7 +943,7 @@ export function counting(pump, topic, ctx) {
 	const yes = check ? button("qp-primary-button", check.yes, count(() => c.check.value, () => c.check.load)) : null;
 	const change = c.check ? button("qp-quiet-button", c.change, () => heard(intent("pump.count.clear"))) : null;
 	const guide = guideButton(pump);
-	const foot = [yes, change, save, couldNot, ways(guide, pump)].filter(Boolean);
+	const foot = [yes, save, ways(guide, pump, change, couldNot)].filter(Boolean);
 	let fresh = true; // the count the step started from: the first digit typed replaces it
 	let freshWeight = true; // so the weight planned
 	let busy = pump.busy;
@@ -1102,9 +1132,132 @@ function saveOffer(pump, continueButton) {
 	return {foot: [save, later], primary: save};
 }
 
+/** One gold mote of the floating Result from point `from` to `to` (the window's px) on an arc over them, after
+ * `delay` ms, `land` called as it arrives (surface.ResultFloat, motion.resultMote). */
+function mote(layer, from, to, delay, land) {
+	const m = h("i", {class: "qp-pump-mote", "aria-hidden": "true"});
+	layer.append(m);
+	const lift = token(layer, "--qp-surface-result-float-mote-lift") * (1 + Math.random());
+	const c = {x: (from.x + to.x) / 2 + (Math.random() - 0.5) * 2 * lift, y: Math.min(from.y, to.y) - lift};
+	const frames = [];
+	for (let i = 0; i <= 12; i += 1) {
+		const s = i / 12;
+		const x = (1 - s) ** 2 * from.x + 2 * (1 - s) * s * c.x + s ** 2 * to.x;
+		const y = (1 - s) ** 2 * from.y + 2 * (1 - s) * s * c.y + s ** 2 * to.y;
+		// copy-lint: not shown (a mote's CSS transform)
+		frames.push({transform: `translate(${x}px, ${y}px) scale(${1 - s * 0.35})`, opacity: s < 0.08 ? s / 0.08 : 1});
+	}
+	const flight = m.animate(frames, {duration: token(layer, "--qp-motion-result-mote-duration"), delay,
+		easing: getComputedStyle(layer).getPropertyValue("--qp-motion-result-mote-easing").trim(), fill: "both"});
+	flight.onfinish = () => {
+		m.remove();
+		land();
+	};
+	return flight;
+}
+
+/** An element's middle in the window's px. */
+function middle(el) {
+	const r = el.getBoundingClientRect();
+	return {x: r.left + r.width / 2, y: r.top + r.height / 2};
+}
+
+/** The Hero tab as a mote lands in it: a bump, and with the last the XP the pump earned over its glyph in gold, gone
+ * with its own motion. */
+function heroLanded(tab, xp, last) {
+	if (!tab) return;
+	tab.classList.remove("qp-tab-bump");
+	void tab.offsetWidth;
+	tab.classList.add("qp-tab-bump");
+	if (!last || xp == null) return;
+	tab.querySelector(".qp-tab-gain")?.remove();
+	const chip = h("span", {class: "qp-tab-gain", "aria-hidden": "true", text: t("log.xp", {xp})});
+	tab.append(chip);
+	setTimeout(() => chip.remove(), animationMs(chip));
+}
+
+/** The floating Result (Rapha, 2026-11-11, "Into Hero"; surface.ResultFloat): `card` dropping in under the window's top
+ * over the page under the pump (its cover see-through), the reveal playing on in it (`reveals(now)`, true while it
+ * runs), gold motes flying from the XP (`from`, none where it shows no XP) into the Hero tab as it counts up (none
+ * under Reduce Motion, where the tab shows the XP at once), then the ring round its close button `close` emptying over motion.resultFloatHold, held
+ * while the pointer is on the card; at its end, at the close or at Escape the card leaves upward and the pump goes
+ * (`pump.continue`). A click on the card lands the reveal; `update` takes the pump as Rust sends it again. */
+function floating(card, close, from, xp, reveal, reveals, update) {
+	const layer = h("div", {class: "qp-pump-motes"});
+	const el = h("div", {class: "qp-pump-floats"}, card, layer);
+	const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const tab = tabOf("hero");
+	// read at the first frame: the card is in no page yet, where a token has no number
+	let hold = null;
+	let flown = false;
+	let flights = [];
+	let held = 0; // the hold's ms run so far
+	let last = null; // the frame the hold last counted from
+	let pointed = false;
+	let leaving = false;
+	const leave = () => {
+		if (leaving) return;
+		leaving = true;
+		for (const f of flights) f.cancel();
+		card.classList.add("qp-out");
+		setTimeout(() => heard(intent("pump.continue")), animationMs(card));
+	};
+	close.addEventListener("click", leave);
+	card.addEventListener("pointerenter", () => {
+		pointed = true;
+	});
+	card.addEventListener("pointerleave", () => {
+		pointed = false;
+	});
+	card.addEventListener("click", (e) => {
+		if (!e.target.closest("button") && !reveal().landed) heard(intent("pump.land"));
+	});
+	return {
+		el,
+		floats: true,
+		primary: () => close,
+		update,
+		onKey(e) {
+			if (e.key !== "Escape") return false;
+			leave();
+			return true;
+		},
+		frame(now) {
+			const going = reveals(now);
+			const r = reveal();
+			hold ??= token(card, "--qp-motion-result-float-hold-duration");
+			if (!flown && (r.landed || now >= r.gain)) {
+				flown = true;
+				const count = still || r.landed ? 0 : token(card, "--qp-surface-result-float-mote-count");
+				const stagger = token(card, "--qp-motion-result-mote-stagger");
+				if (count && tab && from) {
+					const to = middle(tab.querySelector("qp-art") ?? tab);
+					const at = middle(from);
+					flights = Array.from({length: count}, (_, i) => mote(layer, at, to, i * stagger,
+						() => heroLanded(tab, xp, i === count - 1)));
+				} else if (from) {
+					heroLanded(tab, xp, true);
+				}
+			}
+			if (leaving) return false;
+			if (!going) {
+				if (last != null && !pointed) held += now - last;
+				last = now;
+				close.style.setProperty("--qp-ring", String(Math.max(0, 1 - held / hold)));
+				if (held >= hold) leave();
+			}
+			return !leaving;
+		},
+	};
+}
+
 /** The pump's end (mockup pump-done): the fanfare and what the pump earned, played by the Result's one reveal on the
  * instants Rust gave (the XP counting up as the bar fills, the banner turning at a level, a Paragon rank or a streak
- * milestone, the reward rows one by one, each move the pump did first with its record and its progress, 2026-10-29)
+ * milestone with its words rising again, and since slice 72 the bar reaching its end at that turn, flashing once and
+ * starting the new level from empty (never one jump, never backwards), the streak's day before the rows where the
+ * pump made the streak a day longer (qp-streak-day: the count rolling to today's, today's mark lighting, the day
+ * against the next milestone) and an Epic or higher step's glow rising once after its shine; the reward rows one by
+ * one, Welcome back first, each move the pump did with its record and its progress, 2026-10-29)
  * and a catch-up's payment (no day-one soreness line since David, 2026-10-24: only what is legally necessary); a click lands the reveal (Reduce Motion lands it at once). A
  * streak milestone's Share (slice 45), under the banner once it turned to the milestone and on the milestone's row,
  * opens the Share window on the streak card. A pump that ended short ends calm, never with the fanfare, the reveal or a
@@ -1119,11 +1272,18 @@ export function done(pump, topic, ctx) {
 	const kept = Boolean(r) && pump.calm && (pump.calm.why === "left" || pump.calm.why === "game");
 	// an expedition's Result (slice 51): its own parts around the pump's; felt unwell shows its card alone
 	const trip = pump.expedition?.done && r ? tripResult(pump) : null;
+	// Rust's `floats`, but never over the browser's Save offer, which stays the Result's main action
+	const floats = Boolean(pump.floats) && celebrates && !trip && !(get("play")?.offer === "result" && pump.ended_done);
 	if (trip) body.push(...trip.head);
 	if (pump.calm && !trip) body.push(calm(pump));
 	let draw = () => false;
+	let float = null;
 	if (celebrates || kept) {
-		const banner = celebrates && r.banner ? h("qp-fanfare", {kind: r.banner.kind, number: r.banner.number}) : null;
+		const banner = celebrates && r.banner && !floats ? h("qp-fanfare", {kind: r.banner.kind, number: r.banner.number})
+			: null;
+		// the floating Result's head: the banner's words, turning as the banner does
+		const title = floats ? h("h2", {class: "qp-type-caps qp-pump-float-title",
+			text: r.banner ? fanfareWords(r.banner.kind, r.banner.number) : t("kit.fanfare.pump")}) : null;
 		const bannerShare = banner ? h("qp-round-button", {icon: "share", class: "qp-pump-banner-share",
 			"on:click": () => openShare(streakCard(banner.number, true))}) : null;
 		const shareShown = () => {
@@ -1133,9 +1293,18 @@ export function done(pump, topic, ctx) {
 		const gain = h("p", {class: "qp-pump-gain"}, h("span", {class: "qp-gold", text: "+"}),
 			h("span", {class: "qp-type-num-large", text: "0"}));
 		const gainWord = h("p", {class: "qp-type-caps qp-pump-centre", text: t("pump.done.experience")});
-		const from = r.bar?.from ?? r.bar;
+		// a Result drawn again once its fill is over (a Legendary moment's Continue draws it anew) stands at its end:
+		// the bar fills, and its level turns and rises, once
+		const stands = !celebrates || !reveal || reveal.landed || Date.now() >= reveal.counted;
+		const from = (stands ? null : r.bar?.from) ?? r.bar;
 		const bar = r.bar ? h("qp-xp-bar", {level: from.level, into: from.into, need: from.need, paragon: from.paragon,
-			rested: r.bar.rested}) : null;
+			rested: r.bar.rested, compact: floats}) : null;
+		const to = r.bar && {level: r.bar.level, into: r.bar.into, need: r.bar.need, paragon: r.bar.paragon};
+		// a level or a rank turned on the bar: to its end, the flash with the level's rise, the new level from empty
+		// (motion.levelRoll, levelRise)
+		const levels = !stands && Boolean(r.bar?.from && r.turn && r.turn.kind !== "streak");
+		const streak = r.streak ? h("qp-streak-day") : null;
+		if (streak) streak.day = r.streak;
 		const rows = r.rows.map((row) => {
 			const el = h("qp-reward-row");
 			el.reward = reward(row.reward);
@@ -1148,42 +1317,88 @@ export function done(pump, topic, ctx) {
 		});
 		const list = h("qp-card", {class: "qp-pump-rows", hidden: true});
 		const xp = r.xp != null && (celebrates || r.xp > 0);
-		body.push(...[banner, bannerShare, trip?.line, xp ? gain : null, xp ? gainWord : null, bar, list].filter(Boolean));
 		const number = gain.lastChild;
+		if (floats) {
+			const close = h("qp-round-button", {icon: "close", small: true, class: "qp-pump-float-close"});
+			const head = h("div", {class: "qp-pump-float-head"},
+				h("div", {class: "qp-pump-float-words"}, title, xp ? gain : null, xp ? gainWord : null), close);
+			float = {card: h("div", {class: "qp-pump-float", role: "group", "aria-label": title.textContent},
+				head, bar, streak, list), close, from: xp ? number : null, xp: xp ? r.xp : null};
+		} else {
+			body.push(...[banner, bannerShare, trip?.line, xp ? gain : null, xp ? gainWord : null, bar, streak, list]
+				.filter(Boolean));
+		}
 		let turned = false;
 		let filled = false;
+		let restarted = false;
+		let stood = false;
+		let pulsed = false;
 		let shownRows = 0;
 		draw = (now) => {
 			// a calm end's rewards stand still at their end, as a landed reveal's
 			const landed = !celebrates || !reveal || reveal.landed;
 			const at = (instant) => landed || (instant != null && now >= instant);
-			if (banner && r.turn && !turned && at(reveal?.turn)) {
-				turned = true;
-				banner.kind = r.turn.kind;
-				banner.number = r.turn.number;
-				shareShown();
-			}
-			if (xp) {
-				const fill = landed ? 1 : Math.min(1, Math.max(0, (now - reveal.gain) / Math.max(1,
-					(reveal.rows[0] ?? reveal.end) - reveal.gain)));
-				number.textContent = new Intl.NumberFormat().format(Math.round(r.xp * fill));
-			}
 			if (bar && !filled && at(reveal?.gain)) {
 				filled = true;
-				Object.assign(bar, {level: r.bar.level, into: r.bar.into, need: r.bar.need, paragon: r.bar.paragon});
+				// before a level's turn the bar runs to its end by the turn's instant, else to its new share
+				if (levels && !landed) bar.fillTo({...from, into: from.need}, reveal.turn - reveal.gain);
+				else bar.land(to);
 			}
+			if ((banner || title) && r.turn && !turned && at(reveal?.turn)) {
+				turned = true;
+				if (banner) {
+					banner.kind = r.turn.kind;
+					banner.number = r.turn.number;
+					shareShown();
+				} else {
+					title.textContent = fanfareWords(r.turn.kind, r.turn.number);
+					float.card.setAttribute("aria-label", title.textContent);
+				}
+				// the words rise again as they turn, the banner's and the floating card's title alike, and the full
+				// bar flashes at a level or a rank
+				if (!landed) {
+					if (banner) banner.rise();
+					else title.classList.add("qp-turned");
+					if (levels) bar.flash();
+				}
+			}
+			if (levels && turned && !restarted && !landed && now >= reveal.refill) {
+				restarted = true;
+				bar.restart(to);
+			}
+			// a landed reveal (a click, Reduce Motion) stands the bar at its end whatever leg it was on
+			if (bar && filled && landed && !stood) {
+				stood = true;
+				bar.land(to);
+			}
+			if (xp) {
+				// the count follows the bar: at a level or a rank to the old level's end by the turn (`split` of
+				// the gain), standing there through the flash, the rest with the new level's fill
+				const leg = (from, to) => (to > from ? Math.min(1, Math.max(0, (now - from) / (to - from))) : 1);
+				const split = reveal?.split;
+				const fill = landed ? 1 : split == null ? leg(reveal.gain, reveal.counted)
+					: split * leg(reveal.gain, reveal.turn)
+						+ (now >= reveal.refill ? (1 - split) * leg(reveal.refill, reveal.counted) : 0);
+				number.textContent = new Intl.NumberFormat().format(Math.round(r.xp * fill));
+			}
+			if (streak && at(reveal?.streak)) streak.arrive(landed);
 			while (shownRows < rows.length && at(reveal?.rows[shownRows])) {
 				rows[shownRows].shown = celebrates;
 				list.append(rows[shownRows]);
 				shownRows += 1;
 			}
 			list.hidden = shownRows === 0;
+			// the Epic and higher steps' glow, every such row's together once the first row's shine is over
+			if (!pulsed && !landed && reveal.pulse != null && now >= reveal.pulse) {
+				pulsed = true;
+				for (const row of rows) row.pulse = row.shown && row.pulses();
+			}
 			return !landed && now < reveal.end;
 		};
 		if (!ctx.told(pump.id)) {
 			if (celebrates) {
-				announce([banner?.spoken() ?? "", xp ? t("pump.reward.xp", {xp: r.xp}) : "",
-					...rows.flatMap((row) => row.spoken())].filter(Boolean).join(". "));
+				announce([banner?.spoken() ?? title?.textContent ?? "", xp ? t("pump.reward.xp", {xp: r.xp}) : "",
+					streak?.spoken() ?? "", ...rows.flatMap((row) => row.spoken())].filter(Boolean).join(". "));
 			}
 			// the game day's last ember a move lit (slice 55), a kept end's too: the window's one Toast host shows it
 			// once the reveal is over
@@ -1195,8 +1410,14 @@ export function done(pump, topic, ctx) {
 	}
 	// a match pump's riders the game runs for are its calm card's words already
 	if (r?.paid && !(pump.calm?.why === "game" && r.paid === "game")) {
-		body.push(h("p", {class: "qp-type-subtitle qp-pump-centre", text: paidLine(r.paid)}));
+		const paid = h("p", {class: "qp-type-subtitle", text: paidLine(r.paid)});
+		if (float) float.card.append(paid);
+		else body.push(paid);
+		paid.classList.toggle("qp-pump-centre", !float);
 	}
+	if (float) return floating(float.card, float.close, float.from, float.xp, () => reveal, draw, (next) => {
+		reveal = next.reveal;
+	});
 	if (trip) body.push(...trip.tail);
 	const offer = trip ? null : saveOffer(pump, continueButton);
 	const {el, column} = frame({body, foot: trip ? trip.foot : offer.foot});

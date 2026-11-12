@@ -1,0 +1,11 @@
+{
+  "move": "kneeling_good_morning_weight.dumbbells",
+  "gear_of": "kneeling_good_morning_weight",
+  "gear": "dumbbells",
+  "items": [
+    {"kind": "dumbbell", "grip": "goblet"},
+    {"kind": "towel", "under": "knee_near"},
+    {"kind": "towel", "under": "knee_far"}
+  ],
+  "poses": {"tall": {"arms": {"ik": [26, -6, 7], "rel": "neck", "pole": [0.13, -0.96, 0.23], "hand": [0.1, 1, -0.5]}}}
+}

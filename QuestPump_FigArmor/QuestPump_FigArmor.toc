@@ -6,6 +6,6 @@
 ## LoadOnDemand: 1
 ## Dependencies: QuestPump
 ## Version: @project-version@
-## X-QuestPump-Pack: 76
+## X-QuestPump-Pack: 81
 
 Manifest.lua

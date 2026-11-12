@@ -1,0 +1,55 @@
+{
+  "move": "kneeling_back_raise",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["abdomen", "thigh"],
+  "items": [{"kind": "towel", "under": "knee_near"}, {"kind": "towel", "under": "knee_far"}],
+  "poses": {
+    "slant": {
+      "line": {"pivot": "knees", "at": 0, "angle": 135, "hips": -85, "width": 12, "feet": "flat"},
+      "chest": [0, 0, 0],
+      "head": [-4, 0, 0],
+      "arms": {"fk": [-4, 8, 3, 0, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "low": {
+      "from": "slant",
+      "line": {"pivot": "knees", "at": 0, "angle": 140, "hips": -126, "width": 12, "feet": "flat"},
+      "head": [-8, 0, 0],
+      "arms": {"fk": [-6, 8, 3, 0, 0]}
+    },
+    "rounded": {
+      "from": "low",
+      "line": {"pivot": "knees", "at": 0, "angle": 140, "hips": -108, "width": 12, "feet": "flat"},
+      "chest": [42, 0, 0],
+      "head": [-12, 0, 0],
+      "arms": {"fk": [34, 8, 6, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "slant"},
+    {"hold": 0.3, "phase": "back_flat", "effort": 0.5},
+    {"to": "low", "s": 2.0, "phase": "lower_slowly", "effort": 0.7},
+    {"hold": 1.0, "phase": "hold", "effort": 0.85},
+    {"to": "slant", "s": 2.0, "phase": "lift_breathe_out", "effort": 0.9}
+  ],
+  "key": "low",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "low", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "slant", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "low", "check": "angle", "joints": ["waist", "neck", "head"], "min": 165},
+    {"at": "slant", "check": "angle", "joints": ["waist", "neck", "head"], "min": 165},
+    {"at": "low", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "u", "min": 28},
+    {"at": "slant", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "u", "min": 28},
+    {"at": "low", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "max": -28},
+    {"at": "slant", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "f", "min": 25},
+    {"at": "low", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "u", "min": 6},
+    {"at": "low", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 165}
+  ],
+  "note": "The back raise in a kneel, on a folded towel: the seat pushed back above the heels and never resting on them, the back flat at a slant, the arms straight back along the sides. The chest lowers toward level, pauses and lifts back to the slant, never upright."
+}

@@ -17,7 +17,7 @@ import {intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {keepFocus} from "../../lib/focus.js";
 import {clock, LOCALE} from "../../lib/format.js";
-import {openMenu, push, register} from "../../lib/router.js";
+import {covered, openMenu, push, register} from "../../lib/router.js";
 import {openShare} from "../../lib/share.js";
 import {h, styled, token} from "../../kit/element.js";
 import {page, watch} from "../page.js";
@@ -25,7 +25,8 @@ import {loading, qualityLine, stepsUp} from "./book.js";
 import {goLink, openCardWindow, startMove} from "./card.js";
 import {chartCard, recordChart, stairChart} from "./charts.js";
 import {
-	LADDER, confirmWindow, goal, ladderValue, lookup, moveName, number, qualityWord, spanWords, tile, valueCell,
+	LADDER, climbOf, confirmWindow, goal, ladderValue, lookup, moveName, number, qualityWord, returnOf, spanWords, tile,
+	valueCell,
 } from "./common.js";
 import {beadsOf, kindOf, ladderOf, linksOf, stepTip} from "./steps.js";
 
@@ -280,6 +281,10 @@ register(LADDER, ({ladder: id, step: asked = null}) => {
 	let w = null;
 	let book = null;
 	let returning = null; // the row whose step's card started a move here (its key), until its pump has gone
+	let before = null; // the ladder's climb as that move started (common.js `climbOf`), for the return's motion
+	// a draw held back while that move's pump covers the page (a floating Result leaves it showing): the climb's marks
+	// stay as the move found them, so the return plays once, after the pump has gone, never the new ring first
+	let stale = false;
 	let heroCard = null; // the hero shown and what it shows, kept while a Book moves none of it
 	let heroSig = null;
 	let scrolled = asked == null; // the step asked (an Up next row) brought into view once
@@ -292,6 +297,7 @@ register(LADDER, ({ladder: id, step: asked = null}) => {
 		openCardWindow({w, place: "ladder", ladder, step, go: goLink, counted, origin,
 			start: (target, from) => {
 				returning = row;
+				before = climbOf(book, id);
 				startMove(target, from, () => {
 					if (returning !== row) return;
 					returning = null;
@@ -305,6 +311,8 @@ register(LADDER, ({ladder: id, step: asked = null}) => {
 	view.stops.push(() => intent("book.ladder", {ladder: null}).catch(console.error));
 	const draw = () => {
 		if (!w || !book) return;
+		stale = returning !== null && covered();
+		if (stale) return;
 		const ladder = w.ladders.get(id);
 		const row = book.ladders.find((l) => l.ladder === id && !l.opens);
 		view.bar.heading = ladder?.name ?? "";
@@ -362,12 +370,41 @@ register(LADDER, ({ladder: id, step: asked = null}) => {
 	watch(view, "pump", (p) => {
 		const from = p.pump?.what === "move" ? p.pump.from : null;
 		if (p.pump && (from?.place !== "ladder" || from.ladder !== id)) returning = null;
+		if (stale) keepFocus(view.el, draw);
 	});
+	// the cover gone with no return of this page's (`resume` is the page in front's alone): what was held back
+	const caughtUp = () => stale && keepFocus(view.el, draw);
+	document.addEventListener("qp-uncovered", caughtUp);
+	view.stops.push(() => document.removeEventListener("qp-uncovered", caughtUp));
 	view.primary = () => foot.querySelector("qp-primary-button");
-	// the pump's cover has gone: a move started from a step's card here comes back to the row it opened from
+	/** The return after a set started from a step's card here (slice 72, `returnOf`): the ring round the player's step
+	 * fills from its old share after ringFill's hold; a step the set opened flashes once in its tone while the ring,
+	 * the path's one glow, comes onto it (book.css). A redraw of the path lands it. */
+	const playReturn = (play) => {
+		const box = view.body.querySelector('.qp-step-row[aria-current="step"] .qp-path-tile');
+		if (!play || !box) return;
+		if (play.opened) {
+			box.classList.add("qp-opened");
+			return;
+		}
+		const fill = box.querySelector(".qp-path-ring-fill");
+		if (!fill) return;
+		const to = fill.style.getPropertyValue("stroke-dasharray");
+		styled(fill, {"stroke-dasharray": [play.fill, 1000].join(" ")});
+		// the old share stands before the fill's motion comes on
+		void fill.getBoundingClientRect();
+		fill.classList.add("qp-filling");
+		styled(fill, {"stroke-dasharray": to});
+	};
+	// the pump's cover has gone: a move started from a step's card here comes back to the row it opened from, and the
+	// climb's marks move once from where they stood as it started
 	view.resume = () => {
 		const back = returning;
+		const was = before;
 		returning = null;
+		before = null;
+		if (stale) keepFocus(view.el, draw);
+		if (back && was) requestAnimationFrame(() => playReturn(returnOf(was, climbOf(book, id))));
 		return back ? view.body.querySelector(`[data-focus-key="${back}"]`) : null;
 	};
 	return view;

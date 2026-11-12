@@ -9,6 +9,7 @@
 import {intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {back, register} from "../../lib/router.js";
+import {feedback} from "../../lib/sound.js";
 import {h} from "../../kit/element.js";
 import {heldCode, page, restoreCode, watch} from "../page.js";
 
@@ -41,6 +42,8 @@ register("desk.menu.restore", (params) => {
 		let done; // the joins at the first look: the next one is this code's
 		watch(view, "menu.restore", (r) => {
 			if (done !== undefined && r.done > done) {
+				// the code restored the account (slice 72: a commitment that succeeded)
+				feedback("commit");
 				back();
 				return;
 			}

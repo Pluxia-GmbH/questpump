@@ -271,7 +271,7 @@ export function reward(r) {
 			next: r.next == null ? null : r.hold ? t("ladders.next.time", {time: clock(r.next)})
 				: t("kit.goal.value", {goal: r.next})};
 		case "stat": return {kind: r.kind, amount: r.amount, stat: r.stat, glyph: `stat_${r.key}`};
-		case "day": return {kind: r.kind, line: r.line, xp: r.value, days: r.value, count: r.value};
+		case "day": return {kind: r.kind, line: r.line, xp: r.value, count: r.value};
 		case "check_held": return {kind: r.kind, line: waitWords(r.wait)};
 		case "haul_day": return {kind: r.kind, time: clock(r.time), have: r.have, need: r.need, next: clock(r.next)};
 		default: return r;

@@ -22,6 +22,7 @@ import {focusView} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
 import {mounted} from "../../lib/keys.js";
 import {cover, over, register, uncover} from "../../lib/router.js";
+import {change} from "../../lib/stage.js";
 import {h} from "../../kit/element.js";
 import {addonLine, folderNote, gameLine, gameStep} from "../menu/computer.js";
 import {pairWindow} from "../menu/phones.js";
@@ -109,14 +110,15 @@ function sayFound() {
 }
 
 /** A pump holds the toasts (the phones' PumpRunner.holdsToasts): one on screen, but a Result that celebrates once its
- * reveal is over; the hold ends by itself at the reveal's end. */
+ * reveal is over, never a floating one, whose card stands where a toast would; the hold ends by itself at the reveal's
+ * end. */
 function holdToasts() {
 	clearTimeout(toastTimer);
 	const pump = pumpTopic?.pump;
 	const reveal = pump?.reveal;
 	const celebrates = Boolean(pump?.result) && !pump.calm;
 	const revealing = Boolean(reveal) && !reveal.landed && Date.now() < reveal.end;
-	toaster.paused = Boolean(pump) && (pump.stage !== "done" || !celebrates || revealing);
+	toaster.paused = Boolean(pump) && (pump.stage !== "done" || !celebrates || revealing || pump.floats);
 	if (pump?.stage === "done" && celebrates && revealing) toastTimer = setTimeout(holdToasts, reveal.end - Date.now());
 }
 
@@ -502,7 +504,8 @@ register("desk.welcome", () => {
 			step = w.step;
 			drawn = STEPS[step](w);
 			const column = h("div", {class: "qp-column qp-welcome"}, ...drawn.parts);
-			el.replaceChildren(...[drawn.bar, column].filter(Boolean));
+			// one step changes into the next with the stage's cross-fade (slice 72)
+			change(el, [drawn.bar, column].filter(Boolean));
 			view.primary = () => drawn.primary;
 			mounted(view);
 			focusView(view);

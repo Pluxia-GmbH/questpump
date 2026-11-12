@@ -38,8 +38,10 @@ class QpMoveTile extends KitElement {
 
 	label() {
 		if (!this.name) return null;
-		let words = this.quality && this.word ? t("kit.quality.label", {name: this.name, quality: this.word,
-			rung: this.step ?? 0}) : t("kit.quality.untrained", {name: this.name});
+		// a trained move off the ladders (a timed drill) has no step to say
+		let words = !(this.quality && this.word) ? t("kit.quality.untrained", {name: this.name})
+			: this.step ? t("kit.quality.label", {name: this.name, quality: this.word, rung: this.step})
+			: t("kit.quality.plain", {name: this.name, quality: this.word});
 		if (this.favourite) words = t("kit.tile.favourite.label", {label: words});
 		if (this.mastered) words = `${words}, ${t("ladders.tree.mastered")}`;
 		if (this.topped) words = `${words}, ${t("ladders.card.topped")}`;

@@ -357,8 +357,9 @@ fn work_ring(view: &WorkView) -> Option<u16> {
 }
 
 /// Work mode's part of the tray (on the main thread): its items at the menu's top, off Start work mode, on the state
-/// line, Pump now (greyed while anything holds the clock: a pump open, a call, a game, quiet hours, the felt-unwell
-/// lock, the line saying which) and Stop work mode; the icon's ring drawn again when its fill changed.
+/// line, Pump now (greyed while anything holds the clock: another kind of pump open, a call, a game, quiet hours, the
+/// felt-unwell lock, the line saying which; and while a work pump stands, which holds no clock and lets no other
+/// start beside it) and Stop work mode; the icon's ring drawn again when its fill changed.
 pub(crate) fn draw_work(app: &AppHandle, view: &WorkView) {
 	let Some(lines) = app.try_state::<TrayLines>() else { return };
 	if app.try_state::<WorkItems>().is_none() {
@@ -386,7 +387,7 @@ pub(crate) fn draw_work(app: &AppHandle, view: &WorkView) {
 	let Some(items) = app.try_state::<WorkItems>() else { return };
 	if view.on {
 		let _ = items.line.set_text(work_line(view));
-		let _ = items.now.set_enabled(view.hold.is_none());
+		let _ = items.now.set_enabled(view.hold.is_none() && !view.pump);
 	}
 	lines.show(&items.start, &items.shown[0], 0, !view.on);
 	for (at, (item, shown)) in

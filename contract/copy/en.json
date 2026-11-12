@@ -3794,7 +3794,7 @@
    "note": "On What QuestPump does on this computer (slice 48: iRacing's and Assetto Corsa Competizione's telemetry, and since 2026-10-28 Assetto Corsa's and Guild Wars 2's link, come through the shared memory each game publishes for other apps, opened read-only and closed at each look; since 2026-10-29 ELDEN RING's and ELDEN RING NIGHTREIGN's window is captured for their boss banners, which desk.menu.does.screen says on its own line: a picture of the window, never the game's memory). Not \"never opens a game's process\": on Windows the app asks the system for a running program's path with limited query rights (PROCESS_QUERY_LIMITED_INFORMATION, World of Warcraft's included), which reads none of its memory."
   },
   "desk.menu.does.nothing": {
-   "text": "Nothing else leaves this computer: no account, no tracking and no ads.",
+   "text": "Nothing else leaves this computer: no account to make, no tracking and no ads.",
    "screens": [
     "desk.menu.does"
    ],
@@ -5317,12 +5317,6 @@
    "screens": [
     "ExpeditionBar"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "At the ExpeditionBar's trailing edge after the clock mark: {time} is the minutes and seconds left of the length chosen (12:40). Gone once none is left.",
    "args": {
     "time": "string"
@@ -5332,12 +5326,6 @@
    "text": "Round {round} of {count}",
    "screens": [
     "ExpeditionBar"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The ExpeditionBar's caps during a round: {round} is the round in play, {count} the rounds planned (the engine's estimate, which may change as each round is decided).",
    "args": {
@@ -5350,12 +5338,6 @@
    "text": "{minutes} minutes left",
    "screens": [
     "ExpeditionBar"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The ExpeditionBar read after its stage (Round 3 of 5, 12 minutes left), in whole minutes.",
    "args": {
@@ -5371,12 +5353,6 @@
    "screens": [
     "desk.expedition.done",
     "expedition.done"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The calm Result's title of an expedition ended part way (End the expedition, End the pump here): the rounds done, the warm-up counted as one.",
    "args": {
@@ -5394,12 +5370,6 @@
     "desk.expedition.done",
     "expedition.done"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The line under Expedition complete: the minutes it took (whole minutes) and the place's name.",
    "args": {
     "minutes": "int",
@@ -5413,12 +5383,6 @@
     "Fanfare",
     "desk.expedition.done",
     "expedition.done"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The Result's one announcement to VoiceOver, TalkBack and the computer's screen reader.",
    "args": {
@@ -5435,12 +5399,6 @@
     "Fanfare",
     "desk.expedition.done",
     "expedition.done"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The Fanfare's words on an expedition's Result.",
    "max": 22
@@ -5469,12 +5427,6 @@
     "desk.expedition.round",
     "expedition.round"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over the cool-down's moves on the breather before it."
   },
   "expedition.next.round": {
@@ -5482,12 +5434,6 @@
    "screens": [
     "desk.expedition.round",
     "expedition.round"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Caps over the next round's moves on the breather: {round} is its number (the warm-up is not counted).",
    "args": {
@@ -5503,12 +5449,6 @@
     "menu.free_mode",
     "pump.questdone"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The hint of the place line under the Pump screen's button and of the place rows (Start a pump, Your setup): it opens the places window, where the player picks where they train."
   },
   "expedition.rest": {
@@ -5517,12 +5457,6 @@
     "desk.expedition.round",
     "expedition.round"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over the breather's ring between two rounds of an expedition (30 s)."
   },
   "expedition.rest.spoken": {
@@ -5530,12 +5464,6 @@
    "screens": [
     "desk.expedition.round",
     "expedition.round"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The breather read by VoiceOver, TalkBack and the computer's screen reader as it opens.",
    "args": {
@@ -5552,12 +5480,6 @@
     "desk.expedition.round",
     "expedition.round"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The breather's secondary: opens the next round's first move at once instead of waiting for the ring."
   },
   "expedition.saga.cooldown": {
@@ -5570,12 +5492,6 @@
     "log.pump",
     "log.tab"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The Saga's title of an expedition's cool-down round."
   },
   "expedition.saga.round": {
@@ -5587,12 +5503,6 @@
     "log.day",
     "log.pump",
     "log.tab"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The Saga's title of an expedition's round: {round} is its number, the warm-up not counted.",
    "args": {
@@ -5610,12 +5520,6 @@
     "log.pump",
     "log.tab"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The Saga's title of an expedition's warm-up round, a pump of its own."
   },
   "expedition.stage.cooldown": {
@@ -5630,12 +5534,6 @@
     "pump.ready",
     "pump.running"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "An expedition's last round (a stretch, then a flow): the bar's caps and the round's title."
   },
   "expedition.stage.round": {
@@ -5645,9 +5543,6 @@
     "pump.countdown",
     "pump.ready",
     "pump.running"
-   ],
-   "platforms": [
-    "android"
    ],
    "note": "The title of an expedition's round on its pump screens: {round} is its number, the warm-up not counted.",
    "args": {
@@ -5667,12 +5562,6 @@
     "pump.ready",
     "pump.running"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "An expedition's first round (a mobility move, then steady cardio): the bar's caps and the round's title."
   },
   "expedition.stop": {
@@ -5687,12 +5576,6 @@
     "pump.ready",
     "pump.running"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The breather's quiet button and a row of a round's More (after End the pump here): ends the timed pump at once and shows the Result of the rounds done."
   },
   "expedition.title": {
@@ -5703,9 +5586,6 @@
     "pump.ready",
     "pump.running",
     "share.window"
-   ],
-   "platforms": [
-    "android"
    ],
    "note": "A timed pump's name (slice 51; the expedition in the code; Rapha, 2026-10-21: one Quick pump with a length, no word of its own): the caps source over each of its rounds' pump screens (as Picked for you over a Quick pump), where its minutes are not shown. Never \"session\" (the game's session)."
   },
@@ -7187,6 +7067,17 @@
    ],
    "note": "Read by VoiceOver and TalkBack for a move's button (Push-up, Uncommon 5). {quality} is the quality word (Starter, Common, Uncommon, Rare, Epic, Legendary), {rung} the move's rung on its ladder."
   },
+  "kit.quality.plain": {
+   "text": "{name}, {quality}",
+   "args": {
+    "name": "string",
+    "quality": "string"
+   },
+   "screens": [
+    "MoveTile"
+   ],
+   "note": "Read by VoiceOver and TalkBack for the button of a trained move that stands on no ladder, a timed drill such as the bird dog (Bird dog, Starter): it has no rung to say."
+  },
   "kit.quality.untrained": {
    "text": "{name}, not trained yet",
    "args": {
@@ -7636,15 +7527,17 @@
    "screens": [
     "RewardRow",
     "pump.done",
-    "desk.pump.done"
+    "desk.pump.done",
+    "pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 16,
-   "note": "The Result's tag on a move's row whose first max set set its first record (2026-10-29), in gold with the record glyph; the next goal or kit.reward.enough under it. The iPhone shows it once its Result has the same rows (owed)."
+   "note": "The Result's tag on a move's row whose first max set set its first record (2026-10-29), in gold with the record glyph; the next goal or kit.reward.enough under it. The iPhone shows it on a saved move's row (pump.saved, slice 72); its Result's rows are still its own."
   },
   "kit.reward.tag.record": {
    "text": "New record",
@@ -7656,12 +7549,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 16,
-   "note": "The Result's tag on a move's row whose count passed its record (2026-10-29), in gold with the record glyph, kit.reward.was beside it; a counted set's new best clean count takes it too. The iPhone shows it once its Result has the same rows (owed)."
+   "note": "The Result's tag on a move's row whose count passed its record (2026-10-29), in gold with the record glyph, kit.reward.was beside it; a counted set's new best clean count takes it too. The iPhone shows it on a saved move's dial and row (pump.saved, slice 72); its Result's rows are still its own."
   },
   "kit.reward.title": {
    "text": "New title: {title}",
@@ -7691,11 +7585,12 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
-   "note": "Under a move's Result row (2026-10-29) where the move stands for its strength ladder's step: the game days at the top of its range so far, {have} of the {need} the climb to step {n} takes (the sheet's nx, what the ladder's ring counts), beside as many pips; none once the days are in or no climb is open. The iPhone shows it once its Result has the same rows (owed)."
+   "note": "Under a move's Result row (2026-10-29) where the move stands for its strength ladder's step: the game days at the top of its range so far, {have} of the {need} the climb to step {n} takes (the sheet's nx, what the ladder's ring counts), beside as many pips; none once the days are in or no climb is open. The iPhone shows it on a saved move's row (pump.saved, slice 72)."
   },
   "kit.reward.unlock": {
    "text": "Unlocked: {move}",
@@ -7782,11 +7677,12 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
-   "note": "Beside kit.reward.tag.record on a move's Result row (2026-10-29): the record the count passed, a count (35), a hold's time (0:26) or a loaded record with its weight (10 kg × 20). Lower case: it follows the tag. The iPhone shows it once its Result has the same rows (owed)."
+   "note": "Beside kit.reward.tag.record on a move's Result row (2026-10-29): the record the count passed, a count (35), a hold's time (0:26) or a loaded record with its weight (10 kg × 20). Lower case: it follows the tag. The iPhone shows it on a saved move's row (pump.saved, slice 72)."
   },
   "kit.reward.won": {
    "text": "Earned: {move}",
@@ -13687,11 +13583,12 @@
     "xp": "int"
    },
    "screens": [
+    "ActionBar",
     "desk.log",
     "log.tab"
    ],
    "noPlural": true,
-   "note": "At the right of a pump's row in the Log: the experience points the pump paid (+75). VoiceOver and TalkBack read it as 75 XP."
+   "note": "At the right of a pump's row in the Log: the experience points the pump paid (+75). VoiceOver and TalkBack read it as 75 XP. Also over the Hero tab's glyph in gold as the floating Result's last mote lands there (2026-11-11), silent to VoiceOver and TalkBack, which heard the XP on the Result."
   },
   "log.yesterday": {
    "text": "Yesterday",
@@ -13781,6 +13678,20 @@
    ],
    "note": "Section header over the sound packs the app uses."
   },
+  "menu.acknowledgements.code": {
+   "text": "Code libraries",
+   "screens": [
+    "menu.acknowledgements"
+   ],
+   "note": "Section header over the code libraries the app is built with. Each row under it is a licence's name or a library's name and opens its licence text."
+  },
+  "menu.acknowledgements.code.watch": {
+   "text": "Code libraries in the watch app",
+   "screens": [
+    "menu.acknowledgements"
+   ],
+   "note": "Section header over the code libraries QuestPump's app on the watch is built with, shown on the phone because the watch app has no such page."
+  },
   "menu.acknowledgements.fonts": {
    "text": "Fonts",
    "screens": [
@@ -13820,7 +13731,7 @@
     "desk.menu",
     "menu.about"
    ],
-   "note": "Row beside About in the Menu: opens the page that credits the fonts and sounds the app uses."
+   "note": "Row beside About in the Menu: opens the page that credits the fonts, the sounds and the code libraries the app uses."
   },
   "menu.acknowledgements.text": {
    "text": "Licence text",
@@ -13836,7 +13747,7 @@
     "desk.menu.acknowledgements",
     "menu.acknowledgements"
    ],
-   "note": "Title of the page that credits the fonts and sounds the app uses."
+   "note": "Title of the page that credits the fonts, the sounds and the code libraries the app uses."
   },
   "menu.backup.both": {
    "text": "{moves} and {entries}",
@@ -15129,12 +15040,6 @@
     "desk.menu",
     "menu.settings"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A Menu row (2026-11-03) with the five lengths in a Segmented under it: how long the Pump screen's Quick pump runs, kept on this device."
   },
   "menu.reminders": {
@@ -16168,12 +16073,6 @@
     "expedition.places",
     "places.edit"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Opens a new place's page (from a template, or empty). Gone once the list holds its most."
   },
   "places.button": {
@@ -16181,12 +16080,6 @@
    "screens": [
     "desk.home",
     "pump.tab"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "args": {
     "place": "string"
@@ -16198,12 +16091,6 @@
    "screens": [
     "desk.expedition.places",
     "expedition.places"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "max": 12,
    "note": "A small tag at the end of the default place's row: the place in use whenever no time of the schedule applies (2026-11-03)."
@@ -16217,12 +16104,6 @@
     "places.place",
     "desk.menu"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The delete mark on a row of Edit places and the destructive primary of the place's confirm window."
   },
   "places.delete.body": {
@@ -16232,12 +16113,6 @@
     "desk.places.place",
     "places.edit",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The confirm window's line under Delete {place}?: what goes and what stays."
   },
@@ -16249,12 +16124,6 @@
     "places.edit",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The confirm window's quiet secondary under Delete: closes it and keeps the place."
   },
   "places.delete.spoken": {
@@ -16262,12 +16131,6 @@
    "screens": [
     "desk.places.edit",
     "places.edit"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The delete mark's name for VoiceOver, TalkBack and the computer's screen reader: {place} is the place's name.",
    "args": {
@@ -16282,12 +16145,6 @@
     "places.edit",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The heading of the confirm window before a place is deleted (the window's own, never a system alert): {place} is its name.",
    "args": {
     "place": "string"
@@ -16299,12 +16156,6 @@
     "desk.places.edit",
     "places.edit"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The drag handle's hint on each row of Edit places but Home (a touch and hold anywhere on the row drags it too)."
   },
   "places.edit": {
@@ -16315,12 +16166,6 @@
     "expedition.places",
     "places.edit"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The places window's quiet button and the title of the page it opens: reorder, rename and delete places."
   },
   "places.full": {
@@ -16330,12 +16175,6 @@
     "desk.places.edit",
     "expedition.places",
     "places.edit"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "In place of Add a place once the list holds places_max places (contract/places.json, 12).",
    "args": {
@@ -16354,12 +16193,6 @@
     "menu.free_mode",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "An equipment group's name (2026-11-03, Rapha: \"we have a lot more equipment shuold have an expand button\"; contract/sheet.json gear_groups, the game's ns.GearGroups): the head of a group that opens and closes on a place's page and Your setup."
   },
   "places.gear.group.cardio": {
@@ -16370,12 +16203,6 @@
     "menu.free_mode",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "An equipment group's name (2026-11-03, Rapha: \"we have a lot more equipment shuold have an expand button\"; contract/sheet.json gear_groups, the game's ns.GearGroups): the head of a group that opens and closes on a place's page and Your setup."
   },
   "places.gear.group.core": {
@@ -16385,12 +16212,6 @@
     "desk.places.place",
     "menu.free_mode",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "An equipment group's name (2026-11-03, Rapha: \"we have a lot more equipment shuold have an expand button\"; contract/sheet.json gear_groups, the game's ns.GearGroups): the head of a group that opens and closes on a place's page and Your setup."
   },
@@ -16407,12 +16228,6 @@
     "menu.free_mode",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "At the end of an equipment group's head: how many of its pieces are ticked (3 of 5); none while none is."
   },
   "places.gear.group.home": {
@@ -16423,12 +16238,6 @@
     "menu.free_mode",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "An equipment group's name (2026-11-03, Rapha: \"we have a lot more equipment shuold have an expand button\"; contract/sheet.json gear_groups, the game's ns.GearGroups): the head of a group that opens and closes on a place's page and Your setup."
   },
   "places.gear.group.weights": {
@@ -16438,12 +16247,6 @@
     "desk.places.place",
     "menu.free_mode",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "An equipment group's name (2026-11-03, Rapha: \"we have a lot more equipment shuold have an expand button\"; contract/sheet.json gear_groups, the game's ns.GearGroups): the head of a group that opens and closes on a place's page and Your setup."
   },
@@ -16459,12 +16262,6 @@
     "pump.tab",
     "desk.home"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "After the first three pieces of a place's equipment in words (Dumbbells, Kettlebell, Jump rope + 9 more): how many more it has.",
    "args": {
     "count": "int"
@@ -16477,12 +16274,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The name of the place icon place_bars (contract/places.json glyphs) for VoiceOver, TalkBack and the computer's tooltip."
   },
   "places.glyph.bed": {
@@ -16490,12 +16281,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The name of the place icon place_bed (contract/places.json glyphs) for VoiceOver, TalkBack and the computer's tooltip."
   },
@@ -16505,12 +16290,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The name of the place icon place_desk (contract/places.json glyphs) for VoiceOver, TalkBack and the computer's tooltip."
   },
   "places.glyph.dumbbell": {
@@ -16518,12 +16297,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The name of the place icon place_dumbbell (contract/places.json glyphs) for VoiceOver, TalkBack and the computer's tooltip."
   },
@@ -16533,12 +16306,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The name of the place icon place_home (contract/places.json glyphs) for VoiceOver, TalkBack and the computer's tooltip."
   },
   "places.glyph.peak": {
@@ -16546,12 +16313,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The name of the place icon place_peak (contract/places.json glyphs) for VoiceOver, TalkBack and the computer's tooltip."
   },
@@ -16561,12 +16322,6 @@
     "desk.places.edit",
     "places.edit"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Home's meta line on Edit places: Home is the game's one setup, the first place, never deleted or moved."
   },
   "places.home.note": {
@@ -16574,12 +16329,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "On Home's page under its equipment: Home's equipment and switches travel between the game, the computer and the phones (the body's home field)."
   },
@@ -16589,12 +16338,6 @@
     "desk.places.edit",
     "places.edit"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "An action on each row of Edit places but Home: the place one step down."
   },
   "places.move.up": {
@@ -16602,12 +16345,6 @@
    "screens": [
     "desk.places.edit",
     "places.edit"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "An action on each row of Edit places but Home, for VoiceOver, TalkBack and the computer's keyboard (Alt and the up arrow): the place one step up, never above Home."
   },
@@ -16617,12 +16354,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A switch on a place's page: on for the default place, the place in use whenever no time of the schedule applies; turning it on at another place moves the default there."
   },
   "places.place.delete": {
@@ -16630,12 +16361,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The destructive quiet button under Save on a place's page (never Home's, never a new place's): asks its confirm first."
   },
@@ -16645,12 +16370,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The first choice under Start from, chosen at first (2026-11-03, Rapha: \"new (which has minimal pre selected that should be widely available)\"): a place with no equipment, floor moves and room to move on, quiet mode off."
   },
   "places.place.from": {
@@ -16658,12 +16377,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Caps over a new place's row of templates and Empty: choosing one fills the equipment, the switches and the icon, never a name the player typed."
   },
@@ -16673,12 +16386,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over a place's six icons to choose from."
   },
   "places.place.name": {
@@ -16686,12 +16393,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The label of a place's name field (at most 24 characters)."
   },
@@ -16701,12 +16402,6 @@
     "desk.places.place",
     "places.place"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Under the name field while it is empty: Save waits for a name."
   },
   "places.place.new": {
@@ -16714,12 +16409,6 @@
    "screens": [
     "desk.places.place",
     "places.place"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The title of a new place's page, before it is saved."
   },
@@ -16730,12 +16419,6 @@
     "desk.pump.start",
     "menu.free_mode",
     "pump.questdone"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Caps label of Start a pump's place row and of Your setup's place section: the place in use (its equipment and its three switches decide which moves a pump can ask); while work mode runs, the row shows Work mode with work mode's equipment and opens the Work mode page."
   },
@@ -16749,12 +16432,6 @@
     "places.schedule",
     "places.time"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The places window's row and the title of the weekly schedule's pages (2026-11-03, Rapha: \"Monday 18-20 you set it to gym\"): which place is in use at which times of the week."
   },
   "places.schedule.add": {
@@ -16762,12 +16439,6 @@
    "screens": [
     "desk.places.schedule",
     "places.schedule"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The schedule's quiet button: opens a new time's page."
   },
@@ -16783,12 +16454,6 @@
    "screens": [
     "desk.expedition.places",
     "expedition.places"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The Schedule row's meta line while it holds more than one time."
   },
@@ -16822,12 +16487,6 @@
     "pump.tab",
     "desk.home"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A place template's words (contract/places.json 'gym': a gym's equipment, quiet mode off), shown while the player has not renamed the place.",
    "max": 24
   },
@@ -16850,12 +16509,6 @@
     "share.window",
     "pump.tab",
     "desk.home"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "A place template's words (contract/places.json 'home': the game's setup, the first place), shown while the player has not renamed the place.",
    "max": 24
@@ -16880,12 +16533,6 @@
     "pump.tab",
     "desk.home"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A place template's words (contract/places.json 'hotel': no equipment, floor moves, room to move and quiet mode on), shown while the player has not renamed the place.",
    "max": 24
   },
@@ -16908,12 +16555,6 @@
     "share.window",
     "pump.tab",
     "desk.home"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "A place template's words (contract/places.json 'office': no equipment, no floor moves or room to move, quiet mode on), shown while the player has not renamed the place.",
    "max": 24
@@ -16938,12 +16579,6 @@
     "pump.tab",
     "desk.home"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A place template's words (contract/places.json 'outdoors': no equipment, floor moves and room to move on), shown while the player has not renamed the place.",
    "max": 24
   },
@@ -16967,12 +16602,6 @@
     "pump.tab",
     "desk.home"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A place template's words (contract/places.json 'park': a fixed bar and a pole outdoors), shown while the player has not renamed the place.",
    "max": 24
   },
@@ -16982,12 +16611,6 @@
     "desk.places.time",
     "places.time"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over a time's seven weekday chips, Monday first."
   },
   "places.time.delete": {
@@ -16996,12 +16619,6 @@
     "desk.places.time",
     "places.time"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The destructive quiet button under Save on a kept time's page: deletes it at one tap."
   },
   "places.time.from": {
@@ -17009,12 +16626,6 @@
    "screens": [
     "desk.places.time",
     "places.time"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Caps over the time's start."
   },
@@ -17031,12 +16642,6 @@
     "expedition.places",
     "places.schedule"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A time's meta line under its days: its span in the device's hour cycle, then its place's name (18:00–20:00 · Fitness centre)."
   },
   "places.time.place": {
@@ -17044,12 +16649,6 @@
    "screens": [
     "desk.places.time",
     "places.time"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Caps over the places to choose the time's place from."
   },
@@ -17059,12 +16658,6 @@
     "desk.places.time",
     "places.time"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over the time's end; one before From runs past midnight."
   },
   "places.title": {
@@ -17072,12 +16665,6 @@
    "screens": [
     "desk.expedition.places",
     "expedition.places"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The heading of the places window: where the player trains, each place with its own equipment and switches."
   },
@@ -18073,12 +17660,13 @@
     "desk.pump.count"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 60,
-   "note": "Under the count's dial while the count stands at its most (slice 66, Rapha, 2026-11-04: \"dont allow it to do more than 50% more of what the app counted\"): {max} is that most and {counted} what the app counted (the reps the figure ended by Done, the stopwatch's seconds), each in the move's unit, reps as a number (45, 30), seconds as m:ss (1:00, 0:40). Shown only while the count is at its most and what the app counted set it, never where a floor did; pump.count.cap.goal where a set of reps' goal did. The iPhone shows it once its count moves onto the dial (owed, slice 66)."
+   "note": "Under the count's dial while the count stands at its most (slice 66, Rapha, 2026-11-04: \"dont allow it to do more than 50% more of what the app counted\"): {max} is that most and {counted} what the app counted (the reps the figure ended by Done, the stopwatch's seconds), each in the move's unit, reps as a number (45, 30), seconds as m:ss (1:00, 0:40). Shown only while the count is at its most and what the app counted set it, never where a floor did; pump.count.cap.goal where a set of reps' goal did."
   },
   "pump.count.cap.goal": {
    "text": "Up to {max}: 50% more than the {goal} to beat",
@@ -18091,12 +17679,13 @@
     "desk.pump.count"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 60,
-   "note": "Under the count's dial while the count stands at its most and the number a set of reps has to beat set it (slice 66; David, 2026-11-04: \"you fix and decide on the best\"): the app counts at the figure's pace, far slower than a fast honest set, so a set of reps takes half again its goal (its record without one) where that passes what was counted. {max} is that most and {goal} that number, reps as a number (46, 31). Shown only while the count is at its most, never where a floor set it; pump.count.cap where what the app counted did. The iPhone shows it once its count moves onto the dial (owed, slice 66)."
+   "note": "Under the count's dial while the count stands at its most and the number a set of reps has to beat set it (slice 66; David, 2026-11-04: \"you fix and decide on the best\"): the app counts at the figure's pace, far slower than a fast honest set, so a set of reps takes half again its goal (its record without one) where that passes what was counted. {max} is that most and {goal} that number, reps as a number (46, 31). Shown only while the count is at its most, never where a floor set it; pump.count.cap where what the app counted did."
   },
   "pump.count.clean.end": {
    "text": "Yes, to the end",
@@ -19221,25 +18810,13 @@
    ],
    "note": "Pump home's ember row (slice 55, the word ember left the screens on 2026-10-29: the count says what it counts; the game's HUD line): the embers lit this game day, {have} of the {need} a day lights (embers_day, 3), beside three ember glyphs, filled or hollow. An ember is a cardio move done in full: an all-out window that ran its time (a counted one saved Yes, to the end), a steady move paced at the player's own step or above (the step its dose was set at, whatever the form's own step) that ran its time without I eased off, or a Long Haul with a Yes. Its tap starts a cardio move of the player's step at once (its Ready view, the step's card's Start; since 2026-11-03, Rapha: the step's card it opened until then left the goal unclear), and the row carries that move's tile. No streak of embers, no loss words. Since 2026-10-29 also the Result's row on a pump with a cardio move, beside the same pips."
   },
-  "pump.home.start": {
-   "text": "Start a pump",
-   "screens": [
-    "character.tab",
-    "ladders.tab",
-    "log.tab",
-    "pump.tab"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The iPhone's Start a pump (Pump home, the empty Hero, Book and Saga): opens what the player finished (A quest, A match, A level, A boss fight, A work block) and its size, then the pump. Android and the computer start a Quick pump with a length there since slice 51; the iPhone follows on its own branch."
-  },
   "pump.home.streak.label": {
    "text": "Day streak",
    "screens": [
     "StreakBoard",
     "desk.share",
     "desk.streak",
+    "pump.done",
     "pump.streak",
     "pump.tab",
     "share.window",
@@ -19475,12 +19052,6 @@
    "screens": [
     "desk.menu",
     "menu.settings"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "args": {
     "minutes": "int"
@@ -20492,30 +20063,6 @@
    ],
    "note": "{count} is the record stars the pump earned."
   },
-  "pump.reward.streak": {
-   "text": "Streak: day {days}",
-   "args": {
-    "days": "int"
-   },
-   "screens": [
-    "RewardRow",
-    "desk.expedition.done",
-    "expedition.done",
-    "pump.done"
-   ],
-   "noPlural": true,
-   "note": "On an app pump's result when it was the game day's first pump: the streak it continued, in days (the game's toast.streak). Never shown with pump.reward.welcome."
-  },
-  "pump.reward.streak.new": {
-   "text": "Day 1 of a new streak",
-   "screens": [
-    "RewardRow",
-    "desk.expedition.done",
-    "expedition.done",
-    "pump.done"
-   ],
-   "note": "On an app pump's result when it began a streak (the game day's first pump, a streak of one day: the game's toast.streak.new). Never shown with pump.reward.welcome."
-  },
   "pump.reward.token": {
    "text": "Rest token earned: a day off keeps your streak",
    "screens": [
@@ -20637,12 +20184,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 14,
-   "note": "Over the count bar's best post (slices 65 and 66): the move's record before this set in its unit, reps as a number (14), seconds as m:ss (0:42); no post once the record stands at the top or past it, none on a timed move. The iPhone and the Apple Watch show it once their moves pour the same way (owed, slices 65 and 66)."
+   "note": "Over the count bar's best post (slices 65 and 66): the move's record before this set in its unit, reps as a number (14), seconds as m:ss (0:42); no post once the record stands at the top or past it, none on a timed move."
   },
   "pump.saved.bar.goal": {
    "text": "goal {value}",
@@ -20655,12 +20203,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 14,
-   "note": "Under the count bar's goal post (slices 65 and 66): the move's goal in its unit, reps as a number (12), seconds as m:ss (0:30). The iPhone and the Apple Watch show it once their moves pour the same way (owed, slices 65 and 66)."
+   "note": "Under the count bar's goal post (slices 65 and 66): the move's goal in its unit, reps as a number (12), seconds as m:ss (0:30)."
   },
   "pump.saved.bar.step": {
    "text": "step {n}",
@@ -20674,12 +20223,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 12,
-   "note": "The hold bar's label on the phone (slice 65), lower case: the step whose range the bar spans; the computer puts kit.reward.step's ladder before it. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
+   "note": "The hold bar's label on the phone (slice 65), lower case: the step whose range the bar spans; the computer puts kit.reward.step's ladder before it."
   },
   "pump.saved.bar.top": {
    "text": "top {value}",
@@ -20692,12 +20242,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 14,
-   "note": "Under the count bar's top post (slices 65 and 66): the top of the step's range in the move's unit, reps as a number (15), seconds as m:ss (1:00), the count a day at the top needs; none on a counted set or a timed move. The iPhone and the Apple Watch show it once their moves pour the same way (owed, slices 65 and 66)."
+   "note": "Under the count bar's top post (slices 65 and 66): the top of the step's range in the move's unit, reps as a number (15), seconds as m:ss (1:00), the count a day at the top needs; none on a counted set or a timed move."
   },
   "pump.saved.finish": {
    "text": "Finish",
@@ -20706,12 +20257,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 16,
-   "note": "The primary button of the seconds pour on the pump's last move (slice 65): the pump's Result at once. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
+   "note": "The primary button of the seconds pour on the pump's last move (slice 65): the pump's Result at once."
   },
   "pump.saved.next": {
    "text": "Next: {move}",
@@ -20723,12 +20275,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 40,
-   "note": "The primary button of a hold's seconds pour (slice 65, Rapha, 2026-11-03), live from the pour's start: the next move's Ready view at once (Enter on the computer); {move} is the next move's name. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
+   "note": "The primary button of a hold's seconds pour (slice 65, Rapha, 2026-11-03), live from the pour's start: the next move's Ready view at once (Enter on the computer); {move} is the next move's name."
   },
   "pump.saved.unlocked": {
    "text": "Step {n} unlocked",
@@ -20742,12 +20295,13 @@
     "desk.pump.saved"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
    "max": 28,
-   "note": "The caption over the step-up reveal's new move (slice 65): the step of the ladder the hold just opened, in gold caps; the move's name and its quality word come under it. The iPhone and the Apple Watch show it once their hold's seconds pour the same way (owed, slice 65)."
+   "note": "The caption over the step-up reveal's new move (slice 65): the step of the ladder the hold just opened, in gold caps; the move's name and its quality word come under it."
   },
   "pump.side.first": {
    "text": "{move}: first side",
@@ -20866,12 +20420,6 @@
     "desk.streak",
     "pump.streak"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over the longest streak the player has had."
   },
   "pump.streak.best.days": {
@@ -20879,12 +20427,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The best streak's length.",
    "args": {
@@ -20895,17 +20437,26 @@
     "other": "{count} days"
    }
   },
+  "pump.streak.day.of": {
+   "text": "Day {day} of {goal}",
+   "args": {
+    "day": "int",
+    "goal": "int"
+   },
+   "noPlural": true,
+   "screens": [
+    "desk.pump.done",
+    "pump.done",
+    "watch.summary"
+   ],
+   "max": 22,
+   "note": "The streak's moment on the Result (slice 72), under the streak's count as it rolls to today's number, and the streak's row on a watch's Summary: {day} is the streak's day and {goal} the next milestone it runs toward (Day 3 of 7; the milestones are 7, 30, 100, 365 and on). Past the last milestone the count stands alone. Never worded as a deadline or a loss."
+  },
   "pump.streak.month.earlier": {
    "text": "Earlier month",
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The streak page's step back to the month before."
   },
@@ -20915,12 +20466,6 @@
     "desk.streak",
     "pump.streak"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The streak page's step on to the month after (none past this)."
   },
   "pump.streak.next": {
@@ -20928,12 +20473,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Caps over the next milestone's words (30-day streak, or a 2-year streak from 730) and its bar."
   },
@@ -20943,12 +20482,6 @@
     "desk.streak",
     "pump.streak"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "In place of the next milestone past the last one (1,825 days)."
   },
   "pump.streak.next.togo": {
@@ -20956,12 +20489,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Under the next milestone's bar: the days from today's count to it.",
    "args": {
@@ -20979,12 +20506,6 @@
     "character.tab",
     "desk.hero"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The hint of the StreakBoard and of Hero's streak chip, both buttons since slice 51: they open the streak page."
   },
   "pump.streak.share": {
@@ -20992,12 +20513,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The streak page's primary: opens the Share window on the streak card as the streak stands (none at 0 days)."
   },
@@ -21007,12 +20522,6 @@
     "desk.streak",
     "pump.streak"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The streak page's title (slice 51), from the StreakBoard and Hero's streak chip."
   },
   "pump.streak.tokens": {
@@ -21021,12 +20530,6 @@
     "desk.streak",
     "pump.streak"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Caps over the rest tokens' slots: each token held keeps the streak through a day off."
   },
   "pump.streak.tokens.earn": {
@@ -21034,12 +20537,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "How a rest token is earned (token_days 5, token_max 3) and what it does. Earned, never bought; every player starts with one.",
    "args": {
@@ -21054,12 +20551,6 @@
     "desk.streak",
     "pump.streak"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "In place of the next token's line while the most are held.",
    "args": {
     "count": "int"
@@ -21071,12 +20562,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Beside the rest tokens' slots: {count} held of the most there can be ({max}, 3).",
    "args": {
@@ -21090,12 +20575,6 @@
    "screens": [
     "desk.streak",
     "pump.streak"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "While fewer than the most are held: the active days still to come before the next token.",
    "args": {
@@ -23477,7 +22956,7 @@
     "pump.tab",
     "setup.pairing"
    ],
-   "note": "Skips the Bluetooth step; Pump's follow card and the Helper page offer it again. On Pump's follow card (2026-10-19, the program's double-check) it puts away the card's Bluetooth reason (the link, Nearby devices or Bluetooth refused or off, the computer's ask, its Bluetooth refused or off) for this pairing; a new pairing or Link on the Helper page brings it back, and the Helper page still offers the link."
+   "note": "Skips the Bluetooth step; Pump's follow card and the Helper page offer it again. On Pump's follow card (2026-10-19, the program's double-check) it puts away the card's Bluetooth reason (the link, Nearby devices or Bluetooth refused or off, the computer's ask, its Bluetooth refused or off) for this pairing; a new pairing or Link on the Helper page brings it back, and the Helper page still offers the link. On the iPhone it also puts away the card's Apple Health reason for this pairing (Rapha, 2026-11-11); a new pairing brings it back."
   },
   "setup.pairing.ble.line": {
    "text": "Connect this phone to {computer} by Bluetooth. Then pumps reach it away from your Wi-Fi too, and QuestPump restarts on its own if Android closes it.",
@@ -24676,11 +24155,8 @@
    "screens": [
     "watch.count"
    ],
-   "platforms": [
-    "wearos"
-   ],
    "max": 16,
-   "note": "Under the watch's count while it stands at its most (slice 66): half again what the watch counted; {max} in the move's unit, reps as a number (45), seconds as m:ss (1:00). The Apple Watch shows it once its count moves onto the dial (owed, slice 66)."
+   "note": "Under the watch's count while it stands at its most (slice 66): half again what the watch counted; {max} in the move's unit, reps as a number (45), seconds as m:ss (1:00)."
   },
   "watch.count.form": {
    "text": "All out and clean?",
@@ -25433,9 +24909,6 @@
    "text": "At {place}",
    "screens": [
     "watch.pick"
-   ],
-   "platforms": [
-    "wearos"
    ],
    "note": "A quiet line on the watch's pick page (slice 51): {place} is the place in use on the phone (its name, or its template's words), whose equipment and switches the watch's pumps follow, or, while work mode runs, work.title (Work mode), whose own equipment they follow then (slice 67). Never a button.",
    "args": {
@@ -26705,7 +26178,7 @@
    "screens": [
     "desk.work.how"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line on the computer and in the browser, where the work pump opens itself and its Ready view's Bank all (pump.ready.bank) puts it off; the phones' line names their ask's Later (work.how.later)."
+   "note": "Work mode (docs/plan.md slice 67): the How page's third line on the computer and in the browser, where the work pump opens itself and its Ready view's Bank all (pump.ready.bank) puts it off; the phones' line names their ask's Later (work.how.later)."
   },
   "work.how.clock": {
    "text": "Work for {minutes} minutes.",
@@ -26734,19 +26207,7 @@
    "screens": [
     "work.how"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line on the phones, whose ask has Later."
-  },
-  "work.how.long": {
-   "text": "Every fourth pump is a long one: {moves} moves.",
-   "args": {
-    "moves": "int"
-   },
-   "noPlural": true,
-   "screens": [
-    "work.how",
-    "desk.work.how"
-   ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's third line: the set's last pump, one move more (2 at Light, 3 at Balanced, 4 at Extreme)."
+   "note": "Work mode (docs/plan.md slice 67): the How page's third line on the phones, whose ask has Later."
   },
   "work.how.pump": {
    "text": "Then a pump of {moves} moves, about {minutes} min.",
@@ -26762,7 +26223,7 @@
     "work.how",
     "desk.work.how"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's second line: the short pump's moves at Moves per block and its minutes, the moves times contract/library.json's move_estimate_s rounded up to a minute; minutes is passed formatted as a string, since a plural with two integers does not number in Xcode's string catalog (apple-companion iphone-trees.md)."
+   "note": "Work mode (docs/plan.md slice 67): the How page's second line: a work pump's moves at Moves per block and its minutes, the moves times contract/library.json's move_estimate_s rounded up to a minute; minutes is passed formatted as a string, since a plural with two integers does not number in Xcode's string catalog (apple-companion iphone-trees.md)."
   },
   "work.how.title": {
    "text": "How work mode works",
@@ -26785,14 +26246,14 @@
     "macos",
     "windows"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's fifth line on the computer, which holds for each."
+   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line on the computer, which holds for each."
   },
   "work.how.waits.phone": {
    "text": "It waits during calls and your quiet hours.",
    "screens": [
     "work.how"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's fifth line on the phones, which hold for calls and quiet hours."
+   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line on the phones, which hold for calls and quiet hours."
   },
   "work.how.waits.web": {
    "text": "It waits during your quiet hours.",
@@ -26802,7 +26263,7 @@
    "platforms": [
     "web"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the How page's fifth line in the browser, which cannot tell a call."
+   "note": "Work mode (docs/plan.md slice 67): the How page's fourth line in the browser, which cannot tell a call."
   },
   "work.later": {
    "text": "Later",
@@ -26867,7 +26328,7 @@
     "menu.work",
     "desk.menu.work"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the label over Light, Balanced and Extreme: the moves of each work pump (Light 1, Balanced 2, Extreme 3, and one more in every fourth). Moves per match's twin."
+   "note": "Work mode (docs/plan.md slice 67): the label over Light, Balanced and Extreme: the moves of each work pump (Light 1, Balanced 2, Extreme 3). Moves per match's twin."
   },
   "work.pumpnow": {
    "text": "Pump now",
@@ -26879,17 +26340,6 @@
     "desk.tray"
    ],
    "note": "Work mode (docs/plan.md slice 67): opens the work pump that is due (the work card's gold button once the ring is full, the door's and the shield's primary, the tray's item while work mode runs)."
-  },
-  "work.set": {
-   "text": "Pump {block} of {blocks}",
-   "args": {
-    "block": "int",
-    "blocks": "int"
-   },
-   "screens": [
-    "WorkCard"
-   ],
-   "note": "Work mode (docs/plan.md slice 67): the spoken label of the work card's four dots: the next pump's place in the set and the set's size (the fourth the long one)."
   },
   "work.start": {
    "text": "Start",

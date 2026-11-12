@@ -696,6 +696,48 @@ qp-card.qp-trains qp-muscle-map {
 	}
 }
 
+/* the return after a set started from a step's card (slice 72; the phones' and the game's): the climb's mark fills
+   from its old share after ringFill's hold (the path's ring, the list's bar with its tip); a step the set opened
+   flashes once in its quality's tone over its tile (nodeFlash: a third of it up to 60 % at most, the rest down) while
+   the ring, the path's one glow, comes onto it (glowMove). Under reduced motion every part stands at its end at once,
+   the tokens giving them no time */
+.qp-path-ring-fill.qp-filling {
+	transition: stroke-dasharray var(--qp-motion-ring-fill) var(--qp-motion-ring-fill-hold);
+}
+
+.qp-fill-bar.qp-filling .qp-fill-bar-fill {
+	transition: width var(--qp-motion-ring-fill) var(--qp-motion-ring-fill-hold);
+}
+
+.qp-fill-bar.qp-filling .qp-fill-bar-tip {
+	transition: inset-inline-start var(--qp-motion-ring-fill) var(--qp-motion-ring-fill-hold);
+}
+
+.qp-opened qp-move-tile::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: var(--qp-layout-tile-radius);
+	background: var(--qp-tone);
+	opacity: 0;
+	pointer-events: none;
+	animation: qp-node-flash var(--qp-motion-node-flash);
+}
+
+.qp-opened qp-move-tile[data-size="44"]::after {
+	border-radius: var(--qp-layout-tile-radius-small);
+}
+
+.qp-opened .qp-path-ring {
+	animation: qp-fade-in var(--qp-motion-glow-move);
+}
+
+@keyframes qp-node-flash {
+	33% {
+		opacity: 0.6;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.qp-fill-bar-tip {
 		animation: none;

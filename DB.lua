@@ -46,7 +46,7 @@ ns.defaults = {
 	-- floor moves, room to move, not quiet, a chair on wheels, no equipment (David, 2026-09-21: "bodyweight-only
 	-- defaults for everyone"; the backpack was on by default until 2026-09-30, when a player without one still met its
 	-- row).
-	gear = {}, -- equipment keys (ns.Gear), stable_chair and table included
+	gear = {}, -- equipment keys (ns.Gear), stable_chair, table and towel (2026-11-11) included
 	-- Floor moves: hands, forearms or knees on the floor, or lying down, no mat needed. On by default since
 	-- 2026-10-04 (David: "Everyone has a floor and a mat is luxury"); off until then, when the game assumed a desk
 	-- and no mat. `floorChoice` marks a profile made or switched on since: its `floor` is the player's own
@@ -113,8 +113,9 @@ ns.TYPED = TYPED
 -- weight writes none; a correction's load row (0 takes the weight off) carries the correction's round in `outcome`
 -- and its writer's char and source bits, written just before its correction row (ns.CorrectionRows); the rung and
 -- mastered rows a correction asks again (and their undo rows) carry the set's char and the time they were written; a
--- row on the retired ladders 3 and 5 is read on the ladders that took their moves, and a row of a move merged into
--- another (Library.lua ns.Merged) as that move's (ns.Translate), never rewritten.
+-- row on the retired ladders 3 and 5 is read on the ladders that took their moves, a row of a move merged into
+-- another (Library.lua ns.Merged) as that move's and an owed or banked row of reps or a hold whose move is timed now
+-- as that timed move's (ns.Translate), never rewritten.
 function ns.EncodeRow(r)
 	local parts = {}
 	for i, field in ipairs(ns.FIELDS) do
@@ -325,6 +326,21 @@ local function lowered(r, m)
 	end
 end
 
+-- An unfinished row (owed or banked) of reps or a hold whose move is timed now (Library.lua's class line: the carries,
+-- the good morning, since 2026-11-11 the bird dog and its kin) reads as the row a bank of that move writes today: a
+-- flow row at the ladder and rung a fresh pick of it carries (Engine.lua slotOf: 0 off the ladders, at its own rung)
+-- and at its own seconds (ns.FlowSeconds), which the move that stands in for it runs too, as for any owed flow row
+-- (riderSlot). Every reader of the queue then takes it as the timed move (the riders' dose, a Start that pays it, its
+-- stand-in, the lists' kinds and times), never as a set one step past the record its old sets left, and its paid row
+-- still names it by its ts, questID and slot. A set done stays as written.
+local function timedNow(r)
+	local m = (r.outcome == O.owed or r.outcome == O.banked) and (r.kind == K.rep or r.kind == K.hold)
+		and ns.Library[r.move]
+	if m and m.dose == "flow" then
+		r.kind, r.ladder, r.rung, r.seconds = K.flow, m.ladder or 0, m.rung, ns.FlowSeconds(r.move)
+	end
+end
+
 -- A set of a move that switches sides since a time (Library.lua ns.Sided) from before that time held both sides on one
 -- clock, so its seconds read as each side's: half (its correction's too, `correct`).
 local function sidedHalf(r)
@@ -361,6 +377,7 @@ end
 -- baseline's owed rows, ns.SplitBaseline, which ns.ShiftBaseline lowers with the rest of that baseline).
 local function readRow(r, s, unshifted)
 	local m = mergedMove(r)
+	timedNow(r)
 	sidedHalf(r)
 	if not (unshifted or ns.ShiftRow(r)) then return nil end
 	local a, b = translate(r, s)
@@ -743,6 +760,7 @@ function ns.NewState(baseline)
 			local r = ns.DecodeRow(str)
 			if r then
 				lowered(r, mergedMove(r))
+				timedNow(r)
 				r.key = key
 				s.owed[key] = r
 			end

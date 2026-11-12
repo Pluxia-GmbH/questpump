@@ -1,11 +1,13 @@
 // A view's page: the Page under a TopBar (a root's) or a DetailBar (a pushed page's), and one centred column of at most
 // 600 px under it (desk.css). `watch` follows a topic for as long as the view stands; `say` sets a step's result line,
-// which a screen reader hears as it changes; `heldCode` holds a code that opens the player's account behind Show code.
+// which a screen reader hears as it changes, with the feedback event of a step that succeeded or failed (slice 72:
+// `commit`, `error`); `heldCode` holds a code that opens the player's account behind Show code.
 
 import {subscribe} from "../lib/bridge.js";
 import {t} from "../lib/copy.js";
 import {announce, focusOn} from "../lib/focus.js";
 import {conceal, reveal} from "../lib/router.js";
+import {feedback} from "../lib/sound.js";
 import {h} from "../kit/element.js";
 
 /** QuestPump on your computer from the browser (docs/plan.md slice 63): the site's click count (`/from/play`, the
@@ -42,9 +44,13 @@ export function resultLine() {
 }
 
 /** Sets a result line's words (none hides it), which a screen reader hears whenever they change (lib/focus.js
- * `announce`). */
-export function say(line, text) {
-	if (text && text !== line.textContent) announce(text);
+ * `announce`); with `event`, the words say a step that succeeded (`commit`) or failed (`error`), which sounds as they
+ * come. */
+export function say(line, text, event = null) {
+	if (text && text !== line.textContent) {
+		announce(text);
+		if (event) feedback(event);
+	}
 	line.textContent = text;
 	line.hidden = !text;
 }

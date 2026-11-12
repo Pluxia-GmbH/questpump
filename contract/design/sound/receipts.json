@@ -4,6 +4,7 @@
   "contract/design/sound/src/kenney-interface-sounds/License.txt": "f7966c773bbed0eca6a9c75081c44a178b38eae112724dbb5fdfbd4192d118a9",
   "contract/design/sound/src/kenney-music-jingles/License.txt": "373b1c880ee6c7a83c1ccf209f251cf45fc9ea9b1f0330844fa7be64a401adc4",
   "contract/design/sound/src/kenney-rpg-audio/License.txt": "5735dfd72cb64cbbceda4ebc00c380c41ca680edb82ff153aa7c9ab97614c539",
+  "contract/design/sound/src/pluxia-chimes/License.txt": "4f6243c68f6868024736ef5c7a125f81534743ecf467206b4f1cf5e7886d1660",
   "contract/design/sound/src/pluxia-ticks/License.txt": "4f6243c68f6868024736ef5c7a125f81534743ecf467206b4f1cf5e7886d1660"
  },
  "sounds": {
@@ -255,6 +256,38 @@
     }
    ]
   },
+  "call": {
+   "source": {
+    "path": "contract/design/sound/src/pluxia-chimes/call.wav",
+    "sha256": "1361c35b94c5806c3bdd02be9b2894880d9ea6d24075525a0a2b1f34da3c1179",
+    "truePeakDb": -3.1
+   },
+   "appliedDb": -4.4,
+   "params": "4561bdff074dfe8afa4994d5fb89a3440fac9cef5c80a2a8295fbd8edf42a9f4",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "26.6"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/call.caf",
+     "sha256": "260200a5d393a40ef6b6b6695709be7df6bf4b1616d81eacf98f98d2b6bad5b5",
+     "ms": 181,
+     "rate": 48000,
+     "channels": 1,
+     "truePeakDb": -7.5
+    },
+    {
+     "path": "android/phone/src/main/res/raw/call.ogg",
+     "sha256": "a759c7d709ea6bb124003a978dcf2dacf4872a04f422dc02996e09cb9424ea5c",
+     "ms": 181,
+     "rate": 48000,
+     "channels": 1,
+     "truePeakDb": -7.7
+    }
+   ]
+  },
   "pour_tick": {
    "source": {
     "path": "contract/design/sound/src/pluxia-ticks/pour_tick.wav",
@@ -441,6 +474,38 @@
      "rate": 48000,
      "channels": 1,
      "truePeakDb": -1.6
+    }
+   ]
+  },
+  "streak": {
+   "source": {
+    "path": "contract/design/sound/src/pluxia-chimes/streak.wav",
+    "sha256": "587fd1b3c7b538d669da7e5aa90952676c8ae5410ae2ad803917e66ad592b0c9",
+    "truePeakDb": -4.6
+   },
+   "appliedDb": 0.1,
+   "params": "8da70acfbde9fa647e2f020f02b3e9ccc0b65e51462fdeca3abfe015061bb2de",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "26.6"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/streak.caf",
+     "sha256": "042338ce40a1bd19d4392b4dd67b899ce34d3fc72b1b268691845bee5e602a29",
+     "ms": 558,
+     "rate": 48000,
+     "channels": 1,
+     "truePeakDb": -4.5
+    },
+    {
+     "path": "android/phone/src/main/res/raw/streak.ogg",
+     "sha256": "55432928aa3d323a2ce929936fabc8cc5da6ff440fcdc96ced69a25d9cd0a0ad",
+     "ms": 558,
+     "rate": 48000,
+     "channels": 1,
+     "truePeakDb": -4.3
     }
    ]
   },
@@ -7125,6 +7190,174 @@
     }
    ]
   },
+  "move.back_extension": {
+   "source": {
+    "path": "Media/Voice/move.back_extension.ogg",
+    "sha256": "7f224c8ff639f0e763d927e2aa2ad10b9468566dee2c341304f79a6b97e01c33"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_back_extension.m4a",
+     "sha256": "58f60e3a0efbed9c93e80552754d7a2e8cca908cdc391f24fd6de07eef202361",
+     "ms": 8408,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_back_extension.ogg",
+     "sha256": "7f224c8ff639f0e763d927e2aa2ad10b9468566dee2c341304f79a6b97e01c33",
+     "ms": 8320,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.back_extension_hold": {
+   "source": {
+    "path": "Media/Voice/move.back_extension_hold.ogg",
+    "sha256": "57e63dee74c7dfa6d4abc775b623b171976bf0c3e623d6a12de6572ee7d5050a"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_back_extension_hold.m4a",
+     "sha256": "3b3d77c576bb95ba753f6703f72c37987e7731cea1b89449199a411c14242684",
+     "ms": 7469,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_back_extension_hold.ogg",
+     "sha256": "57e63dee74c7dfa6d4abc775b623b171976bf0c3e623d6a12de6572ee7d5050a",
+     "ms": 7360,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.back_extension_long": {
+   "source": {
+    "path": "Media/Voice/move.back_extension_long.ogg",
+    "sha256": "b15fefe246d942d2bee615e7f2f6a3403b42a309e57c252eda882bb78ad74d57"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_back_extension_long.m4a",
+     "sha256": "0f67bcd1b4298154fb12ee7e7105036bdc81732ca7f7d27c03892245e6b7eeb2",
+     "ms": 9688,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_back_extension_long.ogg",
+     "sha256": "b15fefe246d942d2bee615e7f2f6a3403b42a309e57c252eda882bb78ad74d57",
+     "ms": 9600,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.back_extension_long_hold": {
+   "source": {
+    "path": "Media/Voice/move.back_extension_long_hold.ogg",
+    "sha256": "e1e02dfc6db40623266a40f23afdfec59c5391fb0bfa7e7199620e4201d17c87"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_back_extension_long_hold.m4a",
+     "sha256": "44691027df8afbc199ea02dd0a1cc15d80d77bfc798d576666d55972782100dd",
+     "ms": 8067,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_back_extension_long_hold.ogg",
+     "sha256": "e1e02dfc6db40623266a40f23afdfec59c5391fb0bfa7e7199620e4201d17c87",
+     "ms": 7971,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.back_extension_long_slow": {
+   "source": {
+    "path": "Media/Voice/move.back_extension_long_slow.ogg",
+    "sha256": "8b7d014666c9eaf432e69af456c7a35cf4c5026493418130a8c96c6f7f8e06a0"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_back_extension_long_slow.m4a",
+     "sha256": "e7c1f39820df954d34650eb0162a11a493d3fb73d20385c3b12dea16b9c1eef1",
+     "ms": 9688,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_back_extension_long_slow.ogg",
+     "sha256": "8b7d014666c9eaf432e69af456c7a35cf4c5026493418130a8c96c6f7f8e06a0",
+     "ms": 9590,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.back_extension_pack": {
+   "source": {
+    "path": "Media/Voice/move.back_extension_pack.ogg",
+    "sha256": "be7e06336b47131dfa3ab9c7cd9625209c7dc51f5c0be0e59484c1067ddc1312"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_back_extension_pack.m4a",
+     "sha256": "8c4cbf642bc6fb5b70dbce7482d634beceb8820b0f581b55f7639544d8f61812",
+     "ms": 9005,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_back_extension_pack.ogg",
+     "sha256": "be7e06336b47131dfa3ab9c7cd9625209c7dc51f5c0be0e59484c1067ddc1312",
+     "ms": 8880,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
   "move.backpack_deadlift": {
    "source": {
     "path": "Media/Voice/move.backpack_deadlift.ogg",
@@ -8105,29 +8338,57 @@
     }
    ]
   },
-  "move.bird_dog_hold": {
+  "move.bird_dog_band": {
    "source": {
-    "path": "Media/Voice/move.bird_dog_hold.ogg",
-    "sha256": "1dffdb6c74facfc2a4db68b5fad664101d96ea65099b305b759c60c0c4ce6069"
+    "path": "Media/Voice/move.bird_dog_band.ogg",
+    "sha256": "62a1120fa07b28b10ba941fa0dd2537f9f6fb2fd4418dea9e3c313d6ff2da90d"
    },
    "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
    "tools": {
     "ffmpeg": "9.0.2",
     "oggenc": "1.4.3",
-    "macos": "27.0.1"
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_bird_dog_band.m4a",
+     "sha256": "d5517d64c8914b2792e992e0f2f1ba1279ba389facc50a67e97954485d8f0f5e",
+     "ms": 7939,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_bird_dog_band.ogg",
+     "sha256": "62a1120fa07b28b10ba941fa0dd2537f9f6fb2fd4418dea9e3c313d6ff2da90d",
+     "ms": 7840,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.bird_dog_hold": {
+   "source": {
+    "path": "Media/Voice/move.bird_dog_hold.ogg",
+    "sha256": "e20013d2918e54536ed8ddf04a1a7e7e11f8536d063871eba1d2a014b1374b3d"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
    },
    "outputs": [
     {
      "path": "apple/iOS/Sounds/move_bird_dog_hold.m4a",
-     "sha256": "7221881200781dc5b0835dbd0e60f33628f5eecdac39f7db22ab04242ad546ff",
-     "ms": 7213,
+     "sha256": "1e27a2d0651f267b610193afc1a3ec1fcf48f0fb0eef744893cacc6432bb7d82",
+     "ms": 7683,
      "rate": 24000,
      "channels": 1
     },
     {
      "path": "android/phone/src/main/res/raw/move_bird_dog_hold.ogg",
-     "sha256": "1dffdb6c74facfc2a4db68b5fad664101d96ea65099b305b759c60c0c4ce6069",
-     "ms": 7120,
+     "sha256": "e20013d2918e54536ed8ddf04a1a7e7e11f8536d063871eba1d2a014b1374b3d",
+     "ms": 7590,
      "rate": 24000,
      "channels": 1
     }
@@ -8996,6 +9257,90 @@
      "path": "android/phone/src/main/res/raw/move_chair_twist_press.ogg",
      "sha256": "d3132a8fb29cab9b4b78463799704c349463cc94c6d35174324f5434795b8f45",
      "ms": 10538,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.chest_lift": {
+   "source": {
+    "path": "Media/Voice/move.chest_lift.ogg",
+    "sha256": "25cfcbef23b8d3a13009775c05802444a803c267d63463754b2f49bec403f977"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_chest_lift.m4a",
+     "sha256": "9f7de4dce5e9fbf3a51a1aa4aff59d6659ef9851e037dab96972d384062a24e2",
+     "ms": 7939,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_chest_lift.ogg",
+     "sha256": "25cfcbef23b8d3a13009775c05802444a803c267d63463754b2f49bec403f977",
+     "ms": 7840,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.chest_lift_long": {
+   "source": {
+    "path": "Media/Voice/move.chest_lift_long.ogg",
+    "sha256": "27a30ea2007816c5017af009f13c1492bf496ea0e9f50e5a22aa9a3dbf4b7502"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_chest_lift_long.m4a",
+     "sha256": "ca6ea224adac5fe9bad6127ce065ef1a08ca2394a9d98cd959f39928ac07b993",
+     "ms": 8408,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_chest_lift_long.ogg",
+     "sha256": "27a30ea2007816c5017af009f13c1492bf496ea0e9f50e5a22aa9a3dbf4b7502",
+     "ms": 8320,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.chest_lift_pack": {
+   "source": {
+    "path": "Media/Voice/move.chest_lift_pack.ogg",
+    "sha256": "64b164a62e84d22596b5dae4af1541502dede8684ee823bec79b669d437baa19"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_chest_lift_pack.m4a",
+     "sha256": "5514e48d1f5a096031eff3d7b4b18d9458c12854111da697fe249b86f5abde00",
+     "ms": 8707,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_chest_lift_pack.ogg",
+     "sha256": "64b164a62e84d22596b5dae4af1541502dede8684ee823bec79b669d437baa19",
+     "ms": 8615,
      "rate": 24000,
      "channels": 1
     }
@@ -11633,6 +11978,34 @@
     }
    ]
   },
+  "move.floor_leg_lift": {
+   "source": {
+    "path": "Media/Voice/move.floor_leg_lift.ogg",
+    "sha256": "13e9a3c052eaa58a8e1c3e3755eb14f33bf3a457e4c6c155abba6b36ea4c1b44"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_floor_leg_lift.m4a",
+     "sha256": "0193580f4f9a6cb45a501324b49e857036f1a236c5ac044470c35198b8683794",
+     "ms": 8579,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_floor_leg_lift.ogg",
+     "sha256": "13e9a3c052eaa58a8e1c3e3755eb14f33bf3a457e4c6c155abba6b36ea4c1b44",
+     "ms": 8480,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
   "move.floor_reverse_lean": {
    "source": {
     "path": "Media/Voice/move.floor_reverse_lean.ogg",
@@ -13845,6 +14218,118 @@
     }
    ]
   },
+  "move.kneeling_back_raise": {
+   "source": {
+    "path": "Media/Voice/move.kneeling_back_raise.ogg",
+    "sha256": "90de3b08f989ce0ccf69832ee6b39cc861dad49424631bbb40c4e6552b27bc0e"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_kneeling_back_raise.m4a",
+     "sha256": "4db0e6dce862616702d17d1a5a74593c116ae98854fabbd3d8ca89e480422227",
+     "ms": 8664,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_kneeling_back_raise.ogg",
+     "sha256": "90de3b08f989ce0ccf69832ee6b39cc861dad49424631bbb40c4e6552b27bc0e",
+     "ms": 8560,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.kneeling_good_morning": {
+   "source": {
+    "path": "Media/Voice/move.kneeling_good_morning.ogg",
+    "sha256": "6321261d76226f91c2859b940aaf0e6d19ba93253914ae3693b49f786cc8c610"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_kneeling_good_morning.m4a",
+     "sha256": "8137ed4a1de8c744631b604e32bbb135da61d6f14a7c3e3603378ee892081e35",
+     "ms": 9859,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_kneeling_good_morning.ogg",
+     "sha256": "6321261d76226f91c2859b940aaf0e6d19ba93253914ae3693b49f786cc8c610",
+     "ms": 9760,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.kneeling_good_morning_long": {
+   "source": {
+    "path": "Media/Voice/move.kneeling_good_morning_long.ogg",
+    "sha256": "bf533fc03308e33a8c4cdee1296319ade5d13aecd9252a70d468edf9401c7d28"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_kneeling_good_morning_long.m4a",
+     "sha256": "0b6ebd907dcc9db6df71d1d6f6b52721eb28d7159e3d1e8afea405fdba6326ad",
+     "ms": 10840,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_kneeling_good_morning_long.ogg",
+     "sha256": "bf533fc03308e33a8c4cdee1296319ade5d13aecd9252a70d468edf9401c7d28",
+     "ms": 10720,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.kneeling_good_morning_weight": {
+   "source": {
+    "path": "Media/Voice/move.kneeling_good_morning_weight.ogg",
+    "sha256": "76aabfbc0a96f0f2ebf505a0336411772b4d9cda344130aec3e7a30cee82b9b7"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_kneeling_good_morning_weight.m4a",
+     "sha256": "f6afa374fb49a6af72b4c6928efd4ae93ac63554fbffc1092c55573edfdffdb5",
+     "ms": 10115,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_kneeling_good_morning_weight.ogg",
+     "sha256": "76aabfbc0a96f0f2ebf505a0336411772b4d9cda344130aec3e7a30cee82b9b7",
+     "ms": 10000,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
   "move.kneeling_reach_back": {
    "source": {
     "path": "Media/Voice/move.kneeling_reach_back.ogg",
@@ -15668,26 +16153,26 @@
   "move.one_arm_doorframe_row_back": {
    "source": {
     "path": "Media/Voice/move.one_arm_doorframe_row_back.ogg",
-    "sha256": "a946f2aa461df310142253923b4dc399f1925db31f043a79ce481c5d137817cc"
+    "sha256": "fa2bc87599d70b8e2310f1dd0239701de7e60a4b808aae1deaa4d884f81b7704"
    },
    "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
    "tools": {
     "ffmpeg": "9.0.2",
     "oggenc": "1.4.3",
-    "macos": "27.0.1"
+    "macos": "27.2"
    },
    "outputs": [
     {
      "path": "apple/iOS/Sounds/move_one_arm_doorframe_row_back.m4a",
-     "sha256": "adb57626a6d174f81ef10c1e0f9f744325104022b50e7b02c966eeaf2fca4f45",
-     "ms": 8749,
+     "sha256": "8b45bdc6da0bed009591945a07048f1a2e23f6b762ec8685a4fe3b024399657c",
+     "ms": 8451,
      "rate": 24000,
      "channels": 1
     },
     {
      "path": "android/phone/src/main/res/raw/move_one_arm_doorframe_row_back.ogg",
-     "sha256": "a946f2aa461df310142253923b4dc399f1925db31f043a79ce481c5d137817cc",
-     "ms": 8631,
+     "sha256": "fa2bc87599d70b8e2310f1dd0239701de7e60a4b808aae1deaa4d884f81b7704",
+     "ms": 8360,
      "rate": 24000,
      "channels": 1
     }
@@ -17424,6 +17909,230 @@
      "path": "android/phone/src/main/res/raw/move_reverse_crunch.ogg",
      "sha256": "aecdcd594ae42ec221b66cb4f2910369b81b5ef64f29d3a052946c54294d2ac0",
      "ms": 8320,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper.ogg",
+    "sha256": "d311ad0846797f399c1c3ba174b58553a37a225686f4c41794547bde14b06157"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper.m4a",
+     "sha256": "d7d158011fbb4b9160a1e95afa253e810ecf863e723736666bdee12b26a19dac",
+     "ms": 8408,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper.ogg",
+     "sha256": "d311ad0846797f399c1c3ba174b58553a37a225686f4c41794547bde14b06157",
+     "ms": 8320,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_band": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_band.ogg",
+    "sha256": "a97eed599097083a48f536ff87dafb9cb3f6e751d71f95191007512eacd8a83b"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_band.m4a",
+     "sha256": "76f7b65ee6b6d475c2e52039fc5297e9b285b14847b43be3d37074e41810904b",
+     "ms": 8920,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_band.ogg",
+     "sha256": "a97eed599097083a48f536ff87dafb9cb3f6e751d71f95191007512eacd8a83b",
+     "ms": 8800,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_hold": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_hold.ogg",
+    "sha256": "394f0084906b09c86eb485a4e6050f491b2ca7121d33f9d62abdd417f8558274"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_hold.m4a",
+     "sha256": "af15bf702ed8f11720a809bd6ee2ac4a4388e194dda165feeea10c5d34285b17",
+     "ms": 7427,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_hold.ogg",
+     "sha256": "394f0084906b09c86eb485a4e6050f491b2ca7121d33f9d62abdd417f8558274",
+     "ms": 7315,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_one_leg": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_one_leg.ogg",
+    "sha256": "2e07769f704de77fff018731778150d5a50aabe98048e4aa84bf162280e9206e"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_one_leg.m4a",
+     "sha256": "9ba3401bc2b1fcd7519b2167e9857109285068f733c731163f1826bcbddbffed",
+     "ms": 8237,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_one_leg.ogg",
+     "sha256": "2e07769f704de77fff018731778150d5a50aabe98048e4aa84bf162280e9206e",
+     "ms": 8148,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_pause": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_pause.ogg",
+    "sha256": "f0753c30c2c3c16a9cbc9bfe966de19d39a97a5aea59bc6c78f42bffade88392"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_pause.m4a",
+     "sha256": "26bba51c5732bb72a382104773ffe2bdb28d7488e6778694a133c43b3d85eecf",
+     "ms": 9560,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_pause.ogg",
+     "sha256": "f0753c30c2c3c16a9cbc9bfe966de19d39a97a5aea59bc6c78f42bffade88392",
+     "ms": 9437,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_table": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_table.ogg",
+    "sha256": "27c28f4c2799240e5a027c81a5cbed039b103f36e4422586a8fd0b7e94d919a2"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_table.m4a",
+     "sha256": "bf5c443034dae9376c915eee8cfb619d2bd37750208900a6da31df041c7474bd",
+     "ms": 9389,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_table.ogg",
+     "sha256": "27c28f4c2799240e5a027c81a5cbed039b103f36e4422586a8fd0b7e94d919a2",
+     "ms": 9276,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_tuck": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_tuck.ogg",
+    "sha256": "e20305a3b5863de0b1470f17802482cccbf4565697849bda5d379dacf9f7d0b3"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_tuck.m4a",
+     "sha256": "bad3911f490c7e9d4e1731055b6aaafb024fb9bf631c7aeb08a209cd20ee9b66",
+     "ms": 8195,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_tuck.ogg",
+     "sha256": "e20305a3b5863de0b1470f17802482cccbf4565697849bda5d379dacf9f7d0b3",
+     "ms": 8080,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.reverse_hyper_weight": {
+   "source": {
+    "path": "Media/Voice/move.reverse_hyper_weight.ogg",
+    "sha256": "6b30e3b2719a384bb9aa3690c3b04e139c1cf75d2085707a90055c09b2d8b0c6"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_reverse_hyper_weight.m4a",
+     "sha256": "4f10c1856d3d1e098241c2b9a476c1e81f63b2baff460656bd5602f9098550bd",
+     "ms": 9560,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_reverse_hyper_weight.ogg",
+     "sha256": "6b30e3b2719a384bb9aa3690c3b04e139c1cf75d2085707a90055c09b2d8b0c6",
+     "ms": 9440,
      "rate": 24000,
      "channels": 1
     }
@@ -21072,26 +21781,54 @@
   "move.superman_hold": {
    "source": {
     "path": "Media/Voice/move.superman_hold.ogg",
-    "sha256": "04842c35a38cf5efd127d61d9142f13e9490009e6f37b61d05f3085fd309f76f"
+    "sha256": "6df57d7ffa482ad213abd1859c066ee261e507b060dc88d908e4a643f5493077"
    },
    "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
    "tools": {
     "ffmpeg": "9.0.2",
     "oggenc": "1.4.3",
-    "macos": "27.0.1"
+    "macos": "27.2"
    },
    "outputs": [
     {
      "path": "apple/iOS/Sounds/move_superman_hold.m4a",
-     "sha256": "93eb59b6be2cb76609522c7e30530b27f9127708f0fb36b28c900bff3a0bced7",
-     "ms": 6915,
+     "sha256": "e09298927ee3bee23ee0607c7a591973c64fe2b9076caca164cfdac1ad868863",
+     "ms": 7469,
      "rate": 24000,
      "channels": 1
     },
     {
      "path": "android/phone/src/main/res/raw/move_superman_hold.ogg",
-     "sha256": "04842c35a38cf5efd127d61d9142f13e9490009e6f37b61d05f3085fd309f76f",
-     "ms": 6800,
+     "sha256": "6df57d7ffa482ad213abd1859c066ee261e507b060dc88d908e4a643f5493077",
+     "ms": 7360,
+     "rate": 24000,
+     "channels": 1
+    }
+   ]
+  },
+  "move.swimmer_lifts": {
+   "source": {
+    "path": "Media/Voice/move.swimmer_lifts.ogg",
+    "sha256": "2729450307f06fea022b5f341be676e2112df694050bdaab062ee317ba2fd816"
+   },
+   "params": "4875a7882734ade4dc9ea66161a5e137c61fde799217297b9d49811156051c76",
+   "tools": {
+    "ffmpeg": "9.0.2",
+    "oggenc": "1.4.3",
+    "macos": "27.2"
+   },
+   "outputs": [
+    {
+     "path": "apple/iOS/Sounds/move_swimmer_lifts.m4a",
+     "sha256": "4eff32718039245ff926c08fd193e8278f44d50d88b0d22c2724309a01da7bce",
+     "ms": 8579,
+     "rate": 24000,
+     "channels": 1
+    },
+    {
+     "path": "android/phone/src/main/res/raw/move_swimmer_lifts.ogg",
+     "sha256": "2729450307f06fea022b5f341be676e2112df694050bdaab062ee317ba2fd816",
+     "ms": 8473,
      "rate": 24000,
      "channels": 1
     }

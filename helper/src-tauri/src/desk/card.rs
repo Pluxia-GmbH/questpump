@@ -785,8 +785,10 @@ impl Helper {
 		self.offering.card.opened = Some(view.id.clone());
 		self.offering.card.by_hand = false;
 		log::info!("offer {}: the pump opens", view.id);
-		if let Err(e) = self.start_offer(&view, view.tier, screen) {
-			log::warn!("offer {}: {e}", view.id);
+		match self.start_offer(&view, view.tier, screen) {
+			// nobody pressed for it: its Ready view says it came (`call`, slice 72)
+			Ok(()) => self.desk.pump_unasked(),
+			Err(e) => log::warn!("offer {}: {e}", view.id),
 		}
 	}
 

@@ -1,0 +1,53 @@
+{
+  "move": "kneeling_good_morning_long",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["abdomen", "thigh", "pauldron"],
+  "items": [{"kind": "towel", "under": "knee_near"}, {"kind": "towel", "under": "knee_far"}],
+  "poses": {
+    "tall": {
+      "line": {"pivot": "knees", "at": 0, "angle": 90, "hips": 0, "width": 12, "feet": "flat"},
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"fk": [180, 8, 0, 0, 0]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "fold": {
+      "from": "tall",
+      "line": {"pivot": "knees", "at": 0, "angle": 132, "hips": -108, "width": 12, "feet": "flat"},
+      "head": [-4, 0, 0]
+    },
+    "rounded": {
+      "from": "fold",
+      "line": {"pivot": "knees", "at": 0, "angle": 132, "hips": -86, "width": 12, "feet": "flat"},
+      "chest": [42, 0, 0],
+      "head": [-8, 0, 0],
+      "arms": {"fk": [150, 8, 4, 0, 0]}
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "kneel_tall", "effort": 0.3},
+    {"to": "fold", "s": 3.0, "phase": "fold_forward", "effort": 0.75},
+    {"hold": 3.0, "phase": "hold", "effort": 0.9},
+    {"to": "tall", "s": 2.0, "phase": "rise", "effort": 0.9}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "fold", "check": "angle", "joints": ["waist", "neck", "head"], "min": 165},
+    {"at": "fold", "check": "angle", "joints": ["hip_near", "shoulder_near", "wrist_near"], "min": 168},
+    {"at": "fold", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 170},
+    {"at": "tall", "check": "angle", "joints": ["hip_near", "shoulder_near", "wrist_near"], "min": 168},
+    {"at": "fold", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "u", "min": 30},
+    {"at": "fold", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "max": -20},
+    {"at": "fold", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "u", "max": 26},
+    {"at": "tall", "check": "angle", "joints": ["knee_near", "hip_near", "shoulder_near"], "min": 168}
+  ],
+  "note": "The kneeling good morning with the longest lever, on a folded towel: kneeling tall, both arms straight up by the ears; the seat goes back toward the heels and the body folds forward slowly, arms and back in one flat line, never resting on the heels; a 3-second hold at the bottom, then rise tall. The wrong picture shows the back rounded, the arms dropped from the ears with it."
+}

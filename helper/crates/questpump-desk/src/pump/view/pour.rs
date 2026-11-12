@@ -118,7 +118,8 @@ pub(in crate::pump) struct StepReveal {
 }
 
 /// What this save earned, once it is written: its rows (the move, the step it opened, its stats, its XP), each coming
-/// in at its instant in `rows_at`, after the reveal where one plays, and the bar the reveal rolls over to (`next_bar`).
+/// in at its instant in `rows_at`, after the reveal where one plays (the rows after the one its hero lands on a
+/// flight later), and the bar the reveal rolls over to (`next_bar`).
 #[derive(Serialize, Clone, PartialEq)]
 pub(in crate::pump) struct SavedEarned {
 	rows: Vec<Row>,
@@ -142,11 +143,16 @@ pub(in crate::pump) struct SavedView {
 	landed: bool,
 	next: Option<&'static str>,
 	earned: Option<SavedEarned>,
+	/// The wait before the move goes on by itself, from and to (ms; `Pour::goes_on_at`), which Next fills as it runs
+	/// (Rapha, 2026-11-11: "if it is auto progressing, the bar should like load or sth from left to right"); none while
+	/// it is not known or a window stands.
+	goes_on: Option<[i64; 2]>,
 }
 
 /// The move's one jingle (`jingleOf`): the record's or the top's at its grain, else after the write (`After`: the
 /// reveal's `unlockUncommon` where the save opened a step, else the top's `unlock` where the top was reached by a set
-/// that may climb, else `done` as the rows come in).
+/// that may climb, else `record` where the move's row carries a record's tag, a first record's too, else `done` as
+/// the rows come in).
 #[derive(Clone, Copy, PartialEq)]
 enum Jingle {
 	Grain(&'static str),
@@ -241,6 +247,7 @@ impl Pour {
 				landed: false,
 				next,
 				earned: None,
+				goes_on: None,
 			},
 			sounds,
 			jingle,
@@ -255,8 +262,10 @@ impl Pour {
 		}
 	}
 
-	pub(in crate::pump) fn view(&self) -> &SavedView {
-		&self.view
+	/// The pour as the page draws it, with the wait before the move goes on by itself as it stands now.
+	pub(in crate::pump) fn view(&self) -> SavedView {
+		let hold = run::millis(facts().constants().record_hold_s);
+		SavedView { goes_on: self.goes_on_at().map(|at| [at - hold, at]), ..self.view.clone() }
 	}
 
 	pub(in crate::pump) fn landed(&self) -> bool {
@@ -353,10 +362,13 @@ impl Pour {
 		let before = self.before.as_ref();
 		let mut reveal = None;
 		let mut next_bar = None;
+		// the row the reveal's hero lands on
+		let mut lands = None;
 		if let Some(after) = after {
 			for (u, row) in unlocks(after, before) {
 				if reveal.is_none() && !row.reward.quiet() {
 					(reveal, next_bar) = self.reveal(now, u).unzip();
+					lands = reveal.as_ref().map(|_| rows.len());
 				}
 				rows.push(row);
 			}
@@ -367,11 +379,18 @@ impl Pour {
 			}
 		}
 		let first = reveal.as_ref().map_or(now + motion.pour_hold, |r: &StepReveal| r.folds);
-		let rows_at: Vec<i64> =
-			(0..rows.len()).map(|i| first + i64::try_from(i).unwrap_or(0) * motion.stagger).collect();
-		// the jingle that comes after the write: the reveal's as its step opens, else the top's, a record's the engine
-		// judged (a weighted one, a score the pour cannot know) or done as the rows do
-		let record = rows.iter().any(|r| matches!(r.reward, Reward::Record { .. }));
+		// the hero flies to its row as that row comes in (the page's `fold`, a grain's flight long): the rows after
+		// it wait for its landing, so nothing else moves beside it
+		let rows_at: Vec<i64> = (0..rows.len())
+			.map(|i| {
+				let flight = if lands.is_some_and(|l| i > l) { motion.pour_fly } else { 0 };
+				first + i64::try_from(i).unwrap_or(0) * motion.stagger + flight
+			})
+			.collect();
+		// the jingle that comes after the write: the reveal's as its step opens, else the top's, a record's the pour
+		// could not know (one the engine judged, a weighted one's score; a first record, slice 72: the move's row says
+		// both by its tag) or done as the rows do
+		let record = rows.iter().any(|r| matches!(r.reward, Reward::Moved { tag: Some(_), .. }));
 		let jingle = match self.jingle {
 			_ if self.jingled => None,
 			Jingle::Grain(j) => Some((first, j)),

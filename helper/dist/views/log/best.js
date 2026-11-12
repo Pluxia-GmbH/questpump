@@ -21,6 +21,7 @@
 // XP, title, badge, countdown or dare.
 
 import {get, intent, subscribe} from "../../lib/bridge.js";
+import {roll} from "../../lib/carry.js";
 import {t} from "../../lib/copy.js";
 import {topWindow} from "../../lib/focus.js";
 import {guard} from "../../lib/keys.js";
@@ -28,7 +29,7 @@ import {covered, whenStarted} from "../../lib/router.js";
 import {number, shortDate} from "../../lib/saga.js";
 import {feedback} from "../../lib/sound.js";
 import {openShare} from "../../lib/share.js";
-import {h, token} from "../../kit/element.js";
+import {h} from "../../kit/element.js";
 import {context} from "./chapter.js";
 
 /** The knight behind the number: the jumping jacks' key pose, arms up. */
@@ -83,15 +84,7 @@ function moment(best, share, done) {
 	feedback("milestone");
 	if (!motion.matches) {
 		dialog.classList.add("qp-best-in");
-		const ms = token(count, "--qp-motion-saga-reveal-duration") || 0;
-		const from = performance.now();
-		const step = (now) => {
-			const p = ms ? Math.min(1, (now - from) / ms) : 1;
-			count.textContent = number(Math.round(best.moves * (1 - (1 - p) ** 3)));
-			if (p < 1) requestAnimationFrame(step);
-			else count.classList.add("qp-pop");
-		};
-		requestAnimationFrame(step);
+		roll(count, 0, best.moves, "saga-reveal");
 	}
 	return dialog;
 }

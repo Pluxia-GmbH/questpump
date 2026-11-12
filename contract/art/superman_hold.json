@@ -4,21 +4,23 @@
   "camera": {"yaw": 24, "pitch": 18},
   "working": ["abdomen", "thigh"],
   "breathe": true,
-  "props": [{"kind": "mat", "f0": -112, "f1": 120}],
+  "props": [
+    {"kind": "mat", "f0": -112, "f1": 124},
+    {"kind": "step", "f0": -14, "f1": 18, "u": 6, "l0": -31, "l1": 31}
+  ],
   "poses": {
     "flat": {
-      "from": "in",
-      "chest": [4.34, 0, 0],
-      "head": [-3.25, 0, 0],
-      "arms": {"fk": [174.5, 12, 0, 0, 2]},
-      "legs": {"fk": [7.56, 4, 4.72, -91.75]},
+      "pelvis": [0, 20.5, 0],
+      "trunk": [97, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-5, 0, 0],
+      "arms": {"fk": [176, 12, 0, 0, 2]},
+      "legs": {"fk": [20.5, 4, 6.8, -96.7]},
       "contacts": [
         "pelvis",
         "waist",
         "neck",
         "head",
-        "shoulder_near",
-        "shoulder_far",
         "elbow_near",
         "elbow_far",
         "wrist_near",
@@ -26,20 +28,32 @@
         "hand_tip_near",
         "hand_tip_far",
         "knee_near",
-        "knee_far"
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
       ]
     },
     "in": {
-      "pelvis": [0, 15.5, 0],
-      "trunk": [90, 0, 0],
-      "chest": [-16, 0, 0],
-      "head": [4, 0, 0],
-      "arms": {"fk": [168, 12, 6, 0, 0]},
-      "legs": {"fk": [-14, 4, 0, -80]},
+      "pelvis": [0, 20.5, 0],
+      "trunk": [93, 0, 0],
+      "chest": [-9, 0, 0],
+      "head": [5, 0, 0],
+      "arms": {"fk": [168.5, 12, 0, 0, 0]},
+      "legs": {"fk": [8, 4, 0, -95]},
       "contacts": ["pelvis", "waist"]
     },
-    "out": {"from": "in", "chest": [-17, 0, 0]},
-    "crank": {"from": "in", "head": [-34, 0, 0]}
+    "out": {"from": "in", "chest": [-10, 0, 0]},
+    "crank": {
+      "from": "in",
+      "trunk": [97, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-31, 0, 0],
+      "arms": {"fk": [184, 12, 8, 0, 0]},
+      "legs": {"fk": [12, 4, 0, -95]},
+      "contacts": ["pelvis", "waist", "neck"]
+    }
   },
   "timeline": [
     {"pose": "flat"},
@@ -54,13 +68,15 @@
   "key": "in",
   "fault": {
     "pose": "crank",
-    "caption": "head_lifts",
+    "caption": "chin_leads",
     "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
   },
   "targets": [
-    {"at": "in", "check": "height", "joint": "ankle_near", "min": 16},
-    {"at": "in", "check": "height", "joint": "wrist_near", "min": 20},
+    {"at": "in", "check": "height", "joint": "ankle_near", "min": 10, "max": 18},
+    {"at": "in", "check": "height", "joint": "wrist_near", "min": 10, "max": 18},
+    {"at": "in", "check": "height", "joint": "neck", "max": 26},
     {"at": "in", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168},
     {"at": "in", "check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
-  ]
+  ],
+  "note": "Face down on the mat, a folded pillow (the low box) under the hips, the arms past the head: arms, chest and straight legs lift together a hand's width and no higher, hands and thighs only just clear of the floor, the neck long; hold and breathe, then lower slowly."
 }

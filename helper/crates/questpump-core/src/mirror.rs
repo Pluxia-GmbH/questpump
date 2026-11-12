@@ -566,8 +566,8 @@ pub fn interface(addons: &Path) -> String {
 #[must_use]
 pub fn toc(interface: &str) -> String {
 	format!(
-		"## Interface: {interface}\n## Title: QuestPump Mirror\n## Notes: Written by QuestPump on this computer: your \
-		 progress, kept safe for the game.\n## Author: Pluxia GmbH\n## IconTexture: {ICON}\n## Dependencies: \
+		"## Interface: {interface}\n## Title: QuestPump Mirror\n## Notes: Written by QuestPump on this computer: a \
+		 copy of your progress for the game to read.\n## Author: Pluxia GmbH\n## IconTexture: {ICON}\n## Dependencies: \
 		 QuestPump\n## X-QuestPump-Generated: true\n\nState.lua\n{ALIVE}\n"
 	)
 }

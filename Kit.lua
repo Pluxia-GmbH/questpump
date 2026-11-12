@@ -1721,6 +1721,221 @@ function Kit.Empty(parent, w, opts)
 	return e
 end
 
+-- Motion --------------------------------------------------------------------------------------------------------------
+
+-- The moving parts every window shares (slice 72, the feel pass), on Style.motion's times. Each shows its end at once
+-- with the game's reduced motion (Tree.Moving: the General page's "Animate the move figure" off; Tree.lua loads after
+-- the kit, so it is read at call time). Alpha never gates a frame's mouse or keys, so nothing waits on a fade.
+
+-- An Alpha animation in `ag` on `target`, from `from` to `to` over `duration` s in its `order`.
+function Kit.Alpha(ag, target, from, to, duration, order)
+	local a = ag:CreateAnimation("Alpha")
+	a:SetTarget(target)
+	a:SetFromAlpha(from)
+	a:SetToAlpha(to)
+	a:SetDuration(duration)
+	a:SetOrder(order)
+	return a
+end
+
+-- An entrance of `region` (its own group): hidden for `delay` s, then over `dur` s from alpha 0, (dx, dy) away and
+-- `scale` of its size to its place, where it stays; ag.hold is the wait, whose length a caller may change.
+function Kit.Entrance(region, delay, dur, dx, dy, scale)
+	local ag = region:CreateAnimationGroup()
+	ag.hold = Kit.Alpha(ag, region, 0, 0, delay, 1)
+	if dx or dy then
+		local away = ag:CreateAnimation("Translation")
+		away:SetTarget(region)
+		away:SetOffset(dx or 0, dy or 0)
+		away:SetDuration(0)
+		away:SetOrder(1)
+		local back = ag:CreateAnimation("Translation")
+		back:SetTarget(region)
+		back:SetOffset(-(dx or 0), -(dy or 0))
+		back:SetDuration(dur)
+		back:SetOrder(2)
+		back:SetSmoothing("OUT")
+	end
+	if scale then
+		local grow = ag:CreateAnimation("Scale")
+		grow:SetTarget(region)
+		grow:SetScaleFrom(scale, scale)
+		grow:SetScaleTo(1, 1)
+		grow:SetDuration(dur)
+		grow:SetOrder(2)
+		grow:SetSmoothing("OUT")
+	end
+	Kit.Alpha(ag, region, 0, 1, dur, 2):SetSmoothing("OUT")
+	ag:SetToFinalAlpha(true)
+	return ag
+end
+
+-- A frame that comes by itself (the pump's dim with its card, the "Stop to pump" card): shown, and faded in over
+-- Style.motion.appear with all it holds; one that shows already stays as it is. Answers whether it came. Kit.Leave
+-- hides it, its fade stopped with it (what the client does with a hidden group mid-play is undocumented).
+function Kit.Appear(frame)
+	if frame:IsShown() then return false end
+	frame:Show()
+	if not ns.Tree.Moving() then return true end
+	if not frame.kitAppear then
+		frame.kitAppear = frame:CreateAnimationGroup()
+		Kit.Alpha(frame.kitAppear, frame, 0, 1, Style.motion.appear, 1):SetSmoothing("OUT")
+	end
+	frame.kitAppear:Play()
+	return true
+end
+
+function Kit.Leave(frame)
+	if frame.kitAppear then frame.kitAppear:Stop() end
+	frame:Hide()
+end
+
+-- A number or a word that just changed pops once: from Style.motion.popFrom of its size to its own over
+-- Style.motion.pop (the apps' digitPop). A font string scales by its vertices, as Blizzard's warnings do, and from
+-- the side its words stand at (a left-aligned line in a wide row would slide in from the row's middle otherwise).
+function Kit.Pop(region)
+	if not ns.Tree.Moving() then return end
+	local ag = region.kitPop
+	if not ag then
+		ag = region:CreateAnimationGroup()
+		local grow = ag:CreateAnimation("Scale")
+		grow:SetScaleFrom(Style.motion.popFrom, Style.motion.popFrom)
+		grow:SetScaleTo(1, 1)
+		grow:SetDuration(Style.motion.pop)
+		grow:SetSmoothing("OUT")
+		if region:GetObjectType() == "FontString" then
+			region:SetScaleAnimationMode(Enum.FontStringScaleAnimationMode.Vertex)
+			grow:SetOrigin(region:GetJustifyH(), 0, 0)
+		end
+		region.kitPop = ag
+	end
+	ag:Stop()
+	ag:Play()
+end
+
+-- A value carried home: step(k) with k from 0 to 1, slowing into its end, over Style.motion.carry, then done(). It
+-- runs on a ticker of its own under `name` only while the value visibly counts or fills (one carry a name: a new one,
+-- a Kit.CarryStop or a Kit.CarryAfter takes its place); with the game's reduced motion step(1) and done() at once.
+function Kit.Carry(name, step, done)
+	local key, m = "carry:" .. name, Style.motion
+	T.cancel(key)
+	if not ns.Tree.Moving() then
+		step(1)
+		if done then done() end
+		return
+	end
+	local from = GetTime()
+	step(0)
+	T.every(key, m.tick, function()
+		local k = math.min(1, (GetTime() - from) / m.carry)
+		if k >= 1 then T.cancel(key) end
+		step(1 - (1 - k) * (1 - k))
+		if k >= 1 and done then done() end
+	end)
+end
+
+function Kit.CarryStop(name)
+	T.cancel("carry:" .. name)
+end
+
+-- The wait between two parts of one carry (a bar full at a level's turn before it starts the next level), under the
+-- carry's own name, so whatever stops the carry stops the wait.
+function Kit.CarryAfter(name, seconds, fn)
+	T.after("carry:" .. name, seconds, fn)
+end
+
+-- The XP bar (the sheet's, the pump banner's, the HUD's): Forever's own bar, its track and silver capsule, the XP fill
+-- over the rested fill (a plain backing and fill on a client without the art), `w` by `h`; `thin` a bare line of it,
+-- no capsule and no words. bar.words(level, into, need, paragon), the caller's, gives its words. It is placed by
+-- bar.rested, the track every other part hangs on. `name` is its carry's (Kit.Carry).
+--   bar:SetXP(xp, rested)   a lifetime XP at once: its share of its level (ns.LevelOf), the rested XP's share under it
+--   bar:FillXP(from, to, rested)   carried from lifetime XP `from` to `to`: the fill runs to its new share, and
+--     through a level or a Paragon rank to the bar's end first, where it flashes once and the new level starts from
+--     empty and fills to its share with its words popping in (never one jump, never backwards: a gain past several
+--     levels turns once, into the last); no gain, or the game's reduced motion: SetXP(to).
+local function xpWords(bar, level, into, need, paragon)
+	if bar.words then bar.text:SetText(bar.words(level, math.floor(into + 0.5), need, paragon)) end
+end
+
+local function setXP(bar, xp, rested)
+	Kit.CarryStop(bar.carry)
+	local level, into, need, paragon = ns.LevelOf(xp)
+	bar.xp = xp
+	bar:SetMinMaxValues(0, need)
+	bar:SetValue(into)
+	bar.rested:SetMinMaxValues(0, need)
+	bar.rested:SetValue(math.min(need, into + (rested or 0)))
+	xpWords(bar, level, into, need, paragon)
+end
+
+local function fillXP(bar, from, to, rested)
+	if to <= from or not ns.Tree.Moving() then return setXP(bar, to, rested) end
+	local level, into, need, paragon = ns.LevelOf(from)
+	local level2, into2, need2, paragon2 = ns.LevelOf(to)
+	local turns = level2 ~= level or paragon2 ~= paragon
+	local ends = turns and need or into2
+	bar.xp = to
+	bar:SetMinMaxValues(0, need)
+	Kit.Carry(bar.carry, function(k)
+		local v = into + (ends - into) * k
+		bar:SetValue(v)
+		xpWords(bar, level, v, need, paragon)
+	end, function()
+		if not turns then return setXP(bar, to, rested) end
+		bar.flashAnim:Stop()
+		bar.flashAnim:Play()
+		Kit.CarryAfter(bar.carry, Style.motion.turn, function()
+			bar:SetMinMaxValues(0, need2)
+			bar.rested:SetValue(0) -- the new level's rested share comes with the end (setXP)
+			if bar.text then Kit.Pop(bar.text) end
+			Kit.Carry(bar.carry, function(k)
+				bar:SetValue(into2 * k)
+				xpWords(bar, level2, into2 * k, need2, paragon2)
+			end, function() setXP(bar, to, rested) end)
+		end)
+	end)
+end
+
+function Kit.XPBar(parent, w, h, name, thin)
+	local rested = CreateFrame("StatusBar", nil, parent)
+	rested:SetSize(w, h)
+	rested.bg = rested:CreateTexture(nil, "BACKGROUND")
+	rested.bg:SetAllPoints()
+	if thin or not Style.SetAtlas(rested.bg, "xpBackground") then rested.bg:SetColorTexture(0, 0, 0, 0.5) end
+	local restedFill = rested:CreateTexture(nil, "ARTWORK")
+	if not Style.SetAtlas(restedFill, "xpRested") then restedFill:SetColorTexture(0, 0.4, 0.8, 0.6) end
+	rested:SetStatusBarTexture(restedFill)
+	local bar = CreateFrame("StatusBar", nil, parent)
+	bar:SetAllPoints(rested)
+	bar:SetFrameLevel(rested:GetFrameLevel() + 1)
+	local fill = bar:CreateTexture(nil, "ARTWORK")
+	if not Style.SetAtlas(fill, "xpFill") and not Style.SetAtlas(fill, "barFill") then
+		fill:SetColorTexture(0.6, 0, 0.8)
+	end
+	bar:SetStatusBarTexture(fill)
+	-- set, never left nil: the tools' stand-in frames answer a missing field with a truthy object
+	bar.xp, bar.words, bar.text = false, false, false
+	if not thin then
+		bar.frame = bar:CreateTexture(nil, "ARTWORK", nil, 1)
+		bar.frame:SetAllPoints()
+		Style.SetAtlas(bar.frame, "xpFrame")
+		bar.text = Kit.Text(bar, "labelWhite", "CENTER") -- a fixed size: the bar's art has a fixed height
+		bar.text:SetPoint("CENTER")
+	end
+	-- the flash a level's turn gives the full bar: white over the fill, up and away
+	bar.flash = bar:CreateTexture(nil, "OVERLAY")
+	bar.flash:SetAllPoints()
+	bar.flash:SetBlendMode("ADD")
+	bar.flash:SetColorTexture(1, 1, 1, 1)
+	bar.flash:SetAlpha(0)
+	bar.flashAnim = bar.flash:CreateAnimationGroup()
+	Kit.Alpha(bar.flashAnim, bar.flash, 0, 0.8, 0.1, 1)
+	Kit.Alpha(bar.flashAnim, bar.flash, 0.8, 0, Style.motion.turn + 0.2, 2)
+	bar.rested, bar.carry = rested, name
+	bar.SetXP, bar.FillXP = setXP, fillXP
+	return bar
+end
+
 -- Layout --------------------------------------------------------------------------------------------------------------
 
 -- Lays parts out from `y` down and answers the bottom: each { node, gap above it, height } is a font string (its own

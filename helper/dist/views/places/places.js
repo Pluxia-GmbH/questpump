@@ -4,7 +4,8 @@
 // - the places window (desk.expedition.places; Pump home's place button opens it too): a Row for each place, its glyph
 //   in a KindTile, its name, its equipment line, the Default tag on the default place (2026-11-03) and the check on the
 //   place in use; a click (or Enter, the arrow keys moving between the rows) makes it the place in use until the
-//   schedule's next start or end or the plan's next change and closes the window; under them the Schedule row (the
+//   schedule's next start or end or the plan's next change and closes the window, another place than the one in use
+//   with the `toggle` sound in the tap's place (slice 72); under them the Schedule row (the
 //   one time there is, or how many); Add a place (the list's most named instead once it holds them) and Edit places;
 // - Edit places (desk.places.edit): Home first (Your setup in the game, never moved or deleted), then each other place
 //   with its drag handle, which drags it to another place in the list, Move up and Move down on Alt with the arrow keys
@@ -111,7 +112,8 @@ export function openPlaces() {
 		const focused = card.contains(document.activeElement);
 		card.replaceChildren(...p.list.map((place) => placeRow(place, {trailing: "checked",
 			value: place.id === p.default ? t("places.default.tag") : null,
-			checked: place.id === p.in_use, "data-id": place.id, "on:click": () => {
+			checked: place.id === p.in_use, "data-id": place.id,
+			"data-sound": place.id === p.in_use ? null : "toggle", "on:click": () => {
 				heard(intent("places.use", {id: place.id}));
 				win.close();
 			}})));

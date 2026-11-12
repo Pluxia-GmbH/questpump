@@ -66,17 +66,22 @@ ns.C = {
 	-- by ladder id, every id from 1 (the phone cores read it as a list): the strength ladders 48, the holds 72, cardio 1,
 	-- a pose family 24 (slice 21: its mark comes at most once a game day); 3 and 5, retired, keep the pull's and the
 	-- core hold's; the sit-up 72 though its moves are reps (2026-10-17: Contreras and Schoenfeld 2011 ask 48 h between
-	-- sessions of trunk flexion and, to be prudent, 72 or more)
+	-- sessions of trunk flexion and, to be prudent, 72 or more); the lower back 48, as the strength ladders (David,
+	-- 2026-11-11: "yes change to 48h"; 72 on 2026-11-10, the higher standard: its rep steps bear 48, Verna 2002 trained
+	-- three times a week, while new trunk extension work can cost strength into day 3 or 4, Ducas 2026)
 	cadence_h = { [1] = 48, [2] = 48, [3] = 48, [4] = 48, [5] = 72, [6] = 1, [7] = 72, [8] = 48, [9] = 48, [10] = 72,
 		[11] = 72, [12] = 24, [13] = 24, [14] = 24, [15] = 24, [16] = 24, [17] = 24, [18] = 24, [19] = 24, [20] = 72,
-		[21] = 72, [22] = 72, [23] = 48, [24] = 72 },
+		[21] = 72, [22] = 72, [23] = 48, [24] = 72, [25] = 48 },
 	overdue_force = 1.5, -- a ladder this many cadences overdue takes the next slot its region allows
 	flow_due_scale = 0.3,
 	load_class = { 1, 2, 3 }, load_cap = 6,
 	half_life_h = { strength = 36, ballistic = 36, allout = 36, tendon = 48, run = 12 },
 	variety_once = 0.5, variety_recent_pumps = 5, variety_pattern_pumps = 2, novelty = 0.25, novelty_quiet_days = 14,
 	-- the four winds (slice 54, 2026-10-23; Engine.lua windsFirst): each facing's share of a core slot's holds, McGill's
-	-- normal endurance times in seconds (the flexors 136, a side 97, the extensors 161: McGill 1999), never shown
+	-- normal endurance times in seconds (the flexors 136, a side 97, the extensors 161: McGill 1999), never shown; the
+	-- back facing is the crab walk's alone since 2026-11-10 (the hinge hold, the bird dog hold and the Superman hold,
+	-- the core's back holds until then, are the lower back ladder's and carry no facing), so a core slot turns to the
+	-- back only where the crab walk is among its candidates
 	facing_share = { front = 136, side = 97, back = 161 },
 	fit_prior = { 1.0, 0.6, 0.3 },
 	roll_top = 3, rung_reach = 1,
@@ -363,7 +368,10 @@ ns.C = {
 	join_line_s = 60,
 	cheer_line_s = 120, cheer_digest_peers = 10,
 	border_levels = { 10, 20, 40, 60 }, guild_milestones = { 100, 250, 500, 1000 },
-	qr_max_bytes = 500,
+	-- /qp qr's snapshot text at its most: what the code's version at that length holds (version 15 at level L, 520
+	-- bytes), since 2026-11-10; 500 until then, inside the same version, which the lower back ladder's entry in the
+	-- summary's `lad` passed on a new character (tools/gen-fixtures.lua's snapshot: 506)
+	qr_max_bytes = 520,
 	-- the feedback button (slice 24, contract/feedback-api.yaml): the text's most characters, the game days its numbers
 	-- count over (today and the 13 before), the most moves they list
 	feedback_max_chars = 500, feedback_days = 14, feedback_moves_max = 40,
@@ -384,10 +392,11 @@ ns.C = {
 	sit_away_s = 300,
 	-- work mode (slice 67), exported for the desktop app, the phones and the browser (the addon reads none): a work pump
 	-- is due once the work clock counts work_every_min minutes of the player's time at it (the player picks one of
-	-- work_every_choices); every work_set_blocks-th pump of a set is the long one, one move more; once due and nothing
-	-- holds it, the ask comes at the first pause of work_moment_s seconds without input, at most work_late_s seconds
-	-- after it was due; a work pump opens on its warm move only once the device's sitting clock holds work_warm_min
-	work_every_min = 25, work_every_choices = { 25, 30, 45, 60 }, work_set_blocks = 4, work_moment_s = 30,
+	-- work_every_choices), every one the same size, for as long as work mode runs (no set of them and no long one since
+	-- 2026-11-11); once due and nothing holds it, the ask comes at the first pause of work_moment_s seconds without
+	-- input, at most work_late_s seconds after it was due; a work pump opens on its warm move only once the device's
+	-- sitting clock holds work_warm_min
+	work_every_min = 25, work_every_choices = { 25, 30, 45, 60 }, work_moment_s = 30,
 	work_late_s = 120, work_warm_min = 60,
 	-- the account's unfinished list (slice 67): an owed row a device without a computer banks (the browser, a phone not
 	-- linked to the desktop app) carries in its questID a bank number from bank_quest_min up, never a quest's id

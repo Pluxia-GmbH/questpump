@@ -3227,7 +3227,9 @@ function Tree.CardMove(card, id)
 	Tree.CardZone(card, "head")
 	if ahead then Tree.CardLine(card, L["tree.card.ahead"], nil, 0, saga.note) end
 	local best, last = ns.Record(ns.state, id)
-	if best then Tree.CardLine(card, L["tip.move.record"]:format(value(id, best), value(id, last or best)), nil, 6) end
+	if best and ns.HoldsRecord(ns.state, id) then -- none for a move that turned timed, whose old sets stay
+		Tree.CardLine(card, L["tip.move.record"]:format(value(id, best), value(id, last or best)), nil, 6)
+	end
 	Tree.CardZone(card, "face")
 	if closed then
 		Tree.CardLine(card, Tree.Opens(m.ladder, true))

@@ -3,13 +3,13 @@
 // (helper/crates/questpump-desk/src/work.rs) and the sheet's words in the `places` topic:
 // - the first Start's sheet (desk.work.sheet), over whatever page shows while the `work` topic's `sheet` holds (the
 //   first Start on Pump home's work card or in the tray asks for it): Work mode in its banner with its (i) before the
-//   close, the strip at the Every chosen, Every, Where you train's three switches (work mode's own equipment, the
+//   close, Every, Where you train's three switches (work mode's own equipment, the
 //   office template's at first; David, 2026-11-09: "just have an extra equipment setting for work") and the gold
 //   Start, which turns work mode on with them (`work.start {confirm, every, floor, space, quiet}`); its × and Escape
 //   put it away (`work.close`), and it closes whenever the topic says it is put away;
-// - How work mode works (desk.work.how), from the (i): the strip and five numbered lines at the player's choices, the
-//   short pump's minutes by the game's estimate of a move (`menu.work`'s `minutes`), the fifth what this computer
-//   waits for (the browser's: quiet hours alone);
+// - How work mode works (desk.work.how), from the (i): four numbered lines at the player's choices, a work pump's
+//   moves and its minutes by the game's estimate of a move (`menu.work`'s `moves` and `minutes`), the fourth what this
+//   computer waits for (the browser's: quiet hours alone);
 // - the Work mode page (desk.menu.work), the Menu's Work mode row in Your pumps, which the place button and the place
 //   rows open while work mode runs: the (i) on its bar, Every and Moves per block (each a `work.set`), then work mode's
 //   own equipment as a place's window draws a setup (Where you train's switches, each a `work.set`, and Equipment's
@@ -48,13 +48,12 @@ export function openHow(every) {
 	const web = get("shell")?.platform === "web";
 	const lines = [
 		t("work.how.clock", {minutes}),
-		m.short != null && m.minutes != null ? t("work.how.pump", {moves: m.short, minutes: String(m.minutes)}) : null,
-		m.long != null ? t("work.how.long", {moves: m.long}) : null,
+		m.moves != null && m.minutes != null ? t("work.how.pump", {moves: m.moves, minutes: String(m.minutes)}) : null,
 		t("work.how.bank"),
 		web ? t("work.how.waits.web") : t("work.how.waits"),
 	].filter(Boolean);
 	const win = h("qp-window", {heading: t("work.how.title")});
-	win.content.append(h("qp-work-strip", {every: minutes, blocks: m.blocks}),
+	win.content.append(
 		h("qp-card", {rows: true}, ...lines.map((line, i) => h("qp-row", {step: i + 1, heading: line, trailing: "shown"}))));
 	win.addEventListener("qp-closed", () => win.remove(), {once: true});
 	win.open();
@@ -66,20 +65,17 @@ function openSheet() {
 	const chosen = {every: null, floor: null, space: null, quiet: null};
 	const win = h("qp-window", {heading: t("work.title"), primary: t("work.start")});
 	win.aside.append(h("qp-round-button", {icon: "how", "on:click": () => openHow(chosen.every)}));
-	const strip = h("qp-work-strip");
 	const every = h("qp-segmented", {label: t("work.every"), "on:qp-change": (e) => {
 		chosen.every = Number(e.detail);
 		draw();
 	}});
 	let switches = null;
-	win.content.append(strip, h("qp-section-label", {label: t("work.every")}), every);
+	win.content.append(h("qp-section-label", {label: t("work.every")}), every);
 	function draw() {
 		const m = get("menu.work");
 		if (!m) return;
 		chosen.every ??= m.every;
 		for (const key of PLACE) chosen[key] ??= m[key];
-		strip.every = chosen.every;
-		strip.blocks = m.blocks;
 		every.options = everyOptions(m);
 		every.value = String(chosen.every);
 		const words = get("places")?.words;

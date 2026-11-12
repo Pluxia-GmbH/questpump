@@ -13,9 +13,10 @@
 // for help).
 
 import {intent} from "../../lib/bridge.js";
+import {still} from "../../lib/carry.js";
 import {t} from "../../lib/copy.js";
 import {LOCALE, time} from "../../lib/format.js";
-import {openMenu, push, register, registered} from "../../lib/router.js";
+import {isFront, openMenu, push, register, registered} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
 import {reportButton} from "../menu/menu.js";
 import {page, watch, words} from "../page.js";
@@ -26,6 +27,19 @@ import {ago, muscleName, nameParts, recordText} from "./words.js";
  * map takes the room the blocks leave, its figure drawn to its own proportions. */
 const MAP_LEAST = 280;
 
+/** A level's point on the XP bar. */
+function pointOf(level) {
+	return {level: level.level, into: level.into, need: level.need, paragon: level.paragon};
+}
+
+/** Whether the XP at `now` is past the XP at `was` (a level, a rank or the XP into the same one): a bar is carried
+ * home only forward. */
+function grew(was, now) {
+	if (now.paragon !== was.paragon) return now.paragon > was.paragon;
+	if (now.level !== was.level) return now.level > was.level;
+	return now.into > was.into;
+}
+
 /** The level line: the gold badge, the Paragon rank past the cap, the hero's XP bar and the XP into the level. */
 function levelLine() {
 	const badge = h("span", {class: "qp-level-badge", "aria-hidden": "true"});
@@ -34,17 +48,33 @@ function levelLine() {
 	const numbers = h("span", {class: "qp-type-meta", "aria-hidden": "true"});
 	const control = h("button", {type: "button", class: "qp-level-line"}, badge, paragon, bar, numbers);
 	control.addEventListener("click", () => push("desk.hero.stat", {level: true}));
+	/** The level beside the bar, as the point `at` names it: the badge, the Paragon rank, the XP into it. */
+	const name = (at) => {
+		badge.textContent = new Intl.NumberFormat(LOCALE).format(at.level);
+		paragon.hidden = !at.paragon;
+		paragon.textContent = at.paragon ? t("kit.fanfare.paragon", {rank: at.paragon}) : "";
+		numbers.textContent = t("kit.xp.progress", {into: at.into, need: at.need});
+	};
+	let drawn = null;
+	// a bar carried through a level or a rank began the new one: its name turns with it
+	bar.addEventListener("qp-restart", () => drawn && name(drawn));
 	return {
 		el: control,
 		draw(level, open) {
-			badge.textContent = new Intl.NumberFormat(LOCALE).format(level.level);
-			paragon.hidden = !level.paragon;
-			paragon.textContent = level.paragon ? t("kit.fanfare.paragon", {rank: level.paragon}) : "";
-			Object.assign(bar, {level: level.level, into: level.into, need: level.need, rested: level.rested,
-				paragon: level.paragon});
-			numbers.textContent = t("kit.xp.progress", {into: level.into, need: level.need});
+			drawn = pointOf(level);
+			name(drawn);
+			bar.rested = level.rested;
+			bar.land(drawn);
 			// the level's page reads the summary: nothing to open before the first pump
 			control.disabled = !open;
+		},
+		/** The bar fills once from `from`, the point Hero last showed, to the level drawn (a reward carried home),
+		 * through a level or a rank by its flash and its start from empty; until that start the badge, the rank and
+		 * the numbers stay the old level's, as the phones hold them. */
+		carry(from, level) {
+			const to = pointOf(level);
+			bar.carry(from, to);
+			if (!still.matches && (to.level > from.level || to.paragon > from.paragon)) name(from);
 		},
 	};
 }
@@ -170,6 +200,37 @@ register("hero", () => {
 	view.onKey = (e) => tooltip.escape(e);
 	strip.addEventListener("qp-open", (e) => push("desk.hero.stat", {stat: e.detail}));
 
+	// what Hero showed while it was last in front (slice 72, a reward carried home): the next time it shows, its XP bar
+	// fills once from there and the muscles whose tone changed since fade up; the page's own memory, never replayed
+	let seen = null;
+	// the `hero` it last drew in front: while Hero is not in front (a pump's cover over it, whose floating Result leaves
+	// it showing) the level and the muscles' tones stay as it last showed, so each moves once as Hero is in front
+	// again and never before
+	let fronted = null;
+	const tonesOf = (from) => Object.fromEntries(from.muscles.filter((m) => m.quality > 0)
+		.map((m) => [m.id, m.quality]));
+	const drawCarried = () => {
+		if (!fronted || isFront(view)) fronted = hero;
+		level.draw(fronted.level, hero.summary);
+		map.tones = tonesOf(fronted);
+	};
+	const carry = () => {
+		if (!hero) return;
+		const now = {level: pointOf(hero.level), tones: tonesOf(hero)};
+		const was = seen;
+		seen = now;
+		if (!was) return;
+		if (grew(was.level, now.level)) level.carry(was.level, hero.level);
+		const lit = Object.keys(now.tones).map(Number).filter((id) => now.tones[id] !== was.tones[id]);
+		if (lit.length) map.fade(lit);
+	};
+	view.onShown = () => {
+		if (hero) drawCarried();
+		carry();
+	};
+	// a bar still on its way as Hero leaves the front stands at its end
+	view.onLeft = () => fronted && level.draw(fronted.level, hero.summary);
+
 	watch(view, "hero", (value) => {
 		hero = value;
 		const parts = nameParts(hero.name, hero.title, hero.grammar);
@@ -183,7 +244,7 @@ register("hero", () => {
 			name.replaceChildren(...lines);
 			name.setAttribute("aria-label", parts.whole);
 		}
-		level.draw(hero.level, hero.summary);
+		drawCarried();
 		beast.hidden = !hero.beast;
 		beast.textContent = hero.beast ?? "";
 		drawSource();
@@ -196,7 +257,6 @@ register("hero", () => {
 				days: new Intl.NumberFormat(LOCALE).format(hero.streak.days)}) : t("character.streak", {days: hero.streak.days});
 		}
 		map.figure = hero.figure;
-		map.tones = Object.fromEntries(hero.muscles.filter((m) => m.quality > 0).map((m) => [m.id, m.quality]));
 		map.names = Object.fromEntries(hero.muscles.map((m) => [m.id, muscleName(m)]));
 		// a tooltip of colours that changed (a sync, a pump) never waits there
 		tooltip.hide();
@@ -205,6 +265,8 @@ register("hero", () => {
 			name: s.name}));
 		vault.vault = hero.summary ? hero.vault ?? null : null;
 		begin.el.hidden = hero.summary;
+		// the first values are what the page starts from; later ones move only while it is in front
+		if (!seen || isFront(view)) carry();
 	});
 	view.primary = () => (hero?.summary ? null : begin.start);
 	view.stops.push(() => choose.remove());

@@ -1,0 +1,6 @@
+{
+  "move": "back_extension_long_slow",
+  "variant_of": "back_extension_long",
+  "phases": {"hold": 3.0, "lower_slowly": 3.0},
+  "note": "Lift, hold 3 at the line, lower in 3: the long back extension's frames with its line held and its lowering slowed."
+}

@@ -1783,8 +1783,9 @@ impl Helper {
 
 	/// The devices whose sessions ended print their delivery statistics and, while a phone is paired, each settled pump
 	/// some of whose commands reached no device a line (since 2026-10-14); the log and the window show who holds the
-	/// link, and the pairing block when one last did (`linked_at`, saved at most once an hour, in the game from the
-	/// next mirror write); and the place in use, which a time of the places' schedule changes (`places_tick`).
+	/// link, and the pairing block when one last did (`linked_at`, saved at most once an hour and written into the
+	/// mirror as it moves on: `note_linked`); and the place in use, which a time of the places' schedule changes
+	/// (`places_tick`).
 	fn on_link_tick(&mut self) {
 		let now = lan::now_ms();
 		for summary in self.queue.quiet(now) {
@@ -1818,12 +1819,16 @@ impl Helper {
 		self.desk.places_tick();
 	}
 
-	/// A device linked at `unix`: the pairing block's `linked_at`, saved at most once an hour (`LINKED_EVERY_S`).
+	/// A device linked at `unix`: the pairing block's `linked_at`, saved at most once an hour (`LINKED_EVERY_S`) and
+	/// written into the mirror at once, so the game's next load reads it. Until 2026-11-11 it reached the mirror only
+	/// with the next write another change asked for: a phone back after two quiet weeks said Connected while the
+	/// game's setup window, which had loaded "Not heard from lately", read the old time again at each Check again.
 	fn note_linked(&mut self, unix: i64) {
 		let p = &mut self.desk.settings.pairing;
 		if p.linked_at.is_none_or(|t| unix - t >= LINKED_EVERY_S) {
 			p.linked_at = Some(unix);
 			self.desk.save_settings();
+			self.due_by(Instant::now());
 		}
 	}
 

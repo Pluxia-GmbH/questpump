@@ -171,11 +171,22 @@ jobs:
             echo "::error::there is no helper-updater release yet: release the helper (a helper-vX.Y.Z tag) first"
             exit 1
           fi
-      # LibStub's /trunk external needs Subversion, installed with the package lists' fallback
+      # LibStub's /trunk external needs Subversion: installed as package.yml's own step installs it, so the packager's
+      # setup (an install without a refresh, its output hidden) finds it and skips. Each apt call ends after 60 s,
+      # and when apt cannot install it, the Homebrew the image ships does (its bottles come from ghcr.io, each
+      # checked by Homebrew against its SHA-256): on 2026-11-11 the runners could not resolve Ubuntu's package
+      # servers for hours. Only svn is linked onto the PATH, never Homebrew's bin folder, so nothing else of
+      # Homebrew's stands before the image's tools in the steps below
       - name: Subversion
         run: |
-          sudo apt-get install -y -qq --no-install-recommends subversion ||
-            { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends subversion; }
+          apt_get() { sudo timeout -k 10 60 apt-get "$@"; }
+          if ! { apt_get install -y -qq --no-install-recommends subversion ||
+            { apt_get update -qq && apt_get install -y -qq --no-install-recommends subversion; }; }; then
+            echo "::notice::apt could not install subversion: installing it with the image's Homebrew"
+            /home/linuxbrew/.linuxbrew/bin/brew install subversion
+            sudo ln -sf /home/linuxbrew/.linuxbrew/bin/svn /usr/local/bin/svn
+          fi
+          svn --version --quiet
       - name: Package the add-on (dry run)
         uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         env:
@@ -498,10 +509,17 @@ jobs:
         run: |
           cp .pkgmeta "$RUNNER_TEMP/pkgmeta.yaml"
           printf 'required-dependencies:\n  - %s\n  - %s\n' "$VOICE" "$FIGURES" >> "$RUNNER_TEMP/pkgmeta.yaml"
+      # the check job's Subversion step, with its fallback to the image's Homebrew
       - name: Subversion
         run: |
-          sudo apt-get install -y -qq --no-install-recommends subversion ||
-            { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends subversion; }
+          apt_get() { sudo timeout -k 10 60 apt-get "$@"; }
+          if ! { apt_get install -y -qq --no-install-recommends subversion ||
+            { apt_get update -qq && apt_get install -y -qq --no-install-recommends subversion; }; }; then
+            echo "::notice::apt could not install subversion: installing it with the image's Homebrew"
+            /home/linuxbrew/.linuxbrew/bin/brew install subversion
+            sudo ln -sf /home/linuxbrew/.linuxbrew/bin/svn /usr/local/bin/svn
+          fi
+          svn --version --quiet
       # one store a step, each with its own token alone: the packager uploads to a store only with its token
       - name: To CurseForge
         id: curseforge

@@ -89,6 +89,11 @@ function top() {
 	return above.at(-1) ?? covering ?? menu.at(-1) ?? stacks[root].at(-1);
 }
 
+/** The ActionBar's tab of `root` (the floating Result's motes fly into Hero's), none before the frame started. */
+export function tabOf(root) {
+	return host?.bar.tabs?.[root] ?? null;
+}
+
 /** Whether a pump covers the window (a moment that waits for the pump's end, the best day's, asks). */
 export function covered() {
 	return Boolean(covering);

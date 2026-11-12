@@ -1,0 +1,73 @@
+{
+  "move": "reverse_hyper_one_leg",
+  "view": "side",
+  "camera": {"yaw": -28, "pitch": 15},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "bench", "f0": 8, "f1": 100, "u": 50}],
+  "poses": {
+    "down": {
+      "pelvis": [0, 63.5, 0],
+      "trunk": [90, 0, 0],
+      "chest": [3, 0, 0],
+      "head": [-3, 0, 0],
+      "arms": {"ik": [96, 53.5, 30], "pole": [0, 0.2, 1], "hand": [0.4, -1, 0]},
+      "legs": {"fk": [28.4, 3, 0, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "toe_near",
+        "toe_far"
+      ]
+    },
+    "near_up": {
+      "from": "down",
+      "leg_near": {"fk": [0, 3, 0, 0]},
+      "contacts": ["pelvis", "waist", "neck", "head", "elbow_near", "elbow_far", "wrist_near", "wrist_far", "toe_far"]
+    },
+    "far_up": {
+      "from": "down",
+      "leg_far": {"fk": [0, 3, 0, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "toe_near"
+      ]
+    },
+    "arch": {"from": "near_up", "leg_near": {"fk": [-20, 3, 0, 25]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"to": "near_up", "s": 0.9, "phase": "lift", "effort": 0.9},
+    {"hold": 0.5, "phase": "hold", "effort": 1},
+    {"to": "down", "s": 1.0, "phase": "lower", "effort": 0.5},
+    {"to": "far_up", "s": 0.9, "phase": "lift", "effort": 0.9},
+    {"hold": 0.5, "phase": "hold", "effort": 1},
+    {"to": "down", "s": 1.0, "phase": "lower", "effort": 0.5}
+  ],
+  "key": "near_up",
+  "fault": {
+    "pose": "arch",
+    "caption": "low_back_arches",
+    "breaks": {"check": "angle", "joints": ["shoulder_near", "hip_near", "ankle_near"], "min": 172}
+  },
+  "targets": [
+    {"at": "near_up", "check": "angle", "joints": ["shoulder_near", "hip_near", "ankle_near"], "min": 172},
+    {"at": "near_up", "check": "offset", "joint": "ankle_near", "from": "hip_near", "axis": "u", "min": -5, "max": 5},
+    {"at": "near_up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 170},
+    {"at": "far_up", "check": "angle", "joints": ["shoulder_far", "hip_far", "ankle_far"], "min": 172},
+    {"at": "far_up", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 170},
+    {"at": "near_up", "check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
+  ]
+}

@@ -23,7 +23,7 @@ fn is_false(b: &bool) -> bool {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Profile {
-	/// Equipment keys (Library.lua's `needs`, `stable_chair` and `table` among them).
+	/// Equipment keys (Library.lua's `needs`, `stable_chair`, `table` and `towel` among them).
 	pub gear: Vec<String>,
 	pub floor: bool,
 	pub space: bool,
@@ -60,13 +60,11 @@ pub struct Match {
 	pub arms: bool,
 }
 
-/// What a work pump composes with (`A.compose`'s `work`, docs/plan.md slice 67): its place in the set (`block`, 1 to
-/// `work_set_blocks`, the last the long one), which sizes it at "Moves per block" with no all-out window, and whether
-/// it opens on its warm move (the device's sitting clock held `work_warm_min`; present only when true).
+/// What a work pump composes with (`A.compose`'s `work`, docs/plan.md slice 67), which sizes it at "Moves per block"
+/// with no all-out window: whether it opens on its warm move (the device's sitting clock held `work_warm_min`),
+/// always written, so the Lua reads a table whatever it says.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Work {
-	pub block: u8,
-	#[serde(default, skip_serializing_if = "is_false")]
 	pub warm: bool,
 }
 
@@ -1489,7 +1487,9 @@ pub enum GapKind {
 /// `ns.MoveOpen`), and where that is a check of its own the stage of a step's path that holds it too (`path_waits`,
 /// `ns.PathWaits`, slice 42's fix round: its window's line beside the check's), the pose that helps it where the
 /// setup offers that pose (`hint`, the card's soft need) and the gear that carries a loaded move's load for the
-/// player's setup (`implement`, `ns.Implement`: the How and setup line its page and window show, 2026-10-24).
+/// player's setup (`implement`, `ns.Implement`: the How and setup line its page and window show, 2026-10-24). A move
+/// that holds no record (`ns.HoldsRecord`: one that turned timed keeps its old sets) carries no `record`, `last`,
+/// `next` or weight, so no page shows one, while `trained` still counts those sets.
 #[expect(clippy::struct_excessive_bools, reason = "the phones' SheetBook move: one flag a field")]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]

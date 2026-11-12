@@ -626,7 +626,9 @@ ns.On("State", function(p)
 		if spoken ~= id then
 			spoken = id
 			leaveReady() -- the move before's callout (a swap, a skip), with the voice's switch off too
-			if not Speech.Say(line) and p.index == 1 then ns.Style.Play("attention") end
+			-- no voice to read the pump's opening: the attention cue, unless its "Stop to pump" card played it
+			-- already (Panel.lua RenderStopCard)
+			if not Speech.Say(line) and p.index == 1 and not p.stopCued then ns.Style.Play("attention") end
 			follow(p, id, line)
 		elseif playing and playingId ~= line and not readyLine(playingId) then
 			-- the move back on its Ready view (Back, Escape in the countdown, a fight): it is not read again, and a

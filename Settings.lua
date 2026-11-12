@@ -1965,15 +1965,15 @@ end
 local REGIONS = {
 	{ "settings.region.pushpull", { "push", "pull" } },
 	{ "settings.region.legs", { "squat", "lunge", "hinge", "calf" } },
-	{ "settings.region.trunk", { "core", "situp", "carry" } },
+	{ "settings.region.trunk", { "core", "back", "situp", "carry" } },
 	{ "settings.region.cardio", { "cardio", "mobility", "yoga", "balance", "breath" } },
 }
 
 -- A bodyweight group's picture, a move of it by library key; an equipment group shows its piece's (Kit.GearMove, as
 -- the Equipment page does).
 local GROUP_PICTURE = { push = "pushup", pull = "inverted_row", squat = "air_squat", lunge = "reverse_lunge",
-	hinge = "glute_bridge", calf = "heel_raise", core = "plank", situp = "crunch", carry = "suitcase_carry",
-	cardio = "jumping_jacks", mobility = "worlds_greatest", yoga = "downward_dog" }
+	hinge = "glute_bridge", calf = "heel_raise", core = "plank", back = "bird_dog", situp = "crunch",
+	carry = "suitcase_carry", cardio = "jumping_jacks", mobility = "worlds_greatest", yoga = "downward_dog" }
 
 -- The list rows' name column on the Exercises page: a group's or a move's name from its picture to its line.
 local EXERCISE_NAME = 230

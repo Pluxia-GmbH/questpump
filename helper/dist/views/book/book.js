@@ -17,12 +17,13 @@
 // `pump` topic.
 import {t} from "../../lib/copy.js";
 import {announce, keepFocus} from "../../lib/focus.js";
-import {push, register} from "../../lib/router.js";
+import {covered, push, register} from "../../lib/router.js";
 import {h, styled, wordsWhole} from "../../kit/element.js";
 import {page, watch} from "../page.js";
 import {goLink, openCardWindow, openMoveWindow, startMove} from "./card.js";
 import {
-	LADDER, factsOf, fold, knownWords, lookup, moveName, opensWords, qualityWord, recordWords, tile, tileQuality,
+	LADDER, climbOf, factsOf, fold, knownWords, lookup, moveName, opensWords, qualityWord, recordWords, returnOf, tile,
+	tileQuality,
 } from "./common.js";
 import {kindOf, ladderOf, stepAt, stepTip, waitingNote} from "./steps.js";
 
@@ -179,6 +180,10 @@ register("book", () => {
 	let terms = null; // each move's terms, folded
 	let settle = null;
 	let returning = null; // a move started from the list or a move's window, until its pump has gone
+	let before = null; // that move's ladder's climb as it started (common.js `climbOf`), for the list's return
+	// a draw held back while that move's pump covers the page (a floating Result leaves it showing): the list's marks
+	// stay as the move found them, so the return plays once, after the pump has gone, never the new mark first
+	let stale = false;
 
 	/** A ladder's card from the list (at `step`, else the ladder's own), its Start returning to its row; a start that
 	 * goes nowhere opens it again. */
@@ -186,6 +191,7 @@ register("book", () => {
 		openCardWindow({w, place: "list", ladder, step, go: goLink, counted,
 			start: (target, from) => {
 				returning = from;
+				before = climbOf(book, ladder);
 				startMove(target, from, () => {
 					if (returning !== from) return;
 					returning = null;
@@ -373,6 +379,8 @@ register("book", () => {
 	};
 	const draw = () => {
 		if (!w || !book) return;
+		stale = returning !== null && covered();
+		if (stale) return;
 		drawLadders();
 		drawMoves();
 		openWanted();
@@ -393,7 +401,12 @@ register("book", () => {
 			const place = p.pump.what === "move" ? p.pump.from?.place : null;
 			if (place !== "list" && place !== "move") returning = null;
 		}
+		if (stale) draw();
 	});
+	// the cover gone with no return of this page's (`resume` is the page in front's alone): what was held back
+	const caughtUp = () => stale && draw();
+	document.addEventListener("qp-uncovered", caughtUp);
+	view.stops.push(() => document.removeEventListener("qp-uncovered", caughtUp));
 	view.primary = () => (moves.hidden && !trees.hidden ? trees : find);
 	view.openStep = (ladder, step) => {
 		wanted = {ladder, step};
@@ -423,13 +436,36 @@ register("book", () => {
 	 * row or the move's window again. */
 	view.resume = () => {
 		const from = returning;
+		const was = before;
 		returning = null;
+		before = null;
+		if (stale) draw();
 		if (from?.place === "move" && from.move != null && w && book?.ready) {
 			moveWindow(from.move);
 			return null;
 		}
-		if (from?.place === "list") return list.querySelector(`[data-focus-key="ladder:${from.ladder}"]`);
-		return null;
+		if (from?.place !== "list") return null;
+		if (was) requestAnimationFrame(() => playReturn(from.ladder, returnOf(was, climbOf(book, from.ladder))));
+		return list.querySelector(`[data-focus-key="ladder:${from.ladder}"]`);
+	};
+	/** The return after a set started from a ladder's card in the list (slice 72, `returnOf`): the row's progress mark
+	 * fills from its old share after ringFill's hold; a step the set opened flashes once in its tone on the row's
+	 * tile (book.css). A redraw of the list lands it. */
+	const playReturn = (ladder, play) => {
+		const row = list.querySelector(`[data-focus-key="ladder:${ladder}"]`);
+		if (!play || !row) return;
+		if (play.opened) {
+			row.querySelector(".qp-duo-spot")?.classList.add("qp-opened");
+			return;
+		}
+		const bar = row.querySelector(".qp-fill-bar");
+		if (!bar) return;
+		const to = bar.style.getPropertyValue("--qp-fill");
+		styled(bar, {"--qp-fill": play.fill / 1000});
+		// the old share stands before the fill's motion comes on
+		void bar.getBoundingClientRect();
+		bar.classList.add("qp-filling");
+		styled(bar, {"--qp-fill": to});
 	};
 	// another root or the Menu takes the tooltip with the Book
 	const hide = () => tooltip.hide();

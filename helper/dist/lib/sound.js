@@ -5,7 +5,9 @@
 // stat, a text box's clear and the figure's mark (but the × of a window, whose close sounds), a new tab of the ActionBar
 // or a Segmented, a switch flipped, a window opening, a window the player closes by its × or Escape (qp-window's
 // qp-dismiss; a window its owner closes, a row's action or a stop, closes silently, as on the phones), and a Toast as
-// it shows (its own event, qp-toast). Each goes as `sound.event`, never while the Sounds switch is off. And while a
+// it shows (its own event, qp-toast). A kit element whose press is a moment of its own names its event in place of the
+// tap (`data-sound`: a place picked plays `toggle`, slice 72), and a phone paired while the page stands plays `commit`.
+// Each goes as `sound.event`, never while the Sounds switch is off. And while a
 // screen reader runs and QuestPump's window has the focus, a pump's line comes as the `shell` topic's `announce`, which
 // the page's one polite live region says (lib/focus.js) instead of the voice.
 
@@ -41,7 +43,7 @@ function clicked(e) {
 	if (kind === "qp-row" && kit.getAttribute("trailing") === "toggle") return;
 	if (kind === "qp-round-button" && kit.getAttribute("icon") === "close") return;
 	if (kind === "qp-text-input" && !button.matches(".qp-clear")) return;
-	feedback("tap");
+	feedback(kit.dataset.sound ?? "tap");
 }
 
 function changed(e) {
@@ -65,6 +67,14 @@ export function startSound() {
 	}).observe(document.body, {subtree: true, attributes: true, attributeFilter: ["open"], attributeOldValue: true});
 	subscribe("menu.sound", (page) => {
 		soundsOn = page.sound;
+	});
+	// a phone paired (slice 72: a commitment that succeeded), once as the pairing comes, never for one that stood as
+	// the page started
+	let paired = null;
+	subscribe("menu.phones", (phones) => {
+		const now = Boolean(phones?.phone?.name);
+		if (paired === false && now) feedback("commit");
+		paired = now;
 	});
 	let heard = get("shell")?.announce?.seq ?? 0;
 	subscribe("shell", (shell) => {

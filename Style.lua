@@ -301,18 +301,22 @@ ns.Style = {
 		tick = SOUNDKIT.UI_COUNTDOWN_TIMER,                    -- each digit
 		go = SOUNDKIT.UI_COUNTDOWN_FINISHED,                   -- the go and the end of a timed move
 		lastFive = SOUNDKIT.UI_BATTLEGROUND_COUNTDOWN_TIMER,   -- each of a timed move's last 5 s
-		record = SOUNDKIT.UI_70_CHALLENGE_MODE_NEW_RECORD,     -- a typed count beats the record; a Rare unlock
-		win = SOUNDKIT.IG_QUEST_LIST_COMPLETE,                 -- the small chime: "+N on last time", a first record, a
-		                                                       -- Starter or Common unlock and a Rekindled one
+		record = SOUNDKIT.UI_70_CHALLENGE_MODE_NEW_RECORD,     -- a typed count beats the record, a first record
+		                                                       -- (slice 72); a Rare unlock
+		win = SOUNDKIT.IG_QUEST_LIST_COMPLETE,                 -- the small chime: "+N on last time", a goal reached
+		                                                       -- while the move runs (a hold's, a set's counted
+		                                                       -- beat), a Starter or Common unlock and a Rekindled one
 		pause = SOUNDKIT.RAID_WARNING,                         -- combat hides the dim
-		attention = SOUNDKIT.READY_CHECK,                      -- the pump opens and no voice can read it
+		attention = SOUNDKIT.READY_CHECK,                      -- the "Stop to pump" card comes, or the pump opens
+		                                                       -- and no voice can read it
 		open = SOUNDKIT.IG_CHARACTER_INFO_OPEN,
 		close = SOUNDKIT.IG_CHARACTER_INFO_CLOSE,
 		checkOn = SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON,
 		checkOff = SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF,
 		tab = SOUNDKIT.IG_CHARACTER_INFO_TAB,
 		levelUp = SOUNDKIT.UI_ADVENTURES_ADVENTURER_LEVEL_UP, -- a QP level
-		star = SOUNDKIT.UI_WORLDQUEST_COMPLETE,              -- a star, an Uncommon unlock, a vault goal
+		star = SOUNDKIT.UI_WORLDQUEST_COMPLETE,              -- a star, an Uncommon unlock, a vault goal; Welcome back
+		                                                     -- and Clean Slate (slice 72)
 		title = SOUNDKIT.UI_EPICLOOT_TOAST,                  -- a title, an Epic unlock
 		-- a Legendary unlock: the legendary loot toast's sound where the client has it (63971, on Forever 70205 and
 		-- retail), else the Epic one
@@ -324,7 +328,23 @@ ns.Style = {
 		pourTick = SOUNDKIT.IG_BACKPACK_COIN_SELECT,
 		pourPost = SOUNDKIT.LOOT_WINDOW_COIN_SOUND,
 		pourTop = SOUNDKIT.UI_PROFESSION_SPEC_PIP_MAX_RANK_LOCKIN,
+		-- the feel pass (slice 72; Gethe forever Blizzard_SharedXML Mainline SoundKitConstants.lua, 70888, read
+		-- 2026-11-11): the streak day's row on the pump's banner, the quest tracker's auto-complete chime (23404), its
+		-- own cue apart from the small chime and a star; a pump that finished with no win, the quest window's close (876)
+		streak = SOUNDKIT.UI_AUTO_QUEST_COMPLETE,
+		finish = SOUNDKIT.IG_QUEST_LIST_CLOSE,
 	},
+	-- The feel pass's motion (slice 72), in seconds, after the apps' contract/design/tokens.json where a token names it:
+	-- a frame that comes by itself fades in over `appear` (the dim with its card, the "Stop to pump" card: the phones'
+	-- `stage` is 200 ms; the spec's 0.25 s here, the banner's own fade); the banner's rows come `row` apart, each over
+	-- `rowIn` from `rowFrom` units to its right (the pour's rows' entrance); a value carried home moves over `carry`
+	-- (the tokens' carry and xpFill, 600 ms), a bar that passes a level holding `turn` at full under its flash
+	-- (levelRoll); a number that changes pops from `popFrom` of its size over `pop` (digitPop: 300 ms from 1.25); the
+	-- level-up's bars grow over `bars` and its number comes over `number` from `numberFrom` of its size, as the
+	-- countdown's digits do (fanfareBars 500 ms; Blizzard's startNumbers: 0.3 s from 0.25). With the game's reduced
+	-- motion (Tree.Moving) each shows its end at once (Kit.lua, "Motion").
+	motion = { appear = 0.25, row = 0.3, rowIn = 0.3, rowFrom = 48, carry = 0.6, turn = 0.25, pop = 0.3, popFrom = 1.25,
+		bars = 0.5, number = 0.3, numberFrom = 0.25, tick = 0.03 },
 }
 
 function ns.Style.Play(key)

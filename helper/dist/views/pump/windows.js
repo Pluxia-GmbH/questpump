@@ -46,13 +46,14 @@ function row(win, props, act) {
 /** Leave keeps a move (`pump_stop`, the Android phone's `keepsOnLeave`): one done; a pose, a steady move or a hold's
  * saved count waiting at its ask, which an end keeps with no answer; an app pump's own counted set at its count or its
  * whole-move ask, kept done with Form slipped (never a rider's); or a steady move Keep going ran past its plan, saved
- * as its Done would (`pump_kept`). */
+ * as its Done would (`pump_kept`); or, in a timed pump, a move of a stage before the one on screen
+ * (`pump.expedition.moved`: each stage is a pump of its own, so `pump.moves` holds this stage's alone). */
 function anyDone(pump) {
 	const m = pump.moves[pump.current];
 	const counted = !m?.rider && m?.counted && (pump.stage === "counting" || pump.stage === "asking");
 	const kept = pump.stage === "running" && pump.kept && Date.now() - pump.start >= (m?.seconds ?? 0) * 1000;
 	return ["marking", "pacing", "longer"].includes(pump.stage) || counted || kept
-		|| pump.moves.some((x) => x.state === "done");
+		|| pump.moves.some((x) => x.state === "done") || Boolean(pump.expedition?.moved);
 }
 
 /** The "···" (from the bottom) on every stage past the Ready view, whose own bar holds its ways (since 2026-11-05): How

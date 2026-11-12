@@ -1,0 +1,57 @@
+{
+  "move": "back_extension_hold",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["abdomen", "thigh"],
+  "breathe": true,
+  "props": [
+    {"kind": "mat", "f0": -76, "f1": 100},
+    {"kind": "bench", "f0": -114, "f1": -72, "u": 28},
+    {"kind": "step", "f0": -22, "f1": 8, "u": 14, "l0": -30, "l1": 30}
+  ],
+  "poses": {
+    "down": {
+      "pelvis": [0, 28.6, 0],
+      "trunk": [96, 0, 0],
+      "chest": [7, 0, 0],
+      "head": [-14, 0, 0],
+      "arms": {"ik": [0.4, 12.8, 27.7], "rel": "neck", "pole": [0, 0.1, 1], "hand": [0.1, 0.45, -0.89]},
+      "legs": {"fk": [19.8, 3, 0, -103.8]},
+      "contacts": ["pelvis", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "line": {
+      "from": "down",
+      "trunk": [76.2, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "legs": {"fk": [0.0, 3, 0, -103.8]}
+    },
+    "line_out": {"from": "line", "chest": [1, 0, 0]},
+    "sunk": {"from": "line", "trunk": [89, 0, 0], "chest": [3, 0, 0], "legs": {"fk": [12.8, 3, 0, -103.8]}}
+  },
+  "timeline": [
+    {"pose": "down"},
+    {"hold": 0.4, "phase": "lie"},
+    {"to": "line", "s": 1.4, "phase": "lift", "effort": 0.8},
+    {"to": "line_out", "s": 1.5, "phase": "hold", "effort": 0.85},
+    {"to": "line", "s": 1.5, "phase": "breathe", "effort": 0.85},
+    {"to": "line_out", "s": 1.5, "phase": "hold", "effort": 0.85},
+    {"to": "line", "s": 1.5, "phase": "breathe", "effort": 0.85},
+    {"to": "down", "s": 1.4, "phase": "lower_slowly", "effort": 0.4}
+  ],
+  "key": "line",
+  "fault": {
+    "pose": "sunk",
+    "caption": "hips_bend",
+    "breaks": {"check": "angle", "joints": ["ankle_near", "hip_near", "shoulder_near"], "min": 174}
+  },
+  "targets": [
+    {"at": "line", "check": "angle", "joints": ["ankle_near", "hip_near", "shoulder_near"], "min": 174},
+    {"at": "line", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "line", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 172},
+    {"at": "line", "check": "angle", "joints": ["waist", "neck", "head"], "min": 165},
+    {"at": "line", "check": "height", "joint": "neck", "max": 44},
+    {"at": "line", "check": "height", "joint": "ankle_near", "max": 9}
+  ],
+  "note": "The back extension's line held: from the setup (heels hooked under the sofa's edge, hips on the cushion, fingertips at the temples, the chest low) the body lifts to one straight line from head to heels, holds it there breathing, and lowers slowly."
+}

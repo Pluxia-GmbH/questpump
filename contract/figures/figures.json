@@ -31,6 +31,12 @@
   "films/archer_pullup.mp4": "34a808f767f88a31a8775e6710c01b498f1c639e0cbe8dea57167b3362bb949b",
   "films/archer_pushup.mp4": "98af599712d1cb3118190fd47f162be26ad5dcc5d326d6f9dc7f0aca1a1396b1",
   "films/assisted_pistol.mp4": "039ec2a8ad15fc39d291722c0e749b2918f7e57e8eed6204966608185c0ee952",
+  "films/back_extension.mp4": "2b0ca36f89e069393c5617e10ae596579452fffe823e41d4f3813fc73e9affc5",
+  "films/back_extension_hold.mp4": "51b69bd41c4d669dc067d3980345b4b3ad518d50b07dc74bbaadc5396b661145",
+  "films/back_extension_long.mp4": "c41d7fe462d7e1a3513c4323d2713275f3b8415da8bbf0c575e908540a89b9bf",
+  "films/back_extension_long_hold.mp4": "e67a3cf59c97aa34721510bea66a4066642532fdbd3a496a1fc2e05b6b51c7ff",
+  "films/back_extension_long_slow.mp4": "b583f9d0d77a8bd59b4906acef7c69b934669540f2af15da9c61666f460ab480",
+  "films/back_extension_pack.mp4": "0335b77f2f9c03dcaf88ce4906881a6ea293032f78d01f01c4b4307afbf2b91a",
   "films/backpack_deadlift.dumbbells.mp4": "6dbd7d8bcff46c5dbd60ad7ece912c77b8e3a9b0d53119bd0d90b21f998badbf",
   "films/backpack_deadlift.kettlebell.mp4": "4bb95f15497d487e25c595b564233a96e7c05ac2656fde3384fee3227a3927e6",
   "films/backpack_deadlift.mp4": "ed454c726093ed06705cc977de3a19fbd4477c2f9aea18f7a2fea25dce933b39",
@@ -77,6 +83,7 @@
   "films/bike_moderate.mp4": "16fe6624704573170f80c849bc3ef5b11fd0bafc34451e21f42cffef753add9f",
   "films/bike_sprint.mp4": "a8e524c9bf88e28d4d4bb54db8f38c0c19d240dc4fa87c04c4725d2b649876bc",
   "films/bird_dog.mp4": "f8f64e28653dd0cf1e2cd0da977a85556c1f0b07e0cd9529a623dc0457b51036",
+  "films/bird_dog_band.mp4": "c77027ca515c0d9fb64184d352c491c3c761eb9b880e13402a5d010da0c29f25",
   "films/bird_dog_hold.mp4": "f0de2dccc3363870d7dbc1873714febb54c96df459aa2280e6d346f65fc00d60",
   "films/body_saw.mp4": "3032b350cdac7b26adc775dad8a92297e53618a1f5d89f7bc720536a0f43f157",
   "films/bound_revolved_triangle.mp4": "fb260fc4c1336d1ba72cb56d28319f29fdfb88b6f4c31bf05ef0b76b1e4c4784",
@@ -109,6 +116,9 @@
   "films/chair_tuck_hold.mp4": "b5520bf8bcce65f413960787198bfa5bb185261fc0f74dc2fe09db18431da260",
   "films/chair_twist.mp4": "a1013dc01771b6da354095619cedc376d33d8c5fb4d9a44445ab7fd769f46871",
   "films/chair_twist_press.mp4": "cfda3d98847ff01a9654ed3ccce128de0b776b4be59531dd641074fbf9584e64",
+  "films/chest_lift.mp4": "148910aa79332769b741674162edd7f06e15ae64b0b55819ccb55f3b93c2a63b",
+  "films/chest_lift_long.mp4": "79232865fccd0a12b82a7cd4ae3ebfc4ce649919edc2c6340cfd0001784a79d7",
+  "films/chest_lift_pack.mp4": "83c34e8d5e27d74e5c96e9572d80dd26d0f365430b0cee562e5d4978adfaaf8d",
   "films/chest_opener.mp4": "7beadc2e14864c1a332f00c2a758650f6703ed64028b8d2c3c48a429cc44c447",
   "films/chest_to_bar_pullup.mp4": "76af86c98a3b79c2513438602f761beed7e0a580824d794ccb139ecb99eb67f1",
   "films/chest_to_knees_bed.mp4": "6cd5b51c9586b2128b1ad75710962f3d59cb2c72f723373586f017f5a35f96e3",
@@ -203,6 +213,7 @@
   "films/flag_one_leg.mp4": "1a3de94d967a918f5fa35e28ffb710076ac7e9f6fbb9de2aa28bb445feae8c04",
   "films/flag_tuck.mp4": "44ce22e16a340013a0311c00ff284b23314ff3f14c08746a5ee44767ee33cb1d",
   "films/flexed_arm_hang.mp4": "79c40237d2fa581133a91c8fda0af6b8d737e2ae83027251697939767314b003",
+  "films/floor_leg_lift.mp4": "a3593f74691b739bdc5c754576e8236a741b71df10798589994792cdafc42eae",
   "films/floor_reverse_lean.mp4": "ab8af32e07ff7798f8d19911d6cc830daa90999e548b44f3581fc0e7c05cb419",
   "films/floor_wrist_lean.mp4": "75a8de0f001c79da83bc1aedd85f441b6a594062695eaba61dff1f8c10386d6f",
   "films/flying_pigeon.mp4": "3f5814aaeccc0feb5759defe4eca44fec6318aac777c26f745fbe340748c89af",
@@ -286,6 +297,12 @@
   "films/knee_pushup.mp4": "83340d04861b4b4b1641a2ff641653e54ad990f750656e26418fda897077ad0a",
   "films/knee_strikes.mp4": "d7ff4fd041844259b6349ca7dd1055f316d40f60698847ae7c551aa780d1b32f",
   "films/knee_to_wall.mp4": "22d38b4f527f081f43d7eea2b5bc4c51dd8d4b8a06b8c79e418012fcd8138dc4",
+  "films/kneeling_back_raise.mp4": "9f9ee08260e1342ece51767ab70c8781abbe98e6668127eb6e873bb9b9ba02b8",
+  "films/kneeling_good_morning.mp4": "a0d07e0b3b9325df391c03b361e83268342b297254088da348f63501b863b969",
+  "films/kneeling_good_morning_long.mp4": "8ba9179cd3240ba924b734d626d5862c8d63e17e0480e45c1d5b2b206e9efb98",
+  "films/kneeling_good_morning_weight.dumbbells.mp4": "4698a8d4b4943b28dce0a593fc0adaa3dcf23deb06f92ea36ef9f0e792e02d09",
+  "films/kneeling_good_morning_weight.kettlebell.mp4": "7e8a95c9716270edfee5577e0c2037880f9b65d2bf6779dd0e25ab864e4d1025",
+  "films/kneeling_good_morning_weight.mp4": "637c2f23bdce0ce3c582493cef9f23cdb8a26eff755da4026936403f38501840",
   "films/kneeling_reach_back.mp4": "4ef162a7d6f3d6ecaa973b0675871b19f8ebadabcc5e21a60721fd8db46cbbba",
   "films/kneeling_turn.mp4": "c09755aef030264f5e5405502a7a4e665d4a344e156c38791ebac8f2a3f74bb6",
   "films/landmine_press.mp4": "56ce281c9951c1b952be59610cf4d90aafb4bc46b73b7f3c20edd3b9028a9da0",
@@ -414,6 +431,14 @@
   "films/quarter_squat.mp4": "e2cb237a203e77e89d3ffefc4455ff9f4ca57117f06647ad458caaa073f0eb96",
   "films/quick_steps.mp4": "e42d69747e581136f4b8a3fd784545a44e2ff67dc611b74918e384713379558f",
   "films/reverse_crunch.mp4": "1eb63c3376eaaa12125b5e64c527177ea1b9a1f6e3b5764e8f29719dd013d682",
+  "films/reverse_hyper.mp4": "51b1a36bbbd9270943bdb1cbc59aa4e94eaba9ee21e1d126ed65b4828e03accd",
+  "films/reverse_hyper_band.mp4": "d5658b4f5f1e18f86b65a916d32b8665ba9706557675464d5941c13ec60e0a1b",
+  "films/reverse_hyper_hold.mp4": "13d2f9d8ef351179274beb6fd8025edc96b0f4e897d20ff22b740d2b2e1bb626",
+  "films/reverse_hyper_one_leg.mp4": "7f5478bd4b09868af7694c061bc8171bb154c4948b7b3276b8c09258711beb98",
+  "films/reverse_hyper_pause.mp4": "a43b52c7abcdbf08201cfb7823a2892220e683b010137947b7b97fb058523b20",
+  "films/reverse_hyper_table.mp4": "1f7cde632dbccbc6ef97a9e31021533b353870a77a88bdab0c75756033f3678c",
+  "films/reverse_hyper_tuck.mp4": "c97e72ea8b9230afc86c7ccaa595fcc66a8251f304c65c7a2030f183ac5a0dab",
+  "films/reverse_hyper_weight.mp4": "acc80a8efae179e8aeda8f8c56c64e0e22464f734070646a99abc6f95a294fd0",
   "films/reverse_lunge.mp4": "ca377bb264883ab43510c0055562833325db1ebe6594347463715d979d16bef1",
   "films/reverse_wrist_lean.mp4": "0c18f45aac230f4734530b14977ff211b97a3352357bdf583857ab019266b4ae",
   "films/revolved_chair.mp4": "58fb179d9746574afbda377cb5dc6ea5671eb6fc44f04f734be9894b660f86ff",
@@ -545,7 +570,8 @@
   "films/suitcase_carry.mp4": "5ab3b8a0f63f553163acf640f138262bfe943a3375cbdbbc178683850c71bf3b",
   "films/sumo_squat.mp4": "c6c6a6e4796e59e91c0de038d3836d0a826784d19c0d7d41c6e20be07c305624",
   "films/sun_salutation.mp4": "78cde80d717fad0af0d546db5339d26dda69098000b043b12cd66cc35edf20da",
-  "films/superman_hold.mp4": "66baad5ae3882ebe2a3afe3987d63e7a4585efcbe69a282ac4990f0694e6164d",
+  "films/superman_hold.mp4": "5a357f7c2a49a7a41b9dfd29c59f17301eef16016b3e1e26f265459c894e27ab",
+  "films/swimmer_lifts.mp4": "729a3adad4687a37967a05d11a4f29d6189c5748c1663dc35f4a5fc516158644",
   "films/table_archer_row.mp4": "43a6bd3b73c67eeef987b56b339bbc48a3a7e106ff8d245b9e2cbe676b644b2e",
   "films/table_row_bent.mp4": "ead2dbb0fc06035b4f267fddf2b7ff150ec3edf05a5b660a8d09e0a59f274da6",
   "films/table_row_feet_up.mp4": "abadff436ac39906c085a4d3febb1f3796f95a38838c62f7d5101e4d0095f9d8",
@@ -630,6 +656,12 @@
   "loops/archer_pullup.mp4": "dccdb24a332fa5d34abcccf2b6f88683c2e9bf7c40ca047c23649c83b1fb2606",
   "loops/archer_pushup.mp4": "71d32e61a410b8a3205177ff4c7de86aab10cbf86c2b603d859fef60d014a9e1",
   "loops/assisted_pistol.mp4": "7bb0a1cf8fdba97a70a894908ddc24a53bb6b52ec433eaacc9b3e5ff04acdedc",
+  "loops/back_extension.mp4": "29012c25b20993d35f14c0fdcb084c84aa3b4c05587b9e80a128f7f9842343ea",
+  "loops/back_extension_hold.mp4": "d3176f7273c48a7914fadd740e492689d9480c0b55a49546ec5ba9624ba839d0",
+  "loops/back_extension_long.mp4": "d282c0782cb57ad1a6e35837b2d81b66805d805225af9b1166df7bdb156ad1d9",
+  "loops/back_extension_long_hold.mp4": "bb803cf308c89391c9540ca0fea32c4f378a5abac93a373c3c2d6b1dc936016e",
+  "loops/back_extension_long_slow.mp4": "336b29bc39cc1ff1871d328daea848a58f423b855e6a9d27e827be1b532e8278",
+  "loops/back_extension_pack.mp4": "68060cab04ff58e661554f98903aa51446290a5c67dd4f50b178fea8e968acd2",
   "loops/backpack_deadlift.dumbbells.mp4": "84d58b1bf44624a0ea6abd59eb92ea1d1bd6b3abc371fba67a94d416ea15a425",
   "loops/backpack_deadlift.kettlebell.mp4": "df6904725bc07260f8bb588b65eca1f30a11ab58f2deba3d6bf6691e673a6787",
   "loops/backpack_deadlift.mp4": "7032a46626b4ca7ed5310a39714ae05702444c1847507a98168e685b69278f11",
@@ -676,6 +708,7 @@
   "loops/bike_moderate.mp4": "611073db7e1a1cc5639604b45a6d9e0bffd94be1bfbfcec8675b750d86588ec1",
   "loops/bike_sprint.mp4": "66c90889602557d54d120f9ecece7731e918170435128404b8dd09038b208e29",
   "loops/bird_dog.mp4": "254881e68137a03723bb1b862f131075ff4a6e4ff69bb01a1eb205a89678dda1",
+  "loops/bird_dog_band.mp4": "88abc81b976572ae37ebf4d4e8d7dfce5c17faac70430c20b276d6267d9b2ceb",
   "loops/bird_dog_hold.mp4": "d2681ae5a14e8c682f848b67a6b981785ca4fcd4b345f46e3fe719c769282a14",
   "loops/body_saw.mp4": "787179d126ffc5c05434ace7f889a8b3fbb2600aff11c821ea457b8392c49a85",
   "loops/bound_revolved_triangle.mp4": "c5875ca5274c1af4d91a426d008989cd01844b0fbb37e68acb7d2f2193a91c98",
@@ -708,6 +741,9 @@
   "loops/chair_tuck_hold.mp4": "eaa48a05c92efa8b90bc34a9cc614d3584027509bc7c8332ad480f3e26f4db5c",
   "loops/chair_twist.mp4": "8c1d4abdff2dbe49d562e5e4989ed271404705fbbe8ba4c25fb67210f70939e0",
   "loops/chair_twist_press.mp4": "ec9b151a51868e3f2f7f0c854cf87739118f27b5d009fd0f8ede5e90ee224627",
+  "loops/chest_lift.mp4": "7940cfb9938489b597eab2534b84f4eb53680f4b3463a90270d8f157e35576ac",
+  "loops/chest_lift_long.mp4": "c1d461a1d40d6e7bb5f0df7adfeda766e1f2324b74f58fbc1e60c42252f56637",
+  "loops/chest_lift_pack.mp4": "de3ed22e02c56647ca6e935ff248fd9c7edbaf560e6f06ae0d9014fcddfceb8d",
   "loops/chest_opener.mp4": "82887324313e186a29aa7d1dc3dccb36fd09e1871f17262b49b4db0727b115c3",
   "loops/chest_to_bar_pullup.mp4": "89c7537f12d2547a33cabb25effb1325332cdd9b78747b23cfc6fe49c2648f86",
   "loops/chest_to_knees_bed.mp4": "8dccbeeb2e6bd8fb071c517e43aca7485f6a56f3a7bfac33a6bd57d7bf1b67c9",
@@ -802,6 +838,7 @@
   "loops/flag_one_leg.mp4": "a38cf310d1a79545e07f6d6dc5f0f1a04ed2b7a15a6288443cd695fe907229a0",
   "loops/flag_tuck.mp4": "1dae2067dd29d3e28e82dca545f05022d51408f1dc344fd72028ed00e1fb07d5",
   "loops/flexed_arm_hang.mp4": "694052e4adc9719c99111e2b2e4193a7d7e86b7c23b9fdb43299702b2751cb35",
+  "loops/floor_leg_lift.mp4": "f5e96751f5e066c8a554bdef6614719ad4061f81e42f17c9d6ed12b540531757",
   "loops/floor_reverse_lean.mp4": "d8f85a96ddee7884f43f7778eadcf57411afb7e0d623896f5887b73850cb7773",
   "loops/floor_wrist_lean.mp4": "7afde0780b6c4bd4e61a9ba96f4ce825757a6bcb6cead21547c6428222bdef0d",
   "loops/flying_pigeon.mp4": "980c1fb01c2d50c3018c03e57a8e0eb8646450f1368c06da0181e3e7566f7e4c",
@@ -885,6 +922,12 @@
   "loops/knee_pushup.mp4": "33b63a29ac78441b5e6e8ba350245f3a79210535433be4a4d1ed8dd44e95fd5c",
   "loops/knee_strikes.mp4": "499ad292cd8bca27fbd65a3167c22d811689e52d4bb033ac383681a7f973e880",
   "loops/knee_to_wall.mp4": "bc039e24dd0efe642ea74201c30465f8d863378d14184039173a986ce960ab1a",
+  "loops/kneeling_back_raise.mp4": "9b7c35adbbae206a35f4e19342d9991a7d9382ea92f6106fa7860eb1b32302de",
+  "loops/kneeling_good_morning.mp4": "6be24e159a3cbcf3c068e525c15e07169bfed50293deca2103914d2f586256ef",
+  "loops/kneeling_good_morning_long.mp4": "61c0e2eecd552f64f1d81ed01b89759edcb20af72cb2c1824aceeb7de8a90b6a",
+  "loops/kneeling_good_morning_weight.dumbbells.mp4": "f0e0c0a9591d62789f629d88020c3afdfae8453ce9dab1ba68e0106a35730310",
+  "loops/kneeling_good_morning_weight.kettlebell.mp4": "6930c094368b5273ffc02385c5376a46397379b0ef1e0c736c8b0f0b6e38c3e5",
+  "loops/kneeling_good_morning_weight.mp4": "98c8f10a4b82d6f91ea37d5b434f563b938faec4486e3d0acc2b3a63323fd5c6",
   "loops/kneeling_reach_back.mp4": "d33a56d728b874ccdd1177991f0b8204d7a8b956aa7bc350e3c0f903194282f3",
   "loops/kneeling_turn.mp4": "6fea5c153a463d5c40cddc42b00d0629f281e2fa1c7ed846eee2459b82c28283",
   "loops/landmine_press.mp4": "4347d5aa368a82545c917e3bd7fdb60cdfcb02094a669f0105fa264d94ea3d04",
@@ -1013,6 +1056,14 @@
   "loops/quarter_squat.mp4": "5b928f93fec09a78beea7747c0fe27a348c4b357068b687a15b650d4d9191593",
   "loops/quick_steps.mp4": "88cdebfe90485b717231e923716b7b14f1536082740424e228f086494defa610",
   "loops/reverse_crunch.mp4": "dd283fbfd10ae56c766a8135399fa5a2524c9c2652d448baac3cb6517360ef50",
+  "loops/reverse_hyper.mp4": "f441815253245b5224c75c33c084f87d75709b22899549ccb0f8dad0d662a99f",
+  "loops/reverse_hyper_band.mp4": "5459bd5f121bd87d18aba62c90550385521d27e6fe724e448b4b78c6dce0f622",
+  "loops/reverse_hyper_hold.mp4": "ec89e229dcf80040ce42ffb058af0c8468e4b58575b35e209d0968db73fa6daa",
+  "loops/reverse_hyper_one_leg.mp4": "a92f6e19d5714871d8e882e4a2d463b5d70bebbe6dd510b6c76e500cde19102f",
+  "loops/reverse_hyper_pause.mp4": "effcc448206f4e81c2247baf3b7f148e7fdfdf902a506f949291de12c8954119",
+  "loops/reverse_hyper_table.mp4": "ac6bd54dc4689580cc9fa4f122fa5e8282877b00230326eab2e16be7f6b2226f",
+  "loops/reverse_hyper_tuck.mp4": "382f26421d636cfbba10b3a33190eb5169aca54545b3e96292fc04f4b73eb9eb",
+  "loops/reverse_hyper_weight.mp4": "7888eb55422a5638383c44ddea95d31f4111c04840b82be21a1a21de81d554b3",
   "loops/reverse_lunge.mp4": "2600345bbbc3a9546a400b9e23cab0fd3f6c07527baf2c8d9777e550114c1ba9",
   "loops/reverse_wrist_lean.mp4": "e7b489022a894fde6a0c09a751eaa3b25447f5057048ecb61835d9876dbf3697",
   "loops/revolved_chair.mp4": "6e835820ef8e15809b95d014d6e7622cc5aba9983a25d687671341f2be9b82b4",
@@ -1144,7 +1195,8 @@
   "loops/suitcase_carry.mp4": "290ccb226cf1cfbc7ec54ab7f80f8cb3a5faf5497b0927f9f5a0657bb30c2143",
   "loops/sumo_squat.mp4": "17a95520dfd4fddd53273c8a69a73f3ce04ba033a7b1cfcc3cd6f56e94cb0768",
   "loops/sun_salutation.mp4": "a6f8c1436bc41ad23a6a8aa1d4907c79b09f688d464c15f54b950f0062dfdccc",
-  "loops/superman_hold.mp4": "2bf66644882d5f99591774b04dc70590df272f1f5da881fcc0cbb5623f87f153",
+  "loops/superman_hold.mp4": "c533a259f825b40f8cef7d1150030a3b0f7aac97c64f74e543a019f862633216",
+  "loops/swimmer_lifts.mp4": "92dd3ed35ac7738c489430365d2381241a00bf624da982ecdc2508f97470db0b",
   "loops/table_archer_row.mp4": "f3dd3691dcc6dd712bec244c5baed51b8e43fda8804f9f8f94658031e78bbe6e",
   "loops/table_row_bent.mp4": "7be4c5edcb0992dccaa5db9400bc0af832890bc897560e3d173eebb2e253e774",
   "loops/table_row_feet_up.mp4": "b5bedd774e031cc844c73cd635551d5e08d53c77a55dea881b0d02b17bdb6a80",
@@ -1253,6 +1305,30 @@
   "pairs/assisted_pistol.fault.t.png": "7841140c376896f93f45c942525e83cbfc3a933fe2b5c85de29c40000f287bbb",
   "pairs/assisted_pistol.key.png": "e0f604dbf2b0c0e262c16f7de78b2f07c2304f7dda2ba2c85c86fbd31bb1a0ed",
   "pairs/assisted_pistol.key.t.png": "a5594563d357b6581c746098f3cc198a7c7582b3d8ee4a4efe45f6fdac10beb6",
+  "pairs/back_extension.fault.png": "72b5e5d3aa13994d1e2d82ca5be6d9d39bcfbf793f8070f709fefa71d06265b6",
+  "pairs/back_extension.fault.t.png": "cedbc9b52e3db0f90766caca54708b5bfec7f98a57036a01acdda111132ae181",
+  "pairs/back_extension.key.png": "79210ad4795b34294d912f97c4f10e2e5db850132042e51682273f35008aee8a",
+  "pairs/back_extension.key.t.png": "f9cdba77ec84189f7f5dca66164d2cfb8188d2394367b837ce2fc1f46c49dc29",
+  "pairs/back_extension_hold.fault.png": "0ca464d86f5583f8b488df93dd12db9d7143db26ea57c36da517b356e2948969",
+  "pairs/back_extension_hold.fault.t.png": "5246d0220034d4945f39d7779621db342f805b551e4fe57fe9b13f2657348f4e",
+  "pairs/back_extension_hold.key.png": "10e3627d8c772ec0fa9c6e68d2521511179fadc4afae5d6e8945d95900eaddf0",
+  "pairs/back_extension_hold.key.t.png": "ce9e552702eab8c61eaf153b2d94412699fb1c0423f8e0c0f06b44c2fc92343b",
+  "pairs/back_extension_long.fault.png": "ab40872d96c969bff0d8d613e149352f35ee141993fe9e28f6fea4919cc9461b",
+  "pairs/back_extension_long.fault.t.png": "3ae395f818f1ba29ac2ee6557ced4df25115e6834b9d06da8c106d70b2f6e785",
+  "pairs/back_extension_long.key.png": "8ea290aa2e47c7d2a3d3b805e7a9b9e725ac304157d1760db2d0c8af5568711c",
+  "pairs/back_extension_long.key.t.png": "2f0383e940877e9896009c7916b9899baa273fcc5507f7bfac0602e74c7ffbd6",
+  "pairs/back_extension_long_hold.fault.png": "d554d4192859cc4eb13425e4e3fe8fbb2b89ecef52bc5665d51090b49d129e8b",
+  "pairs/back_extension_long_hold.fault.t.png": "1afedc0687e2ca3fdba9d9d53d6365da4fb4e1cd4d12a7021eec0f130cd6e8af",
+  "pairs/back_extension_long_hold.key.png": "c849338e251c0cc125b59edede3c2cb13eafeb4ce09799fc1cd4e611c2ed7d50",
+  "pairs/back_extension_long_hold.key.t.png": "bb7fecbfb9c5fae13193f85be2d16ec9be8177a9362579aad0504b91332c47b1",
+  "pairs/back_extension_long_slow.fault.png": "ab40872d96c969bff0d8d613e149352f35ee141993fe9e28f6fea4919cc9461b",
+  "pairs/back_extension_long_slow.fault.t.png": "3ae395f818f1ba29ac2ee6557ced4df25115e6834b9d06da8c106d70b2f6e785",
+  "pairs/back_extension_long_slow.key.png": "8ea290aa2e47c7d2a3d3b805e7a9b9e725ac304157d1760db2d0c8af5568711c",
+  "pairs/back_extension_long_slow.key.t.png": "2f0383e940877e9896009c7916b9899baa273fcc5507f7bfac0602e74c7ffbd6",
+  "pairs/back_extension_pack.fault.png": "6ff0bb8b844d762d9e5879cc837f113cd81235c58675c4af6abdbf945c81a84f",
+  "pairs/back_extension_pack.fault.t.png": "5f213149ac1b50cdf02f1d8e8aef9edc47c3b1d2347e18998228cc7315ea1cdd",
+  "pairs/back_extension_pack.key.png": "20f8d3a8820f6a63180f48801869b3c03c7edf72d83f06c23588db6423c703ad",
+  "pairs/back_extension_pack.key.t.png": "3a56ca0694a936d85b64516d56f395397d8bbf200f2b6df4c30dff458bb73b20",
   "pairs/backpack_row.dumbbells.fault.png": "39587e393587d025080bc4498f767adc6cb8fd6c401dc55910a8401780838dce",
   "pairs/backpack_row.dumbbells.fault.t.png": "697da847c78aa04dbbffb2c3580cfc6d42d399c9982a7052a1e88969a46ff679",
   "pairs/backpack_row.dumbbells.key.png": "f9a1c698f59180b455ea5a461568845be8be0c0cbbbef8b5f7b24d873792de59",
@@ -1317,6 +1393,10 @@
   "pairs/big_toe_hold.fault.t.png": "03d0e4012edeb6713b25c1d66bc7c094a6ac4a3e348f8a3fd330a39930e19584",
   "pairs/big_toe_hold.key.png": "769368ae442bcc9e4f397066c757d77219123522ad2125a923c4583e123c21a8",
   "pairs/big_toe_hold.key.t.png": "3dfc543c118d7c20925aabde14844a531841dd2f21af725159c284b6c1e56ee4",
+  "pairs/bird_dog_band.fault.png": "7be04d20821b4f874c3b2cd1d0eee7213871219f8d6054d0bc77aa7772a6ed2a",
+  "pairs/bird_dog_band.fault.t.png": "faa90596eb579e9d97a08495e8acea0e43bbe2d5816e0a97d4084ed517c9b356",
+  "pairs/bird_dog_band.key.png": "f9a2e228fb52c67916fe1f4907ad602cb66cc02d65f070d325d953d2dd320ceb",
+  "pairs/bird_dog_band.key.t.png": "a0af54c78b7644a4cbf9edcd9e2376ababc745ee3341941abf75f28ced3f6f51",
   "pairs/bird_dog_hold.fault.png": "213dd2be460a8a2f64cf38a9797d0a799717d4094d295457ba38fe924d239b32",
   "pairs/bird_dog_hold.fault.t.png": "ed96f262c400309fd1193d931e052aec39a1ce7b0747eb55c3d6cb9972e2a934",
   "pairs/bird_dog_hold.key.png": "f1abfa9fb589d31bdc9ae8b04215390bf06dc3a6ceb1452e9f49263014055c36",
@@ -1417,6 +1497,18 @@
   "pairs/chair_twist_press.fault.t.png": "c17ee80be6abcf6caa87ac9054dd8ce99f7c731559b36a66880e0a0fcf6ebf26",
   "pairs/chair_twist_press.key.png": "2bf21ada8f5cf358e4f4ff690f63ad8602db4d2b000ea7cf41e74e33447203f5",
   "pairs/chair_twist_press.key.t.png": "c93d5134f1d9700ffba0fa471d56a1fafd079c4bbb6b5fba8c7b3d0d26370701",
+  "pairs/chest_lift.fault.png": "56008aa57bc9d9863e6aa46ea3f5734e7e22ba18a6da232812b6fc22afa9efbc",
+  "pairs/chest_lift.fault.t.png": "18bfcdbe70ccbd726815cfb30dc864095a013706aa2f4ad2ebf187c3ee57c214",
+  "pairs/chest_lift.key.png": "97cb74dd5a765726e76a7de559c3f7e94ff6ec52c4ca71afc6a7bbb826c019ff",
+  "pairs/chest_lift.key.t.png": "520e0f0352bbb50c19cf9eccf0a1c5d3d03bd8d51f4ebd325e3d4a4e23ebf22f",
+  "pairs/chest_lift_long.fault.png": "637b44cdc27def75149164a891fa1d3fb742f60b0d366aed30f071fd16461a53",
+  "pairs/chest_lift_long.fault.t.png": "034f632c02f7c248d71efc4b8998be2b7998cd49dec64641e0c065a75c595547",
+  "pairs/chest_lift_long.key.png": "0b9961cb5e447611389105a9bc72f4936adb7596f5c9f7b6e69b4a46474abc84",
+  "pairs/chest_lift_long.key.t.png": "3a99aee228cb9bec6b5d796210a071cc40c64a9c0a2fa1dd776a288a17a750a7",
+  "pairs/chest_lift_pack.fault.png": "78fc97e772920b68cfde6e534d07fed6733311aedc35b4d08d347225b46d4526",
+  "pairs/chest_lift_pack.fault.t.png": "5a7872494fcc32ab31d22d312fb9c840bd1aa3d448f88f16cdb98aa9bb3ffa3f",
+  "pairs/chest_lift_pack.key.png": "f592f55851f6a24ecfa97b9b4b31d5cb9333145e929b7e4f9302857ec2af0add",
+  "pairs/chest_lift_pack.key.t.png": "656a3605cf599da366b16d86f80cf780fd5532102c3fe882c74dcf33071dee1f",
   "pairs/chest_opener.fault.png": "18fbc8c6b377a579c71dc1159ff72629cbae5fc5c7d7b68975b46da756d31f92",
   "pairs/chest_opener.fault.t.png": "216ec1660e5b97a06e97c309ab055955489e1c655c9474fb760e019ad280fb1e",
   "pairs/chest_opener.key.png": "681a62536e400b73c18e1a6f353bdf61f1d0b17b6fa4d9cd3c60037761586362",
@@ -1649,6 +1741,10 @@
   "pairs/flexed_arm_hang.fault.t.png": "7d001dfdfe979a8d198151779b059da21815999b436b815993865df3f0ca2a5b",
   "pairs/flexed_arm_hang.key.png": "96ba185b7e3362461008a1812adbe172e51d304aac9e0a82227e68580437e02d",
   "pairs/flexed_arm_hang.key.t.png": "d38241577574ecf1374966d3fb75249e80b78f813b3d916e8d460880d3532eb1",
+  "pairs/floor_leg_lift.fault.png": "a4b6ed697c3d478bc5828a11503468eee7e91990f3a88bca5d7418e8d9f68a75",
+  "pairs/floor_leg_lift.fault.t.png": "7e7fc12727e8ff939744f3ecfd0e53d4c22d702a52aaef575f0fe24120a10210",
+  "pairs/floor_leg_lift.key.png": "cf2eab261d87bab825de32d7f971dcc6cd0a768f82ab1de26833949f1aca8268",
+  "pairs/floor_leg_lift.key.t.png": "6ce6bc5a932bde08cefc7138d5785955cde26eb31932585301fa6f0636f305ea",
   "pairs/flying_splits.fault.png": "0c02a7e99aef412047d2090d3ff0e63b5119560664de697cc1a03df347c64e3f",
   "pairs/flying_splits.fault.t.png": "f015c7c3ff87a19435d86aa5471452528604d9db78cfc70636e01575358d40a2",
   "pairs/flying_splits.key.png": "0ca9cd0cc8b8cba27ee0beaf4fabb6c999e4d221809b81c85a7a3214e6d0726b",
@@ -1865,6 +1961,30 @@
   "pairs/knee_to_wall.fault.t.png": "34d71e9eb2cf99c9bfc244fd7ec2eca5da0c4faa7e3bd66262e12235b148c36b",
   "pairs/knee_to_wall.key.png": "7ee8abb9299c0cc5ca4cc1a059c1e614de2361de9025ae52217fa4bf18ce1f47",
   "pairs/knee_to_wall.key.t.png": "b25f980938375d94b66f15aeb39c36512b1febdbd5f66f1f5e7acf7454a7323c",
+  "pairs/kneeling_back_raise.fault.png": "049aa1d13e17943bf8eba042ad0a0f7c0ef8845b0a082067d6f8929e96b5528c",
+  "pairs/kneeling_back_raise.fault.t.png": "49126a66c184bcf031fd947bd5f90c9fcfc2f828e600591c603f11f2f73e525f",
+  "pairs/kneeling_back_raise.key.png": "a84706dbf030495a6353656db9df006b266057a9f9fa534bfd6701d5a3f06bc9",
+  "pairs/kneeling_back_raise.key.t.png": "7a83f1546c3a6816bb3cc3851e38b22d93e10cf5d670d743525cef2c32109405",
+  "pairs/kneeling_good_morning.fault.png": "fc7fc9514db3b279cb50b75917343814930456b23669ff7d10abdd496162f98c",
+  "pairs/kneeling_good_morning.fault.t.png": "1bcd62a888eb1cf29e6a8fca84692c983a7bf3af09c545e93deb0f7ac3e47012",
+  "pairs/kneeling_good_morning.key.png": "a3282e5ba78d52e8a92aa2747a71e8a6a8e3df4c485f121adee42af00f736b23",
+  "pairs/kneeling_good_morning.key.t.png": "b921c32e99abefd5505e0eeeaac901015d7e9844b7f00dfaa27e463d75455949",
+  "pairs/kneeling_good_morning_long.fault.png": "dfb485c1d1e620a2cdeeb81e16ca5524e48e4412ce0c4e337d339006f908d31f",
+  "pairs/kneeling_good_morning_long.fault.t.png": "7f982e690d6448dbfc43cc620d2815e32548568bb881313b95c8366fb66e7be3",
+  "pairs/kneeling_good_morning_long.key.png": "07549a7890ea09bf616b9fa6247a30e2004848af2e9b5d3b94c5120d0ca1b149",
+  "pairs/kneeling_good_morning_long.key.t.png": "65d45b6f8727c346bbeb08603510e4f7044596b5c0cfa765033b4b2939fbff30",
+  "pairs/kneeling_good_morning_weight.dumbbells.fault.png": "69f358865060dcd6d52c8c46425e12d1e76a76599eb644d4fb9e7ff830380dc3",
+  "pairs/kneeling_good_morning_weight.dumbbells.fault.t.png": "bf5ae122e3f87b79b7c633b2e1126ed0cf2ce1f8afbaf277464ab1b76749713c",
+  "pairs/kneeling_good_morning_weight.dumbbells.key.png": "2b47ed2d671333adf4a02cd131362517b9d8e2626bf430d036d4eb677a6711fd",
+  "pairs/kneeling_good_morning_weight.dumbbells.key.t.png": "624d4630e419b6df0957e5e1192deb07e4395849c639162c007be0982e505715",
+  "pairs/kneeling_good_morning_weight.fault.png": "9e0832abeae2400db7390048e445ffb78363fa279dd6890b1b6848e281d2d875",
+  "pairs/kneeling_good_morning_weight.fault.t.png": "07d2693356a82e079462d57b2f53c2555a1d72d8715527ed01fe3781de6b7175",
+  "pairs/kneeling_good_morning_weight.kettlebell.fault.png": "9979b37074131d10718dd49aa3ed4fcc155815d9ee685fa93dcbc9b5463f5745",
+  "pairs/kneeling_good_morning_weight.kettlebell.fault.t.png": "df778a63c7dd9514ff45750a19203342f87f6bc20e2b705e234842f059677eb9",
+  "pairs/kneeling_good_morning_weight.kettlebell.key.png": "f1408994953293f8068ef0e496b4a2b9492a6081253390c21ef4bb64ecfe767a",
+  "pairs/kneeling_good_morning_weight.kettlebell.key.t.png": "eeba74e07540d49e9c2ba8712e1e90dfe87da0c97fff140cc58b2735d683060a",
+  "pairs/kneeling_good_morning_weight.key.png": "de0c46b3eb921c0286e805bb3800d19351016f5dcdd509868de6939b007d4e51",
+  "pairs/kneeling_good_morning_weight.key.t.png": "e414b7f15e67352af3d16286b21a24774828385cebd2a9b8c9798ef5b0f3894b",
   "pairs/kneeling_reach_back.fault.png": "a4008abb09b6fa233a0d1f803e3fe55b0d07236856704364f8de5972cac15317",
   "pairs/kneeling_reach_back.fault.t.png": "bb82c587be55662adc2b47240864f2ed98c7d0c0fa2738ec7106313778af51a8",
   "pairs/kneeling_reach_back.key.png": "3f34d68a91921e3f8e67de39da924c31d21247c20401094cc09a415e9122cc31",
@@ -2229,6 +2349,38 @@
   "pairs/reverse_crunch.fault.t.png": "a8a668c8e35e30e5f15471fc2f8f3d0e0b34c8b24a47b1a6754e06f5ebdc8aee",
   "pairs/reverse_crunch.key.png": "03b58b275500b2df313c8c0ff9c6654a0ad9e14f140ce90977e13cc36999e51a",
   "pairs/reverse_crunch.key.t.png": "2b5f95d52038eb8a2ade545e6283a2f3af505bf1a566e56c82ee475e1a8be7f2",
+  "pairs/reverse_hyper.fault.png": "985a8297b9621a9edafb28b4202840ef3ff986ad212c6717dac01e94a595cc24",
+  "pairs/reverse_hyper.fault.t.png": "cba1bcd6a67a79575bd376a49ff5350a6b17b3f7da67b9a3a3643379bd869baf",
+  "pairs/reverse_hyper.key.png": "eb42d2435cb724e9f508b85ef0a05e46594d6d723a2ea3936662744175cfa507",
+  "pairs/reverse_hyper.key.t.png": "fef186430a326b5e4715255f5ee2c7238c295c13ed5ed68aeb08065edf5c5f83",
+  "pairs/reverse_hyper_band.fault.png": "e755eb8c7d38df1b6dbc6f0fea8ba35e35bb1f875a697b68602e6ca74b8bd1df",
+  "pairs/reverse_hyper_band.fault.t.png": "ec4ba3e8f03c960f83f0f3cf13806724da262996269f66a6544213612aee9e7b",
+  "pairs/reverse_hyper_band.key.png": "f0fad9786a889f35e2542b5348439ac5f09410007f6197351aa67a2e8c326686",
+  "pairs/reverse_hyper_band.key.t.png": "fef186430a326b5e4715255f5ee2c7238c295c13ed5ed68aeb08065edf5c5f83",
+  "pairs/reverse_hyper_hold.fault.png": "7a179444866a32b65ec9da2f8435210ea1634a477195d366d29698647241cf1b",
+  "pairs/reverse_hyper_hold.fault.t.png": "fe71cd32c133e6bcc1e1eed5ff41f1cf6abfce8c2675841f7401854619962e62",
+  "pairs/reverse_hyper_hold.key.png": "f59f58010165f92e7e3d651836b954035adbb6f0ec0090664df24e97a9762ac9",
+  "pairs/reverse_hyper_hold.key.t.png": "68be1d2424097f2786223a884b1aaf8d1d80b50d229b0db2d68480c7570639f3",
+  "pairs/reverse_hyper_one_leg.fault.png": "6a150c02880bfc532deefa2134cdf073239dc220e5a6bba26eb5740a038d0815",
+  "pairs/reverse_hyper_one_leg.fault.t.png": "665ef1a0d824747d6d6e6d7bbae3ee020e230ffa963bb658d2a9ca6ad89e9a6a",
+  "pairs/reverse_hyper_one_leg.key.png": "d8ffdcb763ff09625b6fb864e41b610d8cede99a47583cc39918a4560909740e",
+  "pairs/reverse_hyper_one_leg.key.t.png": "fef186430a326b5e4715255f5ee2c7238c295c13ed5ed68aeb08065edf5c5f83",
+  "pairs/reverse_hyper_pause.fault.png": "985a8297b9621a9edafb28b4202840ef3ff986ad212c6717dac01e94a595cc24",
+  "pairs/reverse_hyper_pause.fault.t.png": "cba1bcd6a67a79575bd376a49ff5350a6b17b3f7da67b9a3a3643379bd869baf",
+  "pairs/reverse_hyper_pause.key.png": "eb42d2435cb724e9f508b85ef0a05e46594d6d723a2ea3936662744175cfa507",
+  "pairs/reverse_hyper_pause.key.t.png": "fef186430a326b5e4715255f5ee2c7238c295c13ed5ed68aeb08065edf5c5f83",
+  "pairs/reverse_hyper_table.fault.png": "6793d6346466754b0afc0bca5991a38d3e57946a04c4c020429e8f5f6d14bc83",
+  "pairs/reverse_hyper_table.fault.t.png": "ea488bd140725a6e2b4ffb27a906f7b8d626a52b58a32f84db0eeea70c620199",
+  "pairs/reverse_hyper_table.key.png": "7b896b581b55e429c64a3d8efdc4420758b504c99d838ab08072063325d1f9c1",
+  "pairs/reverse_hyper_table.key.t.png": "ec128a528b88003c6e4528ea34475406c047ab088964e028fb0fc065c8a8e504",
+  "pairs/reverse_hyper_tuck.fault.png": "fcf904c98a58a20639b36ffbef1e66358fbaedb2004ebd2a52e796719647cddb",
+  "pairs/reverse_hyper_tuck.fault.t.png": "fa785bb8a59a1d390a5181963d54c23fe810ae174f34090a8cb0f9ddeafac82e",
+  "pairs/reverse_hyper_tuck.key.png": "cccde5a8d9a5e2f0fdc32e79e4504c5defa698c8b2c2297feb5358c47c8bc810",
+  "pairs/reverse_hyper_tuck.key.t.png": "114eade2ea655038f4455d2ce5e03af2cf708d3edadf3c761e5df79a28529e9d",
+  "pairs/reverse_hyper_weight.fault.png": "337939ecde466df2a16f1c5a2ac8bbe4c6114c4a645a406a07a490ca58db5c57",
+  "pairs/reverse_hyper_weight.fault.t.png": "8df8882b346c1c3a7fe4858cde5978cdd1b03341cc53de0aa789152946bce64a",
+  "pairs/reverse_hyper_weight.key.png": "8c6ebf5978688b17d47553f71c5369664a402e222127d5f6b88359dc113cd2f9",
+  "pairs/reverse_hyper_weight.key.t.png": "431c044bd8799d6c7333f0b7e167b91b5c1b363f67d402fa038a5117915d6ac2",
   "pairs/revolved_chair.fault.png": "79e693956c4ad52eff2c3ec883e5723c633186c384cc4aa502a2bf503ef2d221",
   "pairs/revolved_chair.fault.t.png": "c5b6d16eaf7c4a28f463389fa1aa687d2b44990bd73f845c599b8f536771e83a",
   "pairs/revolved_chair.key.png": "342742744f3618dbb63c7bbec40b6f2bb2ae78f2b2f021845c9d258eb36f35ff",
@@ -2517,10 +2669,14 @@
   "pairs/straight_bar_dip_lowering.fault.t.png": "9bae51fa93d7c56707508631654f5ed4de4510f48c7604b01a6cfb4cc61d06ad",
   "pairs/straight_bar_dip_lowering.key.png": "fd07aa10b0cddbe6a178770790cd3b515b568add1a512709858613713536fd77",
   "pairs/straight_bar_dip_lowering.key.t.png": "4f837da4e2bed7ba54426d96bb7baefc51a996517f1a5d76cbb72b34fae9a5d4",
-  "pairs/superman_hold.fault.png": "dfc236d90bbf4b6797e520f3464801403591b53172ad94a06b87479f9dd923b6",
-  "pairs/superman_hold.fault.t.png": "100266cc07e1bc2f2e1e21d3af544ae84f5e4bb898a9fe62df33b96994f0415f",
-  "pairs/superman_hold.key.png": "bb50b5931734112876e7f692b7695e4e15f19a165164d227781f139d420396d5",
-  "pairs/superman_hold.key.t.png": "52cb91f827c8d792ff68b4b7f69b1b577f25318ba14eb96c361c6efd5fa60d62",
+  "pairs/superman_hold.fault.png": "12420efd78eb841a6fb070fd0a85c03b3c84b7ac86531dc440d3581a095e12e4",
+  "pairs/superman_hold.fault.t.png": "8f9f6481ae3f6d018e5148ce0a047e7a09072aa14bcb2827dfec407ae51dd50a",
+  "pairs/superman_hold.key.png": "15e03e733fcd695276a0a7ef9ecef23a26109ae50d1cc785e74028b98849a7cb",
+  "pairs/superman_hold.key.t.png": "af8f12c78cc855632625725f750a444e4cb90c6a1d551227de620cdf2540ac49",
+  "pairs/swimmer_lifts.fault.png": "e6372235a58ff8e7397b2a88359a54d1f2dba8fa671febc010f8dee111a32dec",
+  "pairs/swimmer_lifts.fault.t.png": "a34d67df48cfa902ef63da444e707bb649406d69ee0d175934a67ab43483a30e",
+  "pairs/swimmer_lifts.key.png": "0e3c71d859fa654d3fa39380b4a0dd4db2a9085d7a386945e6d866e05978c040",
+  "pairs/swimmer_lifts.key.t.png": "e601cbcf3a9ceea7cfb7906db971a30f8f83a0665bb2a2376f00e61794afd768",
   "pairs/table_archer_row.fault.png": "67d2f48a27e439cf2149b1e64908b1a610464677cedf054449f87c3ea90b2dc4",
   "pairs/table_archer_row.fault.t.png": "bcf8f56e19d7b44e98f42898270a27341d80a8d1cb331cf6b52850a21d6c91c2",
   "pairs/table_archer_row.key.png": "79296c29264dc731bab2968c31bf831978880dd27e533f21d5837bae0d6b726b",
@@ -2765,6 +2921,18 @@
   "stills/archer_pushup.t.png": "79d266429211747e652be9376779e2dcf6171df1cde7431e46ab4f4edaa2b5b2",
   "stills/assisted_pistol.png": "969e2ae9a383fcd34d122e03876f7434276962d3c32ef97e769db73b2ba7e5ad",
   "stills/assisted_pistol.t.png": "433a63cac9afe2bd7325a216e35210eb3d0cb86e5ba22375349eec0cb6778d7e",
+  "stills/back_extension.png": "e4ba08870a63dda0cbe347c86ada93de9c9209b78632b443a77e528b27dc0a1d",
+  "stills/back_extension.t.png": "e6fefdf7943790c33b213ec12f28c7cac1f9f65ba10d3755005e8e1e278ee508",
+  "stills/back_extension_hold.png": "3cb4aa595a8b5a068de5bf8649910d34999921c5fcc8a65c89f1d296261f7ea0",
+  "stills/back_extension_hold.t.png": "04877c43667c3f18587a465882567ace5a3024e4bdf2d69900c331c0fde2187b",
+  "stills/back_extension_long.png": "f5d4cebbf5be27df62bc9a66d66c58fa1e8fd4d234ad8399ac757e663c994b95",
+  "stills/back_extension_long.t.png": "0fb8adb951f107f9b017cc113d12ba623a983723e85a9338e278501f843fdb62",
+  "stills/back_extension_long_hold.png": "f0a40ed76d609c1b709b918708c707ca2313fa4073594eeb6eaa519156f78c18",
+  "stills/back_extension_long_hold.t.png": "f5c7512a66724c32940c9e2e95fe3050e9db042982d75ae45c0a065c29470763",
+  "stills/back_extension_long_slow.png": "689dda9c8db0453643e770b7d2976da43c07319c4e3296127aaf03001aa04006",
+  "stills/back_extension_long_slow.t.png": "f518482b7a977fee6243af4eacf5c4eef6b838760004b238221e051792b5c63a",
+  "stills/back_extension_pack.png": "51282da54f3c5dd73ff4173692d2c58165303eed7e5c6556248cbea893c010e9",
+  "stills/back_extension_pack.t.png": "b8185f2fd79cc69adb01fc0d3334be84bdd91c991449b34caa431ab97a205276",
   "stills/backpack_deadlift.dumbbells.png": "e18e6c842ba8d8bd5f2d6439571bc35aad30800b2d04bb5010028619a0e89ae1",
   "stills/backpack_deadlift.dumbbells.t.png": "ab48820b6a8a0232630926d58d1d1631f4403b7e1ac7bfcdca925552fa762dce",
   "stills/backpack_deadlift.kettlebell.png": "ac58979f5ee669ad7d3081fb4a5d4e6b4bbdba1619397e214165b4c7c6b100d8",
@@ -2857,6 +3025,8 @@
   "stills/bike_sprint.t.png": "dbd37bd96cd5b87848bd0341a0942ec1224ef531f7508e1a0b041cc606b590b3",
   "stills/bird_dog.png": "1eec9a0d3a455cfb2baf572e56660c234a0aba4dd316c5cbdbe23ea249bcb3db",
   "stills/bird_dog.t.png": "22061159701f914a17140aba728d9083ee271b13ff50f71de5eeebb6bf7a71db",
+  "stills/bird_dog_band.png": "36a36af426dc2225a5b469ff05852f62e4b079d2ec618343a1e4859588e6cac7",
+  "stills/bird_dog_band.t.png": "b89b90ff42ab8e71cf454fbd5091ec849b1a54c8356ec390588574b583a8b54e",
   "stills/bird_dog_hold.png": "b03bba56bf1da100c7bc1511760dec1ff96820614ae88e0ae82129bf842923bc",
   "stills/bird_dog_hold.t.png": "b0711451ac2f17f01e0444c28f93222aece3dcf5bb97410468289a606a0a5232",
   "stills/body_saw.png": "190fd942b49dec91220230d731c34b320d60d03ded8035ad26b48c54ef211529",
@@ -2921,6 +3091,12 @@
   "stills/chair_twist.t.png": "d9620a357abeaabca3071a19f59f120e2d1a1db279a80025aec0f8ae7a5129e6",
   "stills/chair_twist_press.png": "301b48c72b2a86171f33a55886192e7216305e6cda3d23c0cd3f3f39979d9052",
   "stills/chair_twist_press.t.png": "8c674fdfa599dcacbd01346d8c8aac3bf554d6dc7915c8fc89c38aadc5722113",
+  "stills/chest_lift.png": "48f09bb9bfd73c790fadea6bb15181d14287a0b10ef80b3932d043687efcdc78",
+  "stills/chest_lift.t.png": "73b0209eaf86945afecca38272ff8f39aa4522b9c4321eb37ae71fe68ba1aed1",
+  "stills/chest_lift_long.png": "4d3bb3f97e5fec65fdc6d1c52f615a54ecff2e2bef20fc1ceb3d90942cdb5220",
+  "stills/chest_lift_long.t.png": "b5c081ec5b3c5845629dcb95914438645a659fe24d8044f477a13380a1893858",
+  "stills/chest_lift_pack.png": "3c56e88e39334461afa882ecd0beb2fb182e5c8b07d73132ef82fbf1216adfd9",
+  "stills/chest_lift_pack.t.png": "2857bccd72f2f53c5a1639cb87558b898a567f86695ea9c29e75a67acabe4713",
   "stills/chest_opener.png": "c66dd005f5192ab9a38f6f1921ecdacf5d9c47e23e9509fb25af054f7d9b5139",
   "stills/chest_opener.t.png": "5bb6a707bb47f9590ea4a6e2cc156834fe2174671cf942c573d6281f51fc8dc8",
   "stills/chest_to_bar_pullup.png": "c699c24083aab0bef5c1f183967ca692a17533426f11c3d4063eb7474296bb97",
@@ -3109,6 +3285,8 @@
   "stills/flag_tuck.t.png": "6e846b1e26bba2301fb1c935cbfed29d674d4d903d20ec1cfbac2e5bba2b0187",
   "stills/flexed_arm_hang.png": "a60446bdffb901870cff81b2aacdf86a479ff31615298453a077b0dd18bdccc0",
   "stills/flexed_arm_hang.t.png": "a3e3155c2adb857243c1bf844ca9b883c78a56a7b2609264cc44d220378dfc05",
+  "stills/floor_leg_lift.png": "773a590854d4df1ed09ce3d69fa219f70fea221cacb21a87cbd88bcd29ec4ac7",
+  "stills/floor_leg_lift.t.png": "02be2f83bc4c474041bf9fe65026164cbe9ef3bf9d48567b4e98107371ba03f6",
   "stills/floor_reverse_lean.png": "eeb20f0535274c19d66b372d42c7cc79c2a1c8c89e553f609fc315ea18a08732",
   "stills/floor_reverse_lean.t.png": "9289330f4a71071788f1678e266fcf4f8ea60f170bbc357af37bb55c741eff17",
   "stills/floor_wrist_lean.png": "25e0b8dd674c1d02a64028055a157703851f7edea71ba537788905ffa810f5cf",
@@ -3275,6 +3453,18 @@
   "stills/knee_strikes.t.png": "11097a0ccc40deeb473065680b27f9d264ce37cd761c384eb9d4200b111031c8",
   "stills/knee_to_wall.png": "4f76239c582731dde93f51f7b0534b375da8741b3867294804daccdbb973f6e5",
   "stills/knee_to_wall.t.png": "2a6b8da3e61a7e91c0190cd9f0a8b734e150fbaef33e6d5bef7bd698c0070519",
+  "stills/kneeling_back_raise.png": "3741bf0c75c74922d7e73715c7f58cf27a0f73be8de7dab459f8d13e86e88f5d",
+  "stills/kneeling_back_raise.t.png": "0d651cbdd843acfc399d6281a9e35da5964e7d1bfa219b43258d2da4632736e3",
+  "stills/kneeling_good_morning.png": "7fcecca8b07cef51e0ee8501ae506bce00363546bc8f25a40838be197dcd9beb",
+  "stills/kneeling_good_morning.t.png": "9eeceb9d92a338a77c823bbbb0250fb8d23c7e8f11f676b6e4b78fb244e7f4a7",
+  "stills/kneeling_good_morning_long.png": "7235a0fd97f61e42cabdaa0f9a6cb410988cd4300e35700e0cf9d6d755c126d8",
+  "stills/kneeling_good_morning_long.t.png": "ca06ebc85c7e42176e579e7ecebb5544ef3ed95419863e1f3378372cf886db96",
+  "stills/kneeling_good_morning_weight.dumbbells.png": "a759c3d623695408829ca23c2735f37db33380b8f288f78057cd5686f0afa1d6",
+  "stills/kneeling_good_morning_weight.dumbbells.t.png": "686012d8df588f5db1fbf9e32d7131a8d808a682fcf7e7118bd07ef9415f361b",
+  "stills/kneeling_good_morning_weight.kettlebell.png": "57b16916c3cc87ecf155728e5493aa1923b6a4344cf9f0ba2199d6061a570490",
+  "stills/kneeling_good_morning_weight.kettlebell.t.png": "227ad27cf7855c3fe68460b1f67de21074c8b39a7a1d612007fcad161be4d3ec",
+  "stills/kneeling_good_morning_weight.png": "0737b098095cabd4644728f34a791a07fcf307c07d47f7bc343c954e7b6d4502",
+  "stills/kneeling_good_morning_weight.t.png": "6da04c10ac508e96683cc9c833b26f7997ea7e5fa9b5c82c38112a4509da93c9",
   "stills/kneeling_reach_back.png": "4660cb6f7482860b0951b321133ae18154538a0a49c65971f695d8c9cc5c7bb9",
   "stills/kneeling_reach_back.t.png": "333316c4959585101bda79c5419fb50cb5228ce6009d779651b2f1b601073920",
   "stills/kneeling_turn.png": "d5fdfeb015483bc79f6ea82bf93d81dc57697f4b629d45d15a08863fb27f33b4",
@@ -3531,6 +3721,22 @@
   "stills/quick_steps.t.png": "df3ea82e7ebbe1cc61b2c45df902df63e3c14d6c1e99b09e521a89011d07c62d",
   "stills/reverse_crunch.png": "bd2906ebc8d894a7829dfc4844852fcf5126ae2bcf7c7775c65e6c8077d51837",
   "stills/reverse_crunch.t.png": "e69928bec07a6b3ee578bdf567663cbf2b19c9dbacf53879c75efea24fdcc6cf",
+  "stills/reverse_hyper.png": "56ea72ad442912d8b1070ba8c0189b000f46958d636659a97b3c4612110a6e93",
+  "stills/reverse_hyper.t.png": "9fd0ecacb87acf642bf56ae32959917b826b4637d6a05da8cd7d3ad159d91ef4",
+  "stills/reverse_hyper_band.png": "8f84150b440bc12f59c8f6e6f803269c210c5723d51e8f0d8ac8090ab11e36f5",
+  "stills/reverse_hyper_band.t.png": "6670ad4a10dd513f96c622d0bcf721201620bf83090b215388b1646b880034bf",
+  "stills/reverse_hyper_hold.png": "8702e79553f435a21ab454b24fa21a4ddaabfb2ff3f6864330ed9eda2806e73e",
+  "stills/reverse_hyper_hold.t.png": "4c355fff68f88ba59f6f2566ba3ffdcba0f4edb2140e7dd9f7ade44e75598826",
+  "stills/reverse_hyper_one_leg.png": "e4ae3c791284dce123c0f1f224435c527d73a303798d6b0b31793b9f5ed90b73",
+  "stills/reverse_hyper_one_leg.t.png": "6a6c8358c1aef95d5dacaa886f6a80f32556a5eab304b756c899ff7a2e1cea90",
+  "stills/reverse_hyper_pause.png": "69dc86918a912a55a7e80b70322068d2fd4503532bd47357a6700f887b9d45c1",
+  "stills/reverse_hyper_pause.t.png": "e00d9b867ffd6fab7468789f3050f1475458c34f9b74d784303260c4e3fef5cd",
+  "stills/reverse_hyper_table.png": "1b6d7c6caf92babbcf34933ac396ee3afbb85c089ac597658b363de4fb9d69f3",
+  "stills/reverse_hyper_table.t.png": "7bd31c17498e36ddd00659746a08041870fa0fc672301072af18598bc9a23f59",
+  "stills/reverse_hyper_tuck.png": "5b0ca88e80ec9f9e08837cc2d64a1d835c27b696c38a9789fb5ddb9ec605838d",
+  "stills/reverse_hyper_tuck.t.png": "4abc1844472ca28583ec63913c96e176330e911ac0c8c7ba056a0323e97c177b",
+  "stills/reverse_hyper_weight.png": "6e8a7fd7bad152c619e0f838698118c1a2c19397be6aaeb83b066fca03eff79d",
+  "stills/reverse_hyper_weight.t.png": "0b154d3541e3eabffaa5a909db94b908d2c4c966431320abea42113bbc80b339",
   "stills/reverse_lunge.png": "45453c8a99eec846cc69afa85d8a8cd5cb4776de3687cc376d940629158dd6d8",
   "stills/reverse_lunge.t.png": "771fb64dda67c6cfe9b0c14a0f401a43b1ac74777d09d592894a0bdafefdfb9e",
   "stills/reverse_wrist_lean.png": "4339c8c8577e507096941a04ff5ee1f8f6c3a68a7b5b6d0da3a684655227128d",
@@ -3795,8 +4001,10 @@
   "stills/sumo_squat.t.png": "de06fd80ca09e95e89c880e9c9561583ddc009c9d98b31cd91b593db28167681",
   "stills/sun_salutation.png": "cc0031a6386023c68d0231c8b538f98fb96e275d2d92cc3de806c54276ac47a2",
   "stills/sun_salutation.t.png": "3f50e3a91c661634f5d56cc35fc9d98af9666f51e310a55bf18b7deadd765925",
-  "stills/superman_hold.png": "23cd1f90306a9fd965fc0d4fa257e273e438bf8d1babd613d7ec99edba75da98",
-  "stills/superman_hold.t.png": "f8e000abd45390c96c5dd048a68fb59a2548863a093c6781dce92ac83a4e15be",
+  "stills/superman_hold.png": "96c6f3a8b063de24c00bc33a05945ad0fb1751291afb681e08a2db48acc9f89b",
+  "stills/superman_hold.t.png": "4e4583e02650d193693038ecc793f74f62d48f04bdfb9382603aa729af1a1421",
+  "stills/swimmer_lifts.png": "65f86d0739c99ec376035ccff1a1b0901af343fbee8836ab39a59f67d9ea7400",
+  "stills/swimmer_lifts.t.png": "58ba151cc06b26cd230e9658a6bbb5be90cd0d7e08fc17e64d24e04ffdc8ca56",
   "stills/table_archer_row.png": "99552742540d16a50d3ce4cb9c22ae9dc05dd0aaddf3debdc15a69304cd4c58d",
   "stills/table_archer_row.t.png": "4366ad9e47733b242e2ba1cd0c543e66f9025b8e3348c464601b75f3f7fd1cbe",
   "stills/table_row_bent.png": "bce994e0e2c8c822cc5597b52b0190d99dd5ebbc44c6c97e59c96453b6538633",
@@ -3954,7 +4162,7 @@
   "side": 480,
   "tint": 512
  },
- "films_digest": "7d0565009d438b06",
+ "films_digest": "2d0044f051de0c74",
  "moves": {
   "adv_tuck_fl_row": {
    "fault": "back_rounds",
@@ -4003,6 +4211,42 @@
    "key": 2.2,
    "mirror": false,
    "owner": "assisted_pistol"
+  },
+  "back_extension": {
+   "fault": "low_back_arches",
+   "key": 1.5333,
+   "mirror": false,
+   "owner": "back_extension"
+  },
+  "back_extension_hold": {
+   "fault": "hips_bend",
+   "key": 4.6833,
+   "mirror": false,
+   "owner": "back_extension_hold"
+  },
+  "back_extension_long": {
+   "fault": "low_back_arches",
+   "key": 1.5167,
+   "mirror": false,
+   "owner": "back_extension_long"
+  },
+  "back_extension_long_hold": {
+   "fault": "hips_bend",
+   "key": 4.7667,
+   "mirror": false,
+   "owner": "back_extension_long_hold"
+  },
+  "back_extension_long_slow": {
+   "fault": "low_back_arches",
+   "key": 2.8167,
+   "mirror": false,
+   "owner": "back_extension_long_slow"
+  },
+  "back_extension_pack": {
+   "fault": "low_back_arches",
+   "key": 1.5167,
+   "mirror": false,
+   "owner": "back_extension_pack"
   },
   "backpack_deadlift": {
    "gear": {
@@ -4262,6 +4506,12 @@
    "mirror": false,
    "owner": "bird_dog"
   },
+  "bird_dog_band": {
+   "fault": "hips_twist",
+   "key": 2.1833,
+   "mirror": false,
+   "owner": "bird_dog_band"
+  },
   "bird_dog_hold": {
    "fault": "leg_drops",
    "key": 4.8167,
@@ -4446,6 +4696,24 @@
    "key": 7.95,
    "mirror": false,
    "owner": "chair_twist_press"
+  },
+  "chest_lift": {
+   "fault": "chin_leads",
+   "key": 2.8667,
+   "mirror": false,
+   "owner": "chest_lift"
+  },
+  "chest_lift_long": {
+   "fault": "chin_leads",
+   "key": 3.25,
+   "mirror": false,
+   "owner": "chest_lift_long"
+  },
+  "chest_lift_pack": {
+   "fault": "chin_leads",
+   "key": 3.2833,
+   "mirror": false,
+   "owner": "chest_lift_pack"
   },
   "chest_opener": {
    "fault": "elbows_bend",
@@ -4978,6 +5246,12 @@
    "mirror": false,
    "owner": "flexed_arm_hang"
   },
+  "floor_leg_lift": {
+   "fault": "knees_bend",
+   "key": 3.1333,
+   "mirror": false,
+   "owner": "floor_leg_lift"
+  },
   "floor_reverse_lean": {
    "key": 2.0,
    "mirror": false,
@@ -5452,6 +5726,44 @@
    "key": 5.6,
    "mirror": false,
    "owner": "knee_to_wall"
+  },
+  "kneeling_back_raise": {
+   "fault": "back_rounds",
+   "key": 2.8167,
+   "mirror": false,
+   "owner": "kneeling_back_raise"
+  },
+  "kneeling_good_morning": {
+   "fault": "back_rounds",
+   "key": 3.9167,
+   "mirror": false,
+   "owner": "kneeling_good_morning"
+  },
+  "kneeling_good_morning_long": {
+   "fault": "back_rounds",
+   "key": 4.8833,
+   "mirror": false,
+   "owner": "kneeling_good_morning_long"
+  },
+  "kneeling_good_morning_weight": {
+   "fault": "back_rounds",
+   "gear": {
+    "dumbbells": {
+     "fault": "back_rounds",
+     "key": 2.4167,
+     "mirror": false,
+     "owner": "kneeling_good_morning_weight.dumbbells"
+    },
+    "kettlebell": {
+     "fault": "back_rounds",
+     "key": 3.4,
+     "mirror": false,
+     "owner": "kneeling_good_morning_weight.kettlebell"
+    }
+   },
+   "key": 3.4333,
+   "mirror": false,
+   "owner": "kneeling_good_morning_weight"
   },
   "kneeling_reach_back": {
    "fault": "hips_drift_back",
@@ -6186,6 +6498,54 @@
    "key": 1.4833,
    "mirror": false,
    "owner": "reverse_crunch"
+  },
+  "reverse_hyper": {
+   "fault": "low_back_arches",
+   "key": 1.4333,
+   "mirror": false,
+   "owner": "reverse_hyper"
+  },
+  "reverse_hyper_band": {
+   "fault": "knees_bend",
+   "key": 1.7,
+   "mirror": false,
+   "owner": "reverse_hyper_band"
+  },
+  "reverse_hyper_hold": {
+   "fault": "legs_drop",
+   "key": 4.5333,
+   "mirror": false,
+   "owner": "reverse_hyper_hold"
+  },
+  "reverse_hyper_one_leg": {
+   "fault": "low_back_arches",
+   "key": 1.0667,
+   "mirror": false,
+   "owner": "reverse_hyper_one_leg"
+  },
+  "reverse_hyper_pause": {
+   "fault": "low_back_arches",
+   "key": 2.6667,
+   "mirror": false,
+   "owner": "reverse_hyper_pause"
+  },
+  "reverse_hyper_table": {
+   "fault": "low_back_arches",
+   "key": 1.4167,
+   "mirror": false,
+   "owner": "reverse_hyper_table"
+  },
+  "reverse_hyper_tuck": {
+   "fault": "legs_drop",
+   "key": 1.5,
+   "mirror": false,
+   "owner": "reverse_hyper_tuck"
+  },
+  "reverse_hyper_weight": {
+   "fault": "low_back_arches",
+   "key": 1.4333,
+   "mirror": false,
+   "owner": "reverse_hyper_weight"
   },
   "reverse_lunge": {
    "key": 3.1667,
@@ -6923,10 +7283,16 @@
    "owner": "sun_salutation"
   },
   "superman_hold": {
-   "fault": "head_lifts",
-   "key": 4.3833,
+   "fault": "chin_leads",
+   "key": 4.3333,
    "mirror": false,
    "owner": "superman_hold"
+  },
+  "swimmer_lifts": {
+   "fault": "chin_leads",
+   "key": 2.1167,
+   "mirror": false,
+   "owner": "swimmer_lifts"
   },
   "table_archer_row": {
    "fault": "hips_sag",
@@ -7517,6 +7883,120 @@
     0.0708,
     0.1229,
     0.877
+   ]
+  },
+  "back_extension": {
+   "box": [
+    0.0,
+    0.3396,
+    1.0,
+    0.6729
+   ],
+   "fade": [
+    null,
+    1.0,
+    null
+   ],
+   "loop": 3.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "back_extension_hold": {
+   "box": [
+    0.0,
+    0.3354,
+    1.0,
+    0.6729
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    null
+   ],
+   "loop": 9.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "back_extension_long": {
+   "box": [
+    0.0,
+    0.3458,
+    0.9979,
+    0.6542
+   ],
+   "fade": [
+    null,
+    1.0,
+    0.6708
+   ],
+   "loop": 3.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "back_extension_long_hold": {
+   "box": [
+    0.0,
+    0.3458,
+    0.9979,
+    0.6542
+   ],
+   "fade": [
+    null,
+    1.0,
+    0.6708
+   ],
+   "loop": 9.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "back_extension_long_slow": {
+   "box": [
+    0.0,
+    0.3458,
+    0.9979,
+    0.6542
+   ],
+   "fade": [
+    null,
+    1.0,
+    0.6708
+   ],
+   "loop": 7.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "back_extension_pack": {
+   "box": [
+    0.0,
+    0.3104,
+    1.0,
+    0.7021
+   ],
+   "fade": [
+    null,
+    1.0,
+    null
+   ],
+   "loop": 3.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
    ]
   },
   "backpack_deadlift": {
@@ -8393,6 +8873,25 @@
     1.0
    ]
   },
+  "bird_dog_band": {
+   "box": [
+    0.0146,
+    0.3063,
+    0.9854,
+    0.7
+   ],
+   "fade": [
+    null,
+    1.0,
+    null
+   ],
+   "loop": 4.4,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
   "bird_dog_hold": {
    "box": [
     0.0146,
@@ -8995,6 +9494,63 @@
     1.0
    ],
    "loop": 12.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "chest_lift": {
+   "box": [
+    0.0,
+    0.375,
+    1.0,
+    0.6292
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    null
+   ],
+   "loop": 5.5333,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "chest_lift_long": {
+   "box": [
+    0.0,
+    0.3917,
+    0.9875,
+    0.6042
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    0.6292
+   ],
+   "loop": 7.0,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "chest_lift_pack": {
+   "box": [
+    0.0,
+    0.3396,
+    1.0,
+    0.6625
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    0.6771
+   ],
+   "loop": 7.0,
    "tile": [
     0.0,
     0.0,
@@ -10787,6 +11343,25 @@
     1.0
    ]
   },
+  "floor_leg_lift": {
+   "box": [
+    0.0,
+    0.3833,
+    1.0,
+    0.6188
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    0.6312
+   ],
+   "loop": 7.0,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
   "floor_reverse_lean": {
    "box": [
     0.0,
@@ -12362,6 +12937,120 @@
     0.0,
     0.0,
     1.0
+   ]
+  },
+  "kneeling_back_raise": {
+   "box": [
+    0.0312,
+    0.0187,
+    0.9604,
+    0.9458
+   ],
+   "fade": [
+    0.0146,
+    null,
+    null
+   ],
+   "loop": 5.3333,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "kneeling_good_morning": {
+   "box": [
+    0.1313,
+    0.0146,
+    0.8625,
+    0.95
+   ],
+   "fade": [
+    0.1104,
+    null,
+    null
+   ],
+   "loop": 7.0,
+   "tile": [
+    0.0875,
+    0.1812,
+    0.8187
+   ]
+  },
+  "kneeling_good_morning_long": {
+   "box": [
+    0.1104,
+    0.0125,
+    0.8917,
+    0.9375
+   ],
+   "fade": [
+    0.0917,
+    null,
+    null
+   ],
+   "loop": 8.4,
+   "tile": [
+    0.0625,
+    0.125,
+    0.875
+   ]
+  },
+  "kneeling_good_morning_weight": {
+   "box": [
+    0.1083,
+    0.0146,
+    0.8917,
+    0.9417
+   ],
+   "fade": [
+    0.0938,
+    null,
+    null
+   ],
+   "loop": 6.2,
+   "tile": [
+    0.0625,
+    0.1229,
+    0.877
+   ]
+  },
+  "kneeling_good_morning_weight.dumbbells": {
+   "box": [
+    0.1083,
+    0.0146,
+    0.8917,
+    0.95
+   ],
+   "fade": [
+    0.0938,
+    null,
+    null
+   ],
+   "loop": 6.2,
+   "tile": [
+    0.0625,
+    0.1229,
+    0.877
+   ]
+  },
+  "kneeling_good_morning_weight.kettlebell": {
+   "box": [
+    0.1083,
+    0.0146,
+    0.8917,
+    0.9417
+   ],
+   "fade": [
+    0.0938,
+    null,
+    null
+   ],
+   "loop": 6.2,
+   "tile": [
+    0.0625,
+    0.1229,
+    0.877
    ]
   },
   "kneeling_reach_back": {
@@ -14790,6 +15479,158 @@
     0.8875
    ],
    "loop": 3.6,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper": {
+   "box": [
+    0.0187,
+    0.2562,
+    1.0,
+    0.7417
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    0.7625
+   ],
+   "loop": 3.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_band": {
+   "box": [
+    0.0167,
+    0.2562,
+    1.0,
+    0.7417
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    null
+   ],
+   "loop": 3.6,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_hold": {
+   "box": [
+    0.0187,
+    0.2604,
+    1.0,
+    0.7417
+   ],
+   "fade": [
+    null,
+    1.0,
+    0.7667
+   ],
+   "loop": 9.0,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_one_leg": {
+   "box": [
+    0.0187,
+    0.2562,
+    1.0,
+    0.7417
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    null
+   ],
+   "loop": 4.8,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_pause": {
+   "box": [
+    0.0167,
+    0.2562,
+    1.0,
+    0.7417
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    0.7625
+   ],
+   "loop": 7.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_table": {
+   "box": [
+    0.0167,
+    0.225,
+    1.0,
+    0.7875
+   ],
+   "fade": [
+    null,
+    1.0,
+    null
+   ],
+   "loop": 3.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_tuck": {
+   "box": [
+    0.0167,
+    0.1875,
+    1.0,
+    0.8292
+   ],
+   "fade": [
+    0.0,
+    1.0,
+    0.8333
+   ],
+   "loop": 3.2,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "reverse_hyper_weight": {
+   "box": [
+    0.0167,
+    0.2667,
+    1.0,
+    0.7354
+   ],
+   "fade": [
+    null,
+    1.0,
+    null
+   ],
+   "loop": 3.2,
    "tile": [
     0.0,
     0.0,
@@ -17288,16 +18129,35 @@
   "superman_hold": {
    "box": [
     0.0,
-    0.3125,
-    0.9854,
-    0.6854
+    0.3667,
+    0.9833,
+    0.6333
    ],
    "fade": [
     0.0,
-    1.0,
-    0.7063
+    null,
+    null
    ],
    "loop": 8.4,
+   "tile": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  "swimmer_lifts": {
+   "box": [
+    0.0,
+    0.3667,
+    0.9854,
+    0.6375
+   ],
+   "fade": [
+    0.0,
+    null,
+    0.6625
+   ],
+   "loop": 9.6,
    "tile": [
     0.0,
     0.0,

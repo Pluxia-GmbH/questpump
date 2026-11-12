@@ -11,7 +11,7 @@ beside your desk. Do them, type your count, and next time the goal is just past 
 move is your first record.
 
 A small quest asks for one or two moves, a big one a circuit of three. Set Moves per quest to Light for one move a
-quest. There are more than 300 moves, and most need no gear. They sit on 22 ladders in 7 colours, from wall push-ups
+quest. There are more than 300 moves, and most need no gear. They sit on 23 ladders in 7 colours, from wall push-ups
 up.
 
 ## What you control
@@ -61,9 +61,9 @@ add-on's save, as the Forever beta did for a time (forum thread 2354798). Withou
 ## Your gear
 
 Most moves need no gear. Tick what you have, and pumps add the moves that use it: a stable chair, a sturdy table, a
-towel and a door, a pull-up bar or a fixed pull-up bar, bands with a door anchor, a kettlebell, dumbbells, a barbell
-and rack, a jump rope, an exercise bike, stairs, a walking pad, a step or box, an ab wheel, parallettes, rings or
-straps, a weighted vest, a medicine ball, a foam roller, a backpack, and a pole outdoors.
+towel, a pull-up bar or a fixed pull-up bar, bands with a door anchor, a kettlebell, dumbbells, a barbell and rack, a
+jump rope, an exercise bike, stairs, a walking pad, a step or box, an ab wheel, parallettes, rings or straps, a
+weighted vest, a medicine ball, a foam roller, a backpack, and a pole outdoors.
 
 ## Commands
 

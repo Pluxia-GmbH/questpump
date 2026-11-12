@@ -288,6 +288,53 @@ qp-primary-button, qp-secondary-button, qp-quiet-button {
 	margin-bottom: 0;
 }
 
+/* `progress`: the fill toward the button pressing itself, under the words, with a light sweeping over it */
+.qp-goes {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.qp-goes::before, .qp-goes::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	transform-origin: left;
+	transform: scaleX(var(--qp-goes, 0));
+}
+
+.qp-goes::before {
+	background: var(--qp-surface-primary-button-goes-fill);
+}
+
+.qp-goes::after {
+	background: linear-gradient(90deg, transparent 0%, var(--qp-surface-primary-button-goes-shine) 50%, transparent 100%) no-repeat;
+	background-size: 30% 100%;
+	animation: qp-goes-shimmer var(--qp-motion-goes-on-shimmer) infinite;
+}
+
+.qp-primary > .qp-words, .qp-primary > qp-art, .qp-primary > .qp-busy {
+	position: relative;
+}
+
+@keyframes qp-goes-shimmer {
+	from {
+		background-position: -40% 0;
+	}
+	to {
+		background-position: 140% 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.qp-goes::after {
+		animation: none;
+		background: none;
+	}
+}
+
 .qp-busy {
 	display: inline-flex;
 	gap: var(--qp-layout-space4);
@@ -725,6 +772,39 @@ button.qp-chip:active {
 @keyframes qp-pulse {
 	to {
 		opacity: var(--qp-surface-primary-button-busy-dim-opacity);
+	}
+}
+
+/* one stage changing into the next (slice 72, motion.stage; lib/stage.js: a pump's stages, the first five minutes'
+   steps): the stage that leaves fades out behind the one that comes, whose parts fade in around the move's figure,
+   which stays where it stands; under Reduce Motion a fade of the token's reduced time */
+.qp-stage-host {
+	position: relative;
+	isolation: isolate;
+}
+
+.qp-stage-out {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	overflow: hidden;
+	pointer-events: none;
+	animation: qp-fade-out var(--qp-motion-stage) both;
+}
+
+.qp-stage-in {
+	animation: qp-fade-in var(--qp-motion-stage);
+}
+
+/* a number's digits popping as they arrive (digitPop: the Saga's reveal, the countdown's digits, the streak's count;
+   lib/carry.js `pop`), a swap in place under Reduce Motion */
+.qp-pop {
+	animation: qp-digit-pop var(--qp-motion-digit-pop);
+}
+
+@keyframes qp-digit-pop {
+	from {
+		transform: scale(var(--qp-motion-digit-pop-scale-from));
 	}
 }
 
@@ -1730,9 +1810,26 @@ qp-expedition-bar {
 }
 
 qp-xp-bar {
+	--qp-tone: var(--qp-color-gold-hi);
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: var(--qp-layout-space8);
+}
+
+/* a level's rise (qp-xp-bar.js `rise`, motion.levelRise): a chevron rising from the bar, two strokes of goldHi in a
+   gold glow, at `--qp-xp-rise` of its size on a bar with little room over it */
+.qp-xp-rise {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: calc(var(--qp-surface-xp-bar-rise-size) * var(--qp-xp-rise, 1));
+	height: calc(var(--qp-surface-xp-bar-rise-size) * var(--qp-xp-rise, 1));
+	margin: calc(var(--qp-surface-xp-bar-rise-size) * var(--qp-xp-rise, 1) / -2);
+	border-top: var(--qp-surface-xp-bar-rise-stroke) solid var(--qp-color-gold-hi);
+	border-left: var(--qp-surface-xp-bar-rise-stroke) solid var(--qp-color-gold-hi);
+	filter: drop-shadow(0 0 var(--qp-surface-chip-dot-glow-radius) var(--qp-color-gold));
+	pointer-events: none;
 }
 
 .qp-xp-track {
@@ -1760,6 +1857,31 @@ qp-xp-bar[hero] .qp-xp-track {
 	background: var(--qp-surface-xp-bar-fill);
 }
 
+/* a level or a rank on the bar (slice 72, qp-xp-bar.js): a leg its caller timed to the bar's end, Hero's bar carried
+   home, the full bar's one flash (a third of levelRoll up, the rest down), and a place taken with no motion */
+qp-xp-bar[data-leg] :is(.qp-xp-fill, .qp-xp-rested) {
+	transition-duration: var(--qp-xp-leg);
+}
+
+qp-xp-bar[data-carry] :is(.qp-xp-fill, .qp-xp-rested) {
+	transition: width var(--qp-motion-carry), left var(--qp-motion-carry);
+}
+
+qp-xp-bar[data-still] :is(.qp-xp-fill, .qp-xp-rested) {
+	transition: none;
+}
+
+qp-xp-bar[data-flash] .qp-xp-track {
+	animation: qp-xp-flash var(--qp-motion-level-roll) both;
+}
+
+@keyframes qp-xp-flash {
+	33% {
+		filter: brightness(1.6);
+		box-shadow: inset var(--qp-surface-xp-bar-inset), 0 0 var(--qp-layout-space8) var(--qp-color-gold-hi);
+	}
+}
+
 .qp-xp-rested {
 	left: calc(var(--qp-xp-share, 0) * 100%);
 	width: calc(var(--qp-xp-rest, 0) * 100%);
@@ -1770,6 +1892,11 @@ qp-xp-bar[hero] .qp-xp-track {
 	display: flex;
 	justify-content: space-between;
 	gap: var(--qp-layout-space8);
+}
+
+/* the level's word pops from its own start as the bar turns to it (`restart`) */
+.qp-xp-caption > :first-child {
+	transform-origin: 0 50%;
 }
 
 /* Stepper ---------------------------------------------------------------------------------------------------------- */
@@ -2798,13 +2925,59 @@ qp-reward-row[shown] {
 	animation: qp-arrive var(--qp-motion-chip) both;
 }
 
+/* a row laid in its place before its turn: unseen, its room kept, so no row moves as another comes in */
+qp-reward-row[waits] {
+	visibility: hidden;
+}
+
 qp-reward-row[shown] qp-move-tile .qp-tile-well {
 	animation: qp-shine var(--qp-motion-chip-shine) both;
 }
 
-/* a move's row with no record says what it did quietly: no shine (2026-10-29) */
-qp-reward-row[shown][data-quiet] qp-move-tile .qp-tile-well {
+/* a move's row with no record says what it did quietly: no shine (2026-10-29); the row a step-up's hero flies to
+   holds its shine for the landing */
+qp-reward-row[shown][data-quiet] qp-move-tile .qp-tile-well,
+qp-reward-row[shown][data-catches] qp-move-tile .qp-tile-well {
 	animation: none;
+}
+
+/* the hero landed (qp-reward-row.js `catches`): the tile pops and shines, and the row keeps its tone's edge while it
+   stands */
+qp-reward-row[data-caught] {
+	margin-inline: calc(var(--qp-layout-space8) * -1);
+	padding-inline: var(--qp-layout-space8);
+	border-radius: var(--qp-layout-tile-radius);
+	background: color-mix(in srgb, var(--qp-tone, var(--qp-color-gold)) 8%, transparent);
+	box-shadow: inset 0 0 0 var(--qp-layout-hairline)
+		color-mix(in srgb, var(--qp-tone, var(--qp-color-gold)) 55%, transparent);
+}
+
+qp-reward-row[data-caught] qp-move-tile {
+	animation: qp-tile-land var(--qp-motion-digit-pop) both;
+}
+
+qp-reward-row[shown][data-caught] qp-move-tile .qp-tile-well {
+	animation: qp-shine var(--qp-motion-chip-shine) both;
+}
+
+@keyframes qp-tile-land {
+	from {
+		transform: scale(var(--qp-motion-digit-pop-scale-from));
+	}
+}
+
+/* an Epic or higher step's tile: after its shine its quality's glow rises once to pulseOpacity and back (slice 72, at
+   the reveal's pulse instant, every such row together), on the tile itself, so the well's shine runs on under it */
+qp-reward-row[pulse] > qp-move-tile {
+	border-radius: var(--qp-layout-tile-radius-small);
+	animation: qp-tile-pulse var(--qp-motion-pulse) both;
+}
+
+@keyframes qp-tile-pulse {
+	50% {
+		box-shadow: 0 0 var(--qp-surface-move-tile-glow-radius) color-mix(in srgb, var(--qp-tone)
+			calc(var(--qp-surface-reward-row-pulse-opacity) * 100%), transparent);
+	}
 }
 
 /* a move's row (2026-10-29): what it did with its tag and the record it passed, its lines, its steps with their pips */
@@ -2925,6 +3098,24 @@ qp-week-dots {
 	outline-offset: var(--qp-layout-space2);
 }
 
+/* a mark that lights as its day arrives (slice 72, qp-week-dots.js `light`: the streak's day on the Result, a reward
+   carried home), from dark and unlit, its glyph fading in; several one after another at the chip's stagger */
+.qp-dot.qp-lit-in, .qp-dot.qp-lit-in qp-art {
+	animation: qp-mark-lit var(--qp-motion-carry) both;
+	animation-delay: calc(var(--qp-lit-order, 0) * var(--qp-motion-chip-stagger));
+}
+
+.qp-dot.qp-lit-in qp-art {
+	animation-name: qp-fade-in;
+}
+
+@keyframes qp-mark-lit {
+	from {
+		box-shadow: none;
+		filter: saturate(0) brightness(0.5);
+	}
+}
+
 .qp-dot.qp-future {
 	box-shadow: none;
 }
@@ -3020,6 +3211,22 @@ qp-streak-board {
 	text-align: center;
 }
 
+/* the streak's day on the Result (slice 72): the count over its label, the week's marks, the day against the next
+   milestone */
+qp-streak-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space4);
+	text-align: center;
+}
+
+qp-streak-day qp-week-dots {
+	width: 100%;
+	max-width: calc(var(--qp-surface-week-dots-size) * 7 + var(--qp-layout-space12) * 6);
+	margin-block: var(--qp-layout-space8);
+}
+
 /* the whole board a button to the streak page (slice 51), the round Share over it */
 .qp-streak-open {
 	position: absolute;
@@ -3066,7 +3273,7 @@ qp-streak-board > .qp-type-meta {
 	margin-top: var(--qp-layout-space8);
 }
 
-/* WorkCard: work mode's card on Pump home, and the WorkStrip of a set's blocks (slice 67) -------------------------- */
+/* WorkCard: work mode's card on Pump home (slice 67) --------------------------------------------------------------- */
 
 qp-work-card {
 	display: block;
@@ -3162,34 +3369,6 @@ qp-quiet-button.qp-work-stop {
 	color: var(--qp-color-text3);
 }
 
-.qp-work-dots {
-	display: flex;
-	align-items: center;
-	gap: var(--qp-layout-space6);
-}
-
-.qp-work-dots i, .qp-work-dot {
-	flex: none;
-	width: var(--qp-layout-space8);
-	height: var(--qp-layout-space8);
-	border-radius: 50%;
-	background: var(--qp-color-track);
-}
-
-.qp-work-dots i.qp-lit, .qp-work-dot {
-	background: var(--qp-color-gold);
-}
-
-.qp-work-dots i.qp-next {
-	background: none;
-	box-shadow: inset 0 0 0 var(--qp-layout-ring-width) var(--qp-color-gold);
-}
-
-.qp-work-dots i.qp-work-long, .qp-work-dot.qp-work-long {
-	width: var(--qp-layout-space12);
-	height: var(--qp-layout-space12);
-}
-
 /* due: Pump now and Later side by side under the block */
 .qp-work-buttons {
 	display: flex;
@@ -3206,35 +3385,6 @@ qp-quiet-button.qp-work-stop {
 .qp-work-refused {
 	margin-top: var(--qp-layout-space8);
 	text-align: center;
-}
-
-qp-work-strip {
-	display: flex;
-	gap: var(--qp-layout-space4);
-}
-
-.qp-work-block {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--qp-layout-space4);
-	min-width: 0;
-}
-
-.qp-work-bar-row {
-	display: flex;
-	align-items: center;
-	align-self: stretch;
-	gap: var(--qp-layout-space4);
-	min-height: var(--qp-layout-space12);
-}
-
-.qp-work-bar {
-	flex: 1;
-	height: var(--qp-layout-space6);
-	border-radius: var(--qp-layout-space6);
-	background: var(--qp-color-track);
 }
 
 /* VaultCard: the weekly vault on Hero (2026-10-09) ---------------------------------------------------------------- */
@@ -3308,6 +3458,14 @@ qp-muscle-map svg {
 .qp-body-muscle.qp-lit {
 	fill: var(--qp-muscle);
 	fill-opacity: var(--qp-surface-body-map-fill-opacity);
+}
+
+/* a muscle about to fade up (qp-muscle-map.js `fade`): dark with no motion, from where its tone comes back over
+   muscleLight */
+.qp-body-muscle.qp-lit.qp-dark {
+	fill: var(--qp-surface-body-map-untrained);
+	fill-opacity: 1;
+	transition: none;
 }
 
 .qp-body-muscle.qp-half {
@@ -3631,6 +3789,27 @@ qp-timer-ring[data-state="word"] .qp-ring-clock {
 	font-size: calc(var(--qp-surface-timer-ring-dial-caption-fraction) * 100cqw);
 }
 
+/* the goal met (slice 72: a hold past its goal, a counted set of reps at its goal's beat): its line gold behind a
+   check, never the colour alone */
+qp-timer-ring[data-met] .qp-ring-caption {
+	color: var(--qp-color-gold);
+}
+
+.qp-ring-caption qp-art {
+	width: 1em;
+	height: 1em;
+	margin-inline-end: var(--qp-layout-space4);
+	vertical-align: -0.125em;
+}
+
+/* the check is the kit's art, not the ring's own drawing, whose rules reach every svg under the ring (and hide them
+   where the dial shows the clock alone) */
+qp-timer-ring .qp-ring .qp-ring-caption qp-art svg {
+	position: static;
+	display: block;
+	transform: none;
+}
+
 /* the clock alone's least room (numHero's line at half its size, as the phones' face shrinks a line to half,
    FACE_LEAST; a space8; the caption's caps line), which its owner keeps (pump.css) */
 :root {
@@ -3825,6 +4004,12 @@ qp-count-bar {
 	inset-block: 0;
 	width: calc(var(--qp-at, 0) * 100%);
 	border-radius: inherit;
+	transition: width var(--qp-motion-pour-fill);
+}
+
+/* a bar turned over to the next step's stands empty at once (qp-count-bar.js `turn`) */
+qp-count-bar[data-turning] :is(.qp-count-fill, .qp-count-spill) {
+	transition: none;
 }
 
 .qp-count-fill {

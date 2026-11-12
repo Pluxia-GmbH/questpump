@@ -13,9 +13,12 @@
 // landed, m:ss where it is `seconds`, the arc the share still to pour, the gold New record chip once past the
 // record)}, its seconds from Rust's absolute instants each frame; `go` shows "Go" alone for a move's first second. Read
 // as one: the digit, the seconds left, run or held with the goal or the record, the reps counted with the goal or the
-// word, the count set, or the goal.
+// word, the count set, or the goal. Since slice 72 a countdown's digit pops as it comes (digitPop, as the phones'),
+// and a goal met (a hold's seconds held, a counted set of reps' reps) turns its line gold behind a check until the
+// side ends, as the game's goal line does, never by the colour alone.
 
 import {t} from "../lib/copy.js";
+import {pop} from "../lib/carry.js";
 import {clock, LOCALE} from "../lib/format.js";
 import {KitElement, define, h, token} from "./element.js";
 
@@ -43,7 +46,10 @@ class QpTimerRing extends KitElement {
 		svg.append(ring("qp-ring-track"), this.arc);
 		this.wordEl = h("span", {class: "qp-ring-digit qp-type-num-ring", "aria-hidden": "true"});
 		this.clockEl = h("p", {class: "qp-ring-clock qp-type-num-hero", "aria-hidden": "true"});
-		this.caption = h("p", {class: "qp-ring-caption qp-type-caps", "aria-hidden": "true"});
+		this.met = h("qp-art", {name: "mark_check", hidden: true});
+		this.captionWords = h("span");
+		this.caption = h("p", {class: "qp-ring-caption qp-type-caps", "aria-hidden": "true"}, this.met,
+			this.captionWords);
 		this.chip = h("span", {class: "qp-ring-chip qp-type-caps", "aria-hidden": "true", hidden: true,
 			text: t("kit.reward.tag.record")});
 		this.setAttribute("role", "img");
@@ -77,6 +83,13 @@ class QpTimerRing extends KitElement {
 			case "pour": return Math.min(1, Math.max(0, m.share));
 			default: return 1;
 		}
+	}
+
+	/** The goal is met: a hold held its goal's seconds, a counted set of reps counted its goal's reps. */
+	goalMet() {
+		const m = this.mode;
+		if (!m.goal) return false;
+		return (m.kind === "hold" && m.elapsed >= m.goal) || (m.kind === "count" && m.reps >= m.goal);
 	}
 
 	/** The line under a count: its goal ("goal 16+"), else its word. */
@@ -120,7 +133,11 @@ class QpTimerRing extends KitElement {
 		this.dataset.state = m.kind;
 		const word = m.kind === "countdown" ? (m.digit > 0 ? String(m.digit) : t("kit.sweep.go"))
 			: this.go ? t("kit.sweep.go") : "";
-		if (this.wordEl.textContent !== word) this.wordEl.textContent = word;
+		if (this.wordEl.textContent !== word) {
+			this.wordEl.textContent = word;
+			// each digit of the countdown, and its Go, pops as it comes
+			if (word && m.kind === "countdown") pop(this.wordEl);
+		}
 		this.wordEl.hidden = !word;
 		this.wordEl.classList.toggle("qp-ring-go", word === t("kit.sweep.go"));
 		let big = "";
@@ -147,8 +164,11 @@ class QpTimerRing extends KitElement {
 		// "Go" stands alone for its second, the clock and its caption under it after
 		if (this.clockEl.textContent !== big) this.clockEl.textContent = big;
 		this.clockEl.hidden = !big || Boolean(word);
-		if (this.caption.textContent !== small) this.caption.textContent = small;
+		if (this.captionWords.textContent !== small) this.captionWords.textContent = small;
 		this.caption.hidden = !small || Boolean(word);
+		const met = this.goalMet();
+		this.met.hidden = !met;
+		this.toggleAttribute("data-met", met);
 		this.chip.hidden = !((m.kind === "pour" || m.kind === "entry") && m.chip);
 		const said = this.spoken();
 		if (this.getAttribute("aria-label") !== said) this.setAttribute("aria-label", said);

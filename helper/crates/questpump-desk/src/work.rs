@@ -1,38 +1,44 @@
-//! Work mode on the desk (docs/plan.md slice 67), shared by the desktop app and the browser: the switch, the choices
-//! and the set as the player's shared state holds them (`questpump_core::work::Work`, in the settings, merged with
-//! every device's through the sync and the link), this device's work clock over its own presence
-//! (`questpump_core::work::Clock`, at the loop's look: `Desk::work_look`; a due block kept in the settings across a
-//! restart or a reload, `Settings::work_due`, which asks again once the account's first pull answered), what holds it
-//! here, the ask and its two answers, Pump now (the work pump, which banks as a match's does: `pump::Start::Work`) and
-//! Later (that pump composed with no screen and banked: `Desk::pump_work_later`), and the anchor every pump done on any
-//! device moves.
+//! Work mode on the desk (docs/plan.md slice 67), shared by the desktop app and the browser: the switch and the
+//! choices as the player's shared state holds them (`questpump_core::work::Work`, in the settings, merged with every
+//! device's through the sync and the link), this device's work clock (`questpump_core::work::Clock`, at the loop's
+//! look: `Desk::work_look`; a due block kept in the settings across a restart or a reload, `Settings::work_due`, which
+//! asks again once the account's first pull answered), what holds it here, the ask and its two answers, Pump now (the
+//! work pump, which banks as a match's does: `pump::Start::Work`) and Later (that pump composed with no screen and
+//! banked: `Desk::pump_work_later`), and the anchor every pump moves.
+//!
+//! Work mode runs until the player stops it, every work pump alike (David, 2026-11-11, of the set of four pumps whose
+//! dots the card filled: "Why are there 4 dots that get filled. Makes no sense. it should just run as long as I put
+//! it").
 //!
 //! The clock always runs down, whatever the typing (David, 2026-11-10, whose block never came due while he watched his
 //! work without touching the keys: "why is the clock stuck in work mode right now at 22? fix", then "it should just
 //! always run down. no matter if there is typing?!"; a pause of `sit_away_s` in the input started the count over
 //! until then): only a hold freezes it and only a move of the anchor starts it again. Whether somebody is there
-//! (`Platform::idle_s` against `sit_away_s`) decides only when a due pump opens (`Desk::work_open`).
+//! (`Platform::idle_s` against `sit_away_s`) decides only when a due pump opens (`Desk::work_open`); a platform that
+//! reads no input says none, and its due pump waits for no pause.
 //!
 //! The ask opens its pump itself (David, 2026-11-10: "It should work the same way as after a lol match ... go to the
-//! foreground and start the exercise. No chosing wether to pump now or later"): while the ask stands the set's work
-//! pump comes at its Ready view from outside the window, which opens in front for it (`Desk::work_open`), once for a
-//! due block, as "Open the pump after each match" opens a match's once; its Bank all puts it off. One left with
-//! nothing done or banked leaves the block due on Pump home's card (Pump now, Later) and in the tray, and nothing
-//! opens for that block again. It never opens while nobody is there, waits for a pause in the player's keys, and one
-//! that opened itself and stands untouched once the player went away closes until the return (`Desk::work_unattended`).
+//! foreground and start the exercise. No chosing wether to pump now or later"): while the ask stands a work pump comes
+//! at its Ready view from outside the window, which opens in front for it (`Desk::work_open`), once for a due block,
+//! as "Open the pump after each match" opens a match's once; its Bank all puts it off. It never opens while nobody is
+//! there, waits for a pause in the player's keys, and one that opened itself and stands untouched once the player went
+//! away closes until the return (`Desk::work_unattended`).
 //!
-//! The next block counts from the moment the work pump came on screen, its own minutes inside it (David, 2026-11-10:
-//! "be sure that the new 25 minutes are counted right from the popup and not only after the excercises are done"): a
-//! work pump done on its ask moves the anchor to that moment (`WorkPump::shown_ms`, `Desk::work_block_done`), or to now
-//! where Every already passed since it came, so a pump that waited or ran that long is not followed by the next at
-//! once; a Later and every other pump move it to now.
+//! The next block counts from the moment a work pump came on screen, whatever is then done with that pump (David,
+//! 2026-11-10: "be sure that the new 25 minutes are counted right from the popup and not only after the excercises are
+//! done"; 2026-11-11, who left one open past the next block and saw nothing come: "It does not matter that i dont do
+//! the excercise right away. it should always continue with the 25 min"): its coming moves the anchor
+//! (`Desk::work_pump_shown`) and it holds no clock (`Desk::work_hold`), so the ring counts on while it stands. When the
+//! next block comes due and that pump still stands, it makes way once no move runs in it, as a pump makes way for a
+//! game's (`Desk::pump_make_way`: its own moves left banked from a Ready view, its riders done paid), and the next
+//! block's pump opens in its place. A Later and every other pump done move the anchor to now.
 //!
-//! The writes (contract/companion-api.yaml `Work`): a work pump counts its block only when it was started while its
-//! ask stood (`Asked`: the anchor and the set it was asked at, still the state's at its end) and it saved a move or
-//! banked its moves; one left with nothing done or banked, or ended for felt unwell, writes nothing and the ask stays
-//! due. A work pump started while no ask stands (the tray's Pump now while the block counts) moves the anchor alone, as
-//! every other pump done here does. A Later or a Pump now that answers an ask that stands no more (`ask`: a page left
-//! open, an old notification) writes nothing; Later and the ask's Pump now act only while the block is due.
+//! The writes (contract/companion-api.yaml `Work`): a work pump's coming, a Later banked and any other pump done here
+//! with a move saved each move the anchor; a work pump's end writes nothing more, but one the felt-unwell lock ended,
+//! or one that closed untouched because the player went away, leaves its block due again (`Desk::work_due_again`), so
+//! its pump comes again once the lock lifts or the player is back. A Later or a Pump now that answers an ask that
+//! stands no more (`ask`: a page left open, an old notification) writes nothing; Later acts only while the block is
+//! due.
 //!
 //! Work mode's own equipment (the gear and Floor moves, Room to move and Quiet mode, the office template's at first;
 //! David, 2026-11-09: "just have an extra equipment setting for work") is no place: while work mode is on, every pump
@@ -77,23 +83,19 @@ const OPEN_PAUSE_S: i64 = 4;
 /// Work mode's state on this device between looks.
 #[derive(Debug, Default)]
 pub struct WorkDesk {
-	/// The work clock over this device's presence.
+	/// This device's work clock.
 	clock: Clock,
 	/// Its last look's state.
 	state: Option<State>,
-	/// The work pump on screen, whose end counts its block where it answers an ask.
+	/// The work pump on screen, from its Ready view to its end: it holds no clock, and the next block's pump takes its
+	/// place (`work_open`).
 	pump: Option<WorkPump>,
-	/// The work pump that ended on its ask with nothing done or banked yet, that ask and when the pump came on screen
-	/// (`WorkPump::shown_ms`): a bank of its moves written right after its end (QuestPump's quit, `pump_quit`) still
-	/// counts its block (`work_banked`).
-	ended: Option<(String, Asked, i64)>,
-	/// The ask the next work pump to come on screen answers (`work_now`), none for one asked while none stood.
-	asked: Option<Asked>,
 	/// The due block's pump opening itself (`work_open`).
 	open: Opening,
-	/// A Later's pump is being composed and banked, with the ask it answers (it holds the clock as a pump does).
-	later: Option<Asked>,
-	/// The last Later's refusal, by its words' key, until the next Start, Pump now, Later, block done or new ask.
+	/// A Later's pump is being composed and banked, with the anchor of the ask it answers (it holds the clock as a pump
+	/// does).
+	later: Option<i64>,
+	/// The last Later's refusal, by its words' key, until the next Start, Pump now, Later, work pump or new ask.
 	refused: Option<&'static str>,
 	/// The first Start's sheet is open.
 	sheet: bool,
@@ -106,6 +108,9 @@ pub struct WorkDesk {
 	kept_until: Option<i64>,
 	/// What held the clock at the last look: a change is said in the log.
 	held: Option<Hold>,
+	/// The last look while on (unix seconds): a gap of `sit_away_s` to the next is a time nobody was there (the computer
+	/// slept), as the sitting clock reads one.
+	looked: Option<i64>,
 }
 
 impl WorkDesk {
@@ -132,24 +137,14 @@ struct Opening {
 	unasked: bool,
 }
 
-/// An ask a work pump or a Later answers: the anchor it was asked after (`Work::reset_at`, unix ms) and the blocks of
-/// the set done then (`Work::block`). It stands while the state holds both (`Desk::work_stands`).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Asked {
-	anchor: i64,
-	block: u8,
-}
-
-/// The work pump on screen: its id, the ask it answers (none for one started while none stood), whether it opened
-/// itself (`Desk::work_open`: nobody pressed for it), when it came on screen (unix ms: the next block counts from
-/// there, `Desk::work_block_done`) and whether it banked moves (its Bank all, a move ended too short to count).
+/// The work pump on screen: its id, whether it opened itself (`Desk::work_open`: nobody pressed for it) and the
+/// anchor its coming wrote (none for one that came while work mode was off): its block is due again only while that
+/// anchor stands (`Desk::work_due_again`).
 #[derive(Debug)]
 struct WorkPump {
 	id: String,
-	asked: Option<Asked>,
 	unasked: bool,
-	shown_ms: i64,
-	banked: bool,
+	anchor: Option<i64>,
 }
 
 /// How a Later's bank came back (`Desk::pump_work_later`).
@@ -183,10 +178,15 @@ pub enum Phase {
 
 /// The `work` topic: the switch, whether the first Start's sheet is open and whether it was ever confirmed here
 /// (`started`: a Start then turns work mode on at once), where the clock stands with the whole minutes left (rounded
-/// up) and what holds it, the id of the ask while the block is due (`ask`, which its Pump now and Later send back), the
-/// set (`block` done of `blocks`, the last the long one), Every, and the last Later's refusal (`work.later.reset`,
-/// `work.later.unwell`).
+/// up) and what holds it, the id of the ask while the block is due (`ask`, which its Pump now and Later send back),
+/// whether a work pump stands on this device (`pump`: no other starts beside it, so the tray greys its Pump now, and
+/// the browser's page shows its notification while the one that opened itself stands), Every, and the last Later's
+/// refusal (`work.later.reset`, `work.later.unwell`).
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
+#[expect(
+	clippy::struct_excessive_bools,
+	reason = "the `work` topic's flags, each a yes or no its readers take as it is"
+)]
 pub struct WorkView {
 	pub on: bool,
 	pub sheet: bool,
@@ -198,16 +198,15 @@ pub struct WorkView {
 	pub hold: Option<Hold>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub ask: Option<String>,
-	pub block: u8,
-	pub blocks: u8,
+	pub pump: bool,
 	pub every: u16,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub refused: Option<&'static str>,
 }
 
 /// The `menu.work` topic: the Work mode page's choices (Every among its choices, Moves per block, work mode's own
-/// equipment: `gear`, `floor`, `space`, `quiet`) and the How page's numbers (the set's pumps, the short and long
-/// pump's moves at that pace and the short one's minutes by the game's estimate of a move's time, rounded up).
+/// equipment: `gear`, `floor`, `space`, `quiet`) and the How page's numbers (a work pump's moves at that pace and its
+/// minutes by the game's estimate of a move's time, rounded up).
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub struct MenuWork {
 	pub every: u16,
@@ -215,11 +214,8 @@ pub struct MenuWork {
 	pub pace: String,
 	#[serde(flatten)]
 	pub setup: PlaceSetup,
-	pub blocks: u8,
 	#[serde(skip_serializing_if = "Option::is_none")]
-	pub short: Option<u8>,
-	#[serde(skip_serializing_if = "Option::is_none")]
-	pub long: Option<u8>,
+	pub moves: Option<u8>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub minutes: Option<i64>,
 }
@@ -239,7 +235,7 @@ impl<P: Platform> Desk<P> {
 				self.work_stop();
 				Ok(())
 			}
-			"work.later" => self.work_later(&t, ask),
+			"work.later" => self.work_later(ask),
 			"work.now" => self.work_now(outside, ask),
 			"work.set" => {
 				self.work_choose(intent, &t);
@@ -269,23 +265,23 @@ impl<P: Platform> Desk<P> {
 		self.settings.work.on
 	}
 
-	/// The ask of the block due on this device (its ask standing or waiting for its moment, or held since): none while
-	/// work mode is off, the block still counts, or the anchor moved since the clock's last look.
-	fn work_due(&self) -> Option<Asked> {
+	/// The anchor of the block due on this device (its ask standing or waiting for its moment, or held since): none
+	/// while work mode is off, the block still counts, or the anchor moved since the clock's last look.
+	fn work_due(&self) -> Option<i64> {
 		let w = &self.settings.work;
-		(w.on && self.work.clock.due() == Some(w.reset_at)).then_some(Asked { anchor: w.reset_at, block: w.block })
+		(w.on && self.work.clock.due() == Some(w.reset_at)).then_some(w.reset_at)
 	}
 
-	/// Whether the ask `asked` still stands in the state: work mode on, and the anchor and the set as they were asked.
-	fn work_stands(&self, asked: Asked) -> bool {
+	/// Whether the ask after `anchor` still stands in the state: work mode on, and the anchor as it was asked.
+	fn work_stands(&self, anchor: i64) -> bool {
 		let w = &self.settings.work;
-		w.on && w.reset_at == asked.anchor && w.block == asked.block
+		w.on && w.reset_at == anchor
 	}
 
 	/// Whether an answer naming the ask `ask` (none: the tray's, which names none) comes too late: the ask it names is
 	/// not the one due now.
 	fn work_stale(&self, ask: Option<&str>) -> bool {
-		ask.is_some_and(|ask| self.work_due().map(|due| ask_id(due.anchor)).as_deref() != Some(ask))
+		ask.is_some_and(|ask| self.work_due().map(ask_id).as_deref() != Some(ask))
 	}
 
 	/// The id this device writes as the anchor's mover (`Work::reset_by`): its install id.
@@ -319,21 +315,28 @@ impl<P: Platform> Desk<P> {
 		Ok(())
 	}
 
-	/// Stop: off at once with no confirm, the set started again; a work pump on screen runs on as a pump of its own.
+	/// Stop: off at once with no confirm; a work pump on screen runs on as a pump of its own, still known as work
+	/// mode's (`WorkDesk::pump`), so it holds no clock where work mode starts again under it.
 	fn work_stop(&mut self) {
 		if !self.settings.work.on {
 			return;
 		}
 		let (now, by) = (self.p.now_ms(), self.work_by());
 		self.settings.work.stop(now, &by);
-		self.work = WorkDesk { mark: self.work.mark, ..WorkDesk::default() };
+		self.work_off();
 		::log::info!("work mode: off");
 		self.work_changed();
 	}
 
-	/// Pump now (the ask's, Pump home's, the tray's): the set's next work pump, the ask answered. On the ask while the
-	/// block is due; the tray's while it still counts is a pump of its own for the clock (`work_pump_ended`). One naming
-	/// an ask that stands no more starts nothing and writes nothing.
+	/// Work mode went off (Stop, another device's): this device's clock, ask and opening go, the stores' mark and the
+	/// work pump on screen stay.
+	fn work_off(&mut self) {
+		self.work = WorkDesk { mark: self.work.mark, pump: self.work.pump.take(), ..WorkDesk::default() };
+	}
+
+	/// Pump now (the ask's, Pump home's, the tray's): a work pump, whose coming moves the anchor (`work_pump_shown`),
+	/// on the ask while the block is due and from the tray while it still counts alike. One naming an ask that stands
+	/// no more starts nothing and writes nothing.
 	fn work_now(&mut self, outside: bool, ask: Option<&str>) -> Result<(), String> {
 		if !self.settings.work.on {
 			return Err("work mode is off".to_owned());
@@ -346,56 +349,62 @@ impl<P: Platform> Desk<P> {
 			return Ok(());
 		}
 		let due = self.work_due();
-		let noted = std::mem::replace(&mut self.work.asked, due);
 		self.work.refused = None;
 		let started = self.pump_ask(Start::Work, outside);
+		// a start refused (a pump on screen or being made already, a gate) leaves the ask standing
 		if started.is_ok() {
 			// the ask is answered, and a pump started for a due block is that block's one opening (`work_open`)
 			self.work.clock.answered();
-			if let Some(due) = due {
-				self.work.open.done = Some(due.anchor);
+			if due.is_some() {
+				self.work.open.done = due;
 			}
-		} else {
-			// a start refused (a pump on screen or being made already, a gate) leaves the ask standing and the ask that
-			// pump answers as it was noted
-			self.work.asked = noted;
 		}
 		self.work_publish();
 		started
 	}
 
-	/// The ask's pump opens itself (each look while the ask stands): the set's work pump at its Ready view from outside
-	/// the window, which comes to the front for it, once for a due block (`Opening::done`: a pump left with nothing done
-	/// or banked leaves the block due on Pump home and in the tray). Never while nobody is there (no input for
-	/// `sit_away_s`: it opens at the return), and not between two keystrokes: it waits for the input to pause
-	/// `OPEN_PAUSE_S`, at most `work_late_s`, so the window takes no key meant for another app. A start a gate refuses
-	/// (the engine not folded yet) is tried again at the next look, said once in the log; one accepted whose pump never
-	/// comes (the place window first, a compose that makes no move) leaves the block due with nothing opened again.
+	/// The ask's pump opens itself (each look while the ask stands): a work pump at its Ready view from outside the
+	/// window, which comes to the front for it, once for a due block (`Opening::done`). Never while nobody is there (no
+	/// input for `sit_away_s`: it opens at the return), and not between two keystrokes: it waits for the input to pause
+	/// `OPEN_PAUSE_S`, at most `work_late_s`, so the window takes no key meant for another app. The pump still on
+	/// screen (the last block's work pump, left open past this block, or any pump's Result) makes way first, once no
+	/// move runs in it and no count or answer is waited for (`Desk::pump_make_way`: tried again at each look while
+	/// one is) and only for a start no gate refuses; a Result stands `work_moment_s` before it does, so a pump finished
+	/// after this block came due still shows what it earned. A start a gate refuses (the engine not folded yet) is
+	/// tried again at the next look, said once in the log; one accepted whose pump never comes (the place window
+	/// first, a compose that makes no move) leaves the block due with nothing opened again.
 	fn work_open(&mut self, now: i64, idle_s: Option<u32>, t: &Tunables) {
-		let Some(due) = self.work_due().filter(|due| self.work.open.done != Some(due.anchor)) else { return };
+		let Some(due) = self.work_due().filter(|&due| self.work.open.done != Some(due)) else { return };
 		let idle = idle_s.map(i64::from);
 		if idle.is_some_and(|s| s >= sitting::away_s()) {
 			return;
 		}
 		if idle.is_some_and(|s| s < OPEN_PAUSE_S) {
 			let since = match self.work.open.waits {
-				Some((anchor, since)) if anchor == due.anchor => since,
+				Some((anchor, since)) if anchor == due => since,
 				_ => now,
 			};
-			self.work.open.waits = Some((due.anchor, since));
+			self.work.open.waits = Some((due, since));
 			if now - since < t.late_s {
 				return;
 			}
 		}
-		let ask = ask_id(due.anchor);
+		if self.pump_ended_at().is_some_and(|at| now - at.div_euclid(1_000) < t.moment_s) {
+			return;
+		}
+		if self.start_gate(&Start::Work).is_none() && !self.pump_make_way() {
+			return;
+		}
+		let ask = ask_id(due);
 		match self.work_now(true, Some(&ask)) {
 			Ok(()) => {
 				self.work.open.unasked = true;
+				self.pump_unasked();
 				::log::info!("work mode: the pump opens itself ({ask})");
 				self.p.work_opened(&ask);
 			}
-			Err(e) if self.work.open.refused != Some(due.anchor) => {
-				self.work.open.refused = Some(due.anchor);
+			Err(e) if self.work.open.refused != Some(due) => {
+				self.work.open.refused = Some(due);
 				::log::info!("work mode: the pump does not open yet: {e}");
 			}
 			Err(_) => {}
@@ -404,18 +413,35 @@ impl<P: Platform> Desk<P> {
 
 	/// The player went away (no input for `sit_away_s`) from a work pump that opened itself and still waits untouched
 	/// on its Ready view: it ends with nothing written, so a pump nobody saw keeps no screen awake and holds no
-	/// restart, update or match offer back, and its block's mark goes, so the pump opens again at the return.
-	fn work_unattended(&mut self) {
-		let Some(id) = self.work.pump.as_ref().filter(|p| p.unasked).map(|p| p.id.clone()) else { return };
+	/// restart, update or match offer back, and its block is due again from `now` (unix seconds), so the pump opens
+	/// again at the return.
+	fn work_unattended(&mut self, now: i64) {
+		let Some((id, anchor)) = self.work.pump.as_ref().filter(|p| p.unasked).map(|p| (p.id.clone(), p.anchor)) else {
+			return;
+		};
 		if self.pump_end_untouched(&id) {
 			::log::info!("work mode: nobody at the pump that opened itself; it closes until the return");
-			self.work.open.done = None;
+			self.work_due_again(now, anchor);
 		}
 	}
 
-	/// Later on the ask while the block is due: its work pump banked with no screen (`pump_work_later`), its block
-	/// counted once it is (`work_later_ended`). One naming an ask that stands no more banks nothing and writes nothing.
-	fn work_later(&mut self, t: &Tunables, ask: Option<&str>) -> Result<(), String> {
+	/// The block whose work pump left with nothing for it (the felt-unwell lock ended it, or it closed untouched with
+	/// nobody there) is due again from `now` (unix seconds): the clock stands due after the anchor that pump's coming
+	/// wrote (`anchor`) and no opening is marked, so its pump comes again once nothing holds the clock and the player
+	/// is there. Nothing where the anchor moved since (a pump done on another device or in the game): that move starts
+	/// the count again, as it drops any block that is due.
+	fn work_due_again(&mut self, now: i64, anchor: Option<i64>) {
+		if !self.settings.work.on || anchor != Some(self.settings.work.reset_at) {
+			return;
+		}
+		self.work.clock = Clock::due_from(self.settings.work.reset_at, now);
+		self.work.open = Opening::default();
+		self.work_keep_due();
+	}
+
+	/// Later on the ask while the block is due: a work pump banked with no screen (`pump_work_later`), the anchor moved
+	/// once it is (`work_later_ended`). One naming an ask that stands no more banks nothing and writes nothing.
+	fn work_later(&mut self, ask: Option<&str>) -> Result<(), String> {
 		if !self.settings.work.on {
 			return Err("work mode is off".to_owned());
 		}
@@ -426,17 +452,17 @@ impl<P: Platform> Desk<P> {
 			::log::info!("work mode: Later on an ask that stands no more: nothing written");
 			return Ok(());
 		}
-		let asked = self.work_due().ok_or("work mode: no work pump is due")?;
+		let anchor = self.work_due().ok_or("work mode: no work pump is due")?;
 		let at = self.p.now_ms().div_euclid(1_000);
 		let facts = self.work_facts(at).ok_or("work mode: no work pump now")?;
 		// this Later's own end says what it banked, never an earlier one's refusal
 		self.work.refused = None;
-		self.work.later = Some(asked);
+		self.work.later = Some(anchor);
 		if let Err(e) = self.pump_work_later(facts) {
 			self.work.later = None;
 			return Err(e);
 		}
-		::log::info!("work mode: Later, pump {} of {}", facts.block, t.set_blocks);
+		::log::info!("work mode: Later");
 		// the ask goes while it banks (`work_later_ended` puts it back where nothing could be banked)
 		self.work.clock.answered();
 		self.work_publish();
@@ -445,7 +471,7 @@ impl<P: Platform> Desk<P> {
 
 	/// Whether the ask the Later being banked answers still stands (`pump_work_later` banks only then).
 	pub(crate) fn work_later_stands(&self) -> bool {
-		self.work.later.is_some_and(|asked| self.work_stands(asked))
+		self.work.later.is_some_and(|anchor| self.work_stands(anchor))
 	}
 
 	/// Whether a reset (a Start over, `Store::floor`) came since the block the Later answers came due (now where the
@@ -456,17 +482,17 @@ impl<P: Platform> Desk<P> {
 		self.session.store().floor().is_some_and(|floor| i64::from(floor) >= due_at)
 	}
 
-	/// A Later's bank came back, and Later never claims a bank it could not make: banked, its block counted; refused by
-	/// the felt-unwell lock, its words shown and no block (the lock holds the clock); refused by a reset since the block
-	/// came due, its words shown, the block as it was and the count started over; an engine that composed nothing or a
+	/// A Later's bank came back, and Later never claims a bank it could not make: banked, the anchor moved to now;
+	/// refused by the felt-unwell lock, its words shown and nothing moved (the lock holds the clock); refused by a reset
+	/// since the block came due, its words shown and the count started over; an engine that composed nothing or a
 	/// pump with no move to bank, the ask standing still with its Pump now and Later (logged, no words, no move of the
 	/// clock); the ask gone while it composed, nothing.
 	pub(crate) fn work_later_ended(&mut self, end: LaterEnd) {
 		let asked = self.work.later.take();
 		match end {
-			LaterEnd::Banked => match asked.filter(|&asked| self.work_stands(asked)) {
-				Some(_) => self.work_block_done(None),
-				None => ::log::info!("work mode: Later banked as its ask went: no block"),
+			LaterEnd::Banked => match asked.filter(|&anchor| self.work_stands(anchor)) {
+				Some(_) => self.work_anchor(),
+				None => ::log::info!("work mode: Later banked as its ask went: the anchor stays"),
 			},
 			LaterEnd::Refused(CatchupError::Locked(_)) => {
 				self.work.refused = Some("work.later.unwell");
@@ -519,91 +545,52 @@ impl<P: Platform> Desk<P> {
 		}
 	}
 
-	/// What a work pump composes with at unix second `at` (the engine's `work`): the set's next place, and its warm move
-	/// once this device's sitting clock held `work_warm_min`, counted from the later of the last move done (any
-	/// device's rows this computer holds) and this device's latest time away or walk (`Platform::seated_s`); Start and
-	/// Later start nothing for it (slice 67's R6).
+	/// What a work pump composes with at unix second `at` (the engine's `work`): its warm move once this device's
+	/// sitting clock held `work_warm_min`, counted from the later of the last move done (any device's rows this
+	/// computer holds) and this device's latest time away or walk (`Platform::seated_s`); Start and Later start nothing
+	/// for it (slice 67's R6).
 	pub(crate) fn work_facts(&self, at: i64) -> Option<questpump_engine::Work> {
 		let t = work::tunables()?;
-		Some(questpump_engine::Work {
-			block: self.settings.work.next_block(&t),
-			warm: self.p.seated_s(at, self.last_move_at()) >= t.warm_min.saturating_mul(60),
-		})
+		Some(questpump_engine::Work { warm: self.p.seated_s(at, self.last_move_at()) >= t.warm_min.saturating_mul(60) })
 	}
 
-	/// The work pump of the set came on screen: it answers the ask `work_now` noted, and its end counts the block.
+	/// A work pump came on screen: the anchor moves to this moment, so the next block counts from its coming whatever
+	/// is then done with it, and it stands as the pump the next block's takes the place of (`work_open`). One that
+	/// comes after a Stop is a pump of its own and moves nothing.
 	pub(crate) fn work_pump_shown(&mut self, id: &str) {
-		let (asked, unasked) = (self.work.asked.take(), std::mem::take(&mut self.work.open.unasked));
-		let shown_ms = self.p.now_ms();
-		self.work.pump = Some(WorkPump { id: id.to_owned(), asked, unasked, shown_ms, banked: false });
-		self.work.ended = None;
+		let unasked = std::mem::take(&mut self.work.open.unasked);
+		let on = self.settings.work.on;
+		if on {
+			self.work.refused = None;
+			self.work_anchor();
+		}
+		let anchor = on.then_some(self.settings.work.reset_at);
+		self.work.pump = Some(WorkPump { id: id.to_owned(), unasked, anchor });
+		self.work_publish();
 	}
 
 	/// A pump ended on this device (`pump_finish`), with a move saved (`saved`) or none, felt unwell ending it or not,
-	/// while work mode is on: the set's work pump on its ask counts its block where it saved a move or banked its moves
-	/// while that ask still stood, and writes nothing otherwise (left with nothing done or banked, ended for felt
-	/// unwell: the ask stays due; the ask gone meanwhile); any other pump with a move saved moves the anchor alone, a
-	/// work pump started while no ask stood among them. One left with nothing done or banked is noted (`ended`), so a
-	/// bank written right after its end still counts it.
+	/// while work mode is on: a work pump's end writes nothing, its coming having moved the anchor, but one felt unwell
+	/// ended leaves its block due again, so its pump opens again once the lock lifts and the player is there; any other
+	/// pump with a move saved moves the anchor to now.
 	pub(crate) fn work_pump_ended(&mut self, id: &str, saved: bool, unwell: bool) {
 		let pump = self.work.pump.take_if(|p| p.id == id);
-		self.work.ended = None;
 		if !self.settings.work.on {
 			return;
 		}
-		match pump.and_then(|p| Some((p.asked?, p.shown_ms, p.banked))) {
-			Some((asked, shown_ms, banked)) => {
-				if unwell {
-					::log::info!("work mode: the work pump ended for felt unwell: the ask stays due");
-					// its pump opens again once the lock lifts and the player is there
-					self.work.open.done = None;
-				} else if !(saved || banked) {
-					::log::info!("work mode: the work pump ended with nothing done or banked: the ask stays due");
-					self.work.ended = Some((id.to_owned(), asked, shown_ms));
-				} else if !self.work_stands(asked) {
-					::log::info!("work mode: the work pump's ask stands no more: nothing written");
-				} else {
-					self.work_block_done(Some(shown_ms));
-				}
+		match pump {
+			Some(pump) if unwell => {
+				::log::info!("work mode: the work pump ended for felt unwell: its block is due again");
+				let now = self.p.now_ms().div_euclid(1_000);
+				self.work_due_again(now, pump.anchor);
 			}
 			None if saved => self.work_anchor(),
-			None => {}
+			Some(_) | None => {}
 		}
 	}
 
-	/// A bank written (`pump_write_bank`): the set's work pump's (its Bank all, a short move's alone under
-	/// `<id>~s<slot>`) has banked its moves, which its end counts as done; one written right after the work pump ended
-	/// on its ask with nothing done (QuestPump's quit banks its moves left after the end, `pump_quit`) counts its block
-	/// as that end would have, while its ask stands.
-	pub(crate) fn work_banked(&mut self, bank_id: &str) {
-		let id = bank_id.split_once('~').map_or(bank_id, |(id, _)| id);
-		if let Some(pump) = self.work.pump.as_mut().filter(|p| p.id == id) {
-			pump.banked = true;
-		} else if let Some((_, asked, shown_ms)) = self.work.ended.take_if(|(ended, ..)| ended == id) {
-			if self.work_stands(asked) {
-				self.work_block_done(Some(shown_ms));
-			} else {
-				::log::info!("work mode: the work pump's ask stands no more: nothing written");
-			}
-		}
-	}
-
-	/// The set's block done here (a work pump on its ask, a Later banked): one block more, the anchor moved and the
-	/// clock counting again from it. A work pump's anchor is the moment it came on screen (`shown_ms`), so the next
-	/// block holds the pump's own minutes, or now where Every already passed since it came (it waited or ran that long:
-	/// the next pump never follows it at once); a Later's is now.
-	fn work_block_done(&mut self, shown_ms: Option<i64>) {
-		let Some(t) = work::tunables() else { return };
-		let (now, by) = (self.p.now_ms(), self.work_by());
-		let every_ms = i64::from(self.settings.work.every_min) * 60_000;
-		let at = shown_ms.filter(|&shown| now - shown < every_ms).map_or(now, |shown| shown.min(now));
-		self.settings.work.block_done(at, &by, &t);
-		self.work.refused = None;
-		self.work.clock.answered();
-		self.work_changed();
-	}
-
-	/// The anchor alone moved here now (a pump done, a Later a reset refused): the clock counts again from it.
+	/// The anchor moved here now (a work pump's coming, a Later banked or one a reset refused, another pump done): the
+	/// clock counts again from it.
 	fn work_anchor(&mut self) {
 		let (now, by) = (self.p.now_ms(), self.work_by());
 		self.settings.work.anchor(now, &by);
@@ -628,7 +615,7 @@ impl<P: Platform> Desk<P> {
 		}
 		::log::info!("work mode: another device's state taken (on: {})", self.settings.work.on);
 		if was_on && !self.settings.work.on {
-			self.work = WorkDesk { mark: self.work.mark, ..WorkDesk::default() };
+			self.work_off();
 		}
 		self.work_changed();
 		true
@@ -667,8 +654,10 @@ impl<P: Platform> Desk<P> {
 			return;
 		}
 		let idle_s = self.p.idle_s();
-		if idle_s.is_some_and(|s| i64::from(s) >= sitting::away_s()) {
-			self.work_unattended();
+		// nobody was there: no input for `sit_away_s`, or no look for as long (the computer slept through it)
+		let slept = self.work.looked.replace(now).is_some_and(|at| now - at >= sitting::away_s());
+		if slept || idle_s.is_some_and(|s| i64::from(s) >= sitting::away_s()) {
+			self.work_unattended(now);
 		}
 		let hold = self.work_hold(now);
 		if hold != self.work.held {
@@ -681,7 +670,7 @@ impl<P: Platform> Desk<P> {
 		let seen = Seen { now, anchor_ms: self.settings.work.reset_at, idle_s, hold };
 		let state = self.work.clock.look(&seen, self.settings.work.every_min, &t);
 		if state == (State::Ask { new: true }) {
-			::log::info!("work mode: pump {} of {} asks", self.settings.work.next_block(&t), t.set_blocks);
+			::log::info!("work mode: a pump is due and asks");
 			// a new ask lets a refused Later's words go
 			self.work.refused = None;
 		}
@@ -711,7 +700,7 @@ impl<P: Platform> Desk<P> {
 	}
 
 	/// The due block as the settings keep it (`Settings::work_due`): the clock's, or the one kept across a restart while
-	/// it waits (`work_kept`), while work mode is on and its anchor is the state's (none once a block done or a heard
+	/// it waits (`work_kept`), while work mode is on and its anchor is the state's (none once a work pump's coming or a heard
 	/// state moved it).
 	fn work_due_kept(&self) -> Option<WorkDue> {
 		let w = &self.settings.work;
@@ -749,11 +738,13 @@ impl<P: Platform> Desk<P> {
 		}
 	}
 
-	/// What holds the work clock on this device now: a pump open or being made, the felt-unwell lock, what the platform
-	/// reads (a call, presenting, full screen, a game in front, World of Warcraft's window among them), a match's offer
-	/// standing or the game's quest pump open, the player's quiet hours.
+	/// What holds the work clock on this device now: a pump of another kind open, any pump being made or a Later being
+	/// banked, the felt-unwell lock, what the platform reads (a call, presenting, full screen, a game in front, World of
+	/// Warcraft's window among them), a match's offer standing or the game's quest pump open, the player's quiet hours.
+	/// A work pump on screen holds nothing: its coming moved the anchor, and the next block counts on while it stands.
 	fn work_hold(&self, now: i64) -> Option<Hold> {
-		if self.pump_running() || self.pump_starting() || self.work.later.is_some() {
+		let other = self.pump_running() && self.work.pump.is_none();
+		if other || self.pump_starting() || self.work.later.is_some() {
 			return Some(Hold::Pump);
 		}
 		if self.session.locked_until(now).is_some() {
@@ -794,23 +785,20 @@ impl<P: Platform> Desk<P> {
 			phase,
 			left_min: left_s.map(|s| (s + 59) / 60),
 			hold,
-			ask: self.work_due().map(|due| ask_id(due.anchor)),
-			block: w.block,
-			blocks: t.set_blocks,
+			ask: self.work_due().map(ask_id),
+			pump: self.work.pump.is_some(),
 			every: w.every_min,
 			refused: self.work.refused,
 		};
-		let moves = work::block_moves(&w.pace);
+		let moves = work::pump_moves(&w.pace);
 		let menu = MenuWork {
 			every: w.every_min,
 			choices: t.every_choices,
 			pace: w.pace.clone(),
 			setup: w.setup(),
-			blocks: t.set_blocks,
-			short: moves.map(|m| m.0),
-			long: moves.map(|m| m.1),
+			moves,
 			minutes: moves
-				.map(|m| (i64::from(m.0) * facts().constants().move_estimate_s + 59) / 60)
+				.map(|m| (i64::from(m) * facts().constants().move_estimate_s + 59) / 60)
 				.filter(|&min| min > 0),
 		};
 		self.publisher.publish(TOPIC, &view);

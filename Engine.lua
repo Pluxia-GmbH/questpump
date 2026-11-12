@@ -377,7 +377,7 @@ local function context(input)
 		rung = {}, rungMove = {}, belowMove = {}, down = {}, open = {}, why = {},
 		used = { moves = {}, regions = {}, families = {}, placement = false }, marked = {},
 		-- slice 48's match pump: its first move warms up (input.warm) and it keeps the arms rest (input.arms); slice 67's
-		-- work pump (input.work = { block }: its place in the set) at the desk, with no all-out effort of its own or owed
+		-- work pump (input.work, a table: { warm }) at the desk, with no all-out effort of its own (an owed one rides)
 		warm = input.warm == true, arms = input.arms == true, work = input.work }
 	-- an expedition's round (slice 51): the regions its earlier rounds' own record moves took stay taken, so one record
 	-- move a region across the expedition (ns.RoundRegions)
@@ -436,31 +436,53 @@ local function context(input)
 		ctx.blocks[block] = (counts and counts.blocks and counts.blocks[block] or 0)
 			+ (before and before.blocks and before.blocks[block] or 0)
 	end
-	-- the moves the queue holds, as taken (David, 2026-10-04: an hour in a mixed party owed the standing quad stretch
-	-- on 13 of 14 turn-ins and a record attempt on every one, because an owed move is never performed and the fold
-	-- moves no clock for it): a fresh pick never takes one, its owed copy rides instead (so an owed pump never stacks a
-	-- second copy, nor the move an owed backup rides as: ridesAs, marked with that row's key, so a move started from a
-	-- step's card that pays the row as itself still takes it as Swap's backup, backupMove); one owed this game day or
-	-- the one before counts in its block's share (once: take skips it when it rides); one on a strength ladder or a pose
-	-- family is that ladder's or family's turn (lastTurn)
-	ctx.owed, ctx.turn, ctx.owedCounted, ctx.standIn = {}, {}, {}, {}
+	-- the moves the queue holds, as sets done when they were banked (David, 2026-10-04: an hour in a mixed party owed
+	-- the standing quad stretch on 13 of 14 turn-ins and a record attempt on every one, because an owed move is never
+	-- performed and the fold moves no clock for it; 2026-10-16: "Generally the banked moves should be treated as if
+	-- they were done for the future picks"). Each moves the clocks the picks read, dated its owed row, and none is held
+	-- out of the fresh picks (until 2026-11-11 a fresh pick never took one, whatever its age: Rapha's 15 unfinished
+	-- moves, some a week old, held the one-arm row and the deadlift with a weight, and three of the squat ladder's
+	-- moves, out of every pump he stopped after its own moves, "if unfinished is 10 excercises this will happen to
+	-- anyone"): one owed this game day is a set of its move that day (ctx.banked, the rotation's count: came), under
+	-- its own move and the move an owed backup rides as (ridesAs); one owed this game day or the one before counts in
+	-- its block's share (once: take skips it when it rides); one on a strength ladder or a pose family is that
+	-- ladder's or family's turn (lastTurn); one that stands for its strength ladder's rung is the ladder's anchor
+	-- attempt (ctx.attempt: ladderDue), and while that attempt would be a placement, which no clock stands for, its
+	-- ladder's anchor waits for it (placementHeld). ctx.owed, the queue's moves and the moves they ride as (marked
+	-- with that row's key, so a move started from a step's card that pays the row as itself still takes it as Swap's
+	-- backup, backupMove), is left to the Trial and to Swap, whose pump's riders are set already
+	ctx.owed, ctx.turn, ctx.owedCounted, ctx.standIn, ctx.banked, ctx.attempt = {}, {}, {}, {}, {}, {}
 	local yesterday = ns.day(ns.DayMid(now, -1))
 	for _, r in ipairs(ns.OwedList(state)) do
 		ctx.owed[r.move] = true
 		local as = ridesAs(ctx, r)
 		if as and not ctx.owed[as] then ctx.owed[as] = r.key end
 		local day = ns.day(r.ts)
+		if day == ctx.day then
+			ctx.banked[r.move] = (ctx.banked[r.move] or 0) + 1
+			if as then ctx.banked[as] = (ctx.banked[as] or 0) + 1 end
+		end
 		if ns.Library[r.move] and (day == ctx.day or day == yesterday) then
 			local block = ns.Block(r.move)
 			ctx.blocks[block] = ctx.blocks[block] + 1
 			ctx.owedCounted[r.key] = true
 		end
+		local l = r.ladder
 		local record = r.kind == K.rep or r.kind == K.hold
-		if (record and ns.STRENGTH[r.ladder]) or (r.kind == K.flow and ns.POSE[r.ladder]) then
-			ctx.turn[r.ladder] = math.max(ctx.turn[r.ladder] or 0, r.ts)
+		if (record and ns.STRENGTH[l]) or (r.kind == K.flow and ns.POSE[l]) then
+			ctx.turn[l] = math.max(ctx.turn[l] or 0, r.ts)
+		end
+		if record and ns.STRENGTH[l] and r.rung == ctx.rung[l] and ns.StandsFor(l, r.rung, as or r.move) then
+			ctx.attempt[l] = math.max(ctx.attempt[l] or 0, r.ts)
 		end
 	end
 	return ctx
+end
+
+-- How often a move came this game day: its sets, and its copies the queue holds from that day (ctx.banked), which the
+-- rotation and the turns that yield once their move came read as sets.
+local function came(ctx, id)
+	return (ctx.done[id] or 0) + (ctx.banked[id] or 0)
 end
 
 local function hoursSince(ts, now)
@@ -485,6 +507,8 @@ local function ladderDue(ctx, l)
 		if lad and lad.standTs and ctx.rungMove[l] ~= ns.Anchor(l, ctx.rung[l]) and lad.standTs > (ts or 0) then
 			ts = lad.standTs
 		end
+		-- and a later attempt the queue holds, banked (context)
+		if ctx.attempt[l] and ctx.attempt[l] > (ts or 0) then ts = ctx.attempt[l] end
 	end
 	local h = hoursSince(ts, ctx.now)
 	if not h then return 1, math.huge, math.huge end
@@ -540,10 +564,21 @@ end
 -- the same move on another surface never comes back as a new move with a first max set (David, 2026-10-29, after the
 -- walkout on the bed came once the walkout was at its top: "Why is that a new exercise?"). A loaded move stays, another
 -- exercise whose progress is the weight (the deadlift with a weight beside the floor's single-leg bridge), and so does
--- a move the player stepped down to, until a set clears its mark.
+-- a move the player stepped down to, until a set clears its mark. The move that stands for the rung below with this
+-- setup is a backup too where the player has never done it and holds a record on another move of that rung's chain
+-- (2026-11-11): they climbed the rung on that one, at another place or before a piece went, so the stand-in here is
+-- the same rung on another surface (David, at the computer, whose place names no table, standing on the one-arm
+-- doorframe row after the table row: "I don't understand the one arm doorframe row, feet back. whats the difference
+-- to what i usually do?"). One they have done comes as any move of the rung below, until its record holds its top.
 local function belowBackup(ctx, l, rung, id)
 	local rec = ctx.state.moves[id]
-	return id ~= ctx.belowMove[l] and not ns.Loaded(id) and ns.InChain(l, rung - 1, id) and not (rec and rec.easier)
+	if ns.Loaded(id) or not ns.InChain(l, rung - 1, id) or (rec and rec.easier) then return false end
+	if id ~= ctx.belowMove[l] then return true end
+	if ns.Record(ctx.state, id) ~= nil then return false end
+	for _, other in ipairs(ns.RungChain(l, rung - 1)) do
+		if other ~= id and ns.Record(ctx.state, other) ~= nil then return true end
+	end
+	return false
 end
 
 -- Every move that passed the hard filters and the rung rule and that the player has not stepped down from
@@ -576,6 +611,7 @@ local function candidates(ctx)
 		local lad = state.ladders[l]
 		local id0 = ctx.rungMove[l]
 		local opened = lad and lad.opened and ns.day(lad.opened) ~= ctx.day and id0 and not state.moves[id0]
+			and not ctx.attempt[l] -- one the queue holds is its attempt (context)
 		if opened and due < 1 then due, overdue, waited = 1, hoursSince(lad.opened, ctx.now), 0 end
 		local variants = lad and lad.placedTs and not placing
 		local turn, holder
@@ -627,7 +663,7 @@ local function candidates(ctx)
 			end
 			-- once it came this game day it yields for the rest of it (2026-10-31): a path move's set moves no anchorTs
 			-- (ladderDue), so an overdue turn was forced in every pump of the day
-			if (ctx.done[turn] or 0) > 0 then
+			if came(ctx, turn) > 0 then
 				c.due, c.turn, c.overdue, c.waited = 0, true, 0, 0
 			else
 				c.due, c.turn, c.overdue, c.waited = due, true, overdue, waited
@@ -669,6 +705,8 @@ local function candidates(ctx)
 			turn = ns.PathTurn(state, l, f, rung)
 		end
 		local mark = not turn and ns.DuePose(state, l, f, ctx.now)
+		-- banked this game day it came (context): one more pose of the family for the rest of the day
+		if mark and (ctx.banked[mark] or 0) > 0 then mark = nil end
 		if mark then
 			addCandidate(list, mark, { ladder = l, rung = rung, due = 1, anchor = true, overdue = overdue,
 				waited = waited })
@@ -692,7 +730,7 @@ local function candidates(ctx)
 				c = { ladder = l, rung = ns.Library[turn].rung }
 				addCandidate(list, turn, c)
 			end
-			if (ctx.done[turn] or 0) > 0 then
+			if came(ctx, turn) > 0 then
 				c.due, c.turn, c.overdue, c.waited = 0, true, 0, 0
 			else
 				c.due, c.turn, c.overdue, c.waited = 1, true, overdue, waited
@@ -720,7 +758,7 @@ local function candidates(ctx)
 	for _, h in ipairs(held) do
 		for _, x in ipairs(list) do
 			if x.move == h.move then
-				if (ctx.done[h.move] or 0) == 0 then
+				if came(ctx, h.move) == 0 then
 					x.turn, x.due = true, math.max(x.due, h.due)
 					x.overdue, x.waited = x.overdue or h.overdue, x.waited or h.anchor.waited
 				end
@@ -768,6 +806,13 @@ local function placementLadder(ctx, l)
 	if not ns.STRENGTH[l] then return false end
 	local lad = ctx.state.ladders[l]
 	return not (lad and lad.placedTs) or ns.Placing(ctx.state, l, ctx.now)
+end
+
+-- An anchor whose placement the queue holds (ctx.attempt, context): no clock stands for a first max set or a break's,
+-- so the ladder's anchor waits until that one is done or skipped, as it did while every owed move was held out of the
+-- picks; a pump offered again on every turn-in would bank the same placement again.
+local function placementHeld(ctx, c)
+	return c.anchor == true and ctx.attempt[c.ladder] ~= nil and placementLadder(ctx, c.ladder)
 end
 
 -- Why a pick leaves a candidate out of this pump: the move, or one of the pump's own record moves of its region, is in
@@ -954,14 +999,14 @@ local function pick(ctx, q, opts, roll)
 	-- ankle rocks eight times in three days and yoga twice)
 	local fewest
 	for _, c in ipairs(pool) do
-		local n = ctx.done[c.move] or 0
+		local n = came(ctx, c.move)
 		if not fewest or n < fewest then fewest = n end
 	end
 	-- the overload engine below looks at the moves the variety rules leave (scored, for /qp why), so the rotation and
 	-- the favourites never take a due anchor's record attempt
 	local rules = pool
 	for _, c in ipairs(rules) do score(ctx, c, fit, themes) end
-	pool = prefer(pool, function(c) return (ctx.done[c.move] or 0) == fewest end)
+	pool = prefer(pool, function(c) return came(ctx, c.move) == fewest end)
 	-- then the player's favourites (the sheet's move menu): among the moves the rules leave, the marked ones first;
 	-- then a cardio slot's fair draw and a core slot's four winds (slice 54)
 	pool = prefer(pool, function(c) return ctx.f.favourites[c.move] == true end)
@@ -1028,10 +1073,11 @@ end
 -- What a move the pump holds leaves to the picks after it. An owed rider (`c.owed`) holds no region (David, 2026-10-16:
 -- "Generally the banked moves should be treated as if they were done for the future picks"): it rides every pump until
 -- it is done, so while it held its region a run of banked pumps shut every later pump's record moves out, four banked
--- record moves on the four regions all of them, and a done move holds none either.
+-- record moves on the four regions all of them, and a done move holds none either. Nor does it hold its move
+-- (2026-11-11, context): the pump's own picks may take it, and the rider then waits for a later pump (notOwn).
 local function take(ctx, c, counted)
 	local m = ns.Library[c.move]
-	ctx.used.moves[c.move] = true
+	if not c.owed then ctx.used.moves[c.move] = true end
 	local block = ns.Block(c.move)
 	if not counted then ctx.blocks[block] = ctx.blocks[block] + 1 end -- an owed move of the plan's days counts already
 	if c.anchor and placementLadder(ctx, c.ladder) then ctx.used.placement = true end
@@ -1048,7 +1094,7 @@ local function cardioTurn(ctx)
 	local state, f, rung = ctx.state, ctx.f, ctx.cardioRung
 	if not (ns.CountedRung(rung, f) and ns.CanRungUp(ns.CARDIO, rung, f, state)) then return nil end
 	local turn = ns.PathTurn(state, ns.CARDIO, f, rung)
-	if turn and (ctx.done[turn] or 0) > 0 then return nil end
+	if turn and came(ctx, turn) > 0 then return nil end
 	return turn
 end
 
@@ -1067,8 +1113,7 @@ local function finisherMove(ctx, q, roll, minRung, taken)
 	local list = {}
 	for id, m in pairs(ns.Library) do
 		if m.finisher and m.finisher <= ctx.cardioRung and (not minRung or m.finisher >= minRung)
-			and jumpReady(ctx, m) and ns.Passes(id, ctx.f) and not ctx.used.moves[id]
-			and not ctx.owed[id] and isOpen(ctx, id) then
+			and jumpReady(ctx, m) and ns.Passes(id, ctx.f) and not ctx.used.moves[id] and isOpen(ctx, id) then
 			list[#list + 1] = { move = id, ladder = ns.CARDIO, rung = ctx.cardioRung, due = ladderDue(ctx, ns.CARDIO) }
 		end
 	end
@@ -1081,10 +1126,10 @@ local function finisherMove(ctx, q, roll, minRung, taken)
 	end)
 	local fewest
 	for _, c in ipairs(list) do
-		local n = ctx.done[c.move] or 0
+		local n = came(ctx, c.move)
 		if not fewest or n < fewest then fewest = n end
 	end
-	list = prefer(list, function(c) return (ctx.done[c.move] or 0) == fewest end)
+	list = prefer(list, function(c) return came(ctx, c.move) == fewest end)
 	list = prefer(list, function(c) return not ctx.recentMoves[c.move] end)
 	list = prefer(list, function(c) return not (taken and taken[ns.Library[c.move].pattern]) end)
 	list = prefer(list, function(c) return not ctx.lastPatterns[ns.Library[c.move].pattern] end)
@@ -1122,7 +1167,7 @@ end
 -- The proving window's form (slice 53, 2026-10-23), a step of its own before the window's pick (finisherMove): while
 -- the proving is due (ns.Proving: the counted step's clean days and path in, the first counted window of a new session
 -- by the night rule), the step above's own countable form the filters pass (ns.ProvingForms), its anchor first, else
--- the one with the fewest sets this game day, never one the pump took or owes; nil where none is due or free. It runs
+-- the one with the fewest sets this game day (came), never one the pump took; nil where none is due or free. It runs
 -- one rung up, inside the rung rule, as a counted set at the player's rung: the fold reads a counted row one rung above
 -- its row's rung as the proving (DB.lua cardioMove), and its Yes, to the end writes the climb (ns.Progression).
 -- Returns it and the forms it was picked from.
@@ -1131,12 +1176,12 @@ local function provingMove(ctx)
 	local forms, best = ns.ProvingForms(ctx.state, ctx.cardioRung, ctx.f), nil
 	local anchor = ns.Anchor(ns.CARDIO, ctx.cardioRung + 1)
 	for _, id in ipairs(forms) do
-		if not (ctx.used.moves[id] or ctx.owed[id]) then
+		if not ctx.used.moves[id] then
 			if id == anchor then
 				best = id
 				break
 			end
-			if not best or (ctx.done[id] or 0) < (ctx.done[best] or 0) then best = id end
+			if not best or came(ctx, id) < came(ctx, best) then best = id end
 		end
 	end
 	if not best then return nil end
@@ -1200,11 +1245,13 @@ function ns.PainRest(state, profile, moves, from, now)
 	return rest
 end
 
--- A flow move's seconds: its own, on each side of a side move (the two sides run one after the other).
+-- A flow move's seconds: its own, on each side of a side move (the two sides run one after the other). An unfinished
+-- row that reads as its timed move carries them too (DB.lua timedNow).
 local function flowSeconds(id)
 	local m = ns.Library[id]
 	return m.secs * (m.side and 2 or 1)
 end
+ns.FlowSeconds = flowSeconds
 
 -- The pieces of a pose's mark and its ask (markSlot), each of a slot `c` ({ move, ladder, rung }). A goal pose of its
 -- family's step dosed at the player's step (ns.Marks: any of them since slice 47, 2026-10-19, its main pose alone until
@@ -1456,9 +1503,10 @@ local function riderSlot(ctx, r, own)
 	return slot
 end
 
--- A pump with no all-out window at all, its own, the closing rule's or an owed one: the arms rest (ctx.arms, a match
--- pump after an aim game, slice 48) and a work pump (ctx.work, slice 67: 30 s all out at the desk, many times a day,
--- means sweating at work and a loud voice in an open office). The game's own pumps are never calm.
+-- A pump that makes no all-out window of its own, by its quota or by the closing rule: the arms rest (ctx.arms, a
+-- match pump after an aim game, slice 48) and a work pump (ctx.work, slice 67: 30 s all out at the desk, many times a
+-- day, means sweating at work and a loud voice in an open office). The game's own pumps are never calm. An owed
+-- window is another matter (pickRiders): the arms rest lets none ride, a work pump carries it as any pump does.
 local function calm(ctx)
 	return ctx.arms or ctx.work ~= nil
 end
@@ -1467,14 +1515,17 @@ end
 -- them is known), then the all-out windows oldest first, which end the pump as its last efforts in place of the pump's
 -- own window (David, 2026-10-14: "It should just be all coming right after the pump and when im done I can always bank
 -- the rest"; until then only the oldest window rode and any other waited for the pumps after it, so 27 of his 30
--- unfinished moves rode). In a calm pump every owed window waits, as the pump's own has none (slice 61); it is left
--- out before riderSlot takes its move.
+-- unfinished moves rode). In the arms rest every owed window waits, as the pump's own has none (slice 61); it is left
+-- out before riderSlot takes its move. A work pump carries them (2026-11-11; David, after banked jump lunges rode none
+-- of twelve work pumps while the game listed them: "nothing ever showed int eh desktop app"): it makes no window of
+-- its own, but an unfinished one was the player's to bank and is the player's to do, bank again or skip, once, where
+-- the place allows it; until then slice 67 held it for a pump that may hold one.
 local function pickRiders(ctx, owed)
 	local plain, windows = {}, {}
 	for _, r in ipairs(owed or {}) do
 		if not isFinisherRow(r) and riderFits(ctx, r) then plain[#plain + 1] = riderSlot(ctx, r) end
 	end
-	if calm(ctx) then return plain, windows end
+	if ctx.arms then return plain, windows end
 	for _, r in ipairs(owed or {}) do
 		if isFinisherRow(r) and riderFits(ctx, r) then windows[#windows + 1] = riderSlot(ctx, r) end
 	end
@@ -1501,22 +1552,26 @@ end
 -- just done should not come straight after it; "yes build the catch up change"): oldest first, except that a move
 -- owed twice (the move as it plays, an owed backup as the move it rides as, ridesAs) comes again only once every
 -- other move among them has come (David, 2026-11-01, after two banked Bulgarian split squats rode one pump two
--- places apart: "Right after each other. No variety"), and none comes straight after an effort of its own body part
--- (effortPart) while another of them can go there. At each place the oldest of the first of these that holds one
--- goes next: a move not placed yet whose part differs from the effort just before it, a move not placed yet, a part
+-- places apart: "Right after each other. No variety"), none comes straight after an effort of its own body part
+-- (effortPart) while another of them can go there, and a move the player did this game day (ctx.done, its sets
+-- alone) comes after every one not done that day (Rapha, 2026-11-11: "change order of banked to push the same ones
+-- I already got today back"), so Bank the rest leaves the repeats; its goal is a repeat's, the lower share (riderSlot's
+-- dose). At each place the oldest of the first of these that holds one goes next, among the moves not done that day
+-- first: a move not placed yet whose part differs from the effort just before it, a move not placed yet, a part
 -- that differs, any. `before` is the move of the effort before the first of them (the pump's own last move, or for a
 -- pump of owed moves alone the player's latest set, the fold's `lastMove`), nil for none. Nothing is swapped and
--- nothing dropped: each still pays its own owed row, and the all-out windows still come after them. The helper's
--- Session::payable_kept and the phones' CatchUp.plan keep the same order (the helper's list, which cannot tell what
--- a backup rides as, by the owed move itself).
-local function spreadRiders(slots, before)
+-- nothing dropped: each still pays its own owed row, and the all-out windows still come after them. The phones'
+-- CatchUp.plan keeps the same order; the helper's Session::payable_kept, the unfinished list's order, keeps the two
+-- older rules alone (it cannot tell what a backup rides as, and every pump that plays the list is placed here).
+local function spreadRiders(ctx, slots, before)
 	local left, out, placed = {}, {}, {}
 	for i, slot in ipairs(slots) do left[i] = slot end
 	local last = effortPart(before)
 	while #left > 0 do
-		local at, rank = 1, 4
+		local at, rank = 1, 8
 		for i, slot in ipairs(left) do
-			local r = (placed[slot.move] and 2 or 0) + (last ~= nil and effortPart(slot.move) == last and 1 or 0)
+			local r = ((ctx.done[slot.move] or 0) > 0 and 4 or 0) + (placed[slot.move] and 2 or 0)
+				+ (last ~= nil and effortPart(slot.move) == last and 1 or 0)
 			if r < rank then at, rank = i, r end
 			if r == 0 then break end
 		end
@@ -1792,8 +1847,8 @@ local function waitingChecks(ctx)
 	return list
 end
 
--- A stretch or yoga slot's waiting check (waitingChecks): the first whose pose the pump has not taken, does not owe
--- (its owed copy rides instead) and has not had this game day (its ask comes once a game day, as a goal pose's), and
+-- A stretch or yoga slot's waiting check (waitingChecks): the first whose pose the pump has not taken and that has not
+-- come this game day, done or banked (came: its ask comes once a game day, as a goal pose's), and
 -- that was never asked or whose family is the slot's (`ladder`, the block's most-due family: a check asked once comes
 -- again on its family's turn, never ahead of every family each game day; 2026-11-01, after the desk squat David
 -- answered Okay took the first stretch slot of five game days in a row and the families behind it waited 10 days), a
@@ -1803,7 +1858,7 @@ local function checkSlot(ctx, q, block, ladder)
 	local answers = ctx.state.marks or {}
 	for _, w in ipairs(waitingChecks(ctx)) do
 		local asked = answers[w.move] and answers[w.move].askTs
-		if not ctx.used.moves[w.move] and not ctx.owed[w.move] and (ctx.done[w.move] or 0) == 0
+		if not ctx.used.moves[w.move] and came(ctx, w.move) == 0
 			and (not asked or ns.Library[w.move].ladder == ladder) then
 			local m = ns.Library[w.move]
 			local c = { move = w.move, ladder = m.ladder, rung = m.rung, due = 1, check = w.check }
@@ -1901,7 +1956,7 @@ end
 
 -- The warm move's pool: the pump's candidates and, after them by id, every standing leg move of an open strength
 -- ladder below the player's step there (the candidates hold the step, and the one below until a move's record holds
--- its top) that the player has a record on, the filters pass, the pump does not owe, the player did not step down
+-- its top) that the player has a record on, the filters pass, the player did not step down
 -- from and whose path opened it (2026-11-01: the squat ladder at step 6 left the tibialis raise the only warm leg
 -- move, its air, tempo and chair squats and lunges below the candidates' steps), each at its own step, so its row
 -- stands for no rung the ladder is on.
@@ -1915,7 +1970,7 @@ local function warmPool(ctx)
 		local m = ns.Library[id]
 		local rung = ctx.rung[m.ladder]
 		if not have[id] and rung and m.rung < rung and ns.Open(ctx.state, m.ladder) and ns.Passes(id, ctx.f)
-			and not ctx.owed[id] and ns.Record(ctx.state, id) ~= nil and not steppedDown(ctx, id) and isOpen(ctx, id) then
+			and ns.Record(ctx.state, id) ~= nil and not steppedDown(ctx, id) and isOpen(ctx, id) then
 			addCandidate(list, id, { ladder = m.ladder, rung = m.rung, due = 0 })
 		end
 	end
@@ -2112,6 +2167,7 @@ local function swapOptions(input, moves, index)
 	for i, s in ipairs(moves) do
 		if i ~= index then
 			take(ctx, { move = s.move, owed = s.owed ~= nil })
+			ctx.used.moves[s.move] = true -- a rider's too, which take leaves to a pump's own picks: the pump runs it
 			-- a pose of the pump that holds its family's mark keeps it: the swapped move asks no second (markSlot)
 			if s.mark and marks(ctx, s) then ctx.marked[s.ladder] = true end
 		end
@@ -2239,14 +2295,12 @@ local function quota(pace, tier)
 	return size - window, allout, withMajor > 1 and withMajor - 1 - window or nil
 end
 
--- A work pump's own moves (slice 67, `block` its place in the set, 1 to work_set_blocks), as quota answers: the short
--- pump is a Normal pump's size at work mode's pace (Moves per block: Light 1, Balanced 2, Extreme 3) and the set's
--- last one more (Light 2, Balanced 3, Extreme 4; David approved Light's 2 past Light's most with the design page,
--- 2026-11-07), never an all-out window, and the major move, when due, inside that count (one beside it), so a pump of
--- one move has none.
-local function workQuota(pace, block)
-	assert(block >= 1 and block <= C.work_set_blocks, "workQuota: no such block")
-	local n = C.pace_moves[pace][2] + (block == C.work_set_blocks and 1 or 0)
+-- A work pump's own moves (slice 67), as quota answers: a Normal pump's size at work mode's pace (Moves per block:
+-- Light 1, Balanced 2, Extreme 3), every work pump alike (David, 2026-11-11, of the set of four whose last was one
+-- move longer: "Why are there 4 dots that get filled. Makes no sense. it should just run as long as I put it"), never
+-- an all-out window, and the major move, when due, inside that count (one beside it), so a pump of one move has none.
+local function workQuota(pace)
+	local n = C.pace_moves[pace][2]
 	return n, false, n > 1 and n - 1 or nil
 end
 
@@ -2436,9 +2490,9 @@ end
 -- expedition? (an expedition's round, slice 51: { stage, regions }, one of ns.EXPEDITION_STAGES and the regions its
 -- earlier rounds took, ns.RoundRegions; its quests are its stage's, never input.quests: the warm-up and the cool-down
 -- easeRound's, an inner round the Normal pump with no closing window, the last the Big pump), work? (a work pump,
--- slice 67: { block }, its place in the set, 1 to work_set_blocks, which sizes it at the pace (workQuota) whatever its
--- quest's tier, and no all-out window of its own, the closing rule's or an owed one: calm; its warm move is input.warm,
--- after work_warm_min) }; a quest's `share.active` is in seconds.
+-- slice 67: a table, { warm }, which sizes it at the pace (workQuota) whatever its quest's tier, and no all-out window
+-- of its own, the closing rule's or an owed one: calm; its warm move is input.warm, after work_warm_min) }; a quest's
+-- `share.active` is in seconds.
 -- The game's own pumps set neither warm, arms, expedition nor work (tools/apppump.lua's match pumps, expeditions and
 -- work pumps do).
 -- Returns the pump's slots in order: { move, kind, questID, tier, ladder, rung, target?, goal?, load?, loadUp?,
@@ -2462,7 +2516,7 @@ function ns.Compose(input)
 	end
 	ctx.pool, ctx.owedOut = {}, {}
 	for _, c in ipairs(candidates(ctx)) do
-		local list = ctx.owed[c.move] and ctx.owedOut or ctx.pool
+		local list = placementHeld(ctx, c) and ctx.owedOut or ctx.pool
 		list[#list + 1] = c
 	end
 	if input.chosen then
@@ -2488,7 +2542,7 @@ function ns.Compose(input)
 		-- every owed move that fits, spread after the player's latest set (spreadRiders), every all-out window after
 		-- the plain moves, oldest first (pickRiders' rule)
 		local plain, windows = pickRiders(ctx, input.owed)
-		slots = spreadRiders(plain, ctx.state.lastMove)
+		slots = spreadRiders(ctx, plain, ctx.state.lastMove)
 		for _, slot in ipairs(windows) do slots[#slots + 1] = slot end
 		if #slots > 0 then
 			markRiders(ctx, slots)
@@ -2498,8 +2552,9 @@ function ns.Compose(input)
 	end
 
 	-- Owed moves are taken first, every one, oldest first: they were owed before this pump's own moves, so a fresh pick
-	-- never takes their move or a second placement; they hold no region (take: a banked move counts as done for the
-	-- picks, as it does for its ladder's turn and the day plan's shares). They ride after the pump's own moves
+	-- never takes a second placement; they hold no region and no move (take: a banked move counts as done for the
+	-- picks, as it does for its ladder's turn, its anchor's attempt and the day plan's shares: context). They ride
+	-- after the pump's own moves
 	-- (docs/plan.md slice 1, "Why after the pump's own moves"), the plain ones first, spread after the pump's own last
 	-- move (spreadRiders), then every owed all-out window that fits, which end the pump in place of its own; an owed pose
 	-- asks once the pump's own moves took their asks (markRiders). One whose move the pump's own moves run waits for a
@@ -2535,10 +2590,10 @@ function ns.Compose(input)
 		-- Light gives no major move (quota): the quest's one move is the day plan's, whose strength turn goes to the
 		-- ladder that has waited longest, as the major move does (made the one move, the major move took 79-94 % of
 		-- Light's pumps and left an evening all strength; a simulator probe, 2026-10-05)
-		-- a work pump (slice 67) is sized by its place in the set (workQuota), never by its quest's tier
+		-- a work pump (slice 67) is sized by work mode's pace alone (workQuota), never by its quest's tier
 		local n, allout, beside
 		if ctx.work then
-			n, allout, beside = workQuota(ctx.pace, ctx.work.block)
+			n, allout, beside = workQuota(ctx.pace)
 		else
 			n, allout, beside = quota(ctx.pace, top.tier)
 		end
@@ -2660,14 +2715,14 @@ function ns.Compose(input)
 	end
 	-- an owed move whose move the pump's own moves already run waits for a later pump, still unfinished (Rapha,
 	-- 2026-11-02: "it should skip excercises in banked if the excercise of the pump included the same one already"):
-	-- the fresh picks never take an owed move's move, so only the major move, a Trial step, the warm move or the
-	-- closing window can share one
+	-- any of the pump's own moves can share one since 2026-11-11, when the queue's moves came back into the fresh
+	-- picks (context), and the closing window's form
 	local ownMoves = {}
 	for _, slot in ipairs(slots) do ownMoves[slot.move] = true end
 	if finisher then ownMoves[finisher.move] = true end
 	if closing then ownMoves[closing.move] = true end
 	plain, windows = notOwn(plain, ownMoves), notOwn(windows, ownMoves)
-	plain = spreadRiders(plain, own[#own] and own[#own].move)
+	plain = spreadRiders(ctx, plain, own[#own] and own[#own].move)
 	markRiders(ctx, plain)
 	for _, slot in ipairs(plain) do slots[#slots + 1] = slot end
 	if finisher or closing then slots[#slots + 1] = dose(ctx, finisher or closing) end

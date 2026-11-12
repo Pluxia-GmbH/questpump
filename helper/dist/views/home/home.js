@@ -39,6 +39,12 @@
 // DESK-PUMP's intents: `pump.quick`, `pump.catchup` and `pump.start {kind, offer}` (an offer's Start: Ready at the
 // offer's size since 2026-10-28, the Start a pump window preset to its kind until then), this window's own click, never
 // the card's `outside`; a banked move's Skip is `home.skip`, the cardio row's start `pump.move` from `home`.
+// A reward is carried home (slice 72, motion.carry): the page remembers what it last showed while it was in front, and
+// the next time it shows (a pump's cover gone, the Menu closed, a tab chosen) each value that grew meanwhile moves once
+// from there: the streak's count rolls and the week's new marks light (the days a rest token kept one after another),
+// the embers' new mark lights, Today's chapter counts up, and the banked moves a pump here paid stand once more with
+// their checks and the `paid` event before they go. Never replayed, never for a value that fell (no word and no motion
+// about a streak that ended), and at once under Reduce Motion; the memory is the page's own and goes with the window.
 
 /** What the recent games count in each span (`home.span`): the label over them and what a screen reader hears after a
  * game's name, and the count a game's tile shows. */
@@ -48,13 +54,16 @@ const SPANS = {
 };
 
 import {call, get, intent} from "../../lib/bridge.js";
+import {roll, settle} from "../../lib/carry.js";
 import {t} from "../../lib/copy.js";
 import {keepFocus} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
-import {goTop, openGame, openLadder, openMenu, openStep, push, register} from "../../lib/router.js";
+import {goTop, isFront, openGame, openLadder, openMenu, openStep, push, register} from "../../lib/router.js";
 import {chapterWords, heroSpoken, movesLabel, number, stripSpoken, unit} from "../../lib/saga.js";
 import {openShare, streakCard} from "../../lib/share.js";
+import {feedback} from "../../lib/sound.js";
 import {h} from "../../kit/element.js";
+import {newMarks} from "../../kit/qp-streak-board.js";
 import {workDue} from "../../kit/qp-work-card.js";
 import {gameName, place} from "../games/windows.js";
 import {addonLine} from "../menu/computer.js";
@@ -237,6 +246,14 @@ function chapterCard() {
 				: t("saga.none.title");
 			button.setAttribute("aria-label", `${t("saga.home")}: ${spoken}`);
 		},
+		/** The day's moves count up from `from`, the number the card last showed, to `to` (a reward carried home). */
+		carry(from, to) {
+			roll(count, from, to, "carry");
+		},
+		/** A count still on its way stands at its end (the page left, a pump's cover over it). */
+		stand() {
+			settle(count);
+		},
 	};
 }
 
@@ -358,6 +375,10 @@ register("pump", () => {
 	const embersPips = h("qp-day-pips", {"aria-hidden": "true"});
 	const embersRow = h("qp-row", {trailing: "nav", "on:click": startCardio});
 	embersRow.extra = embersPips;
+	// the embers' new mark lit once (a reward carried home): the mark its day brought, until it has lit
+	embersPips.addEventListener("animationend", () => {
+		embersPips.brought = false;
+	});
 	const embers = h("qp-card", {rows: true, hidden: true}, embersRow);
 	// the step-up closest to done (`book.closest`, book.js `nextRow`)
 	const closest = h("div", {hidden: true});
@@ -394,6 +415,26 @@ register("pump", () => {
 	const waitHeld = words("", "meta");
 	const waitRested = words(t("pump.unfinished.held"), "body");
 	const waiting = h("div", {class: "qp-stack-small"}, waitList, waitHeld, waitRested);
+	// the banked moves the pumps here paid (`home.paid`, every payment's since the page last showed them): once more in
+	// the list's place, each with its check, then gone (home.css `.qp-paid`), and Rust is told they were shown; out of
+	// the keys' and a screen reader's way, since the pump's Result said them paid
+	const paidCard = h("qp-card", {rows: true, class: "qp-paid", hidden: true, inert: true});
+	paidCard.addEventListener("animationend", (e) => {
+		if (e.target === paidCard) paidCard.hidden = true;
+	});
+	let paidShown = null;
+	const showPaid = (paid) => {
+		if (!paid.moves.length || paid.seq === paidShown) return;
+		paidShown = paid.seq;
+		intent("home.paid", {seq: paid.seq}).catch(console.error);
+		paidCard.replaceChildren(...paid.moves.map((m) => h("qp-row", {heading: m.name,
+			move: w?.moves.get(m.shown)?.key ?? null, trailing: "checked", checked: true})));
+		// shown anew, its leave starts again
+		paidCard.hidden = true;
+		void paidCard.offsetWidth;
+		paidCard.hidden = false;
+		feedback("paid");
+	};
 	let movesShown = "";
 	/** The card's first moves from the last `home` with the Book's words for their tiles, and the window while open. */
 	const drawBanked = () => {
@@ -427,7 +468,7 @@ register("pump", () => {
 		h("qp-quiet-button", {label: t("menu.sync.notnow"),
 			"on:click": () => intent("play.later").catch(console.error)}));
 	const column = h("qp-hero-column", {least: STAGE_LEAST, most: STAGE_MOST}, status, recent, figure, board, workCard,
-		upNext, rest, waiting, todayBlock, checkin.el, save, pair.el, addon.el);
+		upNext, rest, paidCard, waiting, todayBlock, checkin.el, save, pair.el, addon.el);
 	view.body.append(column);
 
 	const gameLine = words(t("pump.waiting.game"), "meta");
@@ -549,7 +590,46 @@ register("pump", () => {
 		drawFoot();
 	});
 
-	watch(view, "home", (home) => {
+	// what Pump home showed while it was last in front, from which a reward is carried home (the page's own memory)
+	let seen = null;
+	// the `home` it last drew in front and the latest: while the page is not in front (a pump's cover over it, whose
+	// floating Result leaves it showing) what a pump carries home, the streak, the day's moves, the embers and the
+	// unfinished moves, stays as it last showed, so each moves once as the page is in front again and never before
+	let fronted = null;
+	let latest = null;
+	const shownOf = (home) => (fronted && !isFront(view)
+		? {...home, streak: fronted.streak, today: fronted.today, embers: fronted.embers, waiting: fronted.waiting}
+		: home);
+	/** The game week's Monday, in days: marks light only within the week the page last showed. */
+	const mondayOf = (home) => Math.round(Date.parse(home.day) / 86_400_000) - home.streak.today_index;
+	const carry = () => {
+		const home = latest;
+		if (!home) return;
+		const now = {days: home.streak.days, week: home.streak.week, monday: mondayOf(home),
+			embers: home.embers?.have ?? null, moves: home.today?.moves ?? null};
+		const was = seen;
+		seen = now;
+		if (isFront(view)) showPaid(home.paid);
+		if (!was) return;
+		// the board from what it showed: its count where it grew, its week's new marks (within the week it showed)
+		const from = {days: Math.min(was.days, now.days), week: was.monday === now.monday ? was.week : now.week};
+		if (now.days > from.days || newMarks(from.week, now.week).length) board.carry(from);
+		if (was.embers !== null && now.embers > was.embers) embersPips.brought = true;
+		if (was.moves !== null && now.moves > was.moves) today.carry(was.moves, now.moves);
+	};
+	// in front again (a pump's cover gone, the Menu closed, the tab chosen): what changed meanwhile moves once
+	view.onShown = () => {
+		if (latest) drawHome(latest);
+		carry();
+	};
+	// a count still on its way as Pump home leaves the front (another tab, a new pump's cover) stands at its end
+	view.onLeft = () => {
+		board.stand();
+		today.stand();
+	};
+
+	const drawHome = (home) => {
+		if (!fronted || isFront(view)) fronted = home;
 		fix = home.fix ?? null;
 		games = home.recent.games;
 		span = home.recent.span;
@@ -596,6 +676,12 @@ register("pump", () => {
 			offerLine.textContent = t("reminders.notify.game.body.computer", {link: home.offer.name});
 		}
 		drawFoot();
+	};
+	watch(view, "home", (home) => {
+		latest = home;
+		drawHome(shownOf(home));
+		// the first values are what the page starts from; later ones move only while it is in front
+		if (!seen || isFront(view)) carry();
 	});
 	// the place in use on the TopBar's button: its glyph (Home's where the button has none for it) and its name; Work
 	// mode while it runs

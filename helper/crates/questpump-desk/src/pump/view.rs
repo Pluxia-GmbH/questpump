@@ -22,7 +22,7 @@ use super::{
 	rep_beat, rep_count, words,
 };
 use crate::facts::facts;
-use crate::home::Board;
+use crate::home::{Board, Mark};
 use crate::{Desk, Platform};
 
 pub(super) mod pour;
@@ -132,6 +132,11 @@ struct PumpView {
 	reveal: Option<Reveal>,
 	/// The Legendary moment on show over the Result: its row's index among the result's rows.
 	legend: Option<usize>,
+	/// The Result floats over the page under the pump and leaves by itself (Rapha, 2026-11-11: "The into hero is best go
+	/// with that"): a pump that ended with its result, no Legendary moment among its rows, no streak milestone's day
+	/// and no expedition's end (`Earned::floats`); a calm end, a Legendary step, a milestone's day and an expedition's
+	/// end stay a full screen (the browser's Save offer too, the page's).
+	floats: bool,
 	calm: Option<CalmView>,
 	/// A move's pour, its rewards and its step's reveal (slices 65 and 66), on its `saved` stage.
 	saved: Option<pour::SavedView>,
@@ -818,9 +823,10 @@ impl Reward {
 	/// quiet one too), a record (a new best clean count), then the rest (a check that waits or whose opening still
 	/// waits, a best that stands, a slipped form or one not all out, a clean day, a full move, a Long Haul's day, a
 	/// measure's step held or back, the climb that waits, the cardio today, the stats). The moves the pump did lead with
-	/// the milestone, in the pump's order (2026-10-29).
+	/// the milestone, in the pump's order (2026-10-29), and Welcome back leads them all, a beat of its own (slice 72).
 	fn rank(&self) -> i8 {
 		match self {
+			Self::Day { line: "welcome", .. } => -2,
 			Self::Milestone { .. } | Self::Moved { .. } => -1,
 			Self::Unlock { .. } if self.quiet() => 2,
 			Self::Unlock { quality, .. } if *quality >= LEGENDARY => 0,
@@ -860,7 +866,10 @@ impl Reward {
 	fn event(&self) -> &'static str {
 		match self {
 			Self::Milestone { .. } => "milestone",
-			Self::Record { .. } | Self::BestNew { .. } | Self::Moved { tag: Some("record"), .. } => "record",
+			// a first record is a record on every surface (slice 72): a first max set's count sounds as one
+			Self::Record { .. } | Self::BestNew { .. } | Self::Moved { tag: Some("record" | "first"), .. } => "record",
+			// Welcome back's own beat, the first of the rows (slice 72)
+			Self::Day { line: "welcome", .. } => "unlockUncommon",
 			// a step mastered: the game's small chime, as its toast's (slice 42)
 			Self::Mastered { .. } => "win",
 			Self::Check { .. } | Self::CheckClimb { .. } => "unlock",
@@ -918,16 +927,54 @@ struct Row {
 /// (the app's own sheet's while Hero shows it, else the game's level with the pump's XP on it; none for a catch-up),
 /// the reward rows in their order (each move the pump did first, `Reward::Moved`), a catch-up's payment, and the embers
 /// where a move lit the game day's last ember in the app's own fold (the "Cardio done today" Toast, slice 55; its week
-/// never fewer than Hero's vault card says).
+/// never fewer than Hero's vault card says); and the streak's day where the pump made the streak a day longer (slice
+/// 72: its moment before the rows, `StreakDay`).
 #[derive(Serialize, Clone, PartialEq)]
 pub(super) struct Earned {
 	banner: Option<Banner>,
 	turn: Option<Banner>,
 	xp: Option<i64>,
 	bar: Option<Bar>,
+	streak: Option<StreakDay>,
 	rows: Vec<Row>,
 	paid: Option<&'static str>,
 	embers: Option<Kindled>,
+}
+
+impl Earned {
+	/// Welcome back leads its rows: the return's own beat (slice 72).
+	fn welcomes(&self) -> bool {
+		matches!(self.rows.first(), Some(Row { reward: Reward::Day { line: "welcome", .. }, .. }))
+	}
+
+	/// A streak milestone's day: its banner turns to the milestone, or a row says it under a level's banner.
+	fn milestone(&self) -> bool {
+		self.turn.is_some_and(|t| t.kind == "streak")
+			|| self.rows.iter().any(|r| matches!(r.reward, Reward::Milestone { .. }))
+	}
+
+	/// This Result may float (`PumpView::floats`): none with a Legendary moment to open after it, and none on a streak
+	/// milestone's day, whose Share stands under the full screen's banner or on its row (slice 45) and which the
+	/// floating card's title would take.
+	fn floats(&self) -> bool {
+		self.legend_after(None).is_none() && !self.milestone()
+	}
+
+	/// A catch-up's Result ("3 moves done"), whose moves were judged one by one as they were saved.
+	fn catch_up(&self) -> bool {
+		matches!(self.banner, Some(Banner { kind: "moves", .. }))
+	}
+
+	/// This Result with the streak's day its pump made (`StreakDay`), the one place that decides the moment (slice 72,
+	/// as the phones' Results do): none on a milestone's day, whose banner or row says the day (nor where the day's
+	/// count is a milestone no banner or row could say), and none beside Welcome back, whose return is the beat; so
+	/// no `streakDay` plays there either (`Reveal::plan` reads `streak`).
+	fn with_day(mut self, day: Option<StreakDay>) -> Self {
+		let said = self.milestone();
+		let milestone = |d: &StreakDay| said || facts().constants().streak_milestones.contains(&d.days);
+		self.streak = day.filter(|d| !milestone(d) && !self.welcomes());
+		self
+	}
 }
 
 /// The "Cardio done today" Toast's news (slice 55): the week's embers under its words, and the game day's
@@ -1087,16 +1134,51 @@ pub(super) struct Paid<'a> {
 /// What a pump that turned its game day done reached by the streak's board (`Board::milestone`, `Board::rested`), as it
 /// began and as it ended: the milestone (0 for none) and the rest tokens that covered the game days before it; a
 /// paired player's app pump's and a catch-up's, whose rows the game folds at its next load (the phones'
-/// `boardMilestone`).
+/// `boardMilestone`); and the streak's day it made (slice 72), every pump's.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub(super) struct Reached {
 	milestone: i64,
 	rested: i64,
+	day: Option<StreakDay>,
+}
+
+/// The streak's day (slice 72, the Result's moment before its rows): the first move saved on a game day made the
+/// streak a day longer, from the count the board showed as the pump began (`from`, never past the day before: a streak
+/// that starts again rolls from 0 and says nothing of the old one) to the count now (`days`), this game week's marks
+/// with today's done, and the next of `streak_milestones` above the day (`goal`: "Day 3 of 7"; none past the last).
+#[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) struct StreakDay {
+	from: i64,
+	days: i64,
+	week: [Mark; 7],
+	today_index: i64,
+	goal: Option<i64>,
+}
+
+impl StreakDay {
+	/// The day a pump made, from the board as it began and as it ended; none where its game day was done already.
+	fn of(before: &Board, after: &Board) -> Option<Self> {
+		if before.today || !after.today || after.days < 1 {
+			return None;
+		}
+		let goal = facts().constants().streak_milestones.iter().copied().filter(|&m| m > after.days).min();
+		Some(Self {
+			from: before.days.clamp(0, after.days - 1),
+			days: after.days,
+			week: after.week,
+			today_index: after.today_index,
+			goal,
+		})
+	}
 }
 
 impl Reached {
 	pub(super) fn of(before: Option<&Board>, after: &Board) -> Self {
-		before.map_or_else(Self::default, |b| Self { milestone: b.milestone(after), rested: b.rested(after) })
+		before.map_or_else(Self::default, |b| Self {
+			milestone: b.milestone(after),
+			rested: b.rested(after),
+			day: StreakDay::of(b, after),
+		})
 	}
 
 	/// Its rows: the milestone (unless the banner carries it) and the rest tokens.
@@ -1121,6 +1203,8 @@ struct Motion {
 	stagger: i64,
 	result: i64,
 	pulse: i64,
+	roll: i64,
+	carry: i64,
 	sounded: usize,
 	pour: i64,
 	pour_hold: i64,
@@ -1143,6 +1227,8 @@ static MOTION: LazyLock<Motion> = LazyLock::new(|| {
 		stagger: ms("chip", "staggerMs"),
 		result: ms("result", "ms"),
 		pulse: ms("pulse", "ms"),
+		roll: ms("levelRoll", "ms"),
+		carry: ms("carry", "ms"),
 		sounded: tokens["surface"]["RewardRow"]["soundedRevealCount"]
 			.as_u64()
 			.and_then(|n| usize::try_from(n).ok())
@@ -1158,10 +1244,13 @@ static MOTION: LazyLock<Motion> = LazyLock::new(|| {
 	}
 });
 
-/// The events of which a Result plays one: a later row whose jingle is taken plays `reveal`.
-const JINGLES: [&str; 7] = ["record", "title", "unlockRare", "unlockEpic", "unlockLegendary", "levelUp", "milestone"];
+/// The events of which a Result plays one, the first that comes (the phones' `ResultReveal`): the turn's, else the
+/// streak's day's (`streakDay`, slice 72, before the rows), else the first row's that has one; a later one whose
+/// jingle is taken plays `reveal`, so a milestone's day plays the milestone's and no `streakDay`.
+const JINGLES: [&str; 8] =
+	["record", "title", "unlockRare", "unlockEpic", "unlockLegendary", "levelUp", "milestone", STREAK_DAY];
 /// From the strongest, for the one event a still Result plays.
-const STRENGTH: [&str; 9] = [
+const STRENGTH: [&str; 10] = [
 	"levelUp",
 	"milestone",
 	"unlockLegendary",
@@ -1171,42 +1260,56 @@ const STRENGTH: [&str; 9] = [
 	"unlock",
 	"title",
 	"record",
+	STREAK_DAY,
 ];
+/// The streak's day's event (contract/design/tokens.json `feedback.streakDay`).
+const STREAK_DAY: &str = "streakDay";
 
 /// The Result's one reveal (`ResultReveal`): from its first frame (`at`) the fanfare, from `gain` the XP counting up as
 /// the bar fills, the banner turning at `turn` (a level's or a rank's end of the fill, a streak milestone halfway), the
 /// rows at `rows`, all over by `end`; the first rows sound their own event, one jingle a Result; `landed` stands every
-/// part at its end. The page draws from these instants; the loop plays the sounds as they come due.
+/// part at its end. Since slice 72, as the phones' reveal times them: at a level or a rank the bar reaches its end at
+/// `turn`, flashes over `levelRoll` and starts the new level from empty at `refill`, the XP's count with it, the rows
+/// once it stands (`counted`); the streak's day rolls from `streak`, where the rows would begin, over `carry`, and the
+/// rows come once its roll is over;
+/// Welcome back leads the rows a beat ahead of the rest; and the Epic and higher rows' glow rises once at `pulse`. The
+/// page draws from these instants; the loop plays the sounds as they come due.
 #[derive(Serialize, Clone, PartialEq)]
-#[expect(clippy::struct_excessive_bools, reason = "the reveal's moments, each its own fact")]
 pub(super) struct Reveal {
 	at: i64,
 	gain: i64,
+	/// The XP counted up and the bar at its end: the fill's time after `gain`, at a level or a rank the new level's
+	/// fill after `refill` (the count stands at the old level's end, `split` of the gain, from `turn` through the flash).
+	counted: i64,
+	split: Option<f64>,
 	turn: Option<i64>,
+	refill: Option<i64>,
+	streak: Option<i64>,
 	rows: Vec<i64>,
+	pulse: Option<i64>,
 	end: i64,
 	landed: bool,
 	#[serde(skip)]
 	sounds: Vec<(i64, &'static str)>,
 	#[serde(skip)]
 	turn_event: Option<&'static str>,
+	/// The streak's day's event where the Result holds its moment.
+	#[serde(skip)]
+	streak_event: Option<&'static str>,
 	#[serde(skip)]
 	events: Vec<&'static str>,
 	#[serde(skip)]
 	jingled: bool,
 	#[serde(skip)]
 	turn_sounded: bool,
-	#[serde(skip)]
-	quiet: bool,
 }
 
 impl Reveal {
-	/// The reveal of `earned` from `now`; `sounds` false for a catch-up's (the game pays it at its next load).
-	pub(super) fn plan(now: i64, earned: &Earned, sounds: bool) -> Self {
+	/// The reveal of `earned` from `now`, a pump's own, a timed pump's joined one and a catch-up's alike.
+	pub(super) fn plan(now: i64, earned: &Earned) -> Self {
 		let m = &*MOTION;
 		let gain = now + m.words / 2;
 		let rows_at = gain - now + m.fill;
-		let pulse_at = rows_at + m.shine;
 		let n = earned.rows.len();
 		let last_pulse = earned.rows.iter().rposition(|r| r.reward.pulses());
 		let room = m.result - rows_at - m.shine;
@@ -1215,41 +1318,75 @@ impl Reveal {
 			stagger = stagger.min(m.shine / i64::try_from(last).unwrap_or(1));
 		}
 		let stagger = stagger.max(0);
-		let rows: Vec<i64> =
-			(0..n).map(|i| now + rows_at + i64::try_from(i).unwrap_or(0) * stagger).collect::<Vec<_>>();
-		let shines = rows.last().map_or(now + rows_at, |&last| last + m.shine);
-		let end = if last_pulse.is_some() { shines.max(now + pulse_at + m.pulse) } else { shines };
-		let (turn, turn_event) = match earned.turn {
-			Some(Banner { kind: "streak", .. }) => (Some(gain + m.fill / 2), Some("milestone")),
-			Some(_) => {
-				let share = earned.bar.as_ref().and_then(|b| turn_share(b.from?, b.now)).unwrap_or(1.0);
-				(Some(gain + run::millis(run::secs(m.fill) * share)), Some("levelUp"))
-			}
-			None => (None, None),
+		// a level's or a rank's turn: where along the gain the bar reaches the old level's end
+		let split = match earned.turn {
+			Some(Banner { kind: "streak", .. }) | None => None,
+			Some(_) => Some(earned.bar.as_ref().and_then(|b| turn_share(b.from?, b.now)).unwrap_or(1.0)),
 		};
-		let events: Vec<&'static str> = earned.rows.iter().map(|r| r.reward.event()).collect();
+		let (turn, turn_event) = match (earned.turn, split) {
+			(_, Some(share)) => (Some(gain + run::millis(run::secs(m.fill) * share)), Some("levelUp")),
+			(Some(_), None) => (Some(gain + m.fill / 2), Some("milestone")),
+			(None, None) => (None, None),
+		};
+		// its bar: full at the turn, its flash (`levelRoll`), then the new level from empty, which takes no time
+		// where the gain lands on that level's start; the XP's count follows the bar, so both end at `counted`
+		let refill = turn.zip(split).map(|(at, _)| at + m.roll);
+		let counted = match (refill, split) {
+			(Some(at), Some(share)) => at + if share < 1.0 { m.fill } else { 0 },
+			_ => gain + m.fill,
+		};
+		// the streak's day once the bar stands, where the rows would begin, the rows once its roll is over
+		let streak_at = counted;
+		let streak_event = earned.streak.map(|_| STREAK_DAY);
+		let rows_from = streak_at + streak_event.map_or(0, |_| m.carry);
+		// Welcome back leads as a beat of its own: the rows after it one stagger later
+		let beat = if earned.welcomes() { stagger } else { 0 };
+		let rows: Vec<i64> = (0..n)
+			.map(|i| rows_from + i64::try_from(i).unwrap_or(0) * stagger + if i > 0 { beat } else { 0 })
+			.collect::<Vec<_>>();
+		let shines = rows.last().map_or(rows_from, |&last| last + m.shine);
+		let pulse = last_pulse.map(|_| rows_from + beat + m.shine);
+		let end = pulse.map_or(shines, |at| shines.max(at + m.pulse));
+		// a catch-up's record sounded as its move was saved (`Desk::pump_judged`): its row plays the rows' own sound,
+		// and the Result's one jingle stays free for a milestone or the streak's day
+		let saved = earned.catch_up();
+		let events: Vec<&'static str> = earned
+			.rows
+			.iter()
+			.map(|r| match r.reward.event() {
+				"record" if saved => "reveal",
+				event => event,
+			})
+			.collect();
+		// in the order they come: the turn's, the streak's day's, the rows'
 		let mut timed: Vec<(i64, &'static str)> = turn.zip(turn_event).into_iter().collect();
+		timed.extend(streak_event.map(|e| (streak_at, e)));
 		timed.extend(rows.iter().zip(&events).take(m.sounded).map(|(&at, &e)| (at, e)));
 		timed.sort_by_key(|&(at, _)| at);
 		Self {
 			at: now,
 			gain,
+			counted,
+			split,
 			turn,
+			refill,
+			streak: streak_event.map(|_| streak_at),
 			rows,
+			pulse,
 			end,
 			landed: false,
 			sounds: timed,
 			turn_event,
+			streak_event,
 			events,
 			jingled: false,
 			turn_sounded: false,
-			quiet: !sounds,
 		}
 	}
 
 	/// When the next sound comes due.
 	pub(super) fn next_sound(&self) -> Option<i64> {
-		self.sounds.first().map(|&(at, _)| at).filter(|_| !self.quiet)
+		self.sounds.first().map(|&(at, _)| at)
 	}
 
 	/// The sounds due by `now`, one jingle a Result.
@@ -1257,9 +1394,6 @@ impl Reveal {
 		let due: Vec<&'static str> =
 			self.sounds.iter().take_while(|&&(at, _)| at <= now).map(|&(_, e)| e).collect::<Vec<_>>();
 		self.sounds.drain(..due.len());
-		if self.quiet {
-			return Vec::new();
-		}
 		due.into_iter().map(|e| self.fire(e)).collect()
 	}
 
@@ -1283,11 +1417,9 @@ impl Reveal {
 		self.landed = true;
 		self.sounds.clear();
 		self.end = self.end.min(now);
-		if self.quiet {
-			return None;
-		}
 		let event = if still {
-			let all: Vec<&'static str> = self.turn_event.into_iter().chain(self.events.iter().copied()).collect();
+			let all: Vec<&'static str> =
+				self.turn_event.into_iter().chain(self.events.iter().copied()).chain(self.streak_event).collect();
 			STRENGTH.into_iter().find(|e| all.contains(e)).unwrap_or("reveal")
 		} else {
 			self.turn_event.filter(|_| !self.turn_sounded).unwrap_or("reveal")
@@ -1367,6 +1499,17 @@ pub(super) fn firsts(
 			_ => None,
 		})
 		.collect()
+}
+
+/// A move's first record (slice 72: a record on every surface, its save sounding as one): a first max set's count,
+/// with no record and no placement before it, or a counted set's first clean count, saved Yes, to the end while its
+/// form has no best.
+pub(super) fn first_record(m: &PlannedMove, shown: Recorded, max_set: bool) -> bool {
+	match shown {
+		Recorded::Count(n, _) => n > 0 && max_set && m.record.is_none() && m.placing.is_none(),
+		Recorded::Counted(n, said) => n > 0 && said == answer::YES && m.record.is_none(),
+		Recorded::Time(_) | Recorded::Done => false,
+	}
 }
 
 /// An app pump's records (the phones' Result `records`): a count past its record (with a weight, as the engine judged
@@ -1682,10 +1825,12 @@ pub(super) fn earned(p: &Paid<'_>, max_set: impl Fn(&PlannedMove) -> bool) -> Ea
 			turn: None,
 			xp: None,
 			bar: None,
+			streak: None,
 			rows: extra,
 			paid: p.payment.map(paid_word),
 			embers: p.kindled.map(Kindled::of),
-		};
+		}
+		.with_day(p.reached.day);
 	};
 	let bar = if p.hero_own {
 		Some(Bar { now: Point::of(after), rested: after.rest, from: p.before.map(Point::of) })
@@ -1740,10 +1885,12 @@ pub(super) fn earned(p: &Paid<'_>, max_set: impl Fn(&PlannedMove) -> bool) -> Ea
 		turn: if streak { Some(Banner { kind: "streak", number: milestone }) } else { turn },
 		xp: Some(after.last(0)),
 		bar,
+		streak: None,
 		rows,
 		paid: p.payment.map(paid_word),
 		embers: p.kindled.map(Kindled::of),
 	}
+	.with_day(p.reached.day)
 }
 
 /// An expedition's Result (slice 51): every round's Result together, `minutes` the minutes it took on a whole one
@@ -1799,10 +1946,13 @@ pub(super) fn join(rounds: &[Earned], minutes: Option<i64>) -> Earned {
 		turn: minutes.and(turn),
 		xp,
 		bar,
+		streak: None,
 		rows,
 		paid: None,
 		embers: rounds.iter().rev().find_map(|e| e.embers),
 	}
+	// the round that made the day
+	.with_day(rounds.iter().find_map(|e| e.streak))
 }
 
 /// The unlocks of the summary's last pump (`lu`) as rows, with each one's numbers; with `before` (a summary of the
@@ -1872,17 +2022,14 @@ fn unlock(u: &[i64]) -> Option<Row> {
 	Some(Row { reward, tile })
 }
 
-/// An app pump's day as its own sheet counted it (`SheetSummary.LastDay`): Welcome back's XP, else the streak's day
-/// (a new streak's first; none on a milestone's day), the rest tokens that covered the days before it, a token earned.
+/// An app pump's day as its own sheet counted it (`SheetSummary.LastDay`): Welcome back's XP, the rest tokens that
+/// covered the days before it, a token earned. The streak's day is no row since slice 72: its moment stands before the
+/// rows (`StreakDay`, in the quiet "Streak: day 5" and "Day 1 of a new streak" rows' place).
 fn day(s: &Sum) -> Vec<Row> {
-	let (streak, welcome, token, rested, milestone) = (s.day(0), s.day(1), s.day(2), s.day(3), s.day(4));
+	let (welcome, token, rested) = (s.day(1), s.day(2), s.day(3));
 	let mut lines = Vec::new();
 	if welcome > 0 {
 		lines.push(("welcome", welcome));
-	} else if streak > 1 && milestone == 0 {
-		lines.push(("streak", streak));
-	} else if streak == 1 {
-		lines.push(("streak_new", 0));
 	}
 	if rested > 0 {
 		lines.push(("rested", rested));
@@ -1923,10 +2070,12 @@ pub(super) fn caught_up(run: &Run) -> Earned {
 		turn: None,
 		xp: None,
 		bar: None,
+		streak: None,
 		rows,
 		paid,
 		embers: None,
 	}
+	.with_day(run.reached.day)
 }
 
 /// The rows of the moves a pump paid as owed rows (`riders`: a catch-up's moves, a match pump's riders, slice 61), in
@@ -2417,6 +2566,12 @@ fn stage_name<P: Platform>(h: &Desk<P>, run: &Run) -> &'static str {
 
 fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
 	let now = h.p.now_ms();
+	let result = if run.what.app() {
+		run.result.clone()
+	} else {
+		(run.stage == Stage::Done && !run.unwell && run.cut.is_none()).then(|| caught_up(run))
+	};
+	let trip = h.trip_view(run);
 	let shown = run.shown();
 	let side = run.side.as_ref().and_then(MoveRun::side).map(|s| if s == Side::First { "first" } else { "other" });
 	let (go, digit) = match run.stage {
@@ -2496,19 +2651,16 @@ fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
 		count: shown
 			.filter(|_| matches!(run.stage, Stage::Counting | Stage::Longer { .. }))
 			.map(|m| count_view(run, m)),
-		result: if run.what.app() {
-			run.result.clone()
-		} else {
-			(run.stage == Stage::Done && !run.unwell && run.cut.is_none()).then(|| caught_up(run))
-		},
+		floats: run.resulted() && trip.is_none() && result.as_ref().is_some_and(Earned::floats),
+		result,
 		back: run.back,
-		work: run.work.is_some(),
+		work: run.work,
 		ended_done: run.ended_done(),
 		reveal: run.reveal.clone(),
 		legend: run.legend,
 		calm,
-		saved: run.pour.as_ref().filter(|_| run.stage == Stage::Saved).map(|p| p.view().clone()),
-		expedition: h.trip_view(run),
+		saved: run.pour.as_ref().filter(|_| run.stage == Stage::Saved).map(pour::Pour::view),
+		expedition: trip,
 	}
 }
 

@@ -9,6 +9,7 @@
 import {call} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {register} from "../../lib/router.js";
+import {feedback} from "../../lib/sound.js";
 import {h} from "../../kit/element.js";
 import {page, watch, words} from "../page.js";
 
@@ -178,12 +179,17 @@ register("desk.feedback", () => {
 		call("send_feedback", {text: text().value, diagnostics: tick.checked}).then((outcome) => {
 			queuedSeen = topic.waiting > 0; // the topic's count may come before this answer or after it
 			showState(outcome);
-			// a message sent or kept needs no second Send; any other stays in the box to send again or copy
+			// a message sent or kept needs no second Send; any other stays in the box to send again or copy, the send
+			// failed (slice 72: the error's sound)
 			if (outcome === "sent" || outcome === "queued") box.value = "";
-			else saveDraft(text().value);
+			else {
+				saveDraft(text().value);
+				feedback("error");
+			}
 		}, (error) => {
 			console.error(error);
 			showState("error");
+			feedback("error");
 			saveDraft(text().value);
 		}).finally(() => {
 			sending = false;

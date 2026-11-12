@@ -1,0 +1,53 @@
+{
+  "move": "kneeling_good_morning_weight",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 8},
+  "working": ["abdomen", "thigh"],
+  "items": [
+    {"kind": "backpack", "on": "chest"},
+    {"kind": "towel", "under": "knee_near"},
+    {"kind": "towel", "under": "knee_far"}
+  ],
+  "poses": {
+    "tall": {
+      "line": {"pivot": "knees", "at": 0, "angle": 90, "hips": 0, "width": 12, "feet": "flat"},
+      "chest": [0, 0, 0],
+      "head": [0, 0, 0],
+      "arms": {"ik": [38, -13, 23], "rel": "neck", "pole": [-0.2, -1, 0.8], "hand": [0.3, 0, -1]},
+      "contacts": ["knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "fold": {
+      "from": "tall",
+      "line": {"pivot": "knees", "at": 0, "angle": 123, "hips": -114, "width": 12, "feet": "flat"},
+      "head": [-8, 0, 0]
+    },
+    "rounded": {
+      "from": "fold",
+      "line": {"pivot": "knees", "at": 0, "angle": 123, "hips": -71, "width": 12, "feet": "flat"},
+      "chest": [42, 0, 0],
+      "head": [-8, 0, 0]
+    }
+  },
+  "timeline": [
+    {"pose": "tall"},
+    {"hold": 0.4, "phase": "kneel_tall", "effort": 0.3},
+    {"to": "fold", "s": 2.0, "phase": "hips_back", "effort": 0.75},
+    {"hold": 2.0, "phase": "hold", "effort": 0.95},
+    {"to": "tall", "s": 1.8, "phase": "rise", "effort": 1.0}
+  ],
+  "key": "fold",
+  "fault": {
+    "pose": "rounded",
+    "caption": "back_rounds",
+    "breaks": {"check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170}
+  },
+  "targets": [
+    {"at": "fold", "check": "angle", "joints": ["pelvis", "waist", "neck"], "min": 170},
+    {"at": "fold", "check": "angle", "joints": ["waist", "neck", "head"], "min": 165},
+    {"at": "fold", "check": "offset", "joint": "pelvis", "from": "ankle_near", "axis": "u", "min": 30},
+    {"at": "fold", "check": "offset", "joint": "hip_near", "from": "knee_near", "axis": "f", "max": -20},
+    {"at": "fold", "check": "offset", "joint": "neck", "from": "pelvis", "axis": "u", "min": 0, "max": 11},
+    {"at": "tall", "check": "angle", "joints": ["knee_near", "hip_near", "shoulder_near"], "min": 168}
+  ],
+  "note": "The kneeling good morning with a weight hugged to the chest with both hands, on a folded towel: kneeling tall, the seat goes back toward the heels as the chest tips forward to level with a flat back, never resting on them; a 2-second hold at level, then rise tall. Never a pack on the back or a bar in a kneel: the weight stays at the chest."
+}

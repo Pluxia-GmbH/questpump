@@ -166,6 +166,9 @@ const BEAT_MS: i64 = 1_000;
 /// goes back to its Ready view (`Desk::pump_slept`), since the wall clock its instants keep ran on through the sleep,
 /// and slept time never counts as a move's (no more than this bound and one beat of it can).
 const LATE_WAKE_MS: i64 = 5_000;
+/// How long a pump that opened itself holds its first move's line back for its `call` (ms): the sound's length
+/// (contract/design/sound/sounds.json: 181 ms) and a breath, so the bell is heard before the voice, never under it.
+const CALL_MS: i64 = 250;
 /// The size an app pump starts at when none is named and no offer gives one (Balanced, tier 2).
 const NORMAL: u8 = 2;
 /// The felt-unwell reason a running timed move's row carries (`ns.Enum.stopped.unwell`).
@@ -199,7 +202,7 @@ impl Started {
 
 /// An app pump being composed: what it is, its id, the match offer that opened it, where it was asked, the aim game its
 /// arms rest is for, on a pump that banks the owed rows it was composed with (slice 61: `Unfinished::owed`, as the
-/// store keeps them) and on a work pump its place in the set (slice 67).
+/// store keeps them) and whether it is work mode's pump (slice 67).
 struct Asking {
 	what: What,
 	id: String,
@@ -207,7 +210,7 @@ struct Asking {
 	outside: bool,
 	arms: Option<String>,
 	riding: Vec<Row>,
-	work: Option<u8>,
+	work: bool,
 }
 
 /// A pump the engine composes now (an app pump or a catch-up), until it answers: its id, the match offer that opened
@@ -241,7 +244,7 @@ pub enum Start {
 	Expedition {
 		minutes: u16,
 	},
-	/// Work mode's pump (slice 67, `work.rs`): the next of the set, which banks as a match's pump does.
+	/// Work mode's pump (slice 67, `work.rs`), which banks as a match's pump does.
 	Work,
 }
 
@@ -423,7 +426,7 @@ enum Compose {
 	Move {
 		target: Target,
 	},
-	/// Work mode's pump (slice 67): its kind's family and its place in the set.
+	/// Work mode's pump (slice 67): its kind's family and what it composes with.
 	Work {
 		family: &'static str,
 		work: questpump_engine::Work,
@@ -669,6 +672,8 @@ struct Run {
 	/// and when the callout said last ends (ms), which a Start before then hushes (none on the countdown).
 	callout: Option<(i64, String, String)>,
 	callout_ends: Option<i64>,
+	/// When its first Ready view's line is said (ms), on a pump that opened itself: after its `call` (`CALL_MS`).
+	voice_at: Option<i64>,
 	cues: Cues,
 	/// Big view's full screen was put on for this pump.
 	full: bool,
@@ -688,9 +693,9 @@ struct Run {
 	/// The match offer that opened it (`m-<uuid>`, `m-test`), which a recall of it ends while it is untouched, and
 	/// whose pump banks like a quest's (slice 58: `Desk::pump_bank_way`).
 	offer: Option<String>,
-	/// A work pump's place in the set (slice 67, 1 to `work_set_blocks`): it banks and carries riders as a match's
-	/// pump does (`Run::banks`), and its end counts a block where it answered an ask (`Desk::work_pump_ended`).
-	work: Option<u8>,
+	/// A work pump (slice 67, work mode's own, never one of kind `work` picked by hand): it banks and carries riders
+	/// as a match's pump does (`Run::banks`).
+	work: bool,
 	/// A work pump's Result reads Back to work (slice 67): opened from outside the window (by itself, the tray), the app
 	/// in front as it came was noted (`Platform::back_note`), and its Continue brings that app back
 	/// (`Platform::back_to_work`).
@@ -765,6 +770,7 @@ impl Run {
 			spoken: None,
 			callout: None,
 			callout_ends: None,
+			voice_at: None,
 			cues: Cues::default(),
 			full: false,
 			done_at: None,
@@ -776,7 +782,7 @@ impl Run {
 			streak_before: None,
 			reached: view::Reached::default(),
 			offer: None,
-			work: None,
+			work: false,
 			back: false,
 			arms: None,
 			offered: None,
@@ -854,7 +860,7 @@ impl Run {
 	/// The pump banks its moves and carries the unfinished ones: a match offer's or work mode's (slice 67; never a
 	/// pump of kind `work` picked by hand, call 4).
 	fn banks(&self) -> bool {
-		self.offer.is_some() || self.work.is_some()
+		self.offer.is_some() || self.work
 	}
 
 	/// A match pump's riders as the engine's pump names them now (`Pump::riders`, slice 61): each slot's owed row, read
@@ -1043,6 +1049,9 @@ pub struct Pumps {
 	composing: Option<Composing>,
 	/// A start waiting for the place window's answer.
 	waiting: Option<Asked>,
+	/// The start asked last opens its pump by itself (`Desk::pump_unasked`: a match's end, work mode's time), until
+	/// that pump comes on screen or another start is asked.
+	unasked: bool,
 	/// The starts that went nowhere on this run (`Desk::pump_nowhere`, `Pumps::nowhere`), counted for the `pump`
 	/// topic.
 	refused: u32,
@@ -1595,6 +1604,12 @@ impl<P: Platform> Desk<P> {
 		self.pumps.starting
 	}
 
+	/// When the pump whose Result or calm card is on screen ended (unix ms), none while a pump runs or none shows: work
+	/// mode's next pump lets a Result stand a moment before it takes its place (`Desk::work_open`).
+	pub(crate) fn pump_ended_at(&self) -> Option<i64> {
+		self.pumps.run.as_ref().and_then(|r| r.done_at)
+	}
+
 	/// A move runs in the pump on this computer, or one is being made: a pump on screen that is not idle (`Run::idle`:
 	/// a countdown, a running side, a count or an answer asked or being saved, an engine call under way) or a compose
 	/// under way (`Desk::desk_pump_mid_move`).
@@ -1603,19 +1618,21 @@ impl<P: Platform> Desk<P> {
 	}
 
 	/// A game's pump opens in the place of the pump on screen (Rapha, 2026-10-28, after a game's close while a
-	/// catch-up waited: "it should though, no? cause i just finished a game and the catch up was thus idle"), while that
-	/// pump is idle (`Run::idle`): it ends as "Leave the pump?"'s Leave ends it (`pump_leave`, the window kept for the
-	/// game's pump), what ran counting and the riders done paid (a catch-up's, a match pump's) with the rest left
-	/// unfinished, a match's pump on its Ready view banking its own moves left first as a watched game's new run banks
-	/// them (`pump_recalled`), and a Result leaves the screen. False, with nothing changed, while a move runs or a pump
-	/// is being made (`pump_mid_move`), which the game's pump never interrupts (`Desk::desk_pump_make_way`).
+	/// catch-up waited: "it should though, no? cause i just finished a game and the catch up was thus idle"), and so
+	/// does work mode's next block's (`Desk::work_open`: the last block's work pump left open past it, David,
+	/// 2026-11-11), while that pump is idle (`Run::idle`): it ends as "Leave the pump?"'s Leave ends it (`pump_leave`,
+	/// the window kept for the pump to come), what ran counting and the riders done paid (a catch-up's, a match
+	/// pump's) with the rest left unfinished, a match's or a work pump on its Ready view banking its own moves left
+	/// first as a watched game's new run banks them (`pump_recalled`), and a Result leaves the screen. False, with
+	/// nothing changed, while a move runs or a pump is being made (`pump_mid_move`), which the pump to come never
+	/// interrupts (`Desk::desk_pump_make_way`).
 	pub fn pump_make_way(&mut self) -> bool {
 		let now_ms = self.p.now_ms();
 		if self.pump_mid_move() {
 			return false;
 		}
 		let Some(run) = self.pumps.run.as_ref() else { return true };
-		log::info!("pump {}: idle, it ends for a game's pump", run.id);
+		log::info!("pump {}: idle, it makes way for the pump to come", run.id);
 		if run.running() {
 			if let Some((bank, _)) = (self.pump_bank_way(run) == Some(Bank::It)).then(|| run.bank::<P>(now_ms)) {
 				self.pump_write_bank(&bank);
@@ -1643,7 +1660,7 @@ impl<P: Platform> Desk<P> {
 	/// The gate of a start of this kind: work mode's pump passes a World of Warcraft client that runs behind and holds
 	/// only while its quest pump is open (slice 67: the game holds work mode while it is in front, where nothing asks,
 	/// or its pump is open), carrying no rider while the game asks the moves owed (`pump_compose`).
-	fn start_gate(&self, start: &Start) -> Option<Gate> {
+	pub(crate) fn start_gate(&self, start: &Start) -> Option<Gate> {
 		match start {
 			Start::CatchUp => self.catch_up_gate(),
 			Start::Work => self.gate(self.session.pump_on()),
@@ -1671,6 +1688,7 @@ impl<P: Platform> Desk<P> {
 	/// # Errors
 	/// Why no pump starts now.
 	pub fn pump_ask(&mut self, start: Start, outside: bool) -> Result<(), String> {
+		self.pumps.unasked = false;
 		if let Some(gate) = self.start_gate(&start) {
 			return Err(format!("no pump while {gate:?} holds")); // copy-lint: not shown (an intent's error)
 		}
@@ -1687,6 +1705,13 @@ impl<P: Platform> Desk<P> {
 		}
 		self.pump_begin(start, outside);
 		Ok(())
+	}
+
+	/// The start just asked (`pump_ask`, which answered Ok) opens its pump by itself, nobody having pressed for it:
+	/// "Open the pump after each match" (the app's `open_offer`) and work mode's ask (`Desk::work_open`). Its first
+	/// Ready view plays `call` once as it comes, before its voice (slice 72: a pump that opens itself says so).
+	pub fn pump_unasked(&mut self) {
+		self.pumps.unasked = true;
 	}
 
 	/// The place was answered (`Desk::place_answered`): the start that waited for it goes on, while no gate holds.
@@ -1764,11 +1789,8 @@ impl<P: Platform> Desk<P> {
 			.then(|| self.match_facts(offer.as_deref(), key.as_deref(), at))
 			.flatten();
 		let arms = facts.as_ref().is_some_and(|f| f.arms).then(|| self.arms_game()).flatten();
-		let work = match &compose {
-			Compose::Work { work, .. } => Some(work.block),
-			_ => None,
-		};
-		let banks = offer.is_some() || work.is_some();
+		let work = matches!(compose, Compose::Work { .. });
+		let banks = offer.is_some() || work;
 		let riding = if banks && self.catch_up_gate().is_none() { self.session.payable_kept() } else { Vec::new() };
 		let unfinished = Unfinished {
 			owed: riding.iter().map(ToString::to_string).collect(),
@@ -1860,7 +1882,7 @@ impl<P: Platform> Desk<P> {
 		if let Some(offer) = &offer {
 			self.p.offer_taken(offer);
 		}
-		if work.is_some() {
+		if work {
 			self.work_pump_shown(&id);
 		}
 		// a pump of its own after an expedition's Result: the expedition is over and leaves the screen with it
@@ -1890,7 +1912,7 @@ impl<P: Platform> Desk<P> {
 			work,
 			// Back to work for a work pump that opened itself or the tray opened from outside the window (Pump home's keeps
 			// Continue)
-			back: work.is_some() && outside && self.p.back_note(),
+			back: work && outside && self.p.back_note(),
 			arms,
 			offered,
 			riding,
@@ -1898,9 +1920,14 @@ impl<P: Platform> Desk<P> {
 			..Run::new(id, what, outside, moves, slots, rungs)
 		};
 		run.ride(&riders);
+		// a pump that opened itself says so: `call` once as it comes, its first move's line after it (slice 72)
+		let called = std::mem::take(&mut self.pumps.unasked);
+		run.voice_at = called.then(|| self.p.now_ms() + CALL_MS);
 		self.pumps.run = Some(run);
-		// an expedition's next round waits under the breather: its first move is read as the breather ends
-		if !self.expedition_resting() {
+		if called {
+			self.cue(Cue::Event("call"));
+		} else if !self.expedition_resting() {
+			// an expedition's next round waits under the breather: its first move is read as the breather ends
 			self.pump_read_aloud();
 		}
 		self.pump_publish();
@@ -2404,7 +2431,7 @@ impl<P: Platform> Desk<P> {
 		// a countdown and a timed move are looked at every beat at least, so a sleep shows as a late wake (`pump_slept`)
 		let beat = self.pumps.looked + BEAT_MS;
 		match run.stage {
-			Stage::Ready => run.callout.as_ref().map(|(at, ..)| *at),
+			Stage::Ready => run.voice_at.or(run.callout.as_ref().map(|(at, ..)| *at)),
 			Stage::Countdown { go, .. } => Some(run::next_digit(go, now).min(beat)),
 			Stage::Running { start } => {
 				let m = run.shown()?;
@@ -2439,6 +2466,13 @@ impl<P: Platform> Desk<P> {
 		let Some(run) = self.pumps.run.as_mut() else { return };
 		match run.stage {
 			Stage::Ready => {
+				// a pump that opened itself: its first move's line once its `call` has sounded
+				if run.voice_at.is_some() {
+					if run.voice_at.take_if(|at| now >= *at).is_some() {
+						self.pump_read_aloud();
+					}
+					return;
+				}
 				// the callout once due, never said late (a sleep, a stall), as a mark
 				let Some((at, family, take)) = run.callout.take_if(|(at, ..)| now >= *at) else { return };
 				if run::secs(now - at) >= MARK_LATE_S {
@@ -2506,11 +2540,16 @@ impl<P: Platform> Desk<P> {
 		}
 		// a rep's count once due, one overdue skipped (a sleep, a stall), the count going on at the next beat past now
 		let mut rep = None;
+		// the counted beat that reaches a set of reps' goal (slice 72: the small chime once a side, as a hold passing
+		// its goal; a max set and a counted set have no number to reach)
+		let mut reached = false;
 		if let (Some(beats), Some(due)) = (&run.cues.beats, run.cues.rep.filter(|due| due.at <= now - start)) {
 			let late = now - start - due.at;
 			run.cues.rep = beats.next(now - start, Some(due));
 			let fresh = late < ((beats.at(due.n + 1) - due.at) / 2).min(run::millis(MARK_LATE_S));
 			rep = fresh.then(|| format!("count.{}", due.n)); // copy-lint: not shown (a voice take's id)
+			reached = !run.cues.goal && view::goal(&m).is_some_and(|goal| due.n >= goal);
+			run.cues.goal |= reached;
 		}
 		// a timed side's last five seconds, one tick each (one the loop woke late for still comes, within its second)
 		let five = limit.and_then(|l| run::last_five(l, elapsed, run.cues.five)).filter(|&(at, _)| at <= elapsed);
@@ -2542,7 +2581,8 @@ impl<P: Platform> Desk<P> {
 		if five.is_some() {
 			self.cue(Cue::Event("lastFive"));
 		}
-		if goal {
+		// the beat's chime only where the dial shows the count it reaches (`counts_chosen`: Big view's goal turns gold)
+		if goal || (reached && self.counts_chosen()) {
 			self.cue(Cue::Event("win"));
 		}
 		// outside the marks' gap, and never to a screen reader (`counts_on`): skipped, the next keeps its number
@@ -3421,6 +3461,9 @@ impl<P: Platform> Desk<P> {
 		};
 		let waiting = |r: &&mut Run| asked(r) && r.shown().is_some_and(|m| m.slot == slot);
 		let Some(run) = self.pumps.run.as_mut().filter(waiting) else { return };
+		// a first max set's count, or a counted set's first clean one, is the move's first record (slice 72): the
+		// record's sound, not the placement's chime, on a catch-up as on a pump of its own
+		let first = !could_not && run.shown().is_some_and(|m| view::first_record(m, shown, run.max_set(m)));
 		run.recorded.insert(slot, shown);
 		run.count.clear();
 		// a hold judged from its ask (an early end there) waits for that end on its count step, its set recorded
@@ -3435,7 +3478,8 @@ impl<P: Platform> Desk<P> {
 		}
 		let held = run.held != Held::default();
 		let unwell = run.held.stop == Some(Stop::Unwell);
-		let win = judgement.set.and_then(|j| win_sound(j.outcome)).filter(|_| !unwell);
+		let sound = |code: u8| if first { Some("record") } else { win_sound(code) };
+		let win = judgement.set.and_then(|j| sound(j.outcome)).filter(|_| !unwell);
 		if let Some(event) = win {
 			self.cue(Cue::Event(event));
 		}
@@ -3708,11 +3752,17 @@ impl<P: Platform> Desk<P> {
 	/// store refuses the rows; a match pump's Bank the rest, on a rider, ends it as done, its Result with its riders
 	/// done paid and the rest left unfinished (slice 61, the game's `Lc.Finish("rest")`: `Stop::Rest`); a
 	/// catch-up's leaves its moves left unfinished as End the pump here left them. Refused where `pump_bank_way` shows
-	/// none, and while an engine call for the pump is under way (a Swap's moves).
+	/// none, and while an engine call for the pump is under way (a Swap's moves). The press has a log line of its own
+	/// (2026-11-11): every other way a pump banks names itself, so a bank with none read as the app's own doing.
 	fn pump_bank(&mut self) -> Result<(), String> {
 		let now_ms = self.p.now_ms();
 		let run = self.pumps.run.as_ref().filter(|r| r.busy == 0).ok_or("no Bank now")?;
-		match self.pump_bank_way(run).ok_or("no Bank now")? {
+		let way = self.pump_bank_way(run).ok_or("no Bank now")?;
+		match way {
+			Bank::It => log::info!("pump {}: the player's Bank all", run.id),
+			Bank::Rest => log::info!("pump {}: the player's Bank the rest", run.id),
+		}
+		match way {
 			Bank::It => {
 				let (bank, _) = run.bank::<P>(now_ms);
 				self.pump_write_bank(&bank);
@@ -3740,21 +3790,20 @@ impl<P: Platform> Desk<P> {
 	/// that pause cannot be (no offers on this computer, no watched game runs): the pump is looked at first and the
 	/// pause is set whole or not at all, so the two happen together or neither does.
 	fn pump_pause(&mut self, kind: &str) -> Result<(), String> {
-		self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready && r.work.is_none()).ok_or("no Pause now")?;
+		self.pumps.run.as_ref().filter(|r| r.stage == Stage::Ready && !r.work).ok_or("no Pause now")?;
 		self.pause_offers(kind)?;
 		self.pump_end()
 	}
 
 	/// A banking pump's moves `bank` names written in the owed queue (`Session::bank`: the platform's source, dated its
-	/// offered row's time, at its tier; a work pump's has banked, which its end counts as done, `work_banked`), or why
-	/// none was (a reset since it began, the felt-unwell lock), logged and given back.
+	/// offered row's time, at its tier), or why none was (a reset since it began, the felt-unwell lock), logged and
+	/// given back.
 	pub(crate) fn pump_write_bank(&mut self, bank: &BankPump) -> Option<CatchupError> {
 		let (banked, fx) = self.session.bank(bank, &self.now());
 		self.apply(fx);
 		match banked {
 			Ok(rows) => {
 				log::info!("pump {}: {} moves banked, unfinished from {}", bank.id, rows.len(), bank.start);
-				self.work_banked(&bank.id);
 				None
 			}
 			Err(e) => {
@@ -3764,7 +3813,7 @@ impl<P: Platform> Desk<P> {
 		}
 	}
 
-	/// Work mode's Later (slice 67, `Desk::work_later`): the work pump its ask stood for (`work`, its place in the set)
+	/// Work mode's Later (slice 67, `Desk::work_later`): the work pump its ask stood for (`work`: its warm move)
 	/// composed on the engine with no screen at work mode's Moves per block (the profile taken first, as `pump_begin`
 	/// takes it), on the owed queue so no fresh pick takes a queued move and carrying no rider (they wait for the next
 	/// pump); while its ask still stands and no reset since its block was due or felt-unwell lock refuses it, its rows
@@ -3817,11 +3866,7 @@ impl<P: Platform> Desk<P> {
 						let rungs = composed.pump.slots.iter().map(|s| s.rung).collect();
 						let slots = composed.pump.slots.into_iter().map(Some).collect();
 						let what = What::Free { kind: WORK.to_owned() };
-						let run = Run {
-							offered,
-							work: Some(work.block),
-							..Run::new(id.clone(), what, false, moves, slots, rungs)
-						};
+						let run = Run { offered, work: true, ..Run::new(id.clone(), what, false, moves, slots, rungs) };
 						let (bank, _) = run.bank::<P>(h.p.now_ms());
 						h.pump_write_bank(&bank).map_or(LaterEnd::Banked, LaterEnd::Refused)
 					}
@@ -4315,7 +4360,7 @@ impl<P: Platform> Desk<P> {
 			self.pump_paid();
 			// a catch-up's Result plays the same reveal, its rows known once its payment is (`view::caught_up`)
 			if let Some(run) = self.pumps.run.as_mut().filter(|r| r.resulted()) {
-				run.reveal = Some(view::Reveal::plan(now, &view::caught_up(run), true));
+				run.reveal = Some(view::Reveal::plan(now, &view::caught_up(run)));
 			}
 		}
 		self.work_pump_ended(&id, ran, unwell);
@@ -4400,6 +4445,8 @@ impl<P: Platform> Desk<P> {
 			run.paid = Some(Payment::GameRuns);
 		}
 		let moves = if wow { Vec::new() } else { ran };
+		// the banked moves it pays, for Pump home's list (`home_paid`); none said after a felt-unwell stop
+		let banked: Vec<u16> = moves.iter().filter(|_| !run.unwell).map(|m| m.move_id).collect();
 		// a match pump's own stop locks (`pump_stop`): its riders' payment carries none
 		let unwell = run.unwell && !run.what.app();
 		if moves.is_empty() && !unwell {
@@ -4428,6 +4475,7 @@ impl<P: Platform> Desk<P> {
 		let paid = match paid {
 			Ok(written) => {
 				log::info!("pump {}: the riders' payment wrote {} rows", pump.id, written.len());
+				self.home_paid(&banked);
 				Payment::Paid
 			}
 			Err(e) => {
@@ -4565,7 +4613,7 @@ impl<P: Platform> Desk<P> {
 					return;
 				}
 				if run.resulted() {
-					run.reveal = Some(view::Reveal::plan(now, &earned, true));
+					run.reveal = Some(view::Reveal::plan(now, &earned));
 				}
 				run.result = Some(earned);
 				h.pump_publish();
@@ -4598,6 +4646,8 @@ impl<P: Platform> Desk<P> {
 			run.result.as_ref().filter(|_| run.resulted()).and_then(|r| r.legend_after(run.legend))
 		{
 			run.legend = Some(index);
+			// its own cue as it opens (slice 72: the fanfare), the voice naming the move over it
+			self.cue(Cue::Event("unlockLegendary"));
 			if let Some(key) = key {
 				self.cue(Cue::Line(format!("legend.{key}")));
 			}

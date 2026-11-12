@@ -5,7 +5,9 @@
 // record before this set (none once it stands at the top or past it) and at the top, each lit once the count passes
 // it, in the move's unit (`seconds`: m:ss, else the number of reps); `held` the count in it. `slot(n)` is where the nth
 // unit lands (the window's px, for its grain), `flash()` the track's flash with its sparks at the top, and `roll(next)`
-// turns it over to the next step's bar after a step-up. Decoration: the pour's words and the rows say it.
+// turns it over to the next step's bar after a step-up (`turn(next)` at once). The fill follows the count over
+// motion.pourFill, so a short set's few grains fill it in one run, never in steps. Decoration: the pour's words and
+// the rows say it.
 
 import {t} from "../lib/copy.js";
 import {clock, LOCALE} from "../lib/format.js";
@@ -132,17 +134,25 @@ class QpCountBar extends KitElement {
 			+ this.track.offsetHeight / 2, 14, 46);
 	}
 
+	/** Stands on bar `next`, empty, at once: its fill never runs back from the count the old bar held. */
+	turn(next) {
+		this.toggleAttribute("data-turning", true);
+		this.held = 0;
+		this.bar = next;
+		// the empty fill is drawn before its transition is back
+		void this.fill.offsetWidth;
+		this.removeAttribute("data-turning");
+	}
+
 	/** Turns over to bar `next` (the next step's, after a step-up): the old one out upward, the new one in from below. */
 	roll(next) {
 		if (motion.matches) {
-			this.held = 0;
-			this.bar = next;
+			this.turn(next);
 			return;
 		}
 		this.body.animate([{transform: "none", opacity: 1}, {transform: "translateY(-26%)", opacity: 0}],
 			{duration: flyMs(), easing: "ease-in", fill: "forwards"}).onfinish = () => {
-			this.held = 0;
-			this.bar = next;
+			this.turn(next);
 			this.body.animate([{transform: "translateY(26%)", opacity: 0}, {transform: "none", opacity: 1}],
 				{duration: flyMs(), easing: "cubic-bezier(0.2, 0.8, 0.2, 1)", fill: "forwards"});
 		};

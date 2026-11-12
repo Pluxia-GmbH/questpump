@@ -1,0 +1,14 @@
+{
+  "move": "kneeling_good_morning_weight.kettlebell",
+  "gear_of": "kneeling_good_morning_weight",
+  "gear": "kettlebell",
+  "items": [
+    {"kind": "kettlebell", "hold": "down"},
+    {"kind": "towel", "under": "knee_near"},
+    {"kind": "towel", "under": "knee_far"}
+  ],
+  "poses": {
+    "tall": {"arms": {"ik": [27, -5, 8], "rel": "neck", "pole": [0.12, -0.98, 0.18], "hand": [0.1, 1, -0.5]}},
+    "fold": {"arms": {"ik": [22.0, -4.0, 8.0], "rel": "neck", "pole": [0.08, -0.99, 0.1], "hand": [0.1, 1, -0.5]}}
+  }
+}

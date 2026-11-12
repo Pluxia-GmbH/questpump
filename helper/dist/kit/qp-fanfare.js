@@ -3,7 +3,7 @@
 // quest), pump (Pump complete, any other app pump; 2026-10-21), level (QP 13), paragon (Paragon 3), moves (a catch-up's
 // 3 moves done), streak (a 30-day streak, from 730 days on a whole year a 2-year streak), expedition (Timed pump
 // complete, its `number` the minutes it took; slice 51), with its `number`. The Result says `spoken()` once ("You
-// reached QP 13").
+// reached QP 13"), and has the words `rise()` again as the banner turns (slice 72).
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, h} from "./element.js";
@@ -55,6 +55,15 @@ class QpFanfare extends KitElement {
 					: t("kit.fanfare.streak.years.spoken", {years: y});
 			}
 			default: return fanfareWords(this.kind, this.number);
+		}
+	}
+
+	/** The words fade up once more (fanfareWords), as they did when the banner came: its turn at a level, a Paragon
+	 * rank or a streak milestone. Nothing to see under Reduce Motion, whose words stand still. */
+	rise() {
+		for (const animation of this.words.getAnimations()) {
+			animation.currentTime = 0;
+			animation.play();
 		}
 	}
 

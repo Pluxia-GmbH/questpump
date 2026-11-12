@@ -488,6 +488,9 @@ pub struct Home {
 	pub focus_asked: bool,
 	/// The recent games between looks (`desk::recent`).
 	pub recent: Recent,
+	/// The banked moves the pumps on this computer paid and Pump home has not shown (`Desk::home_paid`), for the page
+	/// alone.
+	paid: PaidMoves,
 }
 
 impl Home {
@@ -519,6 +522,7 @@ impl Home {
 			charts_key: None,
 			focus_asked: false,
 			recent: Recent::default(),
+			paid: PaidMoves::default(),
 		}
 	}
 }
@@ -585,6 +589,24 @@ struct WaitingMove {
 	#[serde(rename = "move")]
 	move_id: u16,
 	ts: Option<u32>,
+}
+
+/// The banked moves the pumps on this computer paid (slice 72: each leaves Pump home's list with its check and the
+/// `paid` event, once, as the page next shows), every payment's until the page has shown them (`home.paid`, the
+/// phones' `paidShown`): `seq` counts this run's payments, so the page tells a new one from the one it showed, and
+/// `moves` are theirs, each as the waiting card named it. Kept in memory alone, never stored or sent; a move the game
+/// or a phone paid leaves the list as before.
+#[derive(Serialize, Debug, Clone, Default, PartialEq, Eq)]
+struct PaidMoves {
+	seq: u32,
+	moves: Vec<PaidMove>,
+}
+
+/// A paid move: its name and its tile's move (the move it rode as, `Home::rides`).
+#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
+struct PaidMove {
+	name: String,
+	shown: u16,
 }
 
 /// The check-in's card and its last answer's window: the words in the game's, the joints and those flagged (no safety
@@ -657,6 +679,8 @@ struct HomeView {
 	day: String,
 	milestones: &'static [i64],
 	waiting: Option<Waiting>,
+	/// The banked moves the pumps here paid, until the page has shown them (`PaidMoves`).
+	paid: PaidMoves,
 	/// The Pump tab's dot: the unfinished moves a catch-up here pays that waited at most `owed_fresh_days` game days.
 	dot: usize,
 	/// The owed moves the game's next pump takes, under today's chapter.
@@ -1011,12 +1035,32 @@ impl<P: Platform> Desk<P> {
 			held: if waiting.is_some() { 0 } else { sheet.held.unwrap_or(0) },
 			dot,
 			waiting,
+			paid: self.home.paid.clone(),
 			today: self.book_log.log.home.clone(),
 			checkin,
 			pain_failed,
 			primary,
 		};
 		self.publisher.publish(HOME, &home);
+	}
+
+	/// A pump on this computer just paid the banked moves `moves` (their owed moves' ids; `Desk::pump_paid`, a
+	/// catch-up's or a match or work pump's riders): Pump home's list lets each go with its check (`PaidMoves`), with
+	/// those of a payment before it the page has not shown.
+	pub(crate) fn home_paid(&mut self, moves: &[u16]) {
+		if moves.is_empty() {
+			return;
+		}
+		let f = facts();
+		let named: Vec<PaidMove> = moves
+			.iter()
+			.filter_map(|&id| {
+				let shown = self.home.rides.get(&id).copied().unwrap_or(id);
+				Some(PaidMove { name: f.name(shown).filter(|n| !n.is_empty())?.to_owned(), shown })
+			})
+			.collect();
+		self.home.paid.seq = self.home.paid.seq.wrapping_add(1);
+		self.home.paid.moves.extend(named);
 	}
 
 	/// The waiting moves that make Catch up the primary and put the dot on the Pump tab: those unfinished for at most
@@ -1028,7 +1072,8 @@ impl<P: Platform> Desk<P> {
 		sheet.owed.iter().filter(move |o| o.ts.is_none_or(|ts| today - day.index(i64::from(ts)) <= most))
 	}
 
-	/// The page's intents on Pump home: the check-in's answer and the joints its last answer names.
+	/// The page's intents on Pump home: the check-in's answer and the joints its last answer names, a card put off,
+	/// a waiting move skipped, the paid moves shown, the played span.
 	///
 	/// # Errors
 	/// Why the intent was refused.
@@ -1118,6 +1163,14 @@ impl<P: Platform> Desk<P> {
 					.ok_or("home.skip takes a move")?;
 				let ts = intent.arg("ts").and_then(Value::as_u64).and_then(|t| u32::try_from(t).ok());
 				self.pump_skip_owed(move_id, ts)?;
+			}
+			// Pump home showed the paid moves leaving its list: they go, unless a pump paid more meanwhile
+			"home.paid" => {
+				let seq = intent.arg("seq").and_then(Value::as_u64).ok_or("home.paid takes seq")?;
+				if seq == u64::from(self.home.paid.seq) && !self.home.paid.moves.is_empty() {
+					self.home.paid.moves.clear();
+					self.home_publish();
+				}
 			}
 			"home.span" => {
 				let span: PlayedSpan = intent

@@ -276,7 +276,7 @@ function Sheet.MoveTooltip(tooltip, moveId, card, hints)
 		if not card and stop then tooltip:AddLine(stop, 1, 1, 1, true) end
 	end
 	local best, last = ns.Record(state, moveId)
-	if best then
+	if best and ns.HoldsRecord(state, moveId) then -- none for a move that turned timed, whose old sets stay
 		-- a loaded move's record is its weighted one once a set had a weight, the last set with its own (ns.LoadRecord);
 		-- the star stays a count, as the rung windows read reps at any weight
 		local topLoad, topReps, lastLoad, lastReps = ns.LoadRecord(state, moveId)
@@ -381,7 +381,9 @@ end
 -- sound behind the Sounds switch, and the chat line only on "all". `share` is the line a right-click puts in chat,
 -- `rank` its place on the banner where its sound does not set one (rank, below); `quality` and `move`, for a win of a
 -- move or a step, are its banner row's: the edge in the step's colour round its picture and the move's key pose in it
--- (the toast keeps its own icon). The "legendary" sound takes the
+-- (the toast keeps its own icon); `moment`, for the day's moments (Sheet.Earned: Welcome back, the rest tokens that
+-- kept the streak, the streak's day, Clean Slate), is what the banner tells in rows of their own in the toast's
+-- place (Sheet.MomentRows, slice 72). The "legendary" sound takes the
 -- Legendary toast's own frame where the client has its template and art (slice 22), else the plain one. No toast
 -- carries a button: a toast goes by itself, and a button on it was gone before the player reached it (David,
 -- 2026-10-03, of the Flex button: "random", "disappears too fast").
@@ -408,19 +410,25 @@ local function carded()
 	return Lc.pump ~= nil and Lc.pump.state == "card"
 end
 
+-- Whether the pump's dim covers the HUD and the sheet: their XP bars fill only once it lifts, where the fill is seen
+-- whole (slice 72); the unfinished count never waits (HUD.Rolled). The Streamer layout's dim hides nothing.
+function HUD.Covered()
+	return dimmed() and not ns.Panel.Streamer()
+end
+
 -- A toast as one line: its headline and subline (chat, the raid-warning fallback).
 local function toastLine(headline, subline)
 	return subline and subline ~= "" and (headline .. " · " .. subline) or headline
 end
 
-function Sheet.Toast(icon, headline, subline, share, sound, rank, quality, move)
+function Sheet.Toast(icon, headline, subline, share, sound, rank, quality, move, moment)
 	local line = toastLine(headline, subline)
 	if ns.profile and ns.profile.toasts == false then
 		ns.Chat("toast", line)
 		return
 	end
 	if dimmed() or underWay() then
-		held[#held + 1] = { icon, headline, subline, share, sound, rank, quality, move }
+		held[#held + 1] = { icon, headline, subline, share, sound, rank, quality, move, moment }
 		return
 	end
 	-- AddAlert answers false when its queue is full (3 shown, 6 waiting) or alerts are ignored: the line falls back too
@@ -487,8 +495,9 @@ function HUD.Progress(events)
 		local pictured = e.move or (e.ladder and e.rung and ns.Anchor(e.ladder, e.rung))
 		if e.kind == "trial" then
 			local amount = moveAmount(e.move, e.value or 0)
+			-- a first record is a record (slice 72): its sound as a toast and its place on the banner
 			Sheet.Toast(nil, L["toast.firstRecord"]:format(name, amount), nil, ns.profile.shareCount
-				and L["share.first.count"]:format(name, amount) or L["share.first"]:format(name), nil, nil,
+				and L["share.first.count"]:format(name, amount) or L["share.first"]:format(name), "record", RANK_RECORD,
 				ns.MoveQuality(e.move), e.move)
 			-- the Trial holds as many ladders as the filters leave a move for
 			if e.trial and e.placed == e.total then
@@ -587,20 +596,26 @@ ns.On("Progress", HUD.Progress)
 
 -- After a pump with a move done in it (David, 2026-10-01: "a summary screen ... of all that was gained"), a banner at
 -- the top centre in the boss-kill banner's art (BossBannerToast.xml, Forever 70124): the pump's name and moves, the XP
--- and the stats it paid (the fold's sh.pump, the totals the phone's line shows), then a row for each win its toasts
--- would have raised (held while the dim showed), the most notable first, and the rest on its tooltip. It never sits
+-- and the stats it paid (the fold's sh.pump, the totals the phone's line shows), the XP bar filling from the XP before
+-- the pump to the XP after it (through a level: Kit.XPBar), then its rows, one after another (Style.motion.row
+-- apart; slice 72): the day's moments first (Sheet.MomentRows: Welcome back, the rest tokens that kept the streak, the
+-- streak's day with its count turning, Clean Slate, each with its own sound), then a row for each win its toasts
+-- would have raised (held while the dim showed), the strongest last, with its sound as it comes, and the rest on the
+-- banner's tooltip. A pump that finished with no row plays the one short finish sound. With the game's reduced
+-- motion every row stands at once under one sound. It never sits
 -- under the dim and takes no key, so walking on needs no click, and it goes by itself: hovering holds it for a read
 -- (never for good: a cursor left on it would keep it), a right-click closes it (on a row with a share line, after
 -- putting the line in chat), a left-click opens the Log; its tooltip says so. A QP level's fanfare follows it.
 local BANNER_W, BANNER_TOP, ROW_W, ROW_H, ROW_STEP = 460, 10, 300, 44, 50
 
 -- A held toast's rank on the banner: a Legendary unlock leads it, then a title (and an Epic unlock), a star or an
--- unlock, a record, then the rest.
+-- unlock, a record (a first one too, which sounds as one), then the rest.
 local function rank(h)
 	if h[5] == "legendary" then return 0 end
 	if h[5] == "title" then return RANK_TITLE end
+	if h[6] then return h[6] end
 	if h[5] == "star" or h[5] == "record" then return RANK_UNLOCK end
-	return h[6] or 4
+	return 4
 end
 
 local bannerOut
@@ -625,12 +640,13 @@ local function bannerTipShown()
 end
 
 function Sheet.BannerHide()
-	T.cancel("banner")
-	T.cancel("bannerOut")
+	for _, name in ipairs({ "banner", "bannerOut", "bannerRow", "bannerRoll" }) do T.cancel(name) end
 	local f = F.banner
 	if f then
 		if bannerTipShown() then GameTooltip:Hide() end
 		f.fadeOut:Stop()
+		for _, row in ipairs(f.rows) do row.enter:Stop() end
+		ns.Kit.CarryStop("bannerXP")
 		f:Hide()
 	end
 	Sheet.AfterBanner()
@@ -712,7 +728,15 @@ local function bannerFrame()
 	f.sub:SetPoint("TOP", f.title, "BOTTOM", 0, -4)
 	f.gain = text(f, "levelLine", "CENTER", BANNER_W - 80)
 	f.gain:SetPoint("TOP", f.sub, "BOTTOM", 0, -2)
+	-- the XP bar under what the pump paid: the level it fills (past the cap the Paragon rank held) and the XP into it
+	f.xp = ns.Kit.XPBar(f, ROW_W, 13, "bannerXP")
+	f.xp.rested:SetPoint("TOP", f.gain, "BOTTOM", 0, -8)
+	f.xp.words = function(level, into, need, paragon)
+		return (paragon > 0 and L["sheet.paragon"]:format(paragon) or L["sheet.level"]:format(level)) .. " · "
+			.. L["sheet.xp"]:format(number(into), number(need))
+	end
 	f.rows = {}
+	f.more = text(f, "bodyWhite", "CENTER") -- "+2 more": the wins with no row, listed on the tooltip
 	f.fadeIn = f:CreateAnimationGroup()
 	local a = f.fadeIn:CreateAnimation("Alpha")
 	a:SetFromAlpha(0)
@@ -730,8 +754,9 @@ local function bannerFrame()
 	return f
 end
 
--- A win's row: the toast's icon (a win of a move: its key pose) in a picture's screen, its edge in the step's colour
--- (Kit.PaintScreen: none for Starter or a win of no step), the headline and subline on the loot banner's item plate.
+-- A row: the toast's icon (a win of a move: its key pose) in a picture's screen, its edge in the step's colour
+-- (Kit.PaintScreen: none for Starter or a win of no step), the headline and subline on the loot banner's item plate;
+-- it comes in from the right as the pour's rows do (row.enter, Kit.Entrance).
 local function bannerRow(f, i)
 	local r = f.rows[i]
 	if r then return r end
@@ -760,8 +785,60 @@ local function bannerRow(f, i)
 	r:SetScript("OnEnter", function(self) bannerEnter(self, true) end)
 	r:SetScript("OnLeave", bannerLeave)
 	r:SetScript("OnMouseUp", function(self, button) bannerClick(button, self.share) end)
+	r.enter = ns.Kit.Entrance(r, 0, Style.motion.rowIn, Style.motion.rowFrom)
 	f.rows[i] = r
 	return r
+end
+
+-- The day's moments as the banner's rows, from a held toast's `moment` (Sheet.Earned), in the order they come (slice
+-- 72): Welcome back with the day's XP under it and the star's sound; the rest tokens that kept the streak, one row;
+-- the streak's day, its count turning as the row stands (`from`, Sheet.BannerRoll) from the count the player last had:
+-- the day before's, or with rest tokens the day before the days they covered (the fold adds those days and today's
+-- at once, and the moment holds how many: `rested`), the day against the streak's next milestone under it ("Day 3 of
+-- 7"; past the last one the XP alone) and its own sound; Clean Slate with the star's. Each row { headline, subline,
+-- sound, from }. They name nothing lost: a streak that started again shows its new count alone.
+function Sheet.MomentRows(m)
+	local rows = {}
+	if m.welcome then rows[#rows + 1] = { headline = L["toast.welcome"], subline = m.welcome, sound = "star" } end
+	if m.rested then rows[#rows + 1] = { headline = ns.Plural("toast.rested", m.rested):format(m.rested) } end
+	if m.days then
+		local goal
+		for _, n in ipairs(C.streak_milestones) do
+			if not goal and n > m.days then goal = n end
+		end
+		local of = goal and L["toast.streak.goal"]:format(m.days, goal)
+		local was = m.days - 1 - (m.rested or 0)
+		rows[#rows + 1] = { headline = L["toast.streak"]:format(m.days),
+			from = was > 0 and L["toast.streak"]:format(was) or nil,
+			subline = of and m.xp and of .. " · " .. m.xp or of or m.xp, sound = "streak" }
+	end
+	if m.clean then rows[#rows + 1] = { headline = L["hud.cleanSlate"], sound = "star" } end
+	return rows
+end
+
+-- Row `i` of the banner comes (its entrance starts now, `spec.at` s after the banner: Sheet.Banner): its sound, and
+-- the next row's turn at its own time. The streak's row stands first with the count the player last had, and turns
+-- to today's with a pop and its sound once it is in, a beat the row after it waits out.
+function Sheet.BannerArrive(i)
+	local f = F.banner
+	local spec = f and f:IsShown() and f.order[i]
+	if not spec then return end
+	if spec.from then
+		T.after("bannerRoll", Style.motion.rowIn, function() Sheet.BannerRoll(i) end)
+	elseif spec.sound then
+		Style.Play(spec.sound)
+	end
+	local after = f.order[i + 1]
+	if after then T.after("bannerRow", after.at - spec.at, function() Sheet.BannerArrive(i + 1) end) end
+end
+
+function Sheet.BannerRoll(i)
+	local f = F.banner
+	local spec = f and f:IsShown() and f.order[i]
+	if not spec then return end
+	f.rows[i].headline:SetText(spec.headline)
+	ns.Kit.Pop(f.rows[i].headline)
+	Style.Play(spec.sound)
 end
 
 -- The moves the pump did: their names when one or two, else how many.
@@ -794,64 +871,100 @@ function Sheet.Banner(p, how, list)
 	if mode == "none" or not (how == "done" or how == "rest") or p.kind == "practice" or not next(p.results) then
 		return false
 	end
-	local wins, fanfare, legends = {}, nil, {}
+	local wins, fanfare, legends, order = {}, nil, {}, {}
 	for i, h in ipairs(list) do
 		if h.fanfare then
 			fanfare = h.fanfare
 		elseif h.legend then
 			legends[#legends + 1] = h.legend
+		elseif h[9] then
+			for _, row in ipairs(Sheet.MomentRows(h[9])) do order[#order + 1] = row end
 		else
 			wins[#wins + 1] = { h = h, i = i }
 		end
 	end
-	if mode == "wins" and #wins == 0 and not fanfare and #legends == 0 then return false end
+	if mode == "wins" and #wins == 0 and #order == 0 and not fanfare and #legends == 0 then return false end
 	table.sort(wins, function(a, b)
 		if rank(a.h) ~= rank(b.h) then return rank(a.h) < rank(b.h) end
 		return a.i < b.i
 	end)
+	-- the wins' rows after the moments', the strongest last: its sound, the one the wins play, comes with it (its
+	-- toast's; a record's row, a first record's too, the small chime: its own cue played as its count was saved)
+	local shown = math.min(#wins, C.banner_rows)
+	for i = shown, 1, -1 do
+		local h = wins[i].h
+		order[#order + 1] = { icon = h[8] and moveIcon(h[8]) or h[1], headline = h[2], subline = h[3], share = h[4],
+			quality = h[7], sound = i == 1 and (rank(h) ~= RANK_RECORD and h[5] or "win") or nil }
+	end
 	local f = bannerFrame()
-	f.wins = wins
+	f.wins, f.order = wins, order
 	f.title:SetText(L["banner.title"])
 	local moves = movesLine(p)
 	f.sub:SetText(moves ~= "" and L["banner.sub"]:format(ns.Panel.Title(p), moves) or ns.Panel.Title(p))
 	f.gain:SetText(gainLine())
-	local shown = math.min(#wins, C.banner_rows)
-	for i, row in ipairs(f.rows) do row:SetShown(i <= shown) end
+	local moving, m = ns.Tree.Moving(), Style.motion
 	local top = BANNER_TOP + 47 + f.title:GetStringHeight() + 4 + f.sub:GetStringHeight() + 2
-		+ f.gain:GetStringHeight() + 12
-	for i = 1, shown do
-		local h = wins[i].h
-		local r = bannerRow(f, i)
-		r:ClearAllPoints()
-		r:SetPoint("TOP", 0, -(top + (i - 1) * ROW_STEP))
-		setToastIcon(r.icon, h[8] and moveIcon(h[8]) or h[1])
-		ns.Kit.PaintScreen(r.screen, h[7])
-		r.headline:SetText(h[2])
-		r.subline:SetText(h[3] or "")
-		r.share = h[4]
-		r:Show()
-	end
-	local more = #wins - shown -- listed on the banner's tooltip (bannerEnter)
-	f.more = f.more or text(f, "bodyWhite", "CENTER")
-	f.more:SetShown(more > 0)
-	f.more:SetText(more > 0 and L["banner.more"]:format(more) or "")
-	f.more:ClearAllPoints()
-	f.more:SetPoint("TOP", 0, -(top + shown * ROW_STEP))
-	f:SetHeight(top + shown * ROW_STEP + (more > 0 and f.more:GetStringHeight() + 4 or 0) + 40)
-	-- what waits already (a banner that ended under this pump's dim) goes first
-	local queued = Sheet.bannerLegends or {}
-	for _, e in ipairs(legends) do queued[#queued + 1] = e end
-	Sheet.bannerFanfare, Sheet.bannerLegends = fanfare or Sheet.bannerFanfare, queued
-	T.cancel("bannerOut")
+		+ f.gain:GetStringHeight() + 8 + f.xp.rested:GetHeight() + 12
+	-- the banner shows, fading in, before any row's entrance plays: what the client does with a group played under a
+	-- hidden frame is undocumented, and a row whose entrance never ran would stay unseen
+	for _, name in ipairs({ "bannerOut", "bannerRow", "bannerRoll" }) do T.cancel(name) end
 	f.fadeOut:Stop()
 	f:SetAlpha(1)
 	f:Show()
 	f.fadeIn:Play()
-	-- a win sounds (its toast's sound, a record the small chime); a plain summary is silent, as a miss is, and a
-	-- level's fanfare plays its own
-	if wins[1] then Style.Play(wins[1].h[5] or "win") end
+	for i, row in ipairs(f.rows) do
+		row.enter:Stop()
+		row:SetShown(i <= #order)
+	end
+	local at = 0
+	for i, spec in ipairs(order) do
+		at = at + m.row
+		spec.at = at
+		local r = bannerRow(f, i)
+		r:ClearAllPoints()
+		r:SetPoint("TOP", 0, -(top + (i - 1) * ROW_STEP))
+		setToastIcon(r.icon, spec.icon)
+		ns.Kit.PaintScreen(r.screen, spec.quality)
+		r.headline:SetText(moving and spec.from or spec.headline)
+		r.subline:SetText(spec.subline or "")
+		r.share = spec.share
+		r:Show()
+		r:SetAlpha(moving and 0 or 1) -- an entrance shows nothing before its group runs
+		if moving then
+			r.enter.hold:SetDuration(at)
+			r.enter:Play()
+			if spec.from then at = at + m.rowIn end -- its count turns before the next row comes
+		end
+	end
+	local more = #wins - shown -- listed on the banner's tooltip (bannerEnter)
+	f.more:SetShown(more > 0)
+	f.more:SetText(more > 0 and L["banner.more"]:format(more) or "")
+	f.more:ClearAllPoints()
+	f.more:SetPoint("TOP", 0, -(top + #order * ROW_STEP))
+	f:SetHeight(top + #order * ROW_STEP + (more > 0 and f.more:GetStringHeight() + 4 or 0) + 40)
+	-- what waits already (a banner that ended under this pump's dim) goes first
+	local queued = Sheet.bannerLegends or {}
+	for _, e in ipairs(legends) do queued[#queued + 1] = e end
+	Sheet.bannerFanfare, Sheet.bannerLegends = fanfare or Sheet.bannerFanfare, queued
+	-- the XP the pump paid, carried from where the level stood before it (the fold's sh.pump keeps the pump's XP)
+	local sheet = ns.state.sheet
+	f.xp:SetXP(sheet.xp - (sheet.pump and sheet.pump.xp or 0))
+	f.xp:FillXP(f.xp.xp, sheet.xp)
+	-- each row sounds as it comes: a moment its own, the wins the strongest one's alone with its row, the last; with
+	-- the game's reduced motion the rows stand at once under that one sound.
+	-- A pump that finished with no row plays the short finish sound (never one banked part way), and a level's fanfare
+	-- plays its own.
+	if #order == 0 then
+		if how == "done" then Style.Play("finish") end
+	elseif moving then
+		T.after("bannerRow", order[1].at, function() Sheet.BannerArrive(1) end)
+	else
+		local sound
+		for _, spec in ipairs(order) do sound = spec.sound or sound end
+		if sound then Style.Play(sound) end
+	end
 	-- long enough to read what it lists (David, 2026-10-03: it "disappears too fast"): a base, and more for each row
-	T.after("banner", shown > 0 and C.banner_hold_s + shown * C.banner_row_s or C.banner_plain_s, bannerOut)
+	T.after("banner", #order > 0 and C.banner_hold_s + #order * C.banner_row_s or C.banner_plain_s, bannerOut)
 	return true
 end
 
@@ -896,7 +1009,7 @@ local function release(p, how)
 		elseif h.legend then
 			Sheet.bannerLegends[#Sheet.bannerLegends + 1] = h.legend
 		else
-			Sheet.Toast(unpack(h, 1, 8))
+			Sheet.Toast(unpack(h, 1, 9))
 		end
 	end
 	local up = (F.banner and F.banner:IsShown()) or (F.legend and F.legend:IsShown())
@@ -905,8 +1018,9 @@ local function release(p, how)
 end
 
 ns.On("State", function(p, how)
-	-- the Log's "In progress" goes as the pump ends, which may write no row of its own
-	if p and p.state == "done" and Sheet.tab == "log" then Sheet.Refresh() end
+	-- the Log's "In progress" goes as the pump ends, which may write no row of its own; the Body tab's XP bar fills
+	-- from what it showed before the pump
+	if p and p.state == "done" and (Sheet.tab == "log" or Sheet.tab == "body") then Sheet.Refresh() end
 	if Lc.pump and (dimmed() or carded()) then
 		holdBack()
 		Sheet.BannerHide()
@@ -1000,7 +1114,9 @@ end
 
 -- `e`: the fold's level event ({ kind = "level", level }) or, past the cap, its Paragon rank's ({ kind = "paragon",
 -- rank }; slice 23), which plays the same fanfare as "Paragon 3". Held and queued alike; a later one waiting takes the
--- place of an earlier one, so a gain that crosses two shows the higher.
+-- place of an earlier one, so a gain that crosses two shows the higher. It comes in parts (slice 72; f.anim): the gold
+-- bars grow out from the middle, the glow flashes up behind them, the number pops in as the countdown's digits do
+-- (Style.motion's bars, number and numberFrom), then the words under it; whole at once with the game's reduced motion.
 function Sheet.Fanfare(e)
 	if inCombat() or dimmed() or underWay() or carded() then
 		held[#held + 1] = { fanfare = e }
@@ -1024,12 +1140,37 @@ function Sheet.Fanfare(e)
 		f.text:SetPoint("CENTER", 0, 6)
 		f.sub = text(f, "large", "CENTER")
 		f.sub:SetPoint("TOP", f.text, "BOTTOM", 0, -2)
+		local Kit, m = ns.Kit, Style.motion
+		f.text:SetScaleAnimationMode(Enum.FontStringScaleAnimationMode.Vertex) -- a smooth grow, as Blizzard's warnings
+		f.anim = f:CreateAnimationGroup()
+		local grow = f.anim:CreateAnimation("Scale")
+		grow:SetTarget(f.bar)
+		grow:SetScaleFrom(0.01, 1)
+		grow:SetScaleTo(1, 1)
+		grow:SetDuration(m.bars)
+		grow:SetSmoothing("OUT")
+		grow:SetOrder(1)
+		for _, part in ipairs({ f.glow, f.text, f.sub }) do Kit.Alpha(f.anim, part, 0, 0, m.bars, 1) end
+		Kit.Alpha(f.anim, f.glow, 0, 1, m.number, 2)
+		local pop = f.anim:CreateAnimation("Scale")
+		pop:SetTarget(f.text)
+		pop:SetScaleFrom(m.numberFrom, m.numberFrom)
+		pop:SetScaleTo(1, 1)
+		pop:SetDuration(m.number)
+		pop:SetSmoothing("OUT")
+		pop:SetOrder(2)
+		Kit.Alpha(f.anim, f.text, 0, 1, m.number, 2):SetSmoothing("OUT")
+		Kit.Alpha(f.anim, f.sub, 0, 0, m.number, 2)
+		Kit.Alpha(f.anim, f.sub, 0, 1, m.number, 3)
+		f.anim:SetToFinalAlpha(true)
 		F.fanfare = f
 	end
 	local paragon = e.kind == "paragon"
 	f.text:SetText(paragon and L["fanfare.paragon"]:format(e.rank) or L["fanfare.level"]:format(e.level))
 	f.sub:SetText(L[paragon and "fanfare.paragonSub" or "fanfare.levelSub"])
 	f:Show()
+	f.anim:Stop()
+	if ns.Tree.Moving() then f.anim:Play() end
 	Style.Play("levelUp")
 	T.after("fanfare", 3.5, function()
 		f:Hide()
@@ -1145,6 +1286,11 @@ local function xpLine(e)
 	return L["toast.xp"]:format(e.xp or 0)
 end
 
+-- The streak's day in words: its day, or a new streak's first (never a word about a streak before it).
+function Sheet.StreakWords(days)
+	return days > 1 and L["toast.streak"]:format(days) or L["toast.streak.new"]
+end
+
 -- What a row earned on the sheet (Stats.lua's live events): a level, a Paragon rank, a title, a vault goal, the rest
 -- tokens that covered the days before the day's first move (before its streak), Welcome back, the day's first move and
 -- its streak or the streak's milestone (in the level's sound, ranked with a title; since slice 45 its right-click puts
@@ -1158,7 +1304,11 @@ end
 -- streak tells them with its Welcome back or its streak in one toast: "Welcome back!" over the tokens' words and the XP
 -- (play SPEC 15: one telling per win; two toasts until then); a Welcome back with no token (Stats.lua's activeDay sends
 -- it in place of the streak's event) says the streak's day under it, "Day 1 of a new streak" or, where locked days kept
--- the streak, its day (ns.Streak), and the XP.
+-- the streak, its day (ns.Streak), and the XP. Since slice 72 these are the day's moments: each toast carries what
+-- the pump's banner tells in rows of their own in its place (`moment`, Sheet.MomentRows: Welcome back, the rest
+-- tokens, the streak's day, Clean Slate), so the toast itself shows only where no banner does (a pump with "After a
+-- pump" off); Welcome back and Clean Slate sound as a star does, the streak's day by its own cue, a first record as
+-- a record.
 -- The very first title earned wears itself while none is chosen, so the title bar shows it at once (the 2026-10-21
 -- review: it stayed unworn until the Deeds tab); a later one waits for the player's pick, as on the phones.
 local function wearFirst(id)
@@ -1179,7 +1329,10 @@ function Sheet.Earned(live)
 		if merged and day[e.kind] == e then
 			if e == merged then
 				local words = ns.Plural("toast.rested", day.rested.count):format(day.rested.count)
-				Sheet.Toast(nil, L["toast.welcome"], words .. " · " .. xpLine(e), nil, "win")
+				local days = e.days or ns.Streak(ns.state, ns.now())
+				Sheet.Toast(nil, L["toast.welcome"], words .. " · " .. xpLine(e), nil, "star", nil, nil, nil,
+					e.kind == "welcome" and { welcome = Sheet.StreakWords(days) .. " · " .. xpLine(e),
+						rested = day.rested.count } or { rested = day.rested.count, days = days, xp = xpLine(e) })
 			end
 		elseif e.kind == "level" then
 			Sheet.Fanfare(e)
@@ -1203,14 +1356,16 @@ function Sheet.Earned(live)
 			Sheet.MarkToasted("embersDay", e.day)
 			Sheet.Toast(nil, L["toast.embers"], L["toast.embers.sub"]:format(e.week), nil, "win")
 		elseif e.kind == "rested" then
-			Sheet.Toast(nil, ns.Plural("toast.rested", e.count):format(e.count), nil, nil, nil)
+			Sheet.Toast(nil, ns.Plural("toast.rested", e.count):format(e.count), nil, nil, nil, nil, nil, nil,
+				{ rested = e.count })
 		elseif e.kind == "welcome" or e.kind == "streak" then
 			local days = e.days or ns.Streak(ns.state, ns.now())
-			local words = days > 1 and L["toast.streak"]:format(days) or L["toast.streak.new"]
+			local words = Sheet.StreakWords(days)
 			if e.kind == "welcome" then
-				Sheet.Toast(nil, L["toast.welcome"], words .. " · " .. xpLine(e), nil, "win")
+				Sheet.Toast(nil, L["toast.welcome"], words .. " · " .. xpLine(e), nil, "star", nil, nil, nil,
+					{ welcome = words .. " · " .. xpLine(e) })
 			else
-				Sheet.Toast(nil, words, xpLine(e), nil, "win")
+				Sheet.Toast(nil, words, xpLine(e), nil, "streak", nil, nil, nil, { days = days, xp = xpLine(e) })
 			end
 		elseif e.kind == "milestone" then
 			-- every profile keeps it, as the streak is the account's: another character's login toasts it no more
@@ -1227,7 +1382,7 @@ function Sheet.Earned(live)
 		elseif e.kind == "token" then
 			Sheet.Toast(nil, L["toast.token"], nil, nil, "star")
 		elseif e.kind == "clean" then
-			Sheet.Toast(nil, L["hud.cleanSlate"], nil, nil, "win")
+			Sheet.Toast(nil, L["hud.cleanSlate"], nil, nil, "star", nil, nil, nil, { clean = true })
 		elseif e.kind == "record" then
 			local name, amount = moveName(e.move), Sheet.LoadAmount(e.move, e.load, e.value)
 			Sheet.Toast(Style.statIcon[ns.MoveStat(e.move)], L["toast.record"]:format(amount), name, ns.profile.shareCount
@@ -1543,11 +1698,14 @@ local function build()
 		line:Hide()
 		HUD.lines[i] = line
 	end
+	-- the thin XP bar under the QP line (slice 72; HUD.Render places and fills it)
+	HUD.xp = ns.Kit.XPBar(f, HUD_W - 30, 3, "hudXP", true)
 	HUD.frame = f
 end
 
 -- The QP line: "QP 12 · 38 moves today · 4-day streak", one row of the tracker's width (the XP, which moves with every
--- move, is in its tooltip): moves, the player's own count (David, 2026-10-04: "I did about 40 today and it only
+-- move, is the thin bar under it since slice 72, HUD.xp, and in numbers in its tooltip): moves, the player's own count
+-- (David, 2026-10-04: "I did about 40 today and it only
 -- counted 9", the pumps), the game's and the app's (slice 26; the app's share in the tooltip). It names no next move:
 -- the quest decides the pump, which stays a surprise (David, 2026-09-30); the unfinished moves have their own line
 -- (HUD.Lines).
@@ -1694,23 +1852,26 @@ end
 -- The unfinished line (David, 2026-10-04, after 31 of them met him as one pump of 34): where they go and when, never
 -- the same number twice; its tooltip, in the kit's shape, says what they take and names them on one line (up to
 -- owed_tip_moves, "Push-up ×2 · Plank", then "+n more"), then in grey where they came from, where they go and the way
--- out (Skip on a move's Ready view; for the ones the setup holds back, the line's menu).
-local function owedLine(owed, locked)
+-- out (Skip on a move's Ready view; for the ones the setup holds back, the line's menu). `shown`: the count the line
+-- says while it rolls down to `owed` after a move was paid (HUD.Rolled; with none left, the count's words alone).
+local function owedLine(owed, locked, shown)
+	local says = shown or owed
+	if owed == 0 then return { text = ns.Plural("hud.owed", says):format(says) } end
 	local aside, asideCount = ns.OwedAside(ns.state, ns.profile, ns.now())
 	local context = not locked and Lc.OwingContext()
 	local ready = locked and 0 or ns.RidersReady(ns.state, ns.profile, ns.now())
 	local waiting = (locked or ready == owed) and 0 or #ns.OwedHeldRows(ns.state, ns.profile, ns.now()) - asideCount
 	local line
 	if locked then
-		line = L["hud.owed.locked"]:format(owed, C.day_offset_h)
+		line = L["hud.owed.locked"]:format(says, C.day_offset_h)
 	elseif ready == 0 then -- every one waits on the setup, wherever the player is
-		line = L["hud.owed.waiting"]:format(owed)
+		line = L["hud.owed.waiting"]:format(says)
 	elseif context then
-		line = L["hud.owed.after." .. context]:format(owed)
+		line = L["hud.owed.after." .. context]:format(says)
 	elseif ready == owed then
-		line = ns.Plural("hud.owed", owed):format(owed)
+		line = ns.Plural("hud.owed", says):format(says)
 	else
-		line = ns.Plural("hud.owed.some", ready):format(owed, ready)
+		line = ns.Plural("hud.owed.some", ready):format(says, ready)
 	end
 	local function tooltip(tip)
 		local order, count, banked = {}, {}, 0
@@ -1759,8 +1920,34 @@ function HUD.OwedShown(owed)
 	return owed - select(2, ns.OwedAside(ns.state, ns.profile, ns.now()))
 end
 
--- The lines as { text, action?, menu?, rightMenu?, glow?, tooltip? }, top to bottom (a menu opens on the click, the
--- cheers' and the held unfinished moves'; a right menu on the right-click, the pause). Pure apart from what it reads.
+-- The unfinished count the HUD's line says for the `owed` it shows (slice 72): as a banked move is paid (HUD.paid, a
+-- paid row that is no Skip's) the count rolls down from what the line said to what is left, a number a tick over
+-- Style.motion.carry (Kit.Carry draws the HUD again at each), at the payment, under the pump's dim too (the dim hides
+-- nothing whole, half of it in a group), so the line never says a count that is paid. A Skip, a bank and the game's
+-- reduced motion roll nothing: the count stands at once, a Skip's during a roll as the roll ends.
+function HUD.Rolled(owed)
+	if HUD.rollOwed then return HUD.rollOwed end
+	local seen = HUD.seenOwed
+	local down = HUD.paid and seen ~= nil and seen > owed and ns.Tree.Moving()
+	HUD.paid, HUD.seenOwed = nil, owed
+	if not down then return owed end
+	HUD.rollOwed = seen
+	ns.Kit.Carry("hudOwed", function(k)
+		local n = math.floor(seen + (owed - seen) * k + 0.5)
+		if n ~= HUD.rollOwed then
+			HUD.rollOwed = n
+			HUD.Render()
+		end
+	end, function()
+		HUD.rollOwed = nil
+		HUD.Render()
+	end)
+	return seen
+end
+
+-- The lines as { text, action?, menu?, rightMenu?, glow?, tooltip?, xp? }, top to bottom (a menu opens on the click,
+-- the cheers' and the held unfinished moves'; a right menu on the right-click, the pause; `xp`: the thin XP bar stands
+-- under it). Pure apart from what it reads and the unfinished count's roll (HUD.Rolled).
 function HUD.Lines()
 	local out = {}
 	local p = Lc.pump
@@ -1775,12 +1962,14 @@ function HUD.Lines()
 	elseif pauseMode then
 		out[#out + 1] = pausedLine(pauseMode, pauseEnds)
 	elseif qpShown() then
-		out[#out + 1] = { text = HUD.QPLine(), action = Sheet.Toggle, tooltip = HUD.QPTooltip, rightMenu = pauseMenu }
+		out[#out + 1] = { text = HUD.QPLine(), action = Sheet.Toggle, tooltip = HUD.QPTooltip, rightMenu = pauseMenu,
+			xp = true }
 		if not locked then out[#out + 1] = embersLine() end -- the felt-unwell lock asks for no cardio
 	end
 	if locked then out[#out + 1] = { text = L["hud.locked"]:format(C.day_offset_h) } end
 	local owed = HUD.OwedShown(ns.state and ns.OwedCount(ns.state) or 0)
-	if owed > 0 then out[#out + 1] = owedLine(owed, locked) end
+	local says = HUD.Rolled(owed)
+	if says > 0 then out[#out + 1] = owedLine(owed, locked, says) end
 	-- the pact and the duel, the party's moves today, the Join line, a finished pump to cheer, the guild's digest
 	-- (Social.lua)
 	for _, item in ipairs(ns.Social.HudLines()) do out[#out + 1] = item end
@@ -1805,6 +1994,7 @@ function HUD.Render()
 	local shown = not Lc.combat and not InCombatLockdown() and ns.db and not (ns.profile and ns.profile.hud == false)
 	local lines = shown and HUD.Lines() or {}
 	local y = -26 -- each line as tall as its wrapped text, the frame as tall as all of them (the clamp covers it)
+	local bar, barY = HUD.xp, nil
 	for i, line in ipairs(HUD.lines) do
 		local item = lines[i]
 		if item then
@@ -1814,6 +2004,10 @@ function HUD.Render()
 			line:ClearAllPoints()
 			line:SetPoint("TOPLEFT", HUD.frame, "TOPLEFT", 20, y)
 			y = y - h - 2
+			if item.xp then
+				barY = y
+				y = y - bar.rested:GetHeight() - 4
+			end
 			line.action, line.menu, line.rightMenu = item.action, item.menu, item.rightMenu
 			line.tooltip = item.tooltip
 			Style.ShowGlow(line.glow, item.glow == true)
@@ -1826,6 +2020,20 @@ function HUD.Render()
 	end
 	HUD.frame:SetHeight(-y)
 	HUD.frame:SetShown(#lines > 0)
+	-- the thin XP bar under the QP line, once its frame shows: it fills on a gain from the XP it showed before
+	-- (Kit.XPBar), under the pump's dim only once the dim has gone
+	bar:SetShown(barY ~= nil)
+	bar.rested:SetShown(barY ~= nil)
+	if barY then
+		bar.rested:ClearAllPoints()
+		bar.rested:SetPoint("TOPLEFT", HUD.frame, "TOPLEFT", 20, barY)
+		local xp = ns.state.sheet.xp
+		if not bar.xp then
+			bar:SetXP(xp)
+		elseif xp ~= bar.xp and not HUD.Covered() then
+			bar:FillXP(bar.xp, xp)
+		end
+	end
 	-- The lock and a pause end by the clock alone, so while either holds the HUD looks again every minute.
 	if Lc.Locked() or Lc.Paused() then
 		if not T.active("lock") then T.every("lock", 60, HUD.Render) end
@@ -1833,6 +2041,11 @@ function HUD.Render()
 		T.cancel("lock")
 	end
 end
+
+-- a banked move paid (never a Skip's row, which earns nothing): the unfinished line's count rolls down (HUD.Rolled)
+ns.On("Row", function(row)
+	if row and row.outcome == O.paid and not ns.HasFlag(row.flags, "skipped") then HUD.paid = true end
+end)
 
 for _, message in ipairs({ "State", "Row", "Setup", "Trial", "Saving", "Clock", "Owed", "DB", "Progress",
 	"Settings", "Social" }) do
@@ -1892,7 +2105,8 @@ local function muscleTooltip(button)
 		GameTooltip:AddLine(map.ladderStep > 0 and L["tip.muscle.quality"]:format(quality, map.ladderStep, ladder)
 			or quality, 1, 1, 1)
 		if best then
-			local record = ns.Record(ns.state, map.best)
+			-- its name alone for a move that turned timed, whose old sets stay but hold no record (ns.HoldsRecord)
+			local record = ns.HoldsRecord(ns.state, map.best) and ns.Record(ns.state, map.best) or nil
 			local stars = record and best.ladder and ns.STRENGTH[best.ladder]
 				and ns.Stars(best.ladder, best.rung, map.best, record) or 0
 			local line = record and L["tip.muscle.best"]:format(moveName(map.best), moveAmount(map.best, record))
@@ -2547,30 +2761,14 @@ local function buildBody()
 	right.focus:SetScript("OnClick", function() Sheet.ShowFocus(false) end)
 	ns.Kit.Hover(right.focus, ns.Kit.Tip(function() return L["focus." .. ns.Focus(ns.state)] end,
 		function() return L["focus." .. ns.Focus(ns.state) .. ".line"] end, { hint = L["ui.focus.change"] }))
-	-- the rested bar under the XP bar, both on the pane, the track behind the rested one and the HUD bar's capsule over
-	-- the XP one, so an empty bar still shows on the pane (Forever's art; a plain backing on retail)
-	local rested = CreateFrame("StatusBar", nil, right)
-	rested:SetSize(RIGHT_W - 32, 13) -- placed under the build's words (renderBody)
-	rested.bg = rested:CreateTexture(nil, "BACKGROUND")
-	rested.bg:SetAllPoints()
-	if not Style.SetAtlas(rested.bg, "xpBackground") then rested.bg:SetColorTexture(0, 0, 0, 0.5) end
-	local restedFill = rested:CreateTexture(nil, "ARTWORK")
-	if not Style.SetAtlas(restedFill, "xpRested") then restedFill:SetColorTexture(0, 0.4, 0.8, 0.6) end
-	rested:SetStatusBarTexture(restedFill)
-	local bar = CreateFrame("StatusBar", nil, right)
-	bar:SetAllPoints(rested)
-	bar:SetFrameLevel(rested:GetFrameLevel() + 1)
-	local fill = bar:CreateTexture(nil, "ARTWORK")
-	if not Style.SetAtlas(fill, "xpFill") and not Style.SetAtlas(fill, "barFill") then
-		fill:SetColorTexture(0.6, 0, 0.8)
+	-- the XP bar (the kit's: the rested bar under the XP one, the track behind it and the HUD bar's capsule over it, so
+	-- an empty bar still shows on the pane), placed under the build's words (renderBody); past the cap its words say
+	-- the Paragon rank it fills toward (slice 23)
+	local bar = ns.Kit.XPBar(right, RIGHT_W - 32, 13, "sheetXP")
+	bar.words = function(level, into, need, paragon)
+		return level >= C.level_cap and L["sheet.xp.paragon"]:format(number(into), number(need), paragon + 1)
+			or L["sheet.xp"]:format(number(into), number(need))
 	end
-	bar:SetStatusBarTexture(fill)
-	bar.frame = bar:CreateTexture(nil, "ARTWORK", nil, 1)
-	bar.frame:SetAllPoints()
-	Style.SetAtlas(bar.frame, "xpFrame")
-	bar.rested = rested
-	bar.text = text(bar, "labelWhite", "CENTER") -- a fixed size: the bar's art has a fixed height
-	bar.text:SetPoint("CENTER")
 	bar:EnableMouse(true)
 	bar:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -2695,7 +2893,7 @@ local function renderBody()
 	if not Sheet.stageReady and ModelSceneUtil and ModelSceneUtil.SetUpCharacterSheetScene then
 		Sheet.stageReady = pcall(ModelSceneUtil.SetUpCharacterSheetScene, F.stage)
 	end
-	local level, into, need, paragon = ns.Level(ns.state)
+	local level, _, _, paragon = ns.Level(ns.state)
 	-- the level on the art (its Paragon rank beside it past the cap), and under it the build ("of the Owl", back with
 	-- the families that feed the stats, slice 21) with the focus that held its place from 2026-10-03; a click opens the
 	-- focus window; the XP bar under them, over the stats at their place
@@ -2710,14 +2908,14 @@ local function renderBody()
 	right.focus:SetHeight(34 + 4 + buildH)
 	right.xp.rested:ClearAllPoints()
 	right.xp.rested:SetPoint("TOPLEFT", 12, -math.min(p.stats.top - 13 - 1, math.max(70, 8 + 34 + 4 + buildH + 4)))
-	-- past the cap the bar fills toward the next Paragon rank and says so (slice 23)
-	local bar = p.right.xp
-	bar:SetMinMaxValues(0, need)
-	bar:SetValue(into)
-	bar.rested:SetMinMaxValues(0, need)
-	bar.rested:SetValue(math.min(need, into + ns.Rested(ns.state)))
-	bar.text:SetText(level >= C.level_cap and L["sheet.xp.paragon"]:format(number(into), number(need), paragon + 1)
-		or L["sheet.xp"]:format(number(into), number(need)))
+	-- the bar fills from the XP it last showed (slice 72: a gain is carried home, Kit.XPBar), under a pump's dim only
+	-- once the pump has gone (HUD.Covered; its end draws the page again)
+	local bar, xp = right.xp, ns.state.sheet.xp
+	if not bar.xp then
+		bar:SetXP(xp, ns.Rested(ns.state))
+	elseif xp ~= bar.xp and not HUD.Covered() then
+		bar:FillXP(bar.xp, xp, ns.Rested(ns.state))
+	end
 	renderStats(p.stats)
 end
 

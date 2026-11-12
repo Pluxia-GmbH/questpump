@@ -1,6 +1,13 @@
 # The shared fixtures are compared byte for byte on every system; the Windows runner checks text out with CRLF by
 # default, so they keep LF everywhere.
 contract/fixtures/** text eol=lf
+# The generators stamp each output with a digest of its source's bytes (tools/stamps.py; copytext.py, tokens.py,
+# telemetry.py, art.py, icons.py, bodymap.py). A clone that checks a source out with CRLF stamps bytes Git does not
+# hold, and `make sources-check` then fails in CI (a Windows clone, 2026-11-11). So the text sources under contract/
+# keep LF everywhere; the rules below still hold their own files byte for byte.
+contract/**/*.json text eol=lf
+contract/**/*.svg text eol=lf
+contract/**/*.yaml text eol=lf
 # The sound sources and the licence texts the apps ship are held to their downloads' digests byte for byte
 # (tools/sound.py, tools/ledger.py), and two Kenney License.txt files hold CRLF: Git never converts their line ends.
 contract/design/sound/src/** -text

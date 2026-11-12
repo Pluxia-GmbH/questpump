@@ -1,0 +1,62 @@
+{
+  "move": "floor_leg_lift",
+  "view": "side",
+  "camera": {"yaw": -20, "pitch": 12},
+  "working": ["abdomen", "thigh"],
+  "props": [{"kind": "mat", "f0": -112, "f1": 96}, {"kind": "step", "f0": -14, "f1": 18, "u": 6, "l0": -31, "l1": 31}],
+  "poses": {
+    "flat": {
+      "pelvis": [0, 20.5, 0],
+      "trunk": [97, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-7, 0, 0],
+      "arm_near": {"ik": [79, 4.3, 13], "pole": [-0.3, 0.22, 1], "hand": [0, 0, -1]},
+      "arm_far": {"ik": [79, 7.4, 13], "pole": [-0.3, 0.12, 1], "hand": [0, 0, -1]},
+      "legs": {"fk": [20.5, 0, 6.8, -96.7]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "hand_tip_near",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    },
+    "up": {
+      "from": "flat",
+      "legs": {"fk": [15, 0, 0, -93]},
+      "contacts": ["pelvis", "waist", "neck", "head", "elbow_near", "elbow_far", "wrist_near", "hand_tip_near"]
+    },
+    "bent": {"from": "up", "legs": {"fk": [15, 0, 24, -84]}}
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.4, "phase": "lie_flat"},
+    {"to": "up", "s": 1.6, "phase": "lift", "effort": 0.8},
+    {"hold": 3.0, "phase": "hold", "effort": 0.9},
+    {"to": "flat", "s": 2.0, "phase": "lower_slowly", "effort": 0.4}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "bent",
+    "caption": "knees_bend",
+    "breaks": {"check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 168}
+  },
+  "targets": [
+    {"at": "up", "check": "angle", "joints": ["hip_near", "knee_near", "ankle_near"], "min": 172},
+    {"at": "up", "check": "angle", "joints": ["hip_far", "knee_far", "ankle_far"], "min": 172},
+    {"at": "up", "check": "height", "joint": "knee_near", "min": 12, "max": 16},
+    {"at": "up", "check": "height", "joint": "ankle_near", "min": 6.5, "max": 12},
+    {"at": "up", "check": "height", "joint": "pelvis", "max": 22},
+    {"at": "up", "check": "height", "joint": "neck", "max": 16}
+  ],
+  "note": "Face down on the mat, a folded pillow (the low box) under the hips, the forehead resting on the hands with the elbows wide, the legs straight and together: both legs lift from the hips until the knees just clear the floor, the feet barely higher, hold for a count of 3 and lower slowly. The chest and the head stay down."
+}

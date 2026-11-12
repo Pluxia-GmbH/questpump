@@ -1,0 +1,5 @@
+{
+ "about": "The code libraries the Apple Watch app bundles, with their licence texts, written by tools/credits.py (its docstring says from what); never edit by hand. `notices` are the Acknowledgements page's rows under Code libraries, each a `title` (a licence's name over the libraries it covers, or a library's own name) and the `text` its window shows, a paragraph an entry. `declared` is the digest of the dependencies it was written from; tools/credits.py --check fails when they have moved.",
+ "declared": "61130e9cb3292274",
+ "notices": []
+}

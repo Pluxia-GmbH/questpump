@@ -1,0 +1,87 @@
+{
+  "move": "chest_lift_long",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["abdomen", "pauldron"],
+  "props": [
+    {"kind": "mat", "f0": -112, "f1": 124},
+    {"kind": "step", "f0": -14, "f1": 18, "u": 6, "l0": -31, "l1": 31}
+  ],
+  "poses": {
+    "flat": {
+      "pelvis": [0, 20.5, 0],
+      "trunk": [97, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-5, 0, 0],
+      "arms": {"fk": [176, 12, 0, 0, 2]},
+      "legs": {"fk": [20.5, 3, 6.8, -96.7]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "elbow_near",
+        "elbow_far",
+        "wrist_near",
+        "wrist_far",
+        "hand_tip_near",
+        "hand_tip_far",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    },
+    "up": {
+      "from": "flat",
+      "trunk": [93, 0, 0],
+      "chest": [-10, 0, 0],
+      "head": [6, 0, 0],
+      "arms": {"fk": [170, 12, 0, 0, 0]},
+      "legs": {"fk": [16.5, 3, 6.8, -96.7]},
+      "contacts": ["pelvis", "waist", "knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "chin": {
+      "from": "flat",
+      "head": [-32, 0, 0],
+      "arms": {"fk": [183, 12, 0, 0, 0]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.4, "phase": "lie_flat"},
+    {"to": "up", "s": 1.6, "phase": "lift", "effort": 0.7},
+    {"hold": 3.0, "phase": "hold", "effort": 0.85},
+    {"to": "flat", "s": 2.0, "phase": "lower_slowly", "effort": 0.4}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "chin",
+    "caption": "chin_leads",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
+  },
+  "targets": [
+    {"at": "up", "check": "height", "joint": "neck", "min": 20, "max": 26},
+    {"at": "up", "check": "angle", "joints": ["waist", "neck", "head"], "min": 160},
+    {"at": "up", "check": "angle", "joints": ["hip_near", "shoulder_near", "wrist_near"], "min": 168},
+    {"at": "up", "check": "angle", "joints": ["shoulder_near", "elbow_near", "wrist_near"], "min": 170},
+    {"at": "up", "check": "height", "joint": "wrist_near", "min": 12, "max": 24},
+    {"at": "up", "check": "height", "joint": "pelvis", "max": 22},
+    {"at": "up", "check": "height", "joint": "ankle_near", "max": 8},
+    {"at": "up", "check": "height", "joint": "knee_near", "max": 12}
+  ],
+  "note": "The chest lift with both arms straight past the head, the upper arms by the ears the whole way: face down on the mat, a folded pillow (the low box) under the lower belly, the legs straight with the tops of the feet on the floor; the chest and the arms lift a hand's width with the chin a little tucked and the eyes on the floor, hold for a count of 3 and lower slowly."
+}

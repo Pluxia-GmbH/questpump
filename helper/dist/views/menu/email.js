@@ -210,7 +210,7 @@ register("desk.menu.email", (params) => {
 		sentTo.textContent = e.email ? t("menu.email.code.sent", {email: e.email}) : "";
 		code.disabled = e.busy;
 		code.error = e.step === "code" && e.error === "wrong" ? line : "";
-		say(codeLine, e.step === "code" && e.error !== "wrong" ? line ?? "" : "");
+		say(codeLine, e.step === "code" && e.error !== "wrong" ? line ?? "" : "", "error");
 		if (e.step !== "code") {
 			code.value = "";
 			typed = "";
@@ -237,8 +237,9 @@ register("desk.menu.email", (params) => {
 			: e.linking === "linked" ? t("menu.linkdevice.linked")
 				: e.linking === "failed" ? t("menu.sync.unanswered")
 					: e.linking === "other" ? t("desk.menu.link.other")
-						: e.linking === "rekey" ? t("menu.sync.rekey") : "");
-		say(outLine, e.out_failed ? t("menu.sync.unanswered") : "");
+						: e.linking === "rekey" ? t("menu.sync.rekey") : "",
+			e.linking === "linked" ? "commit" : e.linking === "linking" ? null : "error");
+		say(outLine, e.out_failed ? t("menu.sync.unanswered") : "", "error");
 
 		// "Email linked" or "Account deleted", once it comes while the page shows; a sign-out says nothing more than the
 		// page it leaves

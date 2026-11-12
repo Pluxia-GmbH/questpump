@@ -374,7 +374,7 @@ info:
     refused as the start ask refuses it. An older watch ignores the query and starts a session; the bare
     `questpump://start` (the Start tile and complications) still starts a play session.
     Since slice 67 the iPhone's work ask (a notification under the category `work`, whose user info names the work
-    pump it stands for: `block`, `warm`, `pace` and work mode's equipment, `gear`, `floor`, `space` and `quiet`
+    pump it stands for: `warm`, `pace` and work mode's equipment, `gear`, `floor`, `space` and `quiet`
     (`Work`'s, as the ask was planned), with `anchor`, the work clock's `reset_at` it stands for
     in ms, QuestPumpCore's `Reminders.WorkPump`) shows mirrored on
     the Apple Watch, which registers the same category: its Start, a foreground action, runs on the watch (Apple's
@@ -392,8 +392,8 @@ info:
     minutes (`WorkMode.watchCaughtUp`). Phone to watch, the
     application-context key `work_ask`
     (`WatchRelay.workAskKey`, a `WorkAskRelay` JSON as data: `anchor`, the `reset_at` it stands for, ms; `at`, when it
-    shows, ms; `minutes`, its line's minutes; `apps`, whether the phone counted them in its work apps; `block`, its place
-    in the set from 1; `pace`; work mode's equipment, `gear`, `floor`, `space` and `quiet`; `warm`), the ask this phone plans or that stands, absent while it asks none (a
+    shows, ms; `minutes`, its line's minutes; `apps`, whether the phone counted them in its work apps; `pace`; work
+    mode's equipment, `gear`, `floor`, `space` and `quiet`; `warm`), the ask this phone plans or that stands, absent while it asks none (a
     context without it: no ask stands), which the watch shows in the app from its `at` (`watch.work`: a row on the start
     and session screens and a page of its own, with Start and Later); watch to phone, a `sendMessage` with a reply under
     key `work_later` (`WatchRelay.workLaterKey`), its value the ask's anchor as an `Int64`, answered under the same key
@@ -405,7 +405,7 @@ info:
     (`Relay.kt`'s `DataLayer`): phone to watch, the data item `/questpump/work_ask` (`WORK_ASK`), replaced while an ask
     stands and deleted once its anchor moves or work mode stops, a `WorkAsk` JSON under key `work_ask` (`anchor`, the
     work clock's `reset_at` it stands for, ms; `minutes`, its line's minutes; `apps`, whether the phone counted them in
-    its work apps; `block`, its place in the set from 1; `pace`, Moves per block; `warm`), which the watch shows on its
+    its work apps; `pace`, Moves per block; `warm`), which the watch shows on its
     session page and as a notification of its own (Start, Later), the phone's own ask notification carrying the
     bridge tag `questpump_work` (`WORK_TAG`) so that a watch with the app shows only its own; watch to phone, the
     request `/questpump/work_later` (`WORK_LATER`), its body the ask's `anchor` in decimal, answered `banked`
@@ -422,9 +422,9 @@ info:
     the wrist's Start opened leaves the wrist, where it saved a move or banked its moves and no felt-unwell stop ended
     it (one left with nothing done or banked, or ended for felt unwell, puts none, and the ask stays due), under key
     `from` (`WORK_FROM_KEY`, a long, since 2026-11-10; none from a watch build before it) when that pump came on the
-    wrist, unix ms on the watch's wall clock, which counts
-    one block on the phone and moves the anchor as `WorkDone` below says, deleted once the phone read it; while that
-    ask stands, and once this item counted its block, the phone moves no anchor for the
+    wrist, unix ms on the watch's wall clock, which
+    moves the anchor on the phone as `WorkDone` below says, deleted once the phone read it; while that
+    ask stands, and once this item moved the anchor for it, the phone moves no anchor for the
     wrist work pump's own relay, which names the ask (`AppPumpRelay.work`; `WorkMode.heardPump`), and an unfinished
     move the wrist runs as a rider of that work pump names the same ask on its card (`RelayedPump.work` below), that
     pump's own minutes (`WorkMode.heardRider`); and the data item
@@ -432,7 +432,7 @@ info:
     unix ms) under key `bank`, which the wrist made with no link of its own (Bank all, a short move's bank of a pump
     that banks there, while the phone's app was heard), which the phone banks as its own (through its paired helper,
     else into the account's unfinished list) and deletes, the Apple key `bank`'s twin. The watch's own ask's Start opens
-    `questpump://start?pump=work` (`WORK_LINK`), and Wear OS takes the ask's work pump through its start link's `block`
+    `questpump://start?pump=work` (`WORK_LINK`), and Wear OS takes the ask's work pump through its start link's `work`
     and `pace` (`StartAsk` below).
     Nothing of this passes the helper or Pluxia: WatchConnectivity and the Data Layer only,
     whose files and items stay out of the device's backup on both sides.
@@ -1349,7 +1349,7 @@ components:
         round?") is the player's Bank all on the Ready view of a pump a match sized (one a `match_end` or the phone's
         own game link opened, whatever its pick then took, and the phone's Good game! pump), and since slice 67 of a
         work pump and the player's Later on a work ask (the work pump that ask stood for, composed without a screen
-        as a `work` pump of its place in the set, its moves all banked), never of a pump of kind `work` picked by hand
+        as a `work` pump, its moves all banked), never of a pump of kind `work` picked by hand
         (call 4: it banks nothing), under that pump's own id,
         `start_at` its start, with its `tier` and one of `moves` per move of its own not done yet, in the pump's order,
         each with its `kind`, `ladder`, `rung`, `seconds` (a timed move's, else 0) and `allout`: the helper writes,
@@ -1936,7 +1936,20 @@ components:
             required: [move, kind]
             properties:
               move: { type: integer, minimum: 1, maximum: 65535, description: the Library.lua move id }
-              kind: { type: integer, minimum: 1, maximum: 4, description: "1 rep, 2 hold, 3 cardio, 4 flow" }
+              kind:
+                type: integer
+                minimum: 1
+                maximum: 4
+                description: |
+                  1 rep, 2 hold, 3 cardio, 4 flow: the kind the move is owed as now. Since 2026-11-11 a row owed as
+                  reps or a hold whose move runs by its time now (contract/library.json's `dose` `flow`: the carries,
+                  the good morning, the bird dog and its kin, which reach no form failure) is listed as that move's
+                  flow row, as the game's fold reads an unfinished row (DB.lua `timedNow`): `kind` 4, the `ladder`
+                  (0 off the ladders) and `rung` a fresh pick of the move carries, and its own `seconds`. So it runs
+                  by its time with no count asked, never as a set one step past the record its old sets left, and its
+                  payment's move row is that flow row, a `set` on it ignored. A helper from before then lists it with
+                  the kind, ladder and rung it was owed with, so a device reads an entry of reps or a hold whose move
+                  is a flow move in its own library the same way.
               ts:
                 type: integer
                 minimum: 0
@@ -1954,21 +1967,27 @@ components:
                 description: |
                   a cardio or flow move's planned seconds; since 2026-10-15 an all-out window's are at most the longest
                   window, `allout_build_s` + `allout_s` × `p_max` (contract/library.json: 40 s), whatever the row kept
-                  (a closing move's row owed under its jog before then kept the jog's length)
+                  (a closing move's row owed under its jog before then kept the jog's length); since 2026-11-11 a row
+                  owed as reps or a hold whose move is timed now (`kind`) carries that move's own, its `secs`
+                  (contract/library.json) on each side of a side move, as the game's fold reads it (DB.lua
+                  `timedNow`), and the move that stands in for it where the place leaves it out runs them too, as for
+                  any flow entry. Absent from an older helper for such a row: the device reads them the same way
               ladder:
                 type: integer
                 minimum: 0
                 maximum: 255
                 description: |
                   Since 2026-10-12: the owed row's ladder (0: a move on none), at which a catch-up doses the move as
-                  the game doses an owed one (Engine.lua `riderSlot`). Absent from an older helper, with `rung`.
+                  the game doses an owed one (Engine.lua `riderSlot`); a timed move's own where the row was owed as
+                  reps or a hold (`kind`). Absent from an older helper, with `rung`.
               rung:
                 type: integer
                 minimum: 0
                 maximum: 255
                 description: |
                   Since 2026-10-12: the owed row's rung, the one its slot was dosed at (an owed anchor at its ladder's
-                  rung now is the rung's attempt). Absent from an older helper: a catch-up then asks no count.
+                  rung now is the rung's attempt); a timed move's own where the row was owed as reps or a hold
+                  (`kind`). Absent from an older helper: a catch-up then asks no count.
               allout:
                 type: boolean
                 description: |
@@ -2275,7 +2294,7 @@ components:
         change the game showed), never shifted by an offset
     Work:
       type: object
-      required: ["on", on_at, every_min, pace, gear, floor, space, quiet, settings_at, block, reset_at, reset_by]
+      required: ["on", on_at, every_min, pace, gear, floor, space, quiet, settings_at, reset_at, reset_by]
       description: |
         Work mode (docs/plan.md slice 67): the player's one switch, its settings and its clock's anchor, one state for
         all the player's devices. `on` is the switch only the player turns, with Start and Stop (Pump home's work card,
@@ -2289,32 +2308,39 @@ components:
         and Quiet mode), which every pump a device composes while `on` takes in place of the place in use's (the place
         in use and its pick stay as they are; David, 2026-11-09: "just have an extra equipment setting for work");
         `settings_at` when one of Every, Moves per block and the equipment last changed.
-        `block` is the work pumps of this set done or put off with Later, 0 to `work_set_blocks` less 1, so the next
-        work pump is the set's `block` + 1-th (the engine's `work.block`) and the set's last the long one;
-        `reset_at` the work clock's anchor, from which each device runs its own clock (never summed across
+        Work mode runs until the player stops it, every work pump the same size: no set of pumps and no long one
+        (David, 2026-11-11: "Why are there 4 dots that get filled. Makes no sense. it should just run as long as I put
+        it"; a `block` counted a set of four until then, and one a build before it still sends is ignored).
+        `reset_at` is the work clock's anchor, from which each device runs its own clock (never summed across
         devices: the computer's and the browser's plain time, which always runs down whatever the typing since
         2026-11-10, the sitting presence until then; a phone's minutes in the work apps; a phone with no computer's
         plain time), and `reset_by` the id of the device that moved it (a phone's
         `client`, the desktop app's install id, a browser's own id). Times are unix milliseconds on the clock of the
         device that made the change, never shifted by an offset; 0 before any change.
 
-        The writes, on any device: Start writes `on` true and `on_at` and `reset_at` now; Stop writes `on` false,
-        `block` 0 and `on_at` and `reset_at` now, at once and without a confirm; a work pump done on its ask and a
-        Later each write `block` + 1 (0 after the set's last) and `reset_at`: a Later's now, a work pump's the moment
-        that pump came on screen, so the next block counts from the pump's coming and holds its own minutes (David,
-        2026-11-10: "be sure that the new 25 minutes are counted right from the popup and not only after the
-        excercises are done"), or now where Every already passed since it came, so a pump that waited or ran that
-        long is not followed by the next at once, and never later than now (on every device since 2026-11-10: the
-        desktop app, the browser and a phone by their own pump's coming, a phone for the work pump its ask started on
-        the wrist by the coming the watch names, `WorkDone.from`);
-        while `on`, any other pump done on
-        any device (a quest's, which the desktop app reads off the game, a match's, Quick pump, a pump picked by hand)
-        writes `reset_at` now alone; a change on the Work mode page or the first Start's sheet writes its value and
-        `settings_at`. Each move of the anchor writes the mover's id in `reset_by`. "Done on its ask" is a work pump
-        started while that ask stood (its `block` + 1 the set's next and its anchor the `reset_at` it was asked at)
-        that saved a move or banked its moves (Bank all, Bank the rest); one left with nothing done or banked, or
-        ended for felt unwell, writes nothing, and the ask stays due. A Later or a work pump answering an ask that
-        stands no more (its anchor moved since: an old notification, a door or a shield left up) writes nothing. Later
+        The writes, on any device: Start writes `on` true and `on_at` and `reset_at` now; Stop writes `on` false and
+        `on_at` and `reset_at` now, at once and without a confirm; a Later writes `reset_at` now; a work pump writes
+        `reset_at` the moment it came on screen, so the next block counts from the pump's coming and holds its own
+        minutes (David, 2026-11-10: "be sure that the new 25 minutes are counted right from the popup and not only
+        after the excercises are done"). The desktop app and the browser, whose work pump opens itself, write it as
+        the pump comes on screen, whatever is then done with that pump, and their clock counts on while it stands
+        (David, 2026-11-11, who left one open past the next block and saw nothing come: "It does not matter that i
+        dont do the excercise right away. it should always continue with the 25 min"): a block that comes due while
+        that pump still stands takes its place once no move runs in it, the standing pump ending as a match's pump
+        makes way for a game's (its own moves left banked from a Ready view, its riders done paid), and a work pump
+        the felt-unwell lock ended, or one that closed untouched because the player went away, leaves its block due
+        again, so its pump comes again once the lock lifts or the player is back. A phone, whose ask the player
+        answers, writes it at its work pump's end, where that pump was done on its ask: the moment it came on
+        screen, or now where Every already passed since it came, and never later than now (a phone by its own
+        pump's coming, for the work pump its ask started on the wrist by the coming the watch names,
+        `WorkDone.from`); "done on its ask" is a work pump started while that ask stood (its anchor the `reset_at`
+        it was asked at) that saved a move or banked its moves (Bank all, Bank the rest); one left with nothing done
+        or banked, or ended for felt unwell, writes nothing, and the ask stays due. While `on`, any other pump done
+        on any device (a quest's, which the desktop app reads off the game, a match's, Quick pump, a pump picked by
+        hand) writes `reset_at` now alone; a change on the Work mode page or the first Start's sheet writes its value
+        and `settings_at`. Each move of the anchor writes the mover's id in `reset_by`. A Later or a work pump
+        answering an ask that stands no more (its anchor moved since: an old notification, a door or a shield left
+        up) writes nothing. Later
         banks the ask's work pump composed on the device's unfinished queue, as a match pump's Bank all does; a phone
         with no link to the desktop app first hears the account once, waiting at most 3 s (offline it banks at once),
         and writes nothing when that moved the anchor. Each
@@ -2323,15 +2349,15 @@ components:
 
         The merge, on every device, of each Work it hears with its own, three parts apart: `on` with `on_at` by the
         later `on_at` (a tie: off wins); `every_min`, `pace`, `gear`, `floor`, `space` and `quiet` together with
-        `settings_at` by the later `settings_at` (a tie: the one held stays); `block`, `reset_at` and `reset_by` together by the later `reset_at`
+        `settings_at` by the later `settings_at` (a tie: the one held stays); `reset_at` and `reset_by` together by the later `reset_at`
         (a tie: the greater `reset_by` by its UTF-8 bytes). A part whose time is more than a day past the device's
-        clock, or whose value does not read (an `every_min` outside the choices, a `block` outside its range, a `gear`
+        clock, or whose value does not read (an `every_min` outside the choices, a `gear`
         that is not a list of keys as `PlaceSetup.gear`), is dropped alone, and so is the settings part of a `Work` that
         lacks `gear`, `floor`, `space` or `quiet` (a build of 2026-11-08 sent and kept `place` in their stead), the
         rest of it taken as it reads; a state a device kept in that shape reads the same, its Every, Moves per block and
         equipment the defaults below. A device that never heard one holds `on` false, `every_min`
         `work_every_min`, `pace` balanced, the equipment of contract/places.json's office template (no equipment, no
-        floor, no room to move, quiet), `block` 0 and every time 0, and sends none while every time is 0. It travels sealed through the account sync as the batch kind `work` (contract/sync-api.yaml), over the
+        floor, no room to move, quiet) and every time 0, and sends none while every time is 0. It travels sealed through the account sync as the batch kind `work` (contract/sync-api.yaml), over the
         link in `SyncRequest.work` and `SyncResponse.work`, and never into the mirror or the game; the felt-unwell
         lock that holds a device's asks is that device's own and never joins it.
       properties:
@@ -2344,7 +2370,6 @@ components:
         space: { type: boolean, description: "Room to move" }
         quiet: { type: boolean, description: "Quiet mode" }
         settings_at: { type: integer, format: int64, minimum: 0 }
-        block: { type: integer, minimum: 0, maximum: 3 }
         reset_at: { type: integer, format: int64, minimum: 0 }
         reset_by: { type: string, maxLength: 64 }
     SheetsResponse:
@@ -2480,15 +2505,16 @@ components:
         (its `match_end`, the test offer's too) and the Good game! sheet's (beside `matches`), which the iPhone and
         Android write on every Start on my watch of one. The watch's Ready view of such a pump, and of a linked game's
         offer, which banks by its `link` alone, shows Bank all while the watch links the desktop app; a watch before it
-        reads the ask without it. Since slice 67 `block` (1 to `work_set_blocks`), present only on a work pump's ask
-        (the phone's work ask's Start on the wrist: `kind` `work`, `tier` 2, `banks` true), its place in the set, and
+        reads the ask without it. Since slice 67 `work`, present and true alone (`1` in the start link; any other
+        value refuses the link), only on a work pump's ask (the phone's work ask's Start on the wrist: `kind` `work`,
+        `tier` 2, `banks` true; `block`, its place in a set of four, until 2026-11-11, when the set went), and
         `pace` beside it, Moves per block (`Work.pace`; `light` or `extreme`, absent for balanced; the start link's
-        `&block=<1-4>[&pace=<light|extreme>]`): the watch composes the work pump the engine's `work = { block, warm }`
-        gives at that pace (contract/fixtures/engine.json), `warm` beside `block` (Android `0` or `1`) whether the
+        `&work=1[&pace=<light|extreme>]`): the watch composes the work pump the engine's `work = { warm }`
+        gives at that pace (contract/fixtures/engine.json), `warm` beside `work` (Android `0` or `1`) whether the
         phone's sitting clock held `work_warm_min`, counted on every device from the later of the last move done (any
-        device's rows it holds) and its own last time away or walk, never from Start or Later; a `block` outside 1-`work_set_blocks`, a `pace` other than the two
-        or a `block` on any other kind or tier refuses the ask as a tier outside 1-3 does. Its Bank all and Bank the
-        rest show as a match pump's do.
+        device's rows it holds) and its own last time away or walk, never from Start or Later; a `pace` other than the
+        two, a `pace` without `work` or a `work` on any other kind or tier refuses the ask as a tier outside 1-3 does.
+        Its Bank all and Bank the rest show as a match pump's do.
       properties:
         kind: { type: string }
         tier: { type: integer, minimum: 1, maximum: 3 }
@@ -2503,7 +2529,7 @@ components:
         warm: { type: boolean }
         game: { type: string, maxLength: 40 }
         banks: { type: boolean }
-        block: { type: integer, minimum: 1, maximum: 4 }
+        work: { type: boolean }
         pace: { type: string, enum: [light, extreme] }
     AppPumpRelay:
       type: object
@@ -2525,7 +2551,7 @@ components:
         Apple Watch's answer to the phone's question, whose notification carries the name; the phone keeps the three on
         the book's pump as they came, and never sends the name to the helper, a row or any telemetry. `work` (slice 67,
         both watches, written only then): a work pump the phone's work ask started on the wrist names that ask's
-        anchor (its `reset_at`), and while that ask stands the phone moves no anchor for it, the block counted by the
+        anchor (its `reset_at`), and while that ask stands the phone moves no anchor for it, the anchor moved by the
         wrist's own word that it was done on it (the Apple Watch's `WorkDone`, Wear OS's `/work_done/<anchor>`); every
         other pump, a hand-picked "A work block" among them, names none and moves the anchor as any pump does (the
         gate is the pump's origin, never its kind).
@@ -2537,30 +2563,29 @@ components:
         work: { $ref: "#/components/schemas/Millis" }
     WorkDone:
       type: object
-      required: [block, at]
+      required: [anchor, at]
       description: |
         Since slice 67, the Apple Watch to its iPhone (`transferUserInfo` key `work_done`, QuestPumpCore's
         `WorkDone`, `WatchRelay.swift`): a work pump the phone's work ask started on the wrist left it, once, as it
         leaves, where it saved a move or banked its moves (Bank all, Bank the rest, a short move's bank) and no
-        felt-unwell stop ended it; `block` its place in the set as the ask named it, `anchor` the `reset_at` the ask
-        stood for (none from a build before it), `at` when it left and, since 2026-11-10, `from` when it came on the
-        wrist (none from a watch build before it), both on the watch's clock. One left with nothing done or banked, or
-        ended for felt unwell, sends none, and the ask stays due. The phone moves work mode's set on as at its own work
-        pump's end while that ask still stands (`block` is the state's `block` + 1 and `anchor` its `reset_at`): `block`
-        + 1 and `reset_at` by `Work`'s rule for a work pump done on its ask ("The writes"), that pump's coming `from`,
+        felt-unwell stop ended it; `anchor` the `reset_at` the ask stood for (the ask is its anchor alone since
+        2026-11-11, when the set and its `block` went), `at` when it left and, since 2026-11-10, `from` when it came
+        on the wrist (none from a watch build before it), both on the watch's clock. One left with nothing done or
+        banked, or ended for felt unwell, sends none, and the ask stays due. The phone writes as at its own work
+        pump's end while that ask still stands (`anchor` is the state's `reset_at`): `reset_at` by `Work`'s rule for
+        a phone's work pump done on its ask ("The writes"), that pump's coming `from`,
         or the phone's now where Every already passed since `from`, where `from` is missing, and where it is no moment
         of that ask's pump on the phone's clock (at or before the ask's anchor, or ahead of the phone's now: a watch
         whose clock differs), so the anchor is never later than now and the write's stamp never lifts it. Where the ask
         stands no more it moves the anchor alone, at `at`. While the ask stands, the wrist work pump's own relays
         (`AppPumpRelay` whose `work` names that ask) move nothing, nor do they or a second `WorkDone` once a `WorkDone`
-        counted that ask's block (the phone keeps the anchor of the last ask the wrist counted), whichever lands first;
+        answered that ask (the phone keeps the anchor of the last ask the wrist answered), whichever lands first;
         the unfinished moves the wrist runs as that pump's riders are its own minutes too (`RelayedPump.work`);
         every other pump of the wrist's own moves the anchor
         at its first relay with a move done. A relayed time at or before the phone's `reset_at` moves nothing. Android's
         twin is the data item `/work_done/<anchor>` (the watch paragraph above), which writes nothing where the ask
         stands no more.
       properties:
-        block: { type: integer, minimum: 1, maximum: 4 }
         anchor: { $ref: "#/components/schemas/Millis" }
         at: { $ref: "#/components/schemas/Millis" }
         from: { $ref: "#/components/schemas/Millis" }
@@ -2606,15 +2631,15 @@ components:
         phone's or the computer's riders are moves of the pump itself. So a catch-up the wrist starts while the riding
         after a work pump done on the phone's ask lasts (from that pump's last card into each next rider, and from the
         unfinished list that riding left to) names that ask's anchor in `work`, as `AppPumpRelay.work` names it for
-        the pump. The phone, hearing a card whose `work` is the ask the wrist's word already counted (the anchor it
-        keeps of the last ask a `WorkDone` or `/work_done/<anchor>` counted), writes nothing, the anchor staying at
+        the pump. The phone, hearing a card whose `work` is the ask the wrist's word already answered (the anchor it
+        keeps of the last ask a `WorkDone` or `/work_done/<anchor>` answered), writes nothing, the anchor staying at
         the pump's coming; only where Every already passed since the phone's `reset_at` at the rider's end (the
         card's go plus its seconds, on the watch's clock) it writes `reset_at` now, so a long riding is not followed
         by the next ask at once, as a work pump that ran that long writes now. A card whose `work` is still the
-        phone's `reset_at` writes nothing either (the pump's own word, not heard yet, counts the block from the
-        pump's coming), and one whose `work` names an ask the wrist's word never counted there (another device
+        phone's `reset_at` writes nothing either (the pump's own word, not heard yet, moves the anchor to the
+        pump's coming), and one whose `work` names an ask the wrist's word never answered there (another device
         answered it first) moves the anchor as any catch-up does. A phone-only clock reads the steps that start its
-        count over from no earlier than the block's count and each such rider's card, so the pump's and its riders'
+        count over from no earlier than that write and each such rider's card, so the pump's and its riders'
         own movement starts none over. A catch-up started any other way (the unfinished list from the session's row,
         a later riding after a match pump) names none, and so does every catch-up of a watch build before it; a phone
         before it skips the key (Android then moves the anchor for every catch-up; the iPhone, which heard no

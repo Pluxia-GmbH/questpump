@@ -7,9 +7,11 @@
 //! "Could you have held longer?" may come from, slice 52), the longest all-out window (`allout_max_s`: the
 //! unfinished list's cap, `OwedMove::of`), the ladders that lost their first rung (`read_rung`: the rung a
 //! catch-up's move row takes from its owed row, `Session::catch_up`), each move's body part (`part`: the spread of
-//! a catch-up's owed moves, `Session::payable_kept`) and the times a row from outside the helper may carry
-//! (`row_timely`: every store's intake, `Session::keep`), and since slice 67 the sitting clock's pause
-//! (`sitting::away_s`), work mode's tunables (`work::tunables`) and the account's bank numbers (`session::bank_quest`).
+//! a catch-up's owed moves, `Session::payable_kept`), each move that runs by its time (`flow`: an owed row whose move
+//! is timed now, `session::owed_now`) and the times a row from outside the helper may carry (`row_timely`: every
+//! store's intake, `Session::keep`), and since
+//! slice 67 the sitting clock's pause (`sitting::away_s`), work mode's tunables (`work::tunables`) and the account's
+//! bank numbers (`session::bank_quest`).
 
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
@@ -57,12 +59,11 @@ pub(crate) struct Constants {
 	/// The seconds of no input (or between two looks) after which the sitting clock starts again, and with it the work
 	/// clock's presence (`sitting::away_s`, slice 67).
 	pub sit_away_s: i64,
-	/// Work mode's (slice 67, `work::Tunables`): Every's default and its choices in minutes, the pumps of a set, the
-	/// seconds without input at which a due work pump asks and after which it asks anyway, and the sitting minutes
-	/// from which it opens on its warm move.
+	/// Work mode's (slice 67, `work::Tunables`): Every's default and its choices in minutes, the seconds without
+	/// input at which a due work pump asks and after which it asks anyway, and the sitting minutes from which it opens
+	/// on its warm move.
 	pub work_every_min: u16,
 	pub work_every_choices: Vec<u16>,
-	pub work_set_blocks: u8,
 	pub work_moment_s: i64,
 	pub work_late_s: i64,
 	pub work_warm_min: i64,
@@ -85,18 +86,42 @@ struct Library {
 	/// `ns.Shifted`, the wall sit's 135° sit on 2026-10-26).
 	#[serde(default)]
 	shifted: BTreeMap<u8, i64>,
-	/// Each move by its id, with the tags the spread of the owed moves reads.
+	/// Each move by its id, with the tags the owed moves are read by.
 	#[serde(default)]
 	moves: BTreeMap<u16, MoveTags>,
 }
 
-/// A move's tags as the spread of the owed moves reads them (Engine.lua `effortPart`).
+/// A move's tags as the owed moves are read by them: its body part's for their spread (Engine.lua `effortPart`), and
+/// what a pick of a move that runs by its time carries (`flow`).
 #[derive(Deserialize)]
 struct MoveTags {
 	#[serde(default)]
 	region: Option<String>,
 	#[serde(default)]
 	pattern: Option<String>,
+	/// `rep`, `hold`, `cardio` or `flow` (Library.lua's `dose`).
+	#[serde(default)]
+	dose: Option<String>,
+	/// Its ladder; none off the ladders.
+	#[serde(default)]
+	ladder: Option<u8>,
+	#[serde(default)]
+	rung: u8,
+	/// A flow move's seconds, each side's on a side move (`side`).
+	#[serde(default)]
+	secs: Option<u16>,
+	#[serde(default)]
+	side: bool,
+}
+
+/// A move that runs by its time (Library.lua's dose `flow`: a pose, a carry, a drill that reaches no form failure) as
+/// a fresh pick of it carries it: its ladder (0 off the ladders) and its own rung (Engine.lua `slotOf`), and its
+/// seconds, a side move's on each side (Engine.lua `flowSeconds`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Flow {
+	pub ladder: u8,
+	pub rung: u8,
+	pub seconds: u16,
 }
 
 #[derive(Deserialize)]
@@ -153,6 +178,13 @@ pub(crate) fn hold_goal(ladder: u8) -> bool {
 pub(crate) fn part(move_id: u16) -> Option<&'static str> {
 	let m = LIBRARY.as_ref()?.moves.get(&move_id)?;
 	m.region.as_deref().or(m.pattern.as_deref())
+}
+
+/// Move `move_id` where it runs by its time (`Flow`); none for a move of another dose or one the library lacks.
+pub(crate) fn flow(move_id: u16) -> Option<Flow> {
+	let m = LIBRARY.as_ref()?.moves.get(&move_id).filter(|m| m.dose.as_deref() == Some("flow"))?;
+	let seconds = m.secs.unwrap_or(0).saturating_mul(if m.side { 2 } else { 1 });
+	Some(Flow { ladder: m.ladder.unwrap_or(0), rung: m.rung, seconds })
 }
 
 /// A row's rung as the fold reads it (DB.lua `ns.ShiftRow`): on a ladder that lost its first rung (`shifted`), one

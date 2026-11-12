@@ -126,7 +126,7 @@ pub const NOTICES: &str = include_str!("../NOTICES.txt");
 pub const DIGEST: &str = embedded::DIGEST;
 
 /// A work pump's size code (slice 67): the Normal pump, whose tier its offered row and its moves carry; its moves come
-/// from its place in the set, never from the tier (`tools/apppump.lua` `A.compose` refuses any other).
+/// from work mode's pace, never from the tier (`tools/apppump.lua` `A.compose` refuses any other).
 pub const WORK_TIER: u8 = 2;
 
 /// The engine's clock and time zone: the unix time now, and the seconds east of UTC at an instant (the computer's
@@ -583,10 +583,10 @@ impl Engine {
 	}
 
 	/// A work pump (slice 67): an app pump of the kind key `kind` (contract/kinds.json's `work`) and its `family`, a
-	/// Normal pump ([`WORK_TIER`]) sized by its place in the set at "Moves per block" (`work`, the profile's `workPace`),
-	/// with no all-out window of its own or owed, its warm move first where `work.warm`, carrying the `unfinished` moves
-	/// as [`Engine::compose`] carries a match pump's: the start rungs first while no ladder has one, then its moves and
-	/// its offered row. It becomes the pump on screen.
+	/// Normal pump ([`WORK_TIER`]) sized at "Moves per block" (the profile's `workPace`), every work pump alike, with
+	/// no all-out window of its own (an owed one rides, last), its warm move first where `work.warm`, carrying the
+	/// `unfinished` moves as [`Engine::compose`] carries a match pump's: the start rungs first while no ladder has one,
+	/// then its moves and its offered row. It becomes the pump on screen.
 	///
 	/// # Errors
 	/// As [`Engine::call`].

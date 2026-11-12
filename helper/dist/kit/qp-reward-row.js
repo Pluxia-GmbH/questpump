@@ -3,8 +3,9 @@
 // step with its QualityWord, and a record's glyph in the move's tone; a row with no move (a star, a stat, a title, a
 // day's line, a streak milestone) leads with its glyph in the tile's place. `reward` is {kind, ...}: record {value},
 // first_record {value, next}, enough {value}, placed {value, record}, star {count}, stat {amount, stat, glyph}, points
-// {count}, title {title}, unlock {ladder, step, quality, word, rekindled, way}, day {line: welcome {xp} | streak {days}
-// | streak_new | rested {count} | token}, milestone {days}, vault {goal: moves | records | embers, count}, and since
+// {count}, title {title}, unlock {ladder, step, quality, word, rekindled, way}, day {line: welcome {xp} | rested
+// {count} | token; the streak's day is no row since slice 72: qp-streak-day), milestone {days}, vault {goal: moves |
+// records | embers, count}, and since
 // slice 42 mastered {ladder, step} (the step's tile with its seal), check {move} (a stretch check passed, the move it
 // opens, open after the set), check_climb {ladder, step} (a climb's check passed, the climb open; slice 42's fix
 // round), check_held {line} (a check passed whose move or climb another wait still holds: that wait in its own words,
@@ -25,11 +26,20 @@
 // ("Earned: …", in its tone). A Rare or higher unlock that is not Rekindled nor only opened with `share` carries the
 // round Share button (qp-share), and so does a streak milestone's with `share` (slice 45: the Share window on the
 // streak card). Read as one, as earned where it is a reward; the reveal says `spoken()`. The caller adds `shown` as
-// the reveal brings it in (kit.css: its tile shines once).
+// the reveal brings it in (kit.css: its tile shines once) and, on a row that `pulses()` (an Epic or higher step, not
+// said quietly), `pulse` at the reveal's pulse instant: its tile's glow rises once to RewardRow's pulseOpacity and back
+// (motion.pulse; slice 72). `waits` stands on a row laid in its place before its turn (kit.css: unseen, its room kept,
+// so no row moves as another comes in). The row a step-up's hero lands on (`catches(fly)`, qp-step-reveal.js `fold`)
+// fades its tile's own picture in under the landing hero and, once it has landed, pops and shines its tile and keeps
+// its tone's edge (`data-caught`).
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, emit, h, qualityName} from "./element.js";
 import {milestoneWords} from "./qp-fanfare.js";
+import {FOLD_GIVES} from "./qp-step-reveal.js";
+
+/** The first quality whose step's glow pulses on the Result (contract/sheet.json `qualities` from 1: Epic). */
+const EPIC = 5;
 
 /** The rewards a screen reader hears as earned: never a day's line nor a placement under the record that stays. */
 const EARNED = new Set(["record", "first_record", "enough", "star", "stat", "points", "title", "unlock", "milestone",
@@ -43,8 +53,6 @@ const QUIET = new Set(["check_waits", "check_held", "best", "slipped", "not_all_
 function dayWords(day) {
 	switch (day.line) {
 		case "welcome": return t("pump.reward.welcome", {xp: day.xp});
-		case "streak": return t("pump.reward.streak", {days: day.days});
-		case "streak_new": return t("pump.reward.streak.new");
 		case "rested": return t("pump.reward.rested", {count: day.count});
 		default: return t("pump.reward.token");
 	}
@@ -128,8 +136,7 @@ function glyphOf(reward) {
 		case "vault": case "xp": return ["reward_xp", "qp-text2"];
 		case "stat": return reward.glyph ? [reward.glyph, "qp-text2"] : null;
 		case "points": return ["reward_familiarity", "qp-text2"];
-		case "day": return [reward.line === "welcome" ? "reward_xp"
-			: reward.line === "streak" || reward.line === "streak_new" ? "mark_check" : "rating_defense", "qp-text2"];
+		case "day": return [reward.line === "welcome" ? "reward_xp" : "rating_defense", "qp-text2"];
 		default: return null;
 	}
 }
@@ -179,6 +186,26 @@ class QpRewardRow extends KitElement {
 
 	get move() {
 		return this.moveData ?? null;
+	}
+
+	/** The step-up's hero lands on this row's tile `fly` ms from now: the tile's picture comes in under it over the
+	 * flight's last third, and at the landing the tile pops and shines and the row keeps its tone's edge. */
+	catches(fly) {
+		this.toggleAttribute("data-catches", true);
+		const picture = this.tile.querySelector("img");
+		picture?.animate([{opacity: 0}, {opacity: 1}],
+			{duration: fly * (1 - FOLD_GIVES), delay: fly * FOLD_GIVES, fill: "backwards"});
+		return () => {
+			this.removeAttribute("data-catches");
+			this.toggleAttribute("data-caught", true);
+		};
+	}
+
+	/** Its tile's glow rises once more after its shine: an Epic or higher step's, never one said quietly (Rust's
+	 * `Reward::pulses`). */
+	pulses() {
+		const reward = this.reward;
+		return reward?.kind === "unlock" && reward.quality >= EPIC && !quietRow(reward);
 	}
 
 	/** What the reveal says of it: the reward, then the move a record is on (a first record's next goal after it), or
@@ -256,4 +283,5 @@ class QpRewardRow extends KitElement {
 	}
 }
 
-define("qp-reward-row", QpRewardRow, {share: Boolean, shown: Boolean});
+define("qp-reward-row", QpRewardRow, {share: Boolean, shown: Boolean, pulse: Boolean,
+	waits: Boolean});

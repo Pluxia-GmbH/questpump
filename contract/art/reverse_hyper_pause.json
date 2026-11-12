@@ -1,0 +1,6 @@
+{
+  "move": "reverse_hyper_pause",
+  "variant_of": "reverse_hyper",
+  "phases": {"hold": 3.0, "lower_slowly": 3.0},
+  "note": "Lift, hold 3 at the line, lower in 3: the reverse hyper's frames with its top held and its lowering slowed."
+}

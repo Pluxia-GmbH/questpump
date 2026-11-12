@@ -5,7 +5,9 @@
 // body map's capped steps, a record day's star, today ringed, a day to come without an edge. `month` (slice 51, the
 // streak page): the weekday `initials` over a game month's days in rows of seven from the week's first day, `days` a
 // cell each, null for a cell before the month's first, each mark as the days' with its `date` (the day of the month)
-// in a mark without a glyph, `monthGap` between the rows.
+// in a mark without a glyph, `monthGap` between the rows. `light(indices)` (slice 72) lights a week's marks one after
+// another as their days arrive (the streak's day on the Result, a reward carried home: kit.css), so the marks are made
+// again only when what they show changed.
 
 import {KitElement, define, h} from "./element.js";
 
@@ -19,9 +21,25 @@ class QpWeekDots extends KitElement {
 		return this.week ?? [];
 	}
 
+	/** Lights the marks of the week's days `indices` (0 the week's first day), each the chip's stagger after the one
+	 * before (motion.carry; at once under Reduce Motion, whose tokens give no time). */
+	light(indices) {
+		const marks = this.querySelectorAll(".qp-dot");
+		indices.forEach((day, order) => {
+			const mark = marks[day];
+			if (!mark) return;
+			mark.style.setProperty("--qp-lit-order", String(order));
+			mark.classList.add("qp-lit-in");
+		});
+	}
+
 	update() {
 		this.setAttribute("role", "img");
 		if (this.label) this.setAttribute("aria-label", this.label);
+		// drawn again only when the marks changed, so a mark that lights is not cut off by a redraw of the same week
+		const drawn = JSON.stringify([this.days, this.month, this.steps, this.initials ?? null]);
+		if (drawn === this.drawn) return;
+		this.drawn = drawn;
 		if (this.month) {
 			this.replaceChildren(...(this.initials ?? []).map((i) => h("span", {class: "qp-type-caps", text: i})),
 				...this.days.map((day) => (day ? h("span", {class: "qp-day"}, this.mark(day)) : h("span"))));

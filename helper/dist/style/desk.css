@@ -260,3 +260,42 @@ qp-card.qp-details code {
 .qp-card-window {
 	overflow: hidden;
 }
+
+/* The Hero tab as the floating Result's motes land in it: a bump, and the XP the pump earned over its glyph in gold
+ * (views/pump/stages.js `heroLanded`) */
+
+.qp-tab.qp-tab-bump qp-art {
+	animation: qp-tab-bump var(--qp-motion-chip) both;
+}
+
+.qp-tab-gain {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	font: var(--qp-type-num-row-font);
+	color: var(--qp-color-gold-hi);
+	white-space: nowrap;
+	transform: translateX(-50%);
+	pointer-events: none;
+	animation: qp-tab-gain var(--qp-motion-result-float-hold-duration) both;
+}
+
+@keyframes qp-tab-bump {
+	50% {
+		transform: scale(1.25);
+	}
+}
+
+@keyframes qp-tab-gain {
+	from {
+		opacity: 0;
+	}
+
+	10%, 80% {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}

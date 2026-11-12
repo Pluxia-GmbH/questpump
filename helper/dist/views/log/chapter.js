@@ -13,12 +13,13 @@
 // `reveal()` plays the first open's motion once: the bars grow left to right, the number counts up and pops, the
 // muscles light in turn (none under Reduce Motion, whose tokens are zero).
 
+import {roll} from "../../lib/carry.js";
 import {t} from "../../lib/copy.js";
 import {LOCALE} from "../../lib/format.js";
 import {push} from "../../lib/router.js";
 import {KIND_WORDS, chapterWords, dayWord, heroSpoken, movesLabel, noon, number, setWords, shortDate, stripSpoken, unit,
 	weekdaySpoken} from "../../lib/saga.js";
-import {h, qualityName, styled, token} from "../../kit/element.js";
+import {h, qualityName, styled} from "../../kit/element.js";
 import {PUMP, pumpRow} from "./log.js";
 
 const SIGNED = new Intl.NumberFormat(LOCALE, {signDisplay: "always"});
@@ -262,21 +263,9 @@ export function chapter(day, ctx, today) {
 			if (motion.matches) return;
 			your.strip.grow();
 			muscles.map.light();
-			countUp(top.number, day.moves);
+			// the number counts up from 0 over the reveal's time and pops at its end (lib/carry.js)
+			if (day.moves > 0) roll(top.number, 0, day.moves, "saga-reveal");
 		},
 	};
 }
 
-/** The number counts up from 0 over the reveal's time and pops at its end (digitPop). */
-function countUp(el, to) {
-	const ms = token(el, "--qp-motion-saga-reveal-duration") || 0;
-	if (!ms || to <= 0) return;
-	const from = performance.now();
-	const step = (now) => {
-		const p = Math.min(1, (now - from) / ms);
-		el.textContent = number(Math.round(to * (1 - (1 - p) ** 3)));
-		if (p < 1) requestAnimationFrame(step);
-		else el.classList.add("qp-pop");
-	};
-	requestAnimationFrame(step);
-}

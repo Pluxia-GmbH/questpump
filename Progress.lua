@@ -193,37 +193,42 @@ ns.Ladders = {
 	-- The core hold split the same day: the planks (anti-extension) to the dragon flag, and the side (the side planks
 	-- and the Copenhagen to blue, then the flags on a pole outdoors). A hold that stands in on a rung counted in reps
 	-- keeps its own seconds (`alt`), and since 2026-10-16 (slice 42) every rep move beside a hold step its own reps,
-	-- the higher of the published standards under censor_s at its pace: the bird dog 8-15 pairs and the dead bug
-	-- 10-24 lowers (10-12 a side before harder variations, 3 x 10 a side the common baseline), the chops 10-20 a side
-	-- and 10-25, McGill's curl-up 5-12 of its 5-s holds (his 6-4-2 pyramid of 8-10-s holds, a clinical start of 10),
+	-- the higher of the published standards under censor_s at its pace: the dead bug 10-24 lowers (10-12 a side before
+	-- harder variations, 3 x 10 a side the common baseline; the bird dog and the bird dog hold stood here until
+	-- 2026-11-10, and the chops, 10-20 a side and 10-25, until 2026-11-11: timed drills off the ladders since,
+	-- Library.lua's class line), McGill's curl-up 5-12 of its 5-s holds (his 6-4-2 pyramid of 8-10-s holds, a clinical
+	-- start of 10),
 	-- the hanging knee raise 6-15 (3 x 10-12 strict before straight legs), the inchworm 4-10, the Pallof press 8-15 a
 	-- side, the short and the wall rollouts 8-25, the ball chop 8-15 a side, the roller dead bug 8-20, the ring fallout
 	-- 5-15. The flags press on the low arm and pull on the high one, which nothing on the side ladder trains: their first
 	-- rung waits for the pull-up (or, for a pole and no bar, rung 8's row on the table or the rings) and the push-up
 	-- done (`needs`, 2026-10-09; the `any` since 2026-10-16). The clutch flag
-	-- stands beside the Copenhagen raises in seconds, and the straddle flag's rung went in under the human flag at the
-	-- top (2026-10-10, the ladder rethink).
+	-- stands beside the Copenhagen raises in seconds, as the desk side plank, the last of that rung's chain, does in
+	-- the seconds of the rung below (2026-11-11: it read the raises' reps as seconds until then, which tools/lint.lua
+	-- refuses of any chain since), and the straddle flag's rung went in under the human flag at the top (2026-10-10,
+	-- the ladder rethink).
 	-- The desk planks switch sides (2026-10-10), so where they are dosed their windows are each side's: half the
 	-- rung's, the same seconds in all. The core's top since 2026-10-10: the standing rollout's lowering the orange rung
-	-- 10, the standing rollout the gold rung 11 above it; the tuck plow raise beside the body saw and the hips-open tuck
-	-- beside the tuck dragon flag. Since 2026-10-12 (the ladder gaps) the straddle dragon flag stands beside the dragon
-	-- flag's lowering in its reps, and in windows of their own the standing rollout to a wall beside the standing
-	-- lowering, the Copenhagen with the thigh on the edge beside the side plank and the vertical flag beside the clutch
-	-- flag. The standing lowering's climb waits for the overhead range of the wall angels' goal pose (2026-10-16),
-	-- answered Perfect since its grey goal eased to the thumbs a fist from the wall (2026-10-27; Good on the thumbs on
-	-- the wall until then).
+	-- 10, the standing rollout the gold rung 11 above it; the tuck plow raise beside the body saw (rung 6's main move
+	-- since 2026-11-11, when the body saw took the towel's box: the saw is the climb's stage for a setup with a towel,
+	-- each in the window it had, and the incline plank, the last of the rung's chain, keeps the seconds the rung
+	-- counted until then) and the hips-open tuck beside the tuck dragon flag. Since 2026-10-12 (the ladder
+	-- gaps) the straddle dragon flag stands beside the dragon flag's lowering in its reps, and in windows of their own
+	-- the standing rollout to a wall beside the standing lowering, the Copenhagen with the thigh on the edge beside the
+	-- side plank and the vertical flag beside the clutch flag. The standing lowering's climb waits for the overhead
+	-- range of the wall angels' goal pose (2026-10-16), answered Perfect since its grey goal eased to the thumbs a fist
+	-- from the wall (2026-10-27; Good on the thumbs on the wall until then).
 	[10] = { key = "core", stat = "stamina", region = "trunk", rungs = {
 		{ lo = 30, hi = 90, alt = { [237] = { lo = 15, hi = 45 } }, step = 1 },
-		{ lo = 30, hi = 90, alt = { [236] = { lo = 15, hi = 45 }, [78] = { lo = 8, hi = 15 }, [79] = { lo = 10, hi = 24 },
-			[80] = { lo = 5, hi = 12 }, [137] = { lo = 10, hi = 20 }, [138] = { lo = 10, hi = 25 },
-			[641] = { lo = 15, hi = 45 } }, step = 2 },
+		{ lo = 30, hi = 90, alt = { [236] = { lo = 15, hi = 45 }, [79] = { lo = 10, hi = 24 }, [80] = { lo = 5, hi = 12 } },
+			step = 2 },
 		{ lo = 20, hi = 120, alt = { [236] = { lo = 10, hi = 60 }, [198] = { lo = 8, hi = 25 }, [69] = { lo = 6, hi = 15 },
 			[84] = { lo = 4, hi = 10 }, [154] = { lo = 8, hi = 15 }, [195] = { lo = 8, hi = 25 }, [212] = { lo = 8, hi = 15 },
 			[217] = { lo = 8, hi = 20 } }, step = 3 },
 		{ lo = 10, hi = 45, alt = { [236] = { lo = 5, hi = 23 }, [203] = { lo = 5, hi = 15 } }, step = 6 },
 		{ lo = 20, hi = 60, alt = { [236] = { lo = 10, hi = 30 }, [196] = { lo = 8, hi = 20 } }, step = 7 },
-		{ lo = 10, hi = 45, alt = { [236] = { lo = 5, hi = 23 }, [380] = { lo = 8, hi = 20 } },
-			path = { { ids = { 380 }, opens = "step" } }, step = 8 },
+		{ lo = 8, hi = 20, alt = { [236] = { lo = 5, hi = 23 }, [70] = { lo = 10, hi = 45 }, [77] = { lo = 10, hi = 45 } },
+			path = { { ids = { 77 }, opens = "step" } }, step = 8 },
 		{ lo = 3, hi = 15, alt = { [237] = { lo = 15, hi = 45 }, [381] = { lo = 3, hi = 10 } },
 			path = { { ids = { 381 }, opens = "main" } }, step = 9 },
 		{ lo = 3, hi = 10, alt = { [237] = { lo = 15, hi = 45 } }, path = { { ids = { 406 }, opens = "main" } }, step = 10 },
@@ -236,8 +241,9 @@ ns.Ladders = {
 		{ lo = 20, hi = 60, alt = { [408] = { lo = 10, hi = 60 } }, path = { { ids = { 408 }, opens = "step" } }, step = 5 },
 		{ lo = 10, hi = 60, step = 6 },
 		{ lo = 10, hi = 40, alt = { [324] = { lo = 20, hi = 60 }, [239] = { lo = 20, hi = 60 } }, step = 7 },
-		{ lo = 5, hi = 15, alt = { [324] = { lo = 20, hi = 60 }, [239] = { lo = 20, hi = 60 }, [383] = { lo = 5, hi = 25 },
-			[409] = { lo = 5, hi = 30 } }, path = { { ids = { 383 }, opens = "step" }, { ids = { 409 } } }, step = 9 },
+		{ lo = 5, hi = 15, alt = { [324] = { lo = 20, hi = 60 }, [239] = { lo = 20, hi = 60 }, [238] = { lo = 10, hi = 40 },
+			[383] = { lo = 5, hi = 25 }, [409] = { lo = 5, hi = 30 } },
+			path = { { ids = { 383 }, opens = "step" }, { ids = { 409 } } }, step = 9 },
 		{ lo = 3, hi = 25, step = 10,
 			needs = { { any = { { ladder = LAD.pullup, step = 8, count = 8 },
 				{ ladder = LAD.row, step = 8, move = 652, count = 8 }, { ladder = LAD.row, step = 8, move = 655, count = 8 } } },
@@ -371,6 +377,51 @@ ns.Ladders = {
 				path = { { ids = { 452 }, opens = "main" } }, step = 5 },
 			{ lo = 3, hi = 20, alt = { [454] = { lo = 10, hi = 30 } }, step = 6, needs = { { ladder = LAD.pike, step = 4 } } },
 			{ lo = 6, hi = 15, step = 7 } } },
+	-- The lower back (2026-11-10, David: "imo there should be whole line for it"): the back's extensors in reps to a
+	-- straight line and never past it, grey to blue as the sit-up's, past its first step the legs lifted first and the
+	-- trunk on top (the trunk lift is the heavier one: De Ridder 2013). The kneeling back raise anchors the first step,
+	-- whose window is its own 8-16, with the hinge hold, the step's way without the floor, in its own seconds, and its
+	-- climb waits for no stage: the bird dog (the anchor until 2026-11-11), its hold and the one-leg reverse hyper (the
+	-- step's stage until then) are timed drills off the ladder, since no set of them ends at the form (Library.lua's
+	-- class line). Each later climb waits for its in-between move at its top (the rung's `path`): the reverse hyper
+	-- hold for the reverse hyper (the straight legs' lever held level), the chest lift for the
+	-- back extension (the trunk lifted at a short lever, lighter than the reverse hyper beside it, so it opens with the
+	-- step since 2026-11-11 and no longer waits for 20 reverse hypers), the back extension hold for the long back
+	-- extension (the line held before the arms lengthen the lever); the pack adds load to the back extension, done with
+	-- the fingertips at the temples. The tops: 25 back extensions and a 90-s level hold are one adult-average band
+	-- (Alaranta 1994: 24-28 reps, 87-97 s), the reverse hypers 20 (the Recommended Routine's 3 x 8-12 as one fresh set,
+	-- the higher end), and the Superman hold, the highest floor compression, 60 s beside the reverse hyper, on no path
+	-- (120 s on the core ladder until then). The thirteen moves of 2026-11-11 (kneeling, prone on the floor, anchored,
+	-- with a band, across a table: Library.lua) are variety at their rungs, on no path and, but the kneeling back raise,
+	-- in no chain, each with a window of its own but the table reverse hyper, which takes the reverse hyper's, and the
+	-- kneeling back raise, whose own is its rung's; each top is what fits censor_s at
+	-- its figure's pace (the seconds of its motion file's loop; the voice counts at it): the kneeling back raise 16 (5.3
+	-- s a rep), the kneeling good morning 12 (7.0 s with its 3-s hold) and the long one 10 (8.4 s, its fold slow), the
+	-- swimmer lifts 15 pairs (9.6 s a pair, whose clock is a pair's, twice censor_s), the floor leg lift and the long
+	-- chest lift 12 (7.0 s), the long back extension hold 60 s, the slow long back extension 10 (7.2 s), the band moves
+	-- 15 (4.4 s a reach on a side, 3.6 s a lift), and the two with a typed weight in 6 reps to the count their weight
+	-- steps up at: the chest lift with a pack 12 (7.0 s), the kneeling good morning with a weight 14 (6.2 s). The first
+	-- build's paces: about 3.2 s a rep, 4.8 s a pair of one-leg lifts, 5.5 s the chest lift, 7.2 s the paused reverse
+	-- hyper; the top rung climbs by its weight in 6-15 reps. It pays Strength, as the hinge, the
+	-- back side's other family (its anchors work the back at strength level, 62-71 % of its most at 60 % of one rep's
+	-- most: De Ridder 2013), though its region is the trunk: on Stamina, the trunk's other families' stat, it lifted
+	-- Stamina past Agility under the Endurance focus (seeds 2 and 3) or past Spirit under the Flexibility focus (seeds
+	-- 1 and 2), so on every seed two of the three focuses ended "of the Bear" (make sim, hub, seeds 1-3, 2026-11-10:
+	-- docs/plan.md slice 22, "The lower back ladder"). It stands outside the Trial: its first max set places it.
+	[25] = { key = "lowerback", stat = "strength", region = "trunk",
+		rungs = { { lo = 8, hi = 16, alt = { [639] = { lo = 30, hi = 90 } }, step = 2 },
+			{ lo = 8, hi = 20, alt = { [658] = { lo = 20, hi = 60 }, [668] = { lo = 5, hi = 12 },
+					[669] = { lo = 8, hi = 15 }, [670] = { lo = 8, hi = 15 } },
+				path = { { ids = { 658 }, opens = "main" } }, step = 3 },
+			{ lo = 8, hi = 20, alt = { [660] = { lo = 6, hi = 15 }, [640] = { lo = 20, hi = 60 },
+					[671] = { lo = 5, hi = 10 }, [672] = { lo = 5, hi = 12 } },
+				path = { { ids = { 660 }, opens = "step" } }, step = 4 },
+			{ lo = 10, hi = 25, alt = { [662] = { lo = 5, hi = 12 }, [663] = { lo = 30, hi = 90 },
+					[674] = { lo = 5, hi = 12 }, [675] = { lo = 6, hi = 12 } },
+				path = { { ids = { 663 }, opens = "main" } }, step = 5 },
+			{ lo = 8, hi = 20, alt = { [665] = { lo = 6, hi = 15 }, [676] = { lo = 20, hi = 60 },
+					[677] = { lo = 6, hi = 14 } }, step = 6 },
+			{ lo = 6, hi = 15, alt = { [678] = { lo = 5, hi = 10 }, [679] = { lo = 8, hi = 15 } }, step = 7 } } },
 }
 
 -- The highest ladder id: the lists that go by id (the sheet summary's lad, the library's cadence) run 1..LADDER_MAX,
@@ -559,7 +610,8 @@ end
 -- The plan's block a move belongs to: cardio by its dose; a pose its family's (slice 21: the backbend, balance and
 -- the arm balances yoga, the splits, the pike, twists and ankles mobility); off the families the timed poses of the
 -- yoga group and the balance moves are yoga, the other stretches and mobility drills mobility; every rep or hold move
--- is strength, and so is a timed move its load or tempo makes work (a carry, the good morning).
+-- is strength, and so is every other timed move: one its load or tempo makes work (a carry, the good morning) and a
+-- drill of a strength group that is timed because no set of it ends at the form (the bird dog, the chops).
 function ns.Block(moveId)
 	local m = ns.Library[moveId]
 	if m.dose == "cardio" then return "cardio" end
@@ -3424,7 +3476,7 @@ function ns.HoldAsk(state, slot, value, now)
 end
 
 -- The entry that speaks for `move` on a ledger ladder's step (ns.HoldNow, ns.HoldTopIn), with that move's top: a move
--- whose sets the ledger reads (ns.LedgerTop), so never a rep anchor of the core's steps 7-11 or the side's step 5; and
+-- whose sets the ledger reads (ns.LedgerTop), so never a rep anchor of the core's steps 6-11 or the side's step 5; and
 -- an entry that read a set since its last rung change (`prior`: a prior with no set of its own behind it names no
 -- number). Nil otherwise.
 local function stepEntry(state, ladder, move)

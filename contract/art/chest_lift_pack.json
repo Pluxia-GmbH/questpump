@@ -1,0 +1,78 @@
+{
+  "move": "chest_lift_pack",
+  "view": "side",
+  "camera": {"yaw": 20, "pitch": 12},
+  "working": ["abdomen"],
+  "items": [{"kind": "backpack", "on": "back"}],
+  "props": [{"kind": "mat", "f0": -112, "f1": 96}, {"kind": "step", "f0": -14, "f1": 18, "u": 6, "l0": -31, "l1": 31}],
+  "poses": {
+    "flat": {
+      "pelvis": [0, 20.5, 0],
+      "trunk": [97, 0, 0],
+      "chest": [0, 0, 0],
+      "head": [-5, 0, 0],
+      "arms": {"ik": [0.4, 12.8, 27.7], "rel": "neck", "pole": [0, -0.2, 1], "hand": [0.1, 0.45, -0.89]},
+      "legs": {"fk": [20.5, 3, 6.8, -96.7]},
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "head",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "elbow_near",
+        "elbow_far"
+      ]
+    },
+    "up": {
+      "from": "flat",
+      "trunk": [93, 0, 0],
+      "chest": [-10, 0, 0],
+      "head": [6, 0, 0],
+      "legs": {"fk": [16.5, 3, 6.8, -96.7]},
+      "contacts": ["pelvis", "waist", "knee_near", "knee_far", "toe_near", "toe_far", "ankle_near", "ankle_far"]
+    },
+    "chin": {
+      "from": "flat",
+      "head": [-32, 0, 0],
+      "contacts": [
+        "pelvis",
+        "waist",
+        "neck",
+        "knee_near",
+        "knee_far",
+        "toe_near",
+        "toe_far",
+        "ankle_near",
+        "ankle_far",
+        "elbow_near",
+        "elbow_far"
+      ]
+    }
+  },
+  "timeline": [
+    {"pose": "flat"},
+    {"hold": 0.4, "phase": "lie_flat"},
+    {"to": "up", "s": 1.6, "phase": "lift", "effort": 0.8},
+    {"hold": 3.0, "phase": "hold", "effort": 0.9},
+    {"to": "flat", "s": 2.0, "phase": "lower_slowly", "effort": 0.5}
+  ],
+  "key": "up",
+  "fault": {
+    "pose": "chin",
+    "caption": "chin_leads",
+    "breaks": {"check": "angle", "joints": ["waist", "neck", "head"], "min": 160}
+  },
+  "targets": [
+    {"at": "up", "check": "height", "joint": "neck", "min": 20, "max": 26},
+    {"at": "up", "check": "angle", "joints": ["waist", "neck", "head"], "min": 160},
+    {"at": "up", "check": "height", "joint": "pelvis", "max": 22},
+    {"at": "up", "check": "height", "joint": "ankle_near", "max": 8},
+    {"at": "up", "check": "height", "joint": "knee_near", "max": 12}
+  ],
+  "note": "The chest lift with a loaded pack worn high and snug on the back, both straps on: face down on the mat, a folded pillow (the low box) under the lower belly, fingertips at the temples and the elbows wide, the legs straight with the tops of the feet on the floor; the chest lifts a hand's width with the chin a little tucked and the eyes on the floor, holds for a count of 3 and lowers slowly."
+}

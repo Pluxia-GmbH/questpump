@@ -5,7 +5,8 @@
 // edge. `mode="hero"`: each named muscle (`names` {id: name}) is a control: hover or focus fires qp-muscle-hover
 // ({id, el}) for the Tooltip, a click or Enter fires qp-muscle ({id}). `mode="day"` (the Saga's Muscles): `most` and
 // `some` (muscle ids) light the day's muscles, Most in gold and Some in gold at the token's share; `light()` lights them
-// one after another once (muscleLight, staggered; at once under Reduce Motion).
+// one after another once (muscleLight, staggered; at once under Reduce Motion). `fade(ids)` (slice 72, a reward carried
+// home) fades Hero's muscles `ids` up from the untrained dark into their tones, once.
 
 import {BODY} from "../art/body.js";
 import {KitElement, define, emit, qualityName, token} from "./element.js";
@@ -80,6 +81,17 @@ class QpMuscleMap extends KitElement {
 			path.style.transitionDelay = `${i * step}ms`;
 			path.classList.remove("qp-day-dark");
 		})));
+	}
+
+	/** Fades the lit muscles `ids` up from the untrained dark into their tones, once (muscleLight: the muscles trained
+	 * since Hero last showed; at once under Reduce Motion, whose token gives the fade no time). */
+	fade(ids) {
+		const lit = [...this.svg.querySelectorAll(".qp-lit")]
+			.filter((path) => ids.includes(Number(path.dataset.muscle)));
+		for (const path of lit) path.classList.add("qp-dark");
+		requestAnimationFrame(() => requestAnimationFrame(() => {
+			for (const path of lit) path.classList.remove("qp-dark");
+		}));
 	}
 
 	update() {

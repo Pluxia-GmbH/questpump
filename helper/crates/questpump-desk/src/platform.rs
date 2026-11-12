@@ -545,7 +545,7 @@ pub trait Platform: 'static {
 	/// The work pump of the ask `ask` (`WorkView::ask`) was started by itself (`Desk::work_open`: its start accepted and
 	/// the window asked to open, `open_window`, which brings the desktop app's to the front): the browser, whose tab
 	/// cannot come to the front, tells its page, which shows a notification while the tab is hidden and that pump
-	/// stands.
+	/// stands (`WorkView::pump`).
 	fn work_opened(&mut self, ask: &str) {
 		let _ = ask;
 	}

@@ -16,6 +16,7 @@
 
 import {t} from "../lib/copy.js";
 import {announce} from "../lib/focus.js";
+import {feedback} from "../lib/sound.js";
 import {KitElement, define, emit, h, styled} from "./element.js";
 
 /** A code's digits where the field names none. */
@@ -79,7 +80,12 @@ class QpTextInput extends KitElement {
 
 	attributeChangedCallback(name, old, value) {
 		super.attributeChangedCallback();
-		if (name === "error" && value && this.built) announce(value);
+		if (name === "error" && value && this.built) {
+			announce(value);
+			// what the field took failed and its error shows (slice 72: a wrong code, an address refused), once as it
+			// comes
+			if (value !== old) feedback("error");
+		}
 	}
 
 	get value() {

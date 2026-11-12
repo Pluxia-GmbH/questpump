@@ -11,7 +11,8 @@
 // view's) fits the figure's own box, as drawn on its side, as large as the stage holds it in its middle (kit.css
 // `qp-figure-stage[fill]`, the box's numbers set here), its square clipped by the stage, whose edges fade;
 // `hold(figure)` shows a MoveFigure its owner keeps from page to page, and the stage makes its own only when it holds
-// none.
+// none; `release()` lets such a figure go as the stage leaves while its owner shows it on (lib/stage.js: the stage's
+// cross-fade), and the stage draws none from then on.
 
 import {t} from "../lib/copy.js";
 import {MoveFigure, drawnBox, figureOf} from "../lib/figure.js";
@@ -53,6 +54,14 @@ class QpFigureStage extends KitElement {
 		this.update();
 	}
 
+	/** Lets go of a figure it holds for its owner: the stage it stands on leaves and the figure goes on in the next, so
+	 * this one shows it no more and draws none of its own. */
+	release() {
+		if (!this.held) return;
+		this.figure = null;
+		this.released = true;
+	}
+
 	get square() {
 		this.ensure();
 		return this.box;
@@ -80,7 +89,7 @@ class QpFigureStage extends KitElement {
 	}
 
 	update() {
-		if (this.isConnected) {
+		if (this.isConnected && !this.released) {
 			if (!this.figure) {
 				this.figure = new MoveFigure();
 				this.box.append(this.figure.el);

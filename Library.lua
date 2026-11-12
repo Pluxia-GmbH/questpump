@@ -12,8 +12,8 @@
 -- .setup, .cue, .stop) and outlive a new name (backpack_row is the one-arm row with any weight).
 -- Every move is tagged from a closed vocabulary (tools/lint.lua checks it), so the engine acts on tags, never on names:
 --
--- group     the Exercises page's group: squat lunge hinge push pull core situp calf cardio carry mobility yoga, and
---           the seventeen equipment sets (bar bands kettlebell dumbbells barbell rope bike stairs pad
+-- group     the Exercises page's group: squat lunge hinge push pull core back situp calf cardio carry mobility yoga,
+--           and the seventeen equipment sets (bar bands kettlebell dumbbells barbell rope bike stairs pad
 --           step wheel rings vest ball roller backpack pole)
 -- pattern   squat hinge lunge push pull core_anti_ext core_anti_rot core_flex carry iso mobility balance ballistic
 --           cardio run calf strike (core_flex: the trunk curled in reps, the sit-up's, 2026-10-17)
@@ -22,21 +22,30 @@
 -- class     1-3 (L1-L3); dose rep | hold | cardio | flow; secs: a flow move's seconds, each side's on a side move
 --           (2026-10-01: 30 s each, the top of ACSM's 10-30 s a stretch, Garber 2011). A rep or hold move ends at
 --           form failure well inside censor_s for most players; a move whose limit is the load or the patience (a
---           carry, the unloaded good morning) is a flow move that pushes through its load or its tempo instead
+--           carry, the unloaded good morning) is a flow move that pushes through its load or its tempo instead, and
+--           so is one that reaches no form failure: one limb lifted at a time with the sides taking turns, a position
+--           held with no load, a swing with empty hands (David, 2026-11-11, of the bird dog: "it's too easy most
+--           people can do 100+ repeats", "only about the very easy reps": a move a weak player fails on keeps its
+--           count)
 -- ladder    ns.Enum.ladder (Core.lua): 1 push, 2 squat, 4 hinge, 6 cardio, 7 wall sit, 8 pull-up, 9 row, 10 core,
 --           11 side, 12-19 the stretching and yoga families (slice 21; 3 pull and 5 core hold retired on 2026-10-04),
---           20 handstand, 21 L-sit, 22 planche, 23 power (slice 22), 24 sit-up (2026-10-17);
+--           20 handstand, 21 L-sit, 22 planche, 23 power (slice 22), 24 sit-up (2026-10-17), 25 lower back
+--           (2026-11-10);
 --           rung: its place on that ladder, or on its region's ladder scale for a move off the ladders; anchor: the
 --           move whose record (a pose's mark) decides the rung
--- regress, progress, twin   move ids; twin: the substitute when the move needs floor, space, a stable chair, a table
---           or equipment (an anchor that needs one of the first four has one wherever
+-- regress, progress, twin   move ids; twin: the substitute when the move needs floor, space, a stable chair, a table,
+--           a towel or equipment (an anchor that needs one of the first five has one wherever
 --           its ladder holds a move without them at or under its rung: tools/lint.lua), the rung's own move without
 --           them first where one exists
 --           (2026-10-01), then the stand-ins from below, which stand for the rung but never climb to it or from it
 --           (ns.CanRungUp, ns.CanClimb); a chain of twins ends where the ladder tops out
 -- flags     floor loud space tendon impact strain head_down skill
 -- pain      wrist elbow knee achilles back shoulder neck hip (the player's pain flags remove the tagged moves)
--- needs     equipment, each entry required; an entry that is a list is "any of": { { "stairs", "step" } }
+-- needs     equipment, each entry required; an entry that is a list is "any of": { { "stairs", "step" } }; "towel"
+--           on a move whose tool is a towel (2026-11-11, David: "the lying towel hamstring stretch should of only
+--           come when I checked towel as equipment (and similar excrcises too)"): the strap round a foot, the roll
+--           under the back, the fold stood on, the slider under heels, toes or a hand, the towel over a bar; never
+--           on one that names a towel as a pad or as a help the move stands without
 -- theme     bear crab frog duck worm spider axe pick oar bow hammer climb swim carry dig run sneak fight ride
 -- road      every cardio-ladder form's and every finisher form's (slice 54, 2026-10-23; ns.ROADS): run strike jump
 --           floor standing, and gear for the forms that need equipment; never shown, it orders the cardio picks' fair
@@ -56,8 +65,8 @@
 --           one side until the player presses Switch sides, the weaker side's count typed (standing, at a desk, a door
 --           or a bar since 2026-10-10; on the floor or lying down too since 2026-10-13, David: "single leg bridge
 --           should have switch side button", where both sides ran as one set from 2026-10-03 so that nobody got up
---           mid-set to reach the computer); pairs: a move of reps whose sides take turns every rep (the bird dog, the
---           archer push-ups), no side move: one count is a rep on each side, its figure's loop, so its stopwatch
+--           mid-set to reach the computer); pairs: a move of reps whose sides take turns every rep (the swimmer lifts,
+--           the archer push-ups), no side move: one count is a rep on each side, its figure's loop, so its stopwatch
 --           covers both sides (ns.Classify; David, 2026-10-12: "Or I should alternate but then that needds to be
 --           said clearer")
 -- support   "chair" or "table": the body rests on it (the lint wants the matching need); "bed": it rests on a bed or
@@ -84,8 +93,10 @@
 -- hint      the pose that helps the move, a soft prerequisite and never a gate (2026-10-17, slice 42): the move's card
 --           names it under "Helps", with the advice line move.<key>.hint where the locale gives one; a pose of a
 --           stretching or yoga family (tools/lint.lua)
--- goalSince on a move whose form changed under its id, the moment (Unix seconds) from which its sets measure it
---           (DB.lua ns.BeforeForm): an older row keeps its record and stars and counts toward no recent form, no day
+-- goalSince on a move whose form changed under its id, or whose part on its rung did (the tuck plow raise, the stage
+--           of the core's rung 6 until 2026-11-11 and its main move since), the moment (Unix seconds) from which its
+--           sets measure it (DB.lua ns.BeforeForm): an older row keeps its record and stars and counts toward no
+--           recent form, no day
 --           at its top, no climb's day at the top and no check (a pose's: no best and no first pass either, markDays,
 --           2026-10-17; every changed move's since 2026-10-19): the wall angels' wall test, plank shoulder taps' feet
 --           together
@@ -236,8 +247,8 @@ ns.Library = {
 		ladder = 2, rung = 4, twin = 15, strainFree = true, flags = { "space" }, hint = 271, pain = { "knee" },
 		theme = { "duck" }, mp = { Qu, Gl }, ms = { Ad, Ca } }),
 
-	-- Hinge: on the floor from the bridge to the Nordics, each rung's twins its ways without the floor or a stable
-	-- chair, then the stand-ins from the rungs below.
+	-- Hinge: on the floor from the bridge to the Nordics, each rung's twins its ways without the floor, a stable
+	-- chair or (the sliding curls' rungs, 2026-11-11) a towel, then the stand-ins from the rungs below.
 	-- The unloaded good morning is timed: hands on the hips, a max set runs into the hundreds before the form fails.
 	[31] = move({ key = "good_morning", group = "hinge", pattern = "hinge", class = 1, dose = "flow", secs = 40,
 		rung = 1, pain = { "back" }, mp = { Ha, Gl }, ms = { LB } }),
@@ -254,16 +265,16 @@ ns.Library = {
 		dose = "rep", ladder = 4, rung = 3, anchor = true, regress = 34, progress = 36, twin = 235,
 		flags = { "floor" }, pain = { "back" }, mp = { Ha }, ms = { Gl, Ca } }),
 	[36] = move({ key = "sliding_curl", group = "hinge", pattern = "hinge", region = "legs", class = 2, dose = "rep",
-		ladder = 4, rung = 4, anchor = true, regress = 35, progress = 37, twin = 287, flags = { "floor" }, mp = { Ha },
-		ms = { Gl, Ca } }),
+		ladder = 4, rung = 4, anchor = true, regress = 35, progress = 37, twin = 287, flags = { "floor" },
+		needs = { "towel" }, mp = { Ha }, ms = { Gl, Ca } }),
 	-- one leg slides out in 3 s, both pull back (2026-10-10; Overcoming Gravity's "1 Leg hamstring slide ecc"): the
 	-- single-leg sliding curl's lowering before its pull
 	[378] = move({ key = "sl_slide_lowering", group = "hinge", pattern = "hinge", region = "legs", class = 2,
-		dose = "rep", ladder = 4, rung = 4, regress = 36, side = true, flags = { "floor" }, mp = { Ha },
-		ms = { Gl, Ca } }),
+		dose = "rep", ladder = 4, rung = 4, regress = 36, side = true, flags = { "floor" }, needs = { "towel" },
+		mp = { Ha }, ms = { Gl, Ca } }),
 	[37] = move({ key = "sl_sliding_curl", group = "hinge", pattern = "hinge", region = "legs", class = 3,
 		dose = "rep", ladder = 4, rung = 5, anchor = true, regress = 378, progress = 38, twin = 288, side = true,
-		flags = { "floor" }, mp = { Ha }, ms = { Gl, Ca } }),
+		flags = { "floor" }, needs = { "towel" }, mp = { Ha }, ms = { Gl, Ca } }),
 	[38] = move({ key = "nordic_assisted", group = "hinge", pattern = "hinge", region = "legs", class = 3,
 		dose = "rep", ladder = 4, rung = 6, anchor = true, regress = 37, progress = 39, twin = 37,
 		flags = { "floor", "tendon", "strain", "skill" }, needs = { "stable_chair" }, support = "chair",
@@ -306,7 +317,7 @@ ns.Library = {
 		needs = { "stable_chair" }, support = "chair", pain = { "knee", "wrist" }, mp = { Ha }, ms = { Ca, Gl } }),
 	-- The single-leg hip thrust from the sofa is a floor variant beside the sliding curl (2026-10-04; until then it
 	-- stood for the Nordic rungs, a glute lift under their colours, and without the Nordics the hinge now ends on the
-	-- single-leg sliding curl).
+	-- single-leg sliding curl or, without a towel, on its twin, the slow single-leg deadlift with a weight).
 	[41] = move({ key = "hip_thrust_sl", group = "hinge", pattern = "hinge", region = "legs", class = 2, dose = "rep",
 		ladder = 4, rung = 4, regress = 34, side = true, flags = { "floor" }, needs = { "stable_chair" },
 		support = "chair", load = "total", kg = { 5, 10 }, holds = { "dumbbells", "kettlebell" }, mp = { Gl },
@@ -396,7 +407,8 @@ ns.Library = {
 		hrAfter = true, mp = { Ch, Tr }, ms = { Sh, Ob, Ab } }),
 	[395] = move({ key = "sliding_one_arm_pushup", group = "push", pattern = "push", region = "push", class = 3,
 		dose = "rep", ladder = 1, rung = 7, regress = 54, side = true, flags = { "floor", "strain", "skill" },
-		pain = { "wrist", "elbow", "shoulder" }, hrAfter = true, mp = { Ch, Tr }, ms = { Sh, Ob, Ab } }),
+		needs = { "towel" }, pain = { "wrist", "elbow", "shoulder" }, hrAfter = true, mp = { Ch, Tr },
+		ms = { Sh, Ob, Ab } }),
 	[54] = move({ key = "archer_pushup", group = "push", pattern = "push", region = "push", class = 3, dose = "rep",
 		ladder = 1, rung = 7, anchor = true, regress = 394, progress = 55, twin = 224, pairs = true,
 		flags = { "floor", "skill" }, pain = { "wrist", "elbow", "shoulder" }, theme = { "bow" },
@@ -644,7 +656,9 @@ ns.Library = {
 	[60] = move({ key = "backpack_row_slow", group = "pull", pattern = "pull", region = "pull", class = 2,
 		dose = "rep", ladder = 9, rung = 3, regress = 57, side = true, pain = { "elbow" }, theme = { "oar" },
 		load = "total", kg = { 5, 15 }, holds = { "dumbbells", "kettlebell" }, mp = { La, UB }, ms = { Bi, Fa, Ob } }),
-	-- The one-arm doorframe row with the toes a foot's length back (2026-10-28): rung 3's own move without a table or
+	-- The one-arm doorframe row with the toes a foot's length back (2026-10-28; named the shallow one-arm doorframe
+	-- row since 2026-11-11, beside the steep one of rung 5: "feet back" told David nothing of what differs from the
+	-- one-arm doorframe row he does): rung 3's own move without a table or
 	-- rings, after them in the rung's chain, so a bare player climbs 3 to 5 on the doorframe. The toes set the lean,
 	-- about 15-20 degrees, so about 18-25 % of the body on the arm (0.68 x tan of the lean; Melrose and Dawes 2015); the
 	-- one-arm doorframe row's easier version. Its hold at the top, the elbow back and the shoulder down, stands beside
@@ -762,17 +776,22 @@ ns.Library = {
 	[71] = move({ key = "knee_plank", group = "core", pattern = "core_anti_ext", region = "trunk", class = 1,
 		dose = "hold", facing = "front", ladder = 10, rung = 2, anchor = true, regress = 70, progress = 72, twin = 236,
 		strainFree = true, flags = { "floor" }, mp = { Ab }, ms = { Ob, Sh } }),
-	[78] = move({ key = "bird_dog", group = "core", pattern = "core_anti_rot", region = "trunk", class = 1,
-		dose = "rep", ladder = 10, rung = 2, pairs = true, flags = { "floor" }, pain = { "wrist" }, mp = { LB, Gl },
-		ms = { Ab, Sh } }),
+	-- The bird dog is timed (2026-11-11, David: "the bird dog excercise should not be a record attempt. it's too easy
+	-- most people can do 100+ repeats", "maybe a cheap warmup move and that's it. not something you need a record at
+	-- ever"): an arm and the other leg at a time, the sides taking turns, so a set runs past a hundred before the form
+	-- fails. The lower back ladder's first anchor from 2026-11-10 until then (the kneeling back raise, 667, since); its
+	-- group stays the lower back's.
+	[78] = move({ key = "bird_dog", group = "back", pattern = "core_anti_rot", class = 1, dose = "flow", secs = 40,
+		rung = 1, flags = { "floor" }, pain = { "wrist", "back" }, mp = { LB, Gl }, ms = { Ab, Sh } }),
 	[79] = move({ key = "dead_bug", group = "core", pattern = "core_anti_ext", region = "trunk", class = 1,
 		dose = "rep", ladder = 10, rung = 2, flags = { "floor" }, mp = { Ab }, ms = { Ob, Qu } }),
-	[137] = move({ key = "wood_chopper", group = "core", pattern = "core_anti_rot", region = "trunk", class = 1,
-		dose = "rep", ladder = 10, rung = 2, side = true, pain = { "back", "shoulder" }, theme = { "axe" }, mp = { Ob },
-		ms = { Sh, Ab, Gl } }),
-	[138] = move({ key = "overhead_chop", group = "core", pattern = "core_anti_ext", region = "trunk", class = 1,
-		dose = "rep", ladder = 10, rung = 2, pain = { "shoulder" }, theme = { "pick" }, mp = { Ab },
-		ms = { Sh, La, Ob } }),
+	-- The chops are timed too (2026-11-11, with the bird dog): a swing with empty hands reaches no form failure (the
+	-- simulator's counts of them and the bird dog reached 146 before slice 42 gave them a top: docs/plan.md, slice 42's
+	-- "Built"); the wood-chopper 30 s a side.
+	[137] = move({ key = "wood_chopper", group = "core", pattern = "core_anti_rot", class = 1, dose = "flow", secs = 30,
+		rung = 1, side = true, pain = { "back", "shoulder" }, theme = { "axe" }, mp = { Ob }, ms = { Sh, Ab, Gl } }),
+	[138] = move({ key = "overhead_chop", group = "core", pattern = "core_anti_ext", class = 1, dose = "flow", secs = 40,
+		rung = 1, pain = { "shoulder" }, theme = { "pick" }, mp = { Ab }, ms = { Sh, La, Ob } }),
 	[72] = move({ key = "plank", group = "core", pattern = "core_anti_ext", region = "trunk", class = 1, dose = "hold",
 		facing = "front", ladder = 10, rung = 3, anchor = true, regress = 71, progress = 73, twin = 236,
 		flags = { "floor", "strain" }, mp = { Ab }, ms = { Ob, Sh } }),
@@ -816,17 +835,24 @@ ns.Library = {
 	-- id): a set before its merge, 2026-10-18 18:24:04 UTC, keeps its record and stars and counts toward no recent form,
 	-- no day at the top and no check (`goalSince`, DB.lua ns.BeforeForm; 2026-10-19, the program's double-check).
 	[76] = move({ key = "plank_taps", group = "core", pattern = "core_anti_rot", region = "trunk", class = 2,
-		dose = "hold", facing = "front", ladder = 10, rung = 5, anchor = true, regress = 75, progress = 77, twin = 236,
+		dose = "hold", facing = "front", ladder = 10, rung = 5, anchor = true, regress = 75, progress = 380, twin = 236,
 		strainFree = true, goalSince = 1792347844, flags = { "floor" }, pain = { "wrist" }, mp = { Ab, Ob },
 		ms = { Sh, Gl } }),
+	-- The body saw slides on a towel, so it needs the towel's box (2026-11-11, below) and stands beside the rung's main
+	-- move, on the climb's path for a setup with a towel; it anchored the rung until then.
 	[77] = move({ key = "body_saw", group = "core", pattern = "core_anti_ext", region = "trunk", class = 3,
-		dose = "hold", facing = "front", ladder = 10, rung = 6, anchor = true, regress = 75, twin = 236,
-		flags = { "floor", "strain", "skill" }, pain = { "back", "shoulder" }, mp = { Ab }, ms = { Ob, Sh, La } }),
-	-- The tuck plow raise beside the body saw (2026-10-10; Hybrid Calisthenics' "Tuck Plow Raises"): the hips lifted onto
-	-- the upper back by the belly and the hands' press, the dragon flag's lift that the face-down saw does not train
+		dose = "hold", facing = "front", ladder = 10, rung = 6, regress = 75, flags = { "floor", "strain", "skill" },
+		needs = { "towel" }, pain = { "back", "shoulder" }, mp = { Ab }, ms = { Ob, Sh, La } }),
+	-- The tuck plow raise (2026-10-10; Hybrid Calisthenics' "Tuck Plow Raises"): the hips lifted onto the upper back by
+	-- the belly and the hands' press, the dragon flag's lift that the face-down saw does not train. The rung's main
+	-- move since 2026-11-11, beside the body saw until then: the rung's one move that needs no towel, so the core
+	-- climbs past it with no box ticked. Its sets from before that moment were the stage's (`goalSince`, DB.lua
+	-- ns.BeforeForm): they keep its record and stars and count no day at the top, no plateau day and nothing toward a
+	-- step down, and a save's days at the top from the body saw start again, so the climb to the tuck dragon flag
+	-- takes the plow raise's top on two game days of its own.
 	[380] = move({ key = "tuck_plow_raise", group = "core", pattern = "core_anti_ext", region = "trunk", class = 2,
-		dose = "rep", ladder = 10, rung = 6, regress = 75, flags = { "floor", "head_down" }, pain = { "back", "neck" },
-		mp = { Ab }, ms = { Ob, La } }),
+		dose = "rep", ladder = 10, rung = 6, anchor = true, regress = 75, twin = 236, goalSince = 1794438817,
+		flags = { "floor", "head_down" }, pain = { "back", "neck" }, mp = { Ab }, ms = { Ob, La } }),
 	-- The core's top (slice 22): the dragon flag, the shoulders on the floor and the hands on a heavy anchor behind
 	-- the head (a bed's or a heavy sofa's frame, never a desk or a chair): tucked, then lowered straight, then lowered
 	-- and raised straight. An ab wheel adds the standing rollout beside it (the wheel set, below).
@@ -852,19 +878,23 @@ ns.Library = {
 		dose = "rep", ladder = 10, rung = 9, anchor = true, regress = 406, twin = 237,
 		flags = { "floor", "head_down", "strain", "skill" }, pain = { "back", "neck", "shoulder" }, mp = { Ab },
 		ms = { Ob, La, Gl } }),
-	-- The four winds' back holds (slice 54, 2026-10-23): the core ladder held only front holds, and McGill's guide wants
-	-- the back's endurance at least the front's and well above each side's (his normal ratios: front to back under 1.0,
-	-- side to back under 0.75). The hinge hold standing at step 2, the bird dog hold on the hands and knees at step 2,
-	-- its sides switched as the desk planks' (timed a side, half the step's window), the Superman hold lying face down
-	-- at step 3; the hinge's pattern for the two that hold the back straight against a fold, so the variety rules part
-	-- them from the planks.
-	[639] = move({ key = "hinge_hold", group = "core", pattern = "hinge", region = "trunk", class = 1, dose = "hold",
-		facing = "back", ladder = 10, rung = 2, strainFree = true, pain = { "back" }, mp = { LB }, ms = { Gl, Ha } }),
-	[641] = move({ key = "bird_dog_hold", group = "core", pattern = "core_anti_rot", region = "trunk", class = 1,
-		dose = "hold", facing = "back", ladder = 10, rung = 2, side = true, strainFree = true, flags = { "floor" },
-		pain = { "wrist" }, mp = { LB, Gl }, ms = { Ab, Sh } }),
-	[640] = move({ key = "superman_hold", group = "core", pattern = "hinge", region = "trunk", class = 2,
-		dose = "hold", facing = "back", ladder = 10, rung = 3, regress = 639, flags = { "floor", "strain" },
+	-- The back holds (slice 54, 2026-10-23, for the four winds: McGill's guide wants the back's endurance at least the
+	-- front's and well above each side's), moved to the lower back ladder on 2026-11-10 with the bird dog above: as
+	-- low-rung moves of the core ladder they left every pump once the core stood past its step 6 (a ladder offers its
+	-- rung's moves and the rung below's), and no other strength move had the lower back as its first muscle (David: "I
+	-- am missing excercises for the lower back ... imo there should be whole line for it"). There the hinge hold,
+	-- standing, is the first step's way without the floor and the Superman hold lies on a pillow beside the reverse
+	-- hyper; the hinge's pattern stays on the two that hold the back straight against a fold. They carry no facing
+	-- since: the four winds order the core's and the side's holds alone, and the core keeps the crab walk as its back
+	-- hold. The bird dog hold is timed since 2026-11-11, 30 s a side, off the ladder with the bird dog: a position with
+	-- no load on it is held until the patience ends, never the form.
+	[639] = move({ key = "hinge_hold", group = "back", pattern = "hinge", region = "trunk", class = 1, dose = "hold",
+		ladder = 25, rung = 1, strainFree = true, pain = { "back" }, mp = { LB }, ms = { Gl, Ha } }),
+	[641] = move({ key = "bird_dog_hold", group = "back", pattern = "core_anti_rot", class = 1, dose = "flow",
+		secs = 30, rung = 1, side = true, flags = { "floor" }, pain = { "wrist", "back" }, mp = { LB, Gl },
+		ms = { Ab, Sh } }),
+	[640] = move({ key = "superman_hold", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "hold", ladder = 25, rung = 3, regress = 639, flags = { "floor", "strain" },
 		pain = { "back" }, mp = { LB, Gl }, ms = { Ha, UB } }),
 	-- The core holds at the desk, no floor (2026-09-30): forearms or hands on the desk edge, the level from a longer
 	-- lever, one support lifted or the body turned side-on (the floor's own levers, Calatayud 2017, Schoenfeld 2014).
@@ -1046,6 +1076,145 @@ ns.Library = {
 		dose = "rep", ladder = 24, rung = 6, anchor = true, regress = 448, flags = { "floor" },
 		pain = { "back", "neck", "hip" }, load = "total", kg = { 5, 10 }, holds = { "dumbbells", "kettlebell" },
 		mp = { Ab }, ms = { Ob, Qu } }),
+
+	-- The lower back (ladder 25, 2026-11-10, David: "imo there should be whole line for it"): the back's extensors worked
+	-- in reps to a straight line, steps 2 to 7 as the sit-up's, with the hinge hold and the Superman hold (639, 640)
+	-- above. What trains the lower back's strength is the back extension with the trunk moving, the reverse hyper with the
+	-- legs moving and the level hold with the legs anchored; the bird dog, the bridges and the planks do not, and the
+	-- wood-chopper trains the side abs, so it stays the core's. The line starts on a low load, the kneeling back raise
+	-- (667, below: the trunk on a short lever at a slant), then lifts the legs before the whole trunk (the legs are the
+	-- lighter end, about 30 % of the body's weight against the upper body's 70 %: De Ridder 2013) and leads with reps
+	-- and short pauses, the long holds beside them (McGill: endurance by repetitions; a hold runs until Done, so a line
+	-- led by holds would climb by ever longer ones: the level hold's window tops at 90 s, the band adults hold it for,
+	-- 87-97 s, Alaranta 1994). One rule answers most of its hazards: a flat back, lifted or folded to a straight line, a
+	-- pause there, never past it and never with a swing; no loaded bending of the spine, and nothing on the back or
+	-- behind the neck while kneeling.
+	-- The lowest loads of all are no step of it (2026-11-11, the bird dog's block above): the bird dog (78, about half a
+	-- Roman chair extension's load on the spine: McGill), its hold (641) and the one-leg reverse hyper (656; Callaghan,
+	-- Gunning and McGill 1998: the single-leg extension "a low-risk exercise for initial extensor strengthening"), the
+	-- first step's anchor, a move beside it and its stage until then, are timed drills of the group, since no set of
+	-- them ends at the form. So the first step has no stage, and its anchor is the kneeling back raise.
+	-- Seven positions on six steps, 25 moves (15 as first built, 28 with the thirteen of 2026-11-11, 667-679, less the
+	-- three timed drills; David, of the thirteen: "there must be more with more variety or not? ... couldnt the lower
+	-- back be trained kneeling going to the front ... a greater variety of options for equipment too"; none of them is
+	-- a twin or on a path, so each but the kneeling back raise widens its rung for every setup that passes it). Across
+	-- the bed with the hips at its edge, the reverse hypers (the Recommended Routine's reverse
+	-- hyperextension, the one move of its extension line, done on "a bench, counter, ledge, or boxes"). Anchored, the
+	-- heels hooked under a heavy sofa or bed as the sit-up with the feet under the sofa does, with a firm cushion under
+	-- the hips for the range below the line (from a flat floor every lift is past level), the back extensions, the long
+	-- one also held at the line (676, as 663 stands beside 661) and done slowly (678: 3 s at the line and 3 s down, rung
+	-- 5's load for a longer time under it, which gives the top step a move without gear). Prone on the floor on a pillow
+	-- (Ito 1996: "to decrease the lumbar lordosis"), the chest lift, its long form with the arms by the ears (674: Chok
+	-- 1999's level 4, the fourth step's move with no sofa), the Superman hold, the swimmer lifts (669: the Pilates
+	-- swimming done slowly, opposite arm and leg held 2 s, the multifidus at 52 % of its most, Kim 2014) and the floor leg
+	-- lift (672: both straight legs until the knees just clear the floor, the reverse hyper's lever with no edge; a leg
+	-- lift on a flat floor is past the line by nature: the pillow under the hips and the low lift keep it at the line).
+	-- Kneeling, the seat back above the heels and never resting on them, the back raise (667, David's move, the Swiss
+	-- Federal Office of Sport's back exercise in a kneel: the chest lowered from a slant toward level and lifted back,
+	-- never upright, so there is no rest; the bird dog's band of muscle activity) and the kneeling good morning with a
+	-- 3-s hold at the bottom, fingertips at the temples (668) or the arms by the ears (671): kneeling slackens the
+	-- hamstrings, so the flat back folds lower than standing and the back, not the legs, holds the fold (an unloaded
+	-- standing fold measured 12-17 % of the back's most, McGill 2009, a one-leg fold held level 38 %, Colado 2011: white,
+	-- never green; the pause and the long arms end a set inside the clock). On the hands and knees, the bird dog against
+	-- a loop band from one foot to the opposite palm (670, with the bands), a side at a time. Across a heavy table,
+	-- the reverse hyper on a firm edge with a longer way up (673: the published home setup, "a couch, table, or any other
+	-- stable and comfortable surface"; a 30-kg table on four legs holds by 2.5 against the legs' pull, and never with a
+	-- weight at the feet, where that falls to 1.3).
+	-- Standing, the hinge hold alone. Every lever, share and margin in this block is an own estimate from body-segment
+	-- tables unless a study is named (docs/plan.md marks each).
+	-- Three of the thirteen add load: a typed weight on the chest lift with a pack (675: the one loaded lower back move
+	-- with a trial behind it, Sinaki 1989 and 2002, prone with a pack worn; it needs no anchor) and on the kneeling good
+	-- morning with a weight hugged to the chest (677: the one loaded hinge the hinge ladder does not own, since standing
+	-- a hugged or worn weight loads the back as its deadlift with a weight does, Schellenberg 2013; tipping forward ends
+	-- on the weight and the hands; about the long back extension's lever at the pause), and a band's pull on the band
+	-- reverse hyper (679: the band round both ankles and a leg of the bed pulls hardest at the line, the long back
+	-- extension's lever with a strong band; a move beside the pack and on purpose no twin of it, since a chain twin
+	-- shows only where the anchor is shut, so it opens no step). Real gear takes a makeshift weight's place on four
+	-- moves (`holds`: 665, 666, 675, 677).
+	-- Every move tagged for the back, the prone trunk lifts for the neck and the kneeling ones for the knee too; strain on
+	-- the holds that lift a whole lever and on the long-lever and loaded steps.
+	-- The kneeling back raise anchors the first step, the hinge hold its stand-in without the floor; beside the tuck
+	-- reverse hyper its hold with straight legs, the kneeling good morning, the swimmer lifts and the band bird dog;
+	-- beside the reverse hyper the chest lift, the Superman hold, the long kneeling good morning, the floor leg lift and
+	-- the table reverse hyper; beside the back extension the paused reverse hyper (its stand-in without the floor), the
+	-- back extension hold, the long chest lift and the chest lift with a pack
+	-- The one-leg reverse hyper is timed (2026-11-11, with the bird dog): one straight leg at a time, the sides taking
+	-- turns, so a set of it never ends at the form; it scales by the hinge ladder, as the good morning (ns.ScaleLadder).
+	[656] = move({ key = "reverse_hyper_one_leg", group = "back", pattern = "hinge", class = 1, dose = "flow", secs = 40,
+		rung = 1, flags = { "seated" }, support = "bed", pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[667] = move({ key = "kneeling_back_raise", group = "back", pattern = "hinge", region = "trunk", class = 1,
+		dose = "rep", ladder = 25, rung = 1, anchor = true, progress = 657, twin = 639, flags = { "floor" },
+		pain = { "back", "knee" }, mp = { LB }, ms = { Gl, UB } }),
+	[657] = move({ key = "reverse_hyper_tuck", group = "back", pattern = "hinge", region = "trunk", class = 1,
+		dose = "rep", ladder = 25, rung = 2, anchor = true, regress = 667, progress = 659, flags = { "seated" },
+		support = "bed", pain = { "back" }, mp = { Gl, LB }, ms = { Ha } }),
+	[658] = move({ key = "reverse_hyper_hold", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "hold", ladder = 25, rung = 2, regress = 657, flags = { "seated", "strain" }, support = "bed",
+		pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[668] = move({ key = "kneeling_good_morning", group = "back", pattern = "hinge", region = "trunk", class = 1,
+		dose = "rep", ladder = 25, rung = 2, regress = 667, progress = 671, flags = { "floor" },
+		pain = { "back", "knee" }, mp = { LB, Gl }, ms = { UB } }),
+	[669] = move({ key = "swimmer_lifts", group = "back", pattern = "hinge", region = "trunk", class = 1, dose = "rep",
+		ladder = 25, rung = 2, regress = 667, progress = 672, pairs = true, flags = { "floor" },
+		pain = { "back", "neck" }, mp = { LB, Gl }, ms = { UB } }),
+	[659] = move({ key = "reverse_hyper", group = "back", pattern = "hinge", region = "trunk", class = 2, dose = "rep",
+		ladder = 25, rung = 3, anchor = true, regress = 657, progress = 661, flags = { "seated" }, support = "bed",
+		pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[660] = move({ key = "chest_lift", group = "back", pattern = "hinge", region = "trunk", class = 1, dose = "rep",
+		ladder = 25, rung = 3, flags = { "floor" }, pain = { "back", "neck" }, mp = { LB }, ms = { UB, Gl } }),
+	[671] = move({ key = "kneeling_good_morning_long", group = "back", pattern = "hinge", region = "trunk", class = 1,
+		dose = "rep", ladder = 25, rung = 3, regress = 668, progress = 677, flags = { "floor" },
+		pain = { "back", "knee" }, mp = { LB, Gl }, ms = { UB } }),
+	[672] = move({ key = "floor_leg_lift", group = "back", pattern = "hinge", region = "trunk", class = 2, dose = "rep",
+		ladder = 25, rung = 3, regress = 669, flags = { "floor" }, pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[673] = move({ key = "reverse_hyper_table", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 3, regress = 657, flags = { "seated" }, needs = { "table" },
+		support = "table", pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[661] = move({ key = "back_extension", group = "back", pattern = "hinge", region = "trunk", class = 2, dose = "rep",
+		ladder = 25, rung = 4, anchor = true, regress = 659, progress = 664, twin = 662, flags = { "floor" },
+		support = "bed", pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[662] = move({ key = "reverse_hyper_pause", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 4, regress = 659, flags = { "seated" }, support = "bed", pain = { "back" },
+		mp = { LB, Gl }, ms = { Ha } }),
+	[663] = move({ key = "back_extension_hold", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "hold", ladder = 25, rung = 4, regress = 661, flags = { "floor", "strain" }, support = "bed",
+		pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
+	[674] = move({ key = "chest_lift_long", group = "back", pattern = "hinge", region = "trunk", class = 2, dose = "rep",
+		ladder = 25, rung = 4, regress = 660, flags = { "floor" }, pain = { "back", "neck" }, mp = { LB },
+		ms = { UB, Gl } }),
+	[675] = move({ key = "chest_lift_pack", group = "back", pattern = "hinge", region = "trunk", class = 2, dose = "rep",
+		ladder = 25, rung = 4, regress = 660, flags = { "floor", "strain" }, pain = { "back", "neck" }, load = "total",
+		kg = { 5, 10 }, holds = { "vest" }, mp = { LB }, ms = { UB, Gl } }),
+	[664] = move({ key = "back_extension_long", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 5, anchor = true, regress = 661, progress = 666, twin = 665,
+		flags = { "floor", "strain" }, support = "bed", pain = { "back" }, mp = { LB, Gl }, ms = { Ha, UB } }),
+	-- beside the long back extension: 2-5 kg gripped between the feet (a bottle or a book; a dumbbell stood on end or a
+	-- medicine ball takes its place: `holds`), which also stands for the top step without the floor (from below, never
+	-- climbing), the long back extension's own hold and the kneeling good morning with a weight (a bag or a jug; a
+	-- kettlebell or one dumbbell takes its place)
+	[665] = move({ key = "reverse_hyper_weight", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 5, regress = 662, flags = { "seated", "strain" }, support = "bed",
+		pain = { "back" }, load = "total", kg = { 2, 5 }, holds = { "dumbbells", "ball" }, mp = { LB, Gl },
+		ms = { Ha } }),
+	[676] = move({ key = "back_extension_long_hold", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "hold", ladder = 25, rung = 5, regress = 663, flags = { "floor", "strain" }, support = "bed",
+		pain = { "back" }, mp = { LB, Gl }, ms = { Ha, UB } }),
+	[677] = move({ key = "kneeling_good_morning_weight", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 5, regress = 671, flags = { "floor", "strain" },
+		pain = { "back", "knee", "wrist" }, load = "total", kg = { 5, 10 }, holds = { "kettlebell", "dumbbells" },
+		mp = { LB, Gl }, ms = { UB } }),
+	-- the top step's pack, worn with the fingertips at the temples (2026-11-11; the arms by the sides until then: by the
+	-- levers that form at its 5-10 kg, 18.9-21.0 kg m for a body of 75 kg, was lighter than the long back extension's
+	-- 22.0, and at the temples it is 21.6-23.7, so the top weight, which the climb counts, is past rung 5; never
+	-- overhead with a pack on, since raised arms loosen its straps; no goalSince: the ladder was in no release yet),
+	-- climbs by its weight in 6-15 reps, a vest in the pack's place; beside it the slow long back extension
+	[666] = move({ key = "back_extension_pack", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 6, anchor = true, regress = 664, twin = 665, flags = { "floor", "strain" },
+		support = "bed", pain = { "back" }, load = "total", kg = { 5, 10 }, holds = { "vest" }, mp = { LB, Gl },
+		ms = { Ha } }),
+	[678] = move({ key = "back_extension_long_slow", group = "back", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 6, regress = 664, flags = { "floor", "strain" }, support = "bed",
+		pain = { "back" }, mp = { LB, Gl }, ms = { Ha, UB } }),
 
 	-- Calf and ankle
 	[86] = move({ key = "heel_raise", group = "calf", pattern = "calf", region = "legs", class = 1, dose = "rep",
@@ -1552,16 +1721,17 @@ ns.Library = {
 	[437] = move({ key = "pike_fold_bed", group = "mobility", pattern = "mobility", class = 3, dose = "flow", secs = 30,
 		ladder = 14, rung = 6, regress = 436, twin = 436, support = "bed", flags = { "seated" }, pain = { "back", "hip" },
 		mp = { BREATH }, ms = { Ha, LB, Ca } }),
-	-- Each step's other goal poses (slice 47, 2026-10-19): the hamstrings lying on the bed (a strap, then the hands on
-	-- the shin), through a doorway on the floor, the heel on the bed's edge, one leg at a time sitting on the bed, the
-	-- desk's half fold, the leg lifted and held by its own muscles (lying, then sitting tall), the standing reach to the
-	-- heels and the hold of the calves, and the press and sink (half effort for 5 s, relax, breathe out, ease deeper) on
-	-- the chair and the bed folds; the lying, the doorway and the one-leg poses come at a lower angle than the folds of
-	-- their step, since the back and the other leg take no part. None is head-down but the two standing folds, which the
+	-- Each step's other goal poses (slice 47, 2026-10-19): the hamstrings lying on the bed (a towel round the sole,
+	-- which needs the towel's box since 2026-11-11, then the hands on the shin), through a doorway on the floor, the
+	-- heel on the bed's edge, one leg at a time sitting on the bed, the desk's half fold, the leg lifted and held by its
+	-- own muscles (lying, then sitting tall), the standing reach to the heels and the hold of the calves, and the press
+	-- and sink (half effort for 5 s, relax, breathe out, ease deeper) on the chair and the bed folds; the lying, the
+	-- doorway and the one-leg poses come at a lower angle than the folds of their step, since the back and the other
+	-- leg take no part. None is head-down but the two standing folds, which the
 	-- bed's poses of their step stand beside.
 	[496] = move({ key = "lying_hamstring", group = "mobility", pattern = "mobility", class = 1, dose = "flow", secs = 30,
-		ladder = 14, rung = 1, side = true, support = "bed", flags = { "seated" }, pain = { "hip" }, mp = { BREATH },
-		ms = { Ha, Ca } }),
+		ladder = 14, rung = 1, side = true, support = "bed", flags = { "seated" }, needs = { "towel" }, pain = { "hip" },
+		mp = { BREATH }, ms = { Ha, Ca } }),
 	[497] = move({ key = "doorway_hamstring", group = "mobility", pattern = "mobility", class = 1, dose = "flow",
 		secs = 30, ladder = 14, rung = 1, side = true, flags = { "floor" }, pain = { "hip" }, mp = { BREATH },
 		ms = { Ha, Ca } }),
@@ -1590,8 +1760,8 @@ ns.Library = {
 		ladder = 14, rung = 4, regress = 501, side = true, support = "bed", flags = { "seated" },
 		pain = { "back", "hip", "knee" }, mp = { BREATH }, ms = { Ha, LB, Ca } }),
 	[506] = move({ key = "lying_hamstring_deep", group = "mobility", pattern = "mobility", class = 2, dose = "flow",
-		secs = 30, ladder = 14, rung = 4, regress = 496, side = true, support = "bed", flags = { "seated" }, pain = { "hip" },
-		mp = { BREATH }, ms = { Ha, Ca } }),
+		secs = 30, ladder = 14, rung = 4, regress = 496, side = true, support = "bed", flags = { "seated" },
+		needs = { "towel" }, pain = { "hip" }, mp = { BREATH }, ms = { Ha, Ca } }),
 	[507] = move({ key = "chair_leg_lift", group = "mobility", pattern = "mobility", class = 2, dose = "flow",
 		secs = 30, ladder = 14, rung = 4, regress = 499, side = true, flags = { "seated" }, pain = { "back", "hip" },
 		mp = { BREATH }, ms = { Ha, Qu } }),
@@ -1603,7 +1773,7 @@ ns.Library = {
 		pain = { "back", "hip", "knee" }, mp = { BREATH }, ms = { Ha, LB, Ca } }),
 	[510] = move({ key = "lying_toes_to_chin", group = "mobility", pattern = "mobility", class = 2, dose = "flow",
 		secs = 30, ladder = 14, rung = 5, regress = 506, side = true, support = "bed", flags = { "seated" },
-		pain = { "back", "hip" }, mp = { BREATH }, ms = { Ha, Ca } }),
+		needs = { "towel" }, pain = { "back", "hip" }, mp = { BREATH }, ms = { Ha, Ca } }),
 	[511] = move({ key = "chest_to_knees_press", group = "mobility", pattern = "mobility", class = 2, dose = "flow",
 		secs = 30, ladder = 14, rung = 5, regress = 436, support = "bed", flags = { "seated" }, pain = { "back", "hip" },
 		mp = { BREATH }, ms = { Ha, LB, Ca } }),
@@ -1672,7 +1842,7 @@ ns.Library = {
 	[516] = move({ key = "sphinx", group = "yoga", pattern = "mobility", class = 1, dose = "flow", secs = 40, ladder = 15,
 		rung = 1, flags = { "floor" }, pain = { "back" }, mp = { LB }, ms = { Ch, Sh, BREATH } }),
 	[517] = move({ key = "towel_reach", group = "mobility", pattern = "mobility", class = 1, dose = "flow", secs = 40,
-		ladder = 15, rung = 1, flags = { "floor" }, pain = { "shoulder", "back" }, mp = { UB },
+		ladder = 15, rung = 1, flags = { "floor" }, needs = { "towel" }, pain = { "shoulder", "back" }, mp = { UB },
 		ms = { Sh, Ch, La, BREATH } }),
 	[518] = move({ key = "desk_chest_sink", group = "mobility", pattern = "mobility", class = 1, dose = "flow",
 		secs = 30, ladder = 15, rung = 1, pain = { "shoulder" }, mp = { UB }, ms = { Sh, La, Ch, BREATH } }),
@@ -1915,7 +2085,7 @@ ns.Library = {
 	[577] = move({ key = "knee_hug_stand", group = "yoga", pattern = "balance", class = 1, dose = "flow", secs = 30,
 		ladder = 18, rung = 1, side = true, pain = { "hip" }, mp = { BALANCE }, ms = { Gl, Ca, Ab } }),
 	[578] = move({ key = "towel_stand", group = "yoga", pattern = "balance", class = 1, dose = "flow", secs = 30,
-		ladder = 18, rung = 1, side = true, mp = { BALANCE }, ms = { Ca, Gl, Ab } }),
+		ladder = 18, rung = 1, side = true, needs = { "towel" }, mp = { BALANCE }, ms = { Ca, Gl, Ab } }),
 	[579] = move({ key = "standing_figure_four", group = "yoga", pattern = "balance", class = 1, dose = "flow",
 		secs = 30, ladder = 18, rung = 2, regress = 130, side = true, pain = { "knee", "hip" }, mp = { BALANCE },
 		ms = { Qu, Gl, Ad } }),
@@ -1933,10 +2103,11 @@ ns.Library = {
 	[584] = move({ key = "tiptoe_tree", group = "yoga", pattern = "balance", class = 2, dose = "flow", secs = 30,
 		ladder = 18, rung = 4, regress = 130, side = true, pain = { "achilles" }, mp = { BALANCE }, ms = { Ca, Gl } }),
 	[585] = move({ key = "towel_eyes_closed", group = "yoga", pattern = "balance", class = 2, dose = "flow", secs = 30,
-		ladder = 18, rung = 4, regress = 578, side = true, mp = { BALANCE }, ms = { Ca, Gl, Ab } }),
+		ladder = 18, rung = 4, regress = 578, side = true, needs = { "towel" }, mp = { BALANCE },
+		ms = { Ca, Gl, Ab } }),
 	[586] = move({ key = "eagle_towel", group = "yoga", pattern = "balance", class = 2, dose = "flow", secs = 30,
-		ladder = 18, rung = 4, regress = 276, side = true, pain = { "knee", "shoulder" }, mp = { BALANCE },
-		ms = { Qu, Sh, Ca } }),
+		ladder = 18, rung = 4, regress = 276, side = true, needs = { "towel" }, pain = { "knee", "shoulder" },
+		mp = { BALANCE }, ms = { Qu, Sh, Ca } }),
 	[587] = move({ key = "side_toe_hold", group = "yoga", pattern = "balance", class = 2, dose = "flow", secs = 30,
 		ladder = 18, rung = 5, regress = 582, side = true, flags = { "skill" }, pain = { "hip", "back", "knee" },
 		mp = { BALANCE }, ms = { Ad, Ha, Gl } }),
@@ -2066,7 +2237,7 @@ ns.Library = {
 		pain = { "wrist", "elbow", "shoulder", "hip", "knee" }, mp = { BALANCE }, ms = { Tr, Sh, Gl, Ha } }),
 
 	-- Equipment. The wall, a doorframe and the desk edge are assumed; everything below is a checkbox (/qp gear), each
-	-- off by default.
+	-- off by default, as the towel's is, whose moves stand with their own ladders above and below.
 	-- Pull-up bar: the pull-up ladder, every rung on the bar (the pull ladder's rungs 4-8 until 2026-10-04)
 	[64] = move({ key = "dead_hang", group = "bar", pattern = "iso", region = "pull", class = 1, dose = "hold",
 		ladder = 8, rung = 1, anchor = true, regress = 59, progress = 65, strainFree = true,
@@ -2130,7 +2301,8 @@ ns.Library = {
 	-- a one-arm hold before the one-arm lowering).
 	[399] = move({ key = "uneven_towel_pullup", group = "bar", pattern = "pull", region = "pull", class = 3,
 		dose = "rep", ladder = 8, rung = 6, regress = 309, side = true, flags = { "strain", "skill" },
-		needs = { { "bar", "fixed_bar" } }, pain = { "elbow", "shoulder" }, mp = { La, Bi }, ms = { UB, Fa, Ob } }),
+		needs = { { "bar", "fixed_bar" }, "towel" }, pain = { "elbow", "shoulder" }, mp = { La, Bi },
+		ms = { UB, Fa, Ob } }),
 	[310] = move({ key = "archer_pullup", group = "bar", pattern = "pull", region = "pull", class = 3, dose = "rep",
 		ladder = 8, rung = 7, anchor = true, regress = 399, side = true, flags = { "strain", "skill" },
 		needs = { { "bar", "fixed_bar" } }, pain = { "elbow", "shoulder" }, theme = { "bow" }, mp = { La, Bi },
@@ -2144,8 +2316,8 @@ ns.Library = {
 		mp = { La, Bi }, ms = { UB, Fa, Ob } }),
 	[311] = move({ key = "one_arm_pullup_assisted", group = "bar", pattern = "pull", region = "pull", class = 3,
 		dose = "rep", ladder = 8, rung = 8, regress = 310, side = true,
-		flags = { "strain", "skill", "tendon" }, needs = { { "bar", "fixed_bar" } }, pain = { "elbow", "shoulder" },
-		mp = { La, Bi }, ms = { UB, Fa, Ob } }),
+		flags = { "strain", "skill", "tendon" }, needs = { { "bar", "fixed_bar" }, "towel" },
+		pain = { "elbow", "shoulder" }, mp = { La, Bi }, ms = { UB, Fa, Ob } }),
 	[312] = move({ key = "one_arm_pullup", group = "bar", pattern = "pull", region = "pull", class = 3, dose = "rep",
 		ladder = 8, rung = 9, anchor = true, regress = 388, side = true, flags = { "strain", "skill", "tendon" },
 		needs = { { "bar", "fixed_bar" } }, pain = { "elbow", "shoulder" }, mp = { La, Bi }, ms = { UB, Fa, Ob } }),
@@ -2216,6 +2388,15 @@ ns.Library = {
 		dose = "rep", ladder = 4, rung = 2, needs = { "bands" }, pain = { "back" }, mp = { Ha, Gl }, ms = { LB } }),
 	[156] = move({ key = "monster_walk", group = "bands", pattern = "lunge", region = "legs", class = 1, dose = "rep",
 		ladder = 2, rung = 2, needs = { "bands" }, pain = { "hip" }, mp = { Gl }, ms = { Qu, Ad } }),
+	-- the lower back's two (ladder 25, 2026-11-11; its block after the sit-up's says why each stands on its rung): the
+	-- bird dog against a loop band from one foot to the opposite palm, a side at a time, and the reverse hyper against a
+	-- band round both ankles and a leg of the bed
+	[670] = move({ key = "bird_dog_band", group = "bands", pattern = "core_anti_rot", region = "trunk", class = 1,
+		dose = "rep", ladder = 25, rung = 2, regress = 667, side = true, flags = { "floor" }, needs = { "bands" },
+		pain = { "wrist", "back" }, mp = { LB, Gl }, ms = { Ab, Sh } }),
+	[679] = move({ key = "reverse_hyper_band", group = "bands", pattern = "hinge", region = "trunk", class = 2,
+		dose = "rep", ladder = 25, rung = 6, regress = 665, flags = { "seated", "strain" }, needs = { "bands" },
+		support = "bed", pain = { "back" }, mp = { LB, Gl }, ms = { Ha } }),
 	-- Kettlebell (its deadlift is the deadlift with a weight since 2026-10-04, ns.Merged, and the bell takes the bag's
 	-- place on the moves with a weight, 2026-10-09: holds; its carries take dumbbells too)
 	[157] = move({ key = "kb_goblet_squat", group = "kettlebell", pattern = "squat", region = "legs", class = 2,
@@ -2509,12 +2690,13 @@ ns.ROADS = { "run", "strike", "jump", "floor", "standing", "gear" }
 -- shares (C.facing_share) are McGill's normal endurance times of each.
 ns.FACINGS = { "front", "side", "back" }
 
--- The equipment checkboxes, in the order /qp gear lists them (the two supports first, then the seventeen sets, the
--- pole outdoors last: slice 22), the bar's with a box of its own for a fixed bar (2026-10-05:
--- the bar's power moves never go on a doorway bar, and a fixed bar serves every bar move), one for parallettes or two
--- stacks of books beside the ab wheel (2026-10-08: the raised L-sits, variants beside the floor's; no group of its
--- own).
-ns.Gear = { "stable_chair", "table", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell",
+-- The equipment checkboxes, in the order /qp gear lists them (the two supports and the towel first, then the
+-- seventeen sets, the pole outdoors last: slice 22; the towel a household piece like the supports and no set, its
+-- box since 2026-11-11, when the moves done with a towel stopped counting one as assumed), the bar's with a box of
+-- its own for a fixed bar (2026-10-05: the bar's power moves never go on a doorway bar, and a fixed bar serves every
+-- bar move), one for parallettes or two stacks of books beside the ab wheel (2026-10-08: the raised L-sits, variants
+-- beside the floor's; no group of its own).
+ns.Gear = { "stable_chair", "table", "towel", "bar", "fixed_bar", "bands", "kettlebell", "dumbbells", "barbell",
 	"rope", "bike", "stairs", "pad", "step", "wheel", "parallettes", "rings", "vest", "ball", "roller", "backpack",
 	"pole" }
 
@@ -2523,7 +2705,7 @@ ns.Gear = { "stable_chair", "table", "bar", "fixed_bar", "bands", "kettlebell", 
 -- setup and the Equipment page head each group with its caption (settings.gear.group.<key>); the apps open and close
 -- them (contract/sheet.json gear_groups, places.gear.group.<key>).
 ns.GearGroups = {
-	{ key = "home", gear = { "stable_chair", "table", "stairs", "backpack" } },
+	{ key = "home", gear = { "stable_chair", "table", "towel", "stairs", "backpack" } },
 	{ key = "bars", gear = { "bar", "fixed_bar", "parallettes", "rings", "pole" } },
 	{ key = "weights", gear = { "bands", "kettlebell", "dumbbells", "barbell", "vest" } },
 	{ key = "cardio", gear = { "rope", "bike", "pad", "step" } },

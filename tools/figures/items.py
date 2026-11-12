@@ -40,7 +40,10 @@ An item in a motion file:
                                                to the hand: a lateral raise); "grip": "goblet" is one dumbbell held
                                                upright at the chest by both hands, and with "on": "hips" that one
                                                dumbbell lies across the front of the hips under both hands (a hip
-                                               thrust; the renderer builds one dumbbell for the goblet grip)
+                                               thrust; the renderer builds one dumbbell for the goblet grip); with
+                                               "on": "feet" it stands between the feet, gripped by them alone: its
+                                               handle between the ankles along the shins, one head under the soles,
+                                               the other above the feet (a weighted reverse hyper)
   {"kind": "ball", "r": 12}                    a medicine ball between the palms (`off` [f, u, l] cm from the grips'
                                                midpoint); `free` windows let it go (see below)
   {"kind": "vest"}                             a weighted vest: plates on the chest and the back, riding the torso
@@ -146,6 +149,7 @@ BALL_R = 12.0
 VEST_W, VEST_T, VEST_H = 30.0, 4.0, 32.0  # a vest's plate: across, its thickness, its height
 VEST_AT = 0.55                           # the plates' middles this far from the waist to the neck
 HIPS_UP = 6.0                            # a bell or a dumbbell on the hips lies this far up the spine from the pelvis
+FEET_PAST = 9.0                          # a dumbbell between the feet: its middle lies this far past the ankles
 # A pack hugged to the chest: its centre this far from the waist to the neck, its lower edge clear of the thighs at a
 # weighted sit-up's top. A pack on the hips bridges the crease: its back HIPS_FRONT before the pelvis (the abdomen's
 # plates stand 16.2 cm out there, probed 2026-10-22) and its centre PACK_HIPS up the spine, its lower edge 6 cm over
@@ -183,12 +187,13 @@ def hand_of(item):
 
 def holders(item, t=0.0, loop=1.0):
     """The sides whose hand holds the item at time t: none for what rests on the body or the floor (a vest, a pack on
-    the back, a towel under a foot or a knee, the cranks under the feet, rings round the heels), a band's or a door
-    towel's ends that are grips, a ball only while no `free` window has it out of the hands, and both for what lies on
-    the chest or the hips (the hands hold it there); otherwise the item's hand (hand_of)."""
+    the back, a towel under a foot or a knee, the cranks under the feet, rings round the heels, a dumbbell gripped
+    between the feet), a band's or a door towel's ends that are grips, a ball only while no `free` window has it out of
+    the hands, and both for what lies on the chest or the hips (the hands hold it there); otherwise the item's hand
+    (hand_of)."""
     k = item["kind"]
     if k in ("vest", "towel", "pedals") or (k == "backpack" and item.get("on") == "back") or (
-            k == "straps" and item.get("to", "grips") == "heels"):
+            k == "straps" and item.get("to", "grips") == "heels") or (k == "dumbbell" and item.get("on") == "feet"):
         return ()
     if k in ("band", "doortowel"):
         ends = [e for pair in item["strands"] for e in pair] if k == "band" else item.get("ends", [])
@@ -575,6 +580,10 @@ def place(item, J, t=0.0, loop=1.0):
         if item.get("grip") == "goblet" and item.get("on") == "hips":
             c = add(add(J["pelvis"], mul(fwd, rig.CLEARANCE["pelvis"] + DB_HEAD_R)), mul(up, HIPS_UP))
             bells.append({"center": c, "axis": lat})
+        elif item.get("grip") == "goblet" and item.get("on") == "feet":
+            a = rig.lerp(J["ankle_near"], J["ankle_far"], 0.5)
+            shin = unit(sub(a, rig.lerp(J["knee_near"], J["knee_far"], 0.5)), (0.0, -1.0, 0.0))
+            bells.append({"center": add(a, mul(shin, FEET_PAST)), "axis": shin})
         elif item.get("grip") == "goblet":
             c = add(grips(J, "both"), mul(up, -(DB_HALF - 4.0)))   # the palms cup the top head
             bells.append({"center": c, "axis": up})

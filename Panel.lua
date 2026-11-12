@@ -366,16 +366,7 @@ end
 
 -- The countdown: Blizzard's pull-countdown art inside the card -----------------------------------------------------
 
--- An Alpha animation in `ag` on `target`, from `from` to `to` over `duration` s in its `order`.
-local function fade(ag, target, from, to, duration, order)
-	local a = ag:CreateAnimation("Alpha")
-	a:SetTarget(target)
-	a:SetFromAlpha(from)
-	a:SetToAlpha(to)
-	a:SetDuration(duration)
-	a:SetOrder(order)
-	return a
-end
+local fade = Kit.Alpha -- an Alpha animation in a group
 
 -- Blizzard's startNumbers (Timer.xml) on `targets`: scale 0.25 → 1 in 0.3 s, then, `hold` s later, a pop to 1.2 and a
 -- fade in 0.1 s. A digit holds 0.6 s, one second each; the go holds 0.1 s (buildRunning). Blizzard pops only the
@@ -1775,38 +1766,6 @@ function Pour.share(slot, n, best, timed)
 	return n > 0 and 1 or 0
 end
 
--- An entrance of `region` (its own group): hidden for `delay` s, then over `dur` s from alpha 0, (dx, dy) away and
--- `scale` of its size to its place, where it stays; ag.hold is the wait, whose length a caller may change.
-function Pour.entrance(region, delay, dur, dx, dy, scale)
-	local ag = region:CreateAnimationGroup()
-	ag.hold = fade(ag, region, 0, 0, delay, 1)
-	if dx or dy then
-		local away = ag:CreateAnimation("Translation")
-		away:SetTarget(region)
-		away:SetOffset(dx or 0, dy or 0)
-		away:SetDuration(0)
-		away:SetOrder(1)
-		local back = ag:CreateAnimation("Translation")
-		back:SetTarget(region)
-		back:SetOffset(-(dx or 0), -(dy or 0))
-		back:SetDuration(dur)
-		back:SetOrder(2)
-		back:SetSmoothing("OUT")
-	end
-	if scale then
-		local grow = ag:CreateAnimation("Scale")
-		grow:SetTarget(region)
-		grow:SetScaleFrom(scale, scale)
-		grow:SetScaleTo(1, 1)
-		grow:SetDuration(dur)
-		grow:SetOrder(2)
-		grow:SetSmoothing("OUT")
-	end
-	fade(ag, region, 0, 1, dur, 2):SetSmoothing("OUT")
-	ag:SetToFinalAlpha(true)
-	return ag
-end
-
 -- A Scale animation in `ag` on `target`, from `from` to `to` over `duration` s in its `order`.
 function Pour.grow(ag, target, from, to, duration, order)
 	local a = ag:CreateAnimation("Scale")
@@ -2058,11 +2017,11 @@ function Pour.buildReveal(pv)
 	fade(rv.lightAnim, rv.light, 1, 0, 0.1, 3)
 	Pour.grow(rv.lightAnim, rv.light, 1, 1.8, 0.1, 3)
 	-- the frame and the ladder come in, then past the open the glow, the rays, the words in turn
-	rv.plays = { Pour.entrance(rv, 0, 0.22), Pour.entrance(rv.ladder, 0, 0.34, nil, -30),
-		Pour.entrance(rv.glow, open + 0.08, 0.7, nil, nil, 0.6), Pour.entrance(rv.cap, open + 0.3, 0.3, nil, -8),
-		Pour.entrance(rv.name, open + 0.38, 0.46, nil, -10), Pour.entrance(rv.badge, open + 0.52, 0.42, nil, nil, 0.6),
+	rv.plays = { Kit.Entrance(rv, 0, 0.22), Kit.Entrance(rv.ladder, 0, 0.34, nil, -30),
+		Kit.Entrance(rv.glow, open + 0.08, 0.7, nil, nil, 0.6), Kit.Entrance(rv.cap, open + 0.3, 0.3, nil, -8),
+		Kit.Entrance(rv.name, open + 0.38, 0.46, nil, -10), Kit.Entrance(rv.badge, open + 0.52, 0.42, nil, nil, 0.6),
 		rv.litAnim, rv.lightAnim }
-	rv.raysIn = Pour.entrance(rv.rays, open + 0.14, 0.9)
+	rv.raysIn = Kit.Entrance(rv.rays, open + 0.14, 0.9)
 	rv.out = rv:CreateAnimationGroup()
 	fade(rv.out, rv, 1, 0, 0.3, 1)
 	rv.out:SetToFinalAlpha(true)
@@ -2077,7 +2036,7 @@ function Pour.buildReveal(pv)
 	hero.caption:Hide()
 	hero.frame:Hide()
 	pv.hero = hero
-	pv.heroIn = Pour.entrance(hero.frame, open + 0.16, 0.56, nil, -26, 0.84)
+	pv.heroIn = Kit.Entrance(hero.frame, open + 0.16, 0.56, nil, -26, 0.84)
 	pv.heroFly = hero.frame:CreateAnimationGroup()
 	pv.heroMove = pv.heroFly:CreateAnimation("Translation")
 	pv.heroMove:SetTarget(hero.frame)
@@ -2103,10 +2062,10 @@ function Pour.buildPourRows(pv)
 	pv.statRows = {}
 	for i = 1, 3 do pv.statRows[i] = Kit.Row(list, { icon24 = Style.statIcon.strength, name = "" }) end
 	pv.xpRow = Kit.Row(list, { icon24 = Style.xpIcon, name = "" })
-	for _, row in ipairs(list.rows) do row.enter = Pour.entrance(row, 0, POUR.rowIn, POUR.rowFrom) end
+	for _, row in ipairs(list.rows) do row.enter = Kit.Entrance(row, 0, POUR.rowIn, POUR.rowFrom) end
 	pv.after = Kit.Text(pv, "bodyWhite", "CENTER", nil, LEFT_W)
 	pv.after:Hide()
-	pv.after.enter = Pour.entrance(pv.after, 0, POUR.rowIn, POUR.rowFrom)
+	pv.after.enter = Kit.Entrance(pv.after, 0, POUR.rowIn, POUR.rowFrom)
 end
 
 -- The pour's frames on the result view `v` (v.pour), over its columns and the figure: the dial with its clock and the
@@ -2133,7 +2092,7 @@ function Pour.buildPour(v)
 	fade(old.leave, old, 1, 0, 0.38, 1)
 	old.leave:SetToFinalAlpha(true)
 	old.leave:SetScript("OnFinished", function() old:Hide() end)
-	new.enter = Pour.entrance(new, 0.38, 0.44, nil, -POUR.barRoll)
+	new.enter = Kit.Entrance(new, 0.38, 0.44, nil, -POUR.barRoll)
 	Pour.buildPourRows(pv)
 	Pour.buildReveal(pv)
 	pv.layer = CreateFrame("Frame", nil, pv)
@@ -2736,11 +2695,15 @@ local function renderCountdown(p, slot)
 	return math.max(y, top + sideH)
 end
 
--- A hold's goal met on the Running view (decision G1): once the stopwatch reaches it, the goal line turns gold with the
+-- A goal met on the Running view (decision G1): once a hold's stopwatch reaches it, or the counted beat of a set of
+-- reps does (slice 72: `reps`, the voice's count on the figure's beat, Speech.RepsBy, which the dial then starts at;
+-- none without a count, and a max set and a counted set have no number to reach), the goal line turns gold with the
 -- check before it (never the colour alone) until the side or the move ends; white until then. The chime plays with it
 -- (updateRunning).
-local function goalMet(slot, elapsed)
-	return slot.kind == K.hold and slot.target ~= nil and elapsed >= slot.target
+local function goalMet(slot, elapsed, reps)
+	if slot.target == nil or slot.counted then return false end
+	if slot.kind == K.hold then return elapsed >= slot.target end
+	return slot.kind == K.rep and reps ~= nil and reps ~= false and reps >= slot.target
 end
 
 local function paintGoal(v, met)
@@ -2758,13 +2721,14 @@ local function renderRunning(p, slot)
 	v.goalWords = goalWords
 	local pace = paceLine(slot)
 	v.pace:SetText(pace)
-	paintGoal(v, goalMet(slot, Lc.Elapsed())) -- before the stack, which measures its words
-	-- a side move's first side ends in the switch: a hold's only by this button, a timed move's by its clock too
-	v.done:SetText(L[p.side == 1 and "ui.panel.switch" or "ui.panel.done"])
-	v.done:SetWidth(primaryWidth(v.done))
 	-- a set of reps whose count runs (Speech.RepCount; David, 2026-10-13: "show the rep count increasing instead of the
 	-- time") shows its count in the clock's place; its plan is read once a render, never on the display's tick
 	v.reps = ns.Speech.RepCount(slot) or false
+	-- before the stack, which measures its words
+	paintGoal(v, goalMet(slot, Lc.Elapsed(), v.reps and ns.Speech.RepsBy(v.reps, Lc.Elapsed())))
+	-- a side move's first side ends in the switch: a hold's only by this button, a timed move's by its clock too
+	v.done:SetText(L[p.side == 1 and "ui.panel.switch" or "ui.panel.done"])
+	v.done:SetWidth(primaryWidth(v.done))
 	v.keep:SetShown(Lc.KeepShows())
 	v.dial:SetShown(p.limit ~= nil and v.dialArt)
 	if p.limit then
@@ -2822,18 +2786,20 @@ local function updateRunning()
 		Panel.lastWhole = whole
 	else
 		v.clock:SetText(reps and tostring(reps) or clock(elapsed))
-		-- a hold's goal is the least, never the most: the small chime once a side as the stopwatch passes it, and the
-		-- clock counts on until Done
-		if goalMet(slot, elapsed) and not Panel.goalChimed then
-			Panel.goalChimed = true
-			Style.Play("win")
-		end
+	end
+	-- the goal is the least, never the most: the small chime once a side as a hold's stopwatch passes it or a set's
+	-- counted beat reaches it (slice 72), and the clock or the count goes on until Done; never on a hold that runs to
+	-- a limit, whose dial says it
+	local met = goalMet(slot, elapsed, reps)
+	if met and not Panel.goalChimed and not (p.limit and slot.kind == K.hold) then
+		Panel.goalChimed = true
+		Style.Play("win")
 	end
 	updatePartner(v, elapsed)
 	if slot.allout then v.phase:SetText(phaseWord(slot, elapsed)) end
 	-- the goal met: the view drawn again, its goal line gold with the check and laid out at its new words; and so as
 	-- Keep going comes into the bar or leaves it
-	if goalMet(slot, elapsed) ~= v.goalMet or Lc.KeepShows() ~= v.keep:IsShown() then Panel.Render() end
+	if met ~= v.goalMet or Lc.KeepShows() ~= v.keep:IsShown() then Panel.Render() end
 end
 
 -- The count on the dial (slice 66): `n` (nil: none) held between 0 and the most the move takes (Lc.CountMost: half
@@ -3022,7 +2988,9 @@ local function renderRewardRows(p, slot)
 	return n
 end
 
--- The character's reaction on the recorded Result, once per move: answers whether it shows.
+-- The character's reaction to a won set, once per move (as the pour's rows arrive, Pour.react; on a set saved with no
+-- pour, its Result): a salute for a step up, a cheer for a star, a flex for a record, a first one too (Pour.first);
+-- answers whether it shows.
 local function react(p)
 	local last = p.last
 	local anim
@@ -3035,7 +3003,7 @@ local function react(p)
 				if e.kind == "stat" and e.reason == "star" then anim = CHEER end
 			end
 		end
-		if not anim and last.outcome == O.beat then anim = FLEX end
+		if not anim and (last.outcome == O.beat or Pour.first(p, p.moves[p.index])) then anim = FLEX end
 	end
 	-- the character sheet's own scene (Gethe forever ModelSceneUtil.lua, 70058); one that is missing or failed to set
 	-- up leaves no empty box, on this render or the next: the model and its screen stay hidden, and a failure is
@@ -3109,6 +3077,26 @@ function Panel.Preview()
 end
 
 -- The pour (buildPour) -----------------------------------------------------------------------------------------------
+
+-- A first record (slice 72: a first record is a record): a count above 0 on a move with no record before it, the
+-- outcome its line calls "your first record", read before its row is written (the pending result, the record now) or
+-- after (p.last's, the record before it). It takes the record's jingle, chip and badge and the character's flex.
+function Pour.first(p, slot)
+	local set = p.last or p.pending
+	if not set or set.outcome ~= O.placement or (set.value or 0) <= 0 then return false end
+	if p.last then return p.last.best == nil end
+	return ns.Record(ns.state, slot.move) == nil
+end
+
+-- The character's reaction as the pour's rows arrive (slice 72: every count pours since slice 66, so the Result's own
+-- view, where react runs too, follows only a set saved with no count): once a move (react), in the right column in
+-- the dimmed figure's place while the rows stand. None with the game's reduced motion, whose end state is the figure.
+function Pour.react(p)
+	if not p or not ns.Tree.Moving() or not react(p) then return end
+	hideFigure()
+	F.screen:Hide()
+	F.modelScreen:Show()
+end
 
 -- The count's dial while the count step asks (slice 66): the pour's own over the column's room for it (v.dialRoom),
 -- the pour's other parts hidden; the count in its clock's place in the move's unit (Pour.format; grey while it has
@@ -3238,7 +3226,7 @@ function Pour.fillRows(pv, p, slot)
 	row.name:SetText(moveName(slot))
 	row.value:SetText(Pour.format(slot, run.held, run.timed))
 	local record = run.beat and run.best ~= nil
-	row.lead:SetShown(record)
+	row.lead:SetShown(record or run.first) -- a first record is a record, with none before it to name
 	-- the record it beat as the outcome line names it: a loaded move's weighted one with its weight (recordText)
 	local was = record and (last.load and last.topLoad and recordText(slot, run.best, last.load, last)
 		or Pour.format(slot, run.best, run.timed))
@@ -3322,7 +3310,7 @@ function Pour.landBar(pv)
 	pv.ring:Clear()
 	pv.clock:SetText(Pour.format(run.slot, run.held, run.timed))
 	Pour.fillBar(pv.bars[1], run.held)
-	if run.beat and run.best then Pour.showRecord(pv) end
+	if run.first or run.beat and run.best then Pour.showRecord(pv) end
 end
 
 -- A run of the pour for the move on the view (`key`: the pump, the move and its go): its bar, from what the move's
@@ -3341,8 +3329,9 @@ function Pour.newRun(pv, p, slot, key)
 	end
 	local q = m.ladder and m.rung and ns.Quality(m.ladder, m.rung) or ns.MoveQuality(slot.move) or E.quality.starter
 	local run = { key = key, slot = slot, timed = timed, held = held, best = best, beat = p.pour.beat,
-		grains = math.min(held, POUR.most), n = 0, tickAt = 0, f0 = Pour.share(slot, held, best, timed) }
-	run.jingle = top and held >= top and "top" or run.beat and best and "record" or "done"
+		grains = math.min(held, POUR.most), n = 0, tickAt = 0, f0 = Pour.share(slot, held, best, timed),
+		first = Pour.first(p, slot) }
+	run.jingle = top and held >= top and "top" or (run.first or run.beat and best) and "record" or "done"
 	pv.run = run
 	Pour.setBar(pv.bars[1], { label = m.ladder and m.rung and Pour.barLabel(m.ladder, m.rung) or "", q = q, goal = goal,
 		best = best, top = top, range = top or math.max(held, goal or 0, best or 0, 1), slot = slot, timed = timed })
@@ -3491,6 +3480,7 @@ function Pour.showRows(pv, still, waitTile)
 		Lc.GoOn()
 	end
 	if not run.ev then Pour.jingle(run, "win") end
+	Pour.react(Lc.pump)
 end
 
 -- The bar rolls over to the next step's after a step-up (its label and colour, and on a bar with a top the next
@@ -3548,8 +3538,8 @@ function Pour.foldReveal(pv)
 	if not run or run.phase ~= "reveal" then return end
 	T.cancel("pourGem")
 	Pour.rollBar(pv, false)
-	Pour.showRows(pv, false, true)
 	F.figure.frame:Show()
+	Pour.showRows(pv, false, true) -- the character may take the figure's place (Pour.react)
 	pv.reveal.out:Play()
 	local hero, to = pv.hero.frame, pv.unlockRow.screen
 	local hx, hy = hero:GetCenter()
@@ -3727,6 +3717,8 @@ function Pour.renderPour(v, p, slot)
 		Lc.GoOn() -- again once a fight, a hold or a menu left the view, whole from there
 	end
 	Pour.placePour(v, pv)
+	-- a draw while the rows stand keeps the character where its reaction put it (sideFigure showed the figure again)
+	if (run.phase == "rows" or run.phase == "done") and p.committed then Pour.react(p) end
 end
 
 -- The Result view (play SPEC 6-10; boards result and goalpose): the count on the dial (slice 66), "Is that right?", a
@@ -3939,7 +3931,7 @@ local function hideDim()
 	Kit.ShowGlow(F.views.ready.glow, false)
 	F.views.running.goAnim:Stop() -- a go the menu or a popup cut short: the run comes back on its clock
 	letGo()
-	F.dim:Hide()
+	Kit.Leave(F.dim)
 end
 
 -- Where a move came from, for the card's title (David, 2026-10-12: "even with unfinished moves each should say at the
@@ -4035,7 +4027,9 @@ function Panel.Render()
 	if F.dim:GetFrameStrata() ~= strata then F.dim:SetFrameStrata(strata) end
 	F.card.grip:SetShown(streamer)
 	cardTitle(p)
-	F.dim:Show()
+	-- the dim and the card in it fade in as they come (slice 72); the dim takes the mouse and the key frame its keys
+	-- from the first frame
+	Kit.Appear(F.dim)
 	F.keys:SetShown(not p.taxi and not InCombatLockdown() and Panel.InputMode() ~= "mouse")
 	if not InCombatLockdown() then F.keys:SetPropagateKeyboardInput(true) end
 	if p.state ~= "countdown" then cancelDigits() end
@@ -4097,14 +4091,17 @@ function Panel.BuildStopCard()
 	F.stop = card
 end
 
+-- It fades in, and the first time a pump shows it the attention cue says so (slice 72: with no dim, nothing else
+-- tells a player who looks at the road that a pump waits; `p.stopCued`, which the voice's own fallback cue reads).
 function Panel.RenderStopCard(p)
 	if not F.stop then return end
-	local show = p ~= nil and p.state == "card" and not Lc.combat
-	if show then
-		F.stop.sub:SetText(ns.Plural("ui.card.moves", #p.moves):format(#p.moves))
-		F.stop:SetHeight(math.max(52, 9 + F.stop.text:GetStringHeight() + 3 + F.stop.sub:GetStringHeight() + 9))
+	if not (p ~= nil and p.state == "card" and not Lc.combat) then return Kit.Leave(F.stop) end
+	F.stop.sub:SetText(ns.Plural("ui.card.moves", #p.moves):format(#p.moves))
+	F.stop:SetHeight(math.max(52, 9 + F.stop.text:GetStringHeight() + 3 + F.stop.sub:GetStringHeight() + 9))
+	if Kit.Appear(F.stop) and not p.stopCued then
+		p.stopCued = true
+		Style.Play("attention")
 	end
-	F.stop:SetShown(show)
 end
 
 -- A mixed party's question (Lc.AskParty; David, 2026-10-04: "Yes offer the options at the first return. Bank all or

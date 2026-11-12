@@ -98,10 +98,10 @@ function ns.WeekStart(now)
 	return ns.NextReset(now) - WEEK
 end
 
--- The stat a ladder feeds (ns.Ladders' `stat`, slice 21: Strength push, legs, the pull-up, the row, the hinge and the
--- planche; Agility cardio and power; Stamina the core, the side, the wall sit and the L-sit; Intellect balance, the arm
--- balances and the handstand; Spirit the splits, the pike, the backbend, twists and ankles): its stars and rungs pay
--- it, and so does every move it holds.
+-- The stat a ladder feeds (ns.Ladders' `stat`, slice 21: Strength push, legs, the pull-up, the row, the hinge, the
+-- lower back and the planche; Agility cardio and power; Stamina the core, the side, the wall sit, the L-sit and the
+-- sit-up; Intellect balance, the arm balances and the handstand; Spirit the splits, the pike, the backbend, twists and
+-- ankles): its stars and rungs pay it, and so does every move it holds.
 function ns.LadderStat(ladder)
 	local lad = ns.Ladders[ladder]
 	return lad and lad.stat

@@ -18,6 +18,7 @@ import {t} from "../../lib/copy.js";
 import {announce} from "../../lib/focus.js";
 import {LOCALE} from "../../lib/format.js";
 import {push, register} from "../../lib/router.js";
+import {feedback} from "../../lib/sound.js";
 import {h} from "../../kit/element.js";
 import {confirmWindow} from "../book/common.js";
 import {page, watch, words} from "../page.js";
@@ -169,7 +170,11 @@ register("desk.menu.backup", () => {
 		said.hidden = !outcome || b.busy;
 		if (outcome) said.textContent = outcome.state === "restored" ? restored(outcome) : refused(outcome.why);
 		const seq = outcome?.seq ?? 0;
-		if (heard !== undefined && seq > heard) announce(said.textContent);
+		if (heard !== undefined && seq > heard) {
+			announce(said.textContent);
+			// a backup restored is a commitment that succeeded; a file refused, an error (slice 72)
+			feedback(outcome.state === "restored" ? "commit" : "error");
+		}
 		heard = seq;
 		save.state = b.busy ? "busy" : "normal";
 		open.disabled = b.busy || b.pump_on;

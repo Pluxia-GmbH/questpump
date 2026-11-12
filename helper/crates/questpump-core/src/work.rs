@@ -5,16 +5,21 @@
 //! holds, is due or asks (`State`). The phones' cores keep their own clocks (`WorkState`: the work apps' minutes, or
 //! plain time a walk starts over).
 //!
-//! The rules, as the plan's slice 67 states them: the clock always runs down, whatever the typing (David, 2026-11-10:
-//! "it should just always run down. no matter if there is typing?!"; it counted presence until then, and a pause in
-//! the input started the count over): a block is due Every (`work_every_min` by default) after the anchor, less the
-//! time held; a hold (a call, presenting, full screen, a game, a pump open, quiet hours, the felt-unwell lock) and a
-//! standing ask freeze it, and nothing asks while one holds; once due it asks at the first pause (`work_moment_s`
-//! without input), the moment a hold ends, or `work_late_s` after it came due, whichever comes first; a standing ask
-//! stands until it is answered (never a second ask, never a bank by itself). Only a move of the anchor (a pump on any
-//! device, Later, Start, Stop) starts the count again or drops a block that is due, so an ask nobody answered waits
-//! for the player's return, and a changed Every counts from the next anchor. A device keeps a due block across a
-//! restart (`Clock::due_from`).
+//! The rules, as the plan's slice 67 states them: work mode runs until the player stops it, every work pump alike (no
+//! set of pumps and no long one: David, 2026-11-11, "it should just run as long as I put it"). The clock always runs
+//! down, whatever the typing (David, 2026-11-10: "it should just always run down. no matter if there is typing?!"; it
+//! counted presence until then, and a pause in the input started the count over): a block is due Every
+//! (`work_every_min` by default) after the anchor, less the time held; a hold (a call, presenting, full screen, a
+//! game, another kind of pump open, quiet hours, the felt-unwell lock) and a standing ask freeze it, and nothing asks
+//! while one holds; a work pump on screen holds nothing, since its coming moved the anchor and the next block counts
+//! on while it stands (David, 2026-11-11: "It does not matter that i dont do the excercise right away. it should
+//! always continue with the 25 min"); once due it asks at the first pause (`work_moment_s` without input; at once on
+//! a device that reads no input), the moment
+//! a hold ends, or `work_late_s` after it came due, whichever comes first; a standing ask stands until it is answered
+//! (never a second ask, never a bank by itself). Only a move of the anchor (a work pump's coming, another pump done
+//! on any device, Later, Start, Stop) starts the count again or drops a block that is due, so an ask nobody answered
+//! waits for the player's return, and a changed Every counts from the next anchor. A device keeps a due block across
+//! a restart (`Clock::due_from`).
 
 use serde::{Deserialize, Serialize};
 
@@ -29,14 +34,13 @@ const TEMPLATE: &str = "office";
 /// hand does not (call 4).
 pub const WORK: &str = "work";
 
-/// Work mode's tunables (contract/library.json, slice 67): Every's default and its choices (minutes), the pumps of a
-/// set (the last the long one), the seconds without input at which a due pump asks and after which it asks anyway,
-/// and the sitting minutes from which a work pump opens on its warm move.
+/// Work mode's tunables (contract/library.json, slice 67): Every's default and its choices (minutes), the seconds
+/// without input at which a due pump asks and after which it asks anyway, and the sitting minutes from which a work
+/// pump opens on its warm move.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Tunables {
 	pub every_min: u16,
 	pub every_choices: &'static [u16],
-	pub set_blocks: u8,
 	pub moment_s: i64,
 	pub late_s: i64,
 	pub warm_min: i64,
@@ -49,7 +53,6 @@ pub fn tunables() -> Option<Tunables> {
 	library::constants().map(|c| Tunables {
 		every_min: c.work_every_min,
 		every_choices: &c.work_every_choices,
-		set_blocks: c.work_set_blocks.max(1),
 		moment_s: c.work_moment_s,
 		late_s: c.work_late_s,
 		warm_min: c.work_warm_min,
@@ -75,9 +78,7 @@ pub struct Work {
 	pub space: bool,
 	pub quiet: bool,
 	pub settings_at: i64,
-	/// The work pumps of this set done or put off with Later (0 to `set_blocks` less 1), the clock's anchor and the id
-	/// of the device that moved it.
-	pub block: u8,
+	/// The clock's anchor and the id of the device that moved it.
 	pub reset_at: i64,
 	pub reset_by: String,
 }
@@ -97,7 +98,6 @@ impl Default for Work {
 			space: office.space,
 			quiet: office.quiet,
 			settings_at: 0,
-			block: 0,
 			reset_at: 0,
 			reset_by: String::new(),
 		}
@@ -115,7 +115,8 @@ fn office() -> PlaceSetup {
 /// A `Work` as the wire and the kept file give it: a field it lacks takes its default, and one that lacks any of the
 /// equipment's four fields (a build of 2026-11-08 sent and kept `place` in their stead) reads with its settings part
 /// dropped, Every, Moves per block and the equipment at their defaults and `settings_at` 0, so a merge takes another
-/// device's alone (the contract's `Work`; the Apple and Android cores read it alike).
+/// device's alone, and the `block` a build before 2026-11-11 sent and kept (a set of four pumps) is not read (the
+/// contract's `Work`; the Apple and Android cores read it alike).
 #[derive(Deserialize)]
 #[serde(default)]
 struct Read {
@@ -128,7 +129,6 @@ struct Read {
 	space: Option<bool>,
 	quiet: Option<bool>,
 	settings_at: i64,
-	block: u8,
 	reset_at: i64,
 	reset_by: String,
 }
@@ -146,7 +146,6 @@ impl Default for Read {
 			space: None,
 			quiet: None,
 			settings_at: w.settings_at,
-			block: w.block,
 			reset_at: w.reset_at,
 			reset_by: w.reset_by,
 		}
@@ -155,14 +154,7 @@ impl Default for Read {
 
 impl From<Read> for Work {
 	fn from(r: Read) -> Self {
-		let mut w = Self {
-			on: r.on,
-			on_at: r.on_at,
-			block: r.block,
-			reset_at: r.reset_at,
-			reset_by: r.reset_by,
-			..Self::default()
-		};
+		let mut w = Self { on: r.on, on_at: r.on_at, reset_at: r.reset_at, reset_by: r.reset_by, ..Self::default() };
 		if let (Some(gear), Some(floor), Some(space), Some(quiet)) = (r.gear, r.floor, r.space, r.quiet) {
 			(w.every_min, w.pace, w.settings_at) = (r.every_min, r.pace, r.settings_at);
 			w.set_setup(PlaceSetup { gear, floor, space, quiet });
@@ -196,12 +188,6 @@ impl Work {
 		(self.gear, self.floor, self.space, self.quiet) = (setup.gear, setup.floor, setup.space, setup.quiet);
 	}
 
-	/// The next work pump's place in the set, 1 to `set_blocks` (the engine's `work.block`; the last the long one).
-	#[must_use]
-	pub fn next_block(&self, t: &Tunables) -> u8 {
-		self.block.min(t.set_blocks - 1) + 1
-	}
-
 	/// Start at `now` (ms) by device `by`: on, and the clock's anchor moved.
 	pub fn start(&mut self, now: i64, by: &str) {
 		self.on = true;
@@ -209,22 +195,15 @@ impl Work {
 		self.anchor(now, by);
 	}
 
-	/// Stop at `now` by `by`: off, the set started again and the anchor moved.
+	/// Stop at `now` by `by`: off, and the anchor moved.
 	pub fn stop(&mut self, now: i64, by: &str) {
 		self.on = false;
 		self.on_at = later(self.on_at, now);
-		self.block = 0;
 		self.anchor(now, by);
 	}
 
-	/// A work pump done on its ask, or a Later, at `now` by `by`: one block more (the set again after its last), and
-	/// the anchor moved.
-	pub fn block_done(&mut self, now: i64, by: &str, t: &Tunables) {
-		self.block = (self.block + 1) % t.set_blocks;
-		self.anchor(now, by);
-	}
-
-	/// Any other pump done on any device while on, at `now` by `by`: the anchor alone moved.
+	/// The anchor moved to `now` by `by`: a work pump came on screen, a Later banked, or another pump was done on any
+	/// device while on.
 	pub fn anchor(&mut self, now: i64, by: &str) {
 		self.reset_at = later(self.reset_at, now);
 		self.reset_by = by.chars().take(BY_MOST).collect();
@@ -248,8 +227,8 @@ impl Work {
 
 	/// Another device's state merged into this one at `now` (ms, this device's clock), its three parts apart: the
 	/// switch by the later `on_at` (off at a tie), the settings by the later `settings_at` (the held ones at a tie),
-	/// the set and the anchor by the later `reset_at` (the greater `reset_by` by its bytes at a tie); a part dated more
-	/// than a day past `now`, or whose value does not read, dropped alone. Whether anything changed.
+	/// the anchor by the later `reset_at` (the greater `reset_by` by its bytes at a tie); a part dated more than a day
+	/// past `now`, or whose value does not read, dropped alone. Whether anything changed.
 	pub fn merge(&mut self, heard: &Self, now: i64, t: &Tunables) -> bool {
 		let timely = |at: i64| at >= 1 && link::not_ahead(at, now);
 		let before = self.clone();
@@ -263,23 +242,20 @@ impl Work {
 			self.set_setup(heard.setup());
 			self.settings_at = heard.settings_at;
 		}
-		let set_reads = heard.block < t.set_blocks && heard.reset_by.len() <= BY_MOST;
 		let wins = heard.reset_at > self.reset_at
 			|| (heard.reset_at == self.reset_at && heard.reset_by.as_bytes() > self.reset_by.as_bytes());
-		if timely(heard.reset_at) && set_reads && wins {
-			(self.block, self.reset_at, self.reset_by) = (heard.block, heard.reset_at, heard.reset_by.clone());
+		if timely(heard.reset_at) && heard.reset_by.len() <= BY_MOST && wins {
+			(self.reset_at, self.reset_by) = (heard.reset_at, heard.reset_by.clone());
 		}
 		*self != before
 	}
 }
 
-/// The moves of a set's short and long work pump at Moves per block `pace`, as the How page names them: Engine.lua
-/// `workQuota`'s, the Normal size's of library.json's `pace_moves` and one more on the set's last; none for a pace
-/// that does not read.
+/// The moves of a work pump at Moves per block `pace`, as the How page names them: Engine.lua `workQuota`'s, the
+/// Normal size's of library.json's `pace_moves`; none for a pace that does not read.
 #[must_use]
-pub fn block_moves(pace: &str) -> Option<(u8, u8)> {
-	let short = *library::constants()?.pace_moves.get(pace)?.get(1)?;
-	Some((short, short.saturating_add(1)))
+pub fn pump_moves(pace: &str) -> Option<u8> {
+	library::constants()?.pace_moves.get(pace)?.get(1).copied()
 }
 
 /// What holds the work clock: nothing counts and nothing asks while one does, and the work card and the tray show it
@@ -298,7 +274,7 @@ pub enum Hold {
 	/// A game in front (World of Warcraft's window too), a match running, a match's offer standing or the game's quest
 	/// pump open.
 	Game,
-	/// A pump open.
+	/// A pump of another kind open, or a Later being banked (a work pump on screen holds nothing).
 	Pump,
 	/// The player's quiet hours.
 	Quiet,
@@ -387,7 +363,9 @@ impl Clock {
 			return State::Counting { left_s };
 		}
 		let due_at = *self.due_at.get_or_insert(now);
-		let paused = seen.idle_s.is_some_and(|s| i64::from(s) >= t.moment_s);
+		// a device that reads no input (the browser, whose tab says only that somebody is there) has no pause to
+		// wait for: its block asks as it comes due
+		let paused = seen.idle_s.is_none_or(|s| i64::from(s) >= t.moment_s);
 		if freed || paused || now - due_at >= t.late_s {
 			self.asking = true;
 			return State::Ask { new: true };
@@ -396,7 +374,7 @@ impl Clock {
 	}
 
 	/// The standing ask answered (Pump now, Later, Stop): the clock waits for the anchor to move, and asks again at its
-	/// next moment while it does not (a pump left with nothing done).
+	/// next moment while it does not (a start accepted whose pump never came).
 	pub fn answered(&mut self) {
 		self.asking = false;
 	}

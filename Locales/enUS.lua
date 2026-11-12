@@ -151,6 +151,7 @@ L["gear.off"] = "off"
 L["gear.none"] = "none"
 L["gear.stable_chair"] = "Stable chair (no wheels, or a sofa)"
 L["gear.table"] = "Sturdy table"
+L["gear.towel"] = "Towel"
 L["gear.bar"] = "Pull-up bar"
 L["gear.fixed_bar"] = "Fixed pull-up bar (not a doorway bar)"
 L["gear.bands"] = "Bands with a door anchor"
@@ -890,6 +891,7 @@ L["ladder.21"] = "L-sit"
 L["ladder.22"] = "Planche"
 L["ladder.23"] = "Power"
 L["ladder.24"] = "Sit-up"
+L["ladder.25"] = "Lower back"
 -- The three talent trees (Core.lua ns.TREES, slice 36), named as the focus is; contract/sheet.json carries them to the
 -- apps as the ladders' names
 L["tree.strength"] = "Strength"
@@ -2618,18 +2620,18 @@ guide("chest_opener", {
 })
 L["move.chest_opener.mark"] = "Hands clasped, arms straight, hands a hand's width off your back, chest up."
 -- The one-arm doorframe row with the toes a foot back, and the one-arm row's hold (2026-10-28): rung 3 without a table
-move("one_arm_doorframe_row_back", "One-arm doorframe row, feet back",
+move("one_arm_doorframe_row_back", "Shallow one-arm doorframe row",
 	"One hand on a solid doorframe edge at chest height, toes a foot's length from its base.",
 	"Pull your chest to the frame on one arm. Count out loud, breathe out as you pull.",
 	"Stop when your hand slips or your hips twist. Count the weaker side.")
 guide("one_arm_doorframe_row_back", {
-	"Face the frame's edge on the side without hinges and wrap one hand around it.",
-	"Set your toes one foot's length from the base and lean back until the arm is straight.",
-	"Pull your chest to the frame, elbow close to your side, then lower slowly.",
-	"Breathe out as you pull and in as you lean back.",
-	"Each pull counts as one rep; do one side, press Switch sides, then the other.",
+	"Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+	"Wrap that hand around it, toes a foot's length from the base; lean back to a straight arm.",
+	"Pull your chest to the frame, elbow close, breathing out; lower slowly, breathing in.",
+	"Each pull counts as one rep; do one side, then press Switch sides.",
+	"For the other arm, go through the doorway and turn round: the doorway is on that side.",
 }, {
-	"Measure the gap once with your own foot and stand there every time.",
+	"You stand further from the frame than in the one-arm doorframe row, so you pull less.",
 	"Keep the free hand hovering by the frame, ready to catch you.",
 	"Grip only where your whole hand closes around the frame, never trim with fingertips.",
 })
@@ -2638,11 +2640,11 @@ move("one_arm_doorframe_hold", "One-arm doorframe row hold",
 	"Pull to the frame on one arm and hold, elbow back. Count out loud, keep breathing.",
 	"Stop when your hand slips or your chest caves in. Count the weaker side.")
 guide("one_arm_doorframe_hold", {
-	"Face the frame's edge on the side without hinges and wrap one hand around it.",
-	"Set your toes a hand's length from the base and lean back until the arm is straight.",
-	"Pull your chest to the frame and hold there, elbow back and shoulder down.",
-	"Keep breathing slowly and count out loud through the whole hold.",
+	"Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+	"Wrap that hand around it, toes a hand's length from the base; lean back to a straight arm.",
+	"Pull your chest to the frame and hold, elbow back, shoulder down, breathing slowly.",
 	"The clock counts up: hold until your chest sinks, then press Switch sides.",
+	"For the other arm, go through the doorway and turn round: the doorway is on that side.",
 }, {
 	"Keep the free hand hovering by the frame, ready to catch you.",
 	"Draw the shoulder blade back and down and keep it there the whole hold.",
@@ -2653,11 +2655,11 @@ move("one_arm_doorframe_row", "One-arm doorframe row",
 	"Pull your chest to the frame on one arm. Count out loud, breathe out as you pull.",
 	"Stop when your hand slips or your hips twist. Count the weaker side.")
 guide("one_arm_doorframe_row", {
-	"Face the frame's edge on the side without hinges and wrap one hand around it.",
-	"Set your toes a hand's length from the base and lean back until the arm is straight.",
-	"Pull your chest to the frame, elbow close to your side, then lower slowly.",
-	"Breathe out as you pull and in as you lean back.",
-	"Each pull counts as one rep; do one side, press Switch sides, then the other.",
+	"Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+	"Wrap that hand around it, toes a hand's length from the base; lean back to a straight arm.",
+	"Pull your chest to the frame, elbow close, breathing out; lower slowly, breathing in.",
+	"Each pull counts as one rep; do one side, then press Switch sides.",
+	"For the other arm, go through the doorway and turn round: the doorway is on that side.",
 }, {
 	"Keep the free hand hovering by the frame, ready to catch you.",
 	"Start each pull by drawing the shoulder blade back, then bend the arm.",
@@ -2668,11 +2670,11 @@ move("steep_doorframe_row", "Steep one-arm doorframe row",
 	"Lean back far on one arm, pull, lower in 3 s. Count out loud, breathe out as you pull.",
 	"Stop when your hand creeps down the frame or your hips twist. Count the weaker side.")
 guide("steep_doorframe_row", {
-	"Face the frame's edge on the side without hinges and wrap one hand around it.",
-	"Put your toes against the base and lean back until the arm is straight.",
-	"Pull your chest to the frame in 1 s, then lower over three slow beats.",
-	"Breathe out as you pull and in as you lower.",
-	"Each pull counts as one rep. Do every rep on one side, then press Switch sides.",
+	"Face the frame's edge on the side without hinges, the doorway on your working arm's side.",
+	"Wrap that hand around it, toes against the base; lean back until the arm is straight.",
+	"Pull your chest to the frame in 1 s, breathing out; lower over three slow beats.",
+	"Each pull counts as one rep; do one side, then press Switch sides.",
+	"For the other arm, go through the doorway and turn round: the doorway is on that side.",
 }, {
 	"Keep your toes against the base every set; when your hand creeps, the set is done.",
 	"Keep your body straight from heels to head, hips in line.",
@@ -2832,22 +2834,24 @@ guide("knee_plank", {
 })
 move("bird_dog", "Bird dog", "Hands and knees on the floor, a folded towel under your knees if it is hard.",
 	"Reach one arm and the opposite leg, hips level, alternate sides. Breathe out as you reach.",
-	"Stop when your hips rotate or your back sags. A reach on each side counts one.")
+	"Stop when your hips rotate or your back sags.")
 guide("bird_dog", {
 	"Kneel on the floor, hands under your shoulders, knees under your hips, back flat.",
 	"Reach one arm forward and the opposite leg back until both are level with your back.",
 	"Hold the reach for 1 s with your hips level, then come back.",
 	"Breathe out as you reach, breathe in as you come back.",
-	"Alternate sides every rep; a reach with one side and then the other counts one.",
+	"Switch sides after every reach and keep a slow, even rhythm until the clock ends.",
 }, {
 	"Push the heel back as if pressing a wall behind you, not up to the ceiling.",
 	"Keep both hip bones pointing at the floor as the leg reaches back.",
 	"Press the floor away with your standing hand so your upper back does not sag.",
 })
--- the back holds (slice 54)
+-- the back holds (slice 54; the hinge hold and the Superman hold the lower back ladder's since 2026-11-10: its block
+-- is after the sit-up's; the bird dog hold timed since 2026-11-11, as the bird dog above and the chops below: the
+-- clock runs them, so no line of theirs counts a rep or names a press of Switch sides)
 move("hinge_hold", "Hinge hold", "Feet hip-width apart, knees soft, nothing in your hands.",
 	"Hips back, back flat at a slant, arms reaching forward. Count out loud.",
-	"Stop when your back rounds or your lower back aches.")
+	"Stop when your back rounds.")
 guide("hinge_hold", {
 	"Stand with feet hip-width apart, knees soft, arms by your sides.",
 	"Push your hips back and tip your chest forward with your back flat.",
@@ -2857,28 +2861,33 @@ guide("hinge_hold", {
 }, {
 	"Keep your neck long, your eyes on the floor a step in front of you.",
 	"Squeeze your seat and feel the muscles beside your spine working.",
+	"Try it first with a broomstick held along your spine: head, upper back, tailbone touch it.",
 })
-move("superman_hold", "Superman hold", "Lie face down on the floor, arms reaching past your head.",
-	"Lift your arms, chest and legs a little off the floor. Count out loud.",
-	"Stop when your lower back aches or your legs drop.")
+-- the Superman hold lies on a pillow and stays low since 2026-11-10 (the highest compression of the floor's back
+-- moves: the pillow under the hips and a lift of a hand's width keep the back out of an arch)
+move("superman_hold", "Superman hold",
+	"Lie face down on the floor, a folded pillow under your hips, arms past your head.",
+	"Lift your arms, chest and legs a hand's width off the floor. Count out loud.",
+	"Stop when your legs drop or your chin lifts.")
 guide("superman_hold", {
-	"Lie face down on a mat, arms straight out past your head, legs straight.",
+	"Lie face down with a folded pillow under your hips, arms straight out past your head.",
 	"Squeeze your seat and lift your arms, chest and legs a hand's width off the floor.",
-	"Keep your neck long, your eyes on the floor just ahead of your hands.",
+	"Keep your neck long and your eyes on the floor under your face.",
 	"Hold still and breathe slowly, counting out loud.",
 	"The clock times how long you hold the lift, then lower everything slowly.",
 }, {
+	"Lift low: hands and thighs only just clear the floor.",
 	"Lift with your seat and back, never by throwing your head back.",
 	"Reach long through your fingers and toes rather than high.",
 })
 move("bird_dog_hold", "Bird dog hold", "Hands and knees on the floor, a folded towel under your knees if it is hard.",
-	"Reach one arm and the other leg level with your back and hold. Count out loud.",
-	"Stop when your hips rotate or your back sags. Count the weaker side.")
+	"Reach one arm and the other leg level with your back and hold. Breathe slowly.",
+	"Stop when your hips rotate or your back sags.")
 guide("bird_dog_hold", {
 	"Kneel on the floor, hands under your shoulders, knees under your hips, back flat.",
 	"Reach one arm forward and the other leg back until both are level with your back.",
-	"Hold still with your hips level, breathing slowly and counting out loud.",
-	"When this side ends, press Switch sides and reach the other arm and leg.",
+	"Hold still with your hips level, breathing slowly.",
+	"The clock times each side, then counts you in to switch.",
 }, {
 	"Push the heel back as if pressing a wall behind you, not up to the ceiling.",
 	"Keep both hip bones pointing at the floor the whole hold.",
@@ -2899,13 +2908,13 @@ guide("dead_bug", {
 })
 move("wood_chopper", "Wood-chopper", "Clear arm's length around you.",
 	"Hands together, chop from high on one side to low on the other. Breathe out on the chop.",
-	"Stop when your hips swing with your arms. Count the weaker side.")
+	"Stop when your hips swing with your arms.")
 guide("wood_chopper", {
 	"Clear an arm's length around you, stand with feet shoulder-width apart, hands clasped.",
 	"Raise your hands high above one shoulder, arms long, chest turned that way.",
 	"Chop down across your body to outside the opposite knee, bending your knees as you go.",
 	"Rise back up slowly after each chop, breathing out on the chop.",
-	"Count each chop; do every rep to one side, then press Switch sides.",
+	"The clock times each side, then counts you in to switch.",
 }, {
 	"Let your chest and arms turn, but keep your hips facing forward.",
 	"Keep your arms long and let your eyes follow your hands.",
@@ -2919,7 +2928,7 @@ guide("overhead_chop", {
 	"Clasp your hands, arms straight overhead, ribs pulled down so your lower back stays flat.",
 	"Chop down to your knees, hinging at the hips and bending your knees.",
 	"Breathe out on the chop, breathe in as you rise slowly back overhead.",
-	"Count each chop from overhead to your knees and back as one rep.",
+	"Keep a slow, even rhythm until the clock ends.",
 }, {
 	"Push your hips back as you chop so your back stays long and flat.",
 	"Reset your ribs down at the top before you start each chop.",
@@ -3372,6 +3381,374 @@ implement("situp_weighted", "kettlebell", "A kettlebell of 5-10 kg held on your 
 	"Breathe out and curl up one part at a time: head, shoulders, then your back.",
 	"Sit up as far as the weight lets you, then roll down slowly, back first.",
 	"Each sit-up and roll back down counts as one, counted out loud.",
+})
+
+-- Lower back (ladder 25, 2026-11-10; David: "imo there should be whole line for it"): every lift ends at a straight
+-- line, with a pause there, and never goes past it: the bed's edge gives the reverse hypers their range below the
+-- line, the cushion under the hips the back extensions'. The hinge hold and the Superman hold, the ladder's too,
+-- keep their words beside the core's above, as the group's timed drills do (the bird dog and its hold; the one-leg
+-- reverse hyper's are the first here), and its two band moves theirs beside the bands' below. The kneeling moves, the
+-- floor's prone lifts and the table's reverse hyper (2026-11-11) follow the first eleven: kneeling, the seat goes back
+-- above the heels and never rests on them, and the back stays flat.
+move("reverse_hyper_one_leg", "One-leg reverse hyper",
+	"Lie face down across your bed, hips at the edge, both feet on the floor.",
+	"Lift one straight leg level with your back, then the other. Breathe out as you lift.",
+	"Stop when your hips turn or a leg swings past level.")
+guide("reverse_hyper_one_leg", {
+	"Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+	"Hold the far edge of the mattress, or fold your arms under your head.",
+	"Start with both legs straight and your toes on the floor.",
+	"Lift one straight leg until it is level with your back, pause at the line, lower it.",
+	"Then lift the other leg, breathing out as you lift; take turns until the clock ends.",
+}, {
+	"Lift to level and no higher, so your lower back stays flat.",
+	"Keep both hip bones pressed into the bed as the leg rises.",
+})
+move("reverse_hyper_tuck", "Tuck reverse hyper",
+	"Lie face down across your bed, hips at the edge, knees bent, toes on the floor.",
+	"Squeeze your seat, lift both knees until your thighs are level. Breathe out as you lift.",
+	"Stop when your legs swing up or your thighs stop short of level.")
+guide("reverse_hyper_tuck", {
+	"Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+	"Hold the far edge of the mattress, or fold your arms under your head.",
+	"Bend your knees to a right angle and rest your toes on the floor.",
+	"Squeeze your seat and lift both knees until your thighs are level with your back.",
+	"Pause at the line, then lower slowly until your toes touch; each lift counts one.",
+}, {
+	"Keep your knees bent at a right angle the whole time.",
+	"Lift to level and no higher, with no swing to help.",
+})
+move("reverse_hyper_hold", "Reverse hyper hold",
+	"Lie face down across your bed, hips at the edge, legs straight, toes on the floor.",
+	"Lift both straight legs level with your back and hold them there. Count out loud.",
+	"Stop when your legs sink below level or your knees bend.")
+guide("reverse_hyper_hold", {
+	"Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+	"Hold the far edge of the mattress, or fold your arms under your head.",
+	"Squeeze your seat and lift both straight legs until they are level with your back.",
+	"Hold them still at the line, breathing slowly and counting out loud.",
+	"The clock times how long your legs stay level, then lower them slowly.",
+}, {
+	"Hold at level and no higher, so your lower back stays flat.",
+	"Press your legs together and reach your heels to the far wall.",
+})
+move("reverse_hyper", "Reverse hyper",
+	"Lie face down across your bed, hips at the edge, legs straight, toes on the floor.",
+	"Lift both straight legs to level, lower slowly. Count out loud, breathe out as you lift.",
+	"Stop when your knees bend or your legs swing past level.")
+guide("reverse_hyper", {
+	"Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+	"Hold the far edge of the mattress, or fold your arms under your head.",
+	"Start with both legs straight and your toes on the floor.",
+	"Squeeze your seat and lift both legs until they are level with your back.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Lift to level and no higher, with no swing to help.",
+	"Keep your knees straight and reach your heels to the far wall.",
+})
+move("chest_lift", "Chest lift",
+	"Lie face down on the floor, a folded pillow under your belly, fingertips at your temples.",
+	"Lift your chest a hand's width, hold for 3 seconds, lower. Breathe out as you lift.",
+	"Stop when your chin lifts or your feet leave the floor.")
+guide("chest_lift", {
+	"Lie face down on the floor with a folded pillow under your lower belly.",
+	"Rest your fingertips at your temples, elbows wide, legs straight, feet on the floor.",
+	"Breathe out and lift your chest a hand's width off the floor, eyes on the floor.",
+	"Hold for a count of 3, then lower slowly and breathe in.",
+	"Each lift with its hold counts as one rep.",
+}, {
+	"The pillow keeps your lower back long; a low lift is the whole move.",
+	"Keep your chin a little tucked, never looking up.",
+	"Press the tops of your feet into the floor so your legs stay down.",
+})
+move("back_extension", "Back extension",
+	"Heels under a heavy sofa or bed; hips on a firm cushion, arms by your sides.",
+	"Lower your chest to the floor, lift to one straight line. Count out loud, breathe out up.",
+	"Stop when you rise past a straight line or jerk your way up.")
+guide("back_extension", {
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+	"Keep your arms by your sides and let your chest sink to the floor.",
+	"Breathe out and lift until your head, hips and heels line up, and no higher.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Squeeze your seat first, then lift, with no swing to help.",
+	"Keep your eyes on the floor so your neck stays long.",
+	"The cushion lets your chest sink below the line; without it every lift goes too high.",
+})
+move("reverse_hyper_pause", "Paused reverse hyper",
+	"Lie face down across your bed, hips at the edge, legs straight, toes on the floor.",
+	"Lift both legs level, hold for 3 seconds, lower slowly. Count out loud, breathe steadily.",
+	"Stop when your legs sink before the count of 3 or your knees bend.")
+guide("reverse_hyper_pause", {
+	"Lie face down across your bed, your hip crease at the edge, so your thighs hang free.",
+	"Hold the far edge of the mattress, or fold your arms under your head.",
+	"Squeeze your seat and lift both straight legs until they are level with your back.",
+	"Hold them at the line for a count of 3, then lower slowly until your toes touch.",
+	"Each lift with its hold counts as one, counted out loud.",
+}, {
+	"Count the 3 seconds out loud; a lift without its hold does not count.",
+	"Lift to level and no higher, with no swing to help.",
+})
+move("back_extension_hold", "Back extension hold",
+	"Heels under a heavy sofa or bed; hips on a firm cushion, fingertips at your temples.",
+	"Lift until your body is one straight line and hold it there. Count out loud.",
+	"Stop when your chest sinks below the line of your legs.")
+guide("back_extension_hold", {
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+	"Rest your fingertips at your temples and lift until head, hips and heels line up.",
+	"Hold still at the line, breathing slowly and counting out loud.",
+	"The clock times how long you hold the line, then lower slowly.",
+}, {
+	"Hold a straight line and no higher; squeeze your seat the whole time.",
+	"Keep your eyes on the floor so your neck stays long.",
+})
+move("back_extension_long", "Long back extension",
+	"Heels under a heavy sofa or bed; hips on a firm cushion, arms straight past your head.",
+	"Arms by your ears, lift to a straight line, lower slowly. Count out loud, breathe out up.",
+	"Stop when your arms drop, the sofa lifts or you rise past a straight line.")
+guide("back_extension_long", {
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+	"Reach both arms straight past your head, upper arms by your ears.",
+	"Breathe out and lift until your arms, hips and heels line up, and no higher.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Keep your arms by your ears the whole way; when they drop, the set is over.",
+	"Squeeze your seat first, then lift, with no swing to help.",
+	"If the sofa lifts, hook your heels under your bed's frame instead.",
+})
+move("reverse_hyper_weight", "Weighted reverse hyper",
+	"Hips at the edge of your bed; a weight of 2-5 kg gripped between your feet.",
+	"Grip the weight, lift both legs level, lower slowly. Count out loud, breathe out up.",
+	"Stop when the weight slips or your legs swing past level.")
+guide("reverse_hyper_weight", {
+	"Put the weight on the floor by your bed: a full bottle, a heavy book or a dumbbell.",
+	"Lie face down across the bed, hip crease at the edge; hold the far edge or fold your arms.",
+	"Grip the weight between your feet and keep your legs straight.",
+	"Squeeze your seat and lift both legs until they are level with your back.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Pick a weight you can lift 6 to 10 times; the game says when to go heavier.",
+	"Squeeze your feet together the whole way so the weight cannot slip.",
+	"Lift to level and no higher, with no swing to help.",
+})
+implement("reverse_hyper_weight", "dumbbells",
+	"Hips at the edge of your bed; one dumbbell of 2-5 kg on end between your feet.", {
+	"Stand one dumbbell on end on the floor by your bed.",
+	"Lie face down across the bed, hip crease at the edge; hold the far edge or fold your arms.",
+	"Grip its handle between your feet, under the top end, and keep your legs straight.",
+	"Squeeze your seat and lift both legs until they are level with your back.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+})
+implement("reverse_hyper_weight", "ball",
+	"Hips at the edge of your bed; a medicine ball of 2-5 kg gripped between your feet.", {
+	"Put the medicine ball on the floor by your bed.",
+	"Lie face down across the bed, hip crease at the edge; hold the far edge or fold your arms.",
+	"Grip the ball between your feet and keep your legs straight.",
+	"Squeeze your seat and lift both legs until they are level with your back.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+})
+-- fingertips at the temples since 2026-11-11 (the arms by the sides until then: Library.lua says why), never overhead
+-- with a pack on
+move("back_extension_pack", "Back extension with a pack",
+	"Heels under a heavy sofa or bed; hips on a firm cushion; a 5-10 kg pack on your back.",
+	"Fingertips at your temples, lift to one straight line. Count out loud, breathe out up.",
+	"Stop when the pack slides, the sofa lifts or you rise past a straight line.")
+guide("back_extension_pack", {
+	"Put on the loaded pack, both straps on, worn high and snug on your back.",
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion under your hips, fingertips at your temples, let your chest sink.",
+	"Breathe out and lift until your head, hips and heels line up, and no higher.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Pick a weight you can lift 6 to 10 times; the game says when to go heavier.",
+	"Tighten the straps; hands stay at your temples, never overhead, so the pack cannot slide.",
+	"If the sofa lifts, hook your heels under your bed's frame instead.",
+})
+implement("back_extension_pack", "vest",
+	"Heels under a heavy sofa or bed; hips on a firm cushion; a 5-10 kg vest on, snug.", {
+	"Put on the weighted vest, snug and even.",
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion under your hips, fingertips at your temples, let your chest sink.",
+	"Breathe out and lift until your head, hips and heels line up, and no higher.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+})
+-- Kneeling (2026-11-11, David: "couldnt the lower back be trained kneeling going to the front"): a folded towel under
+-- the knees, the seat back as the chest goes forward, the back flat; nothing on the back or behind the neck
+move("kneeling_back_raise", "Kneeling back raise",
+	"Kneel on a folded towel, seat back above your heels, arms straight back by your sides.",
+	"Back flat at a slant: lower your chest toward level, lift it back. Breathe out up.",
+	"Stop when your back rounds or your seat rests on your heels.")
+guide("kneeling_back_raise", {
+	"Kneel on a folded towel or a mat, knees hip-width, toes tucked or flat, as is steadier.",
+	"Push your seat back until it is above your heels, never resting on them.",
+	"Tip your chest forward to a slant, back flat, arms straight back along your sides.",
+	"Breathe in, lower your chest toward level, pause, then breathe out and lift to the slant.",
+	"Stay at the slant between lifts, never upright; each lift counts one.",
+}, {
+	"Keep your head in line with your back, eyes on the floor ahead of your knees.",
+	"Lower only as far as your back stays flat.",
+})
+move("kneeling_good_morning", "Kneeling good morning",
+	"Kneel tall on a folded towel, fingertips at your temples, elbows wide.",
+	"Seat back, chest forward and down, back flat. Hold 3 seconds, rise tall. Breathe out up.",
+	"Stop when your back rounds or your seat rests on your heels.")
+guide("kneeling_good_morning", {
+	"Kneel tall on a folded towel or a mat, knees hip-width, toes tucked or flat.",
+	"Rest your fingertips at your temples, elbows wide, head in line with your back.",
+	"Push your seat back as your chest goes forward and down, your back flat.",
+	"Hold the fold for a count of 3, then breathe out and rise tall.",
+	"Each fold with its hold counts as one rep.",
+}, {
+	"Fold only as far as your back stays flat.",
+	"Your seat goes back toward your heels and never rests on them.",
+})
+move("swimmer_lifts", "Swimmer lifts",
+	"Lie face down on the floor, a folded pillow under your belly, arms past your head.",
+	"Lift one arm and the other leg a hand's width, hold 2 seconds, switch. Breathe steadily.",
+	"Stop when your chin lifts or the lifts become a flutter. A lift on each side counts one.")
+guide("swimmer_lifts", {
+	"Lie face down on the floor with a folded pillow under your belly.",
+	"Reach both arms past your head, legs straight, eyes on the floor.",
+	"Lift one arm and the other leg a hand's width off the floor and hold for a count of 2.",
+	"Lower them, then lift the other arm and leg and hold again.",
+	"Breathe steadily; a lift on each side counts one.",
+}, {
+	"Lift low and hold each lift: a fast flutter does not count.",
+	"Keep your chin a little tucked, never looking up.",
+})
+move("kneeling_good_morning_long", "Long kneeling good morning",
+	"Kneel tall on a folded towel, both arms straight up by your ears.",
+	"Seat back, fold forward slowly, back flat. Hold for 3 seconds, rise tall. Breathe out up.",
+	"Stop when your arms drop from your ears or your back rounds.")
+guide("kneeling_good_morning_long", {
+	"Kneel tall on a folded towel or a mat, knees hip-width, toes tucked or flat.",
+	"Reach both arms straight up, upper arms by your ears.",
+	"Push your seat back and fold forward slowly, arms and back in one flat line.",
+	"Hold the fold for a count of 3, then breathe out and rise tall.",
+	"Each fold with its hold counts as one rep.",
+}, {
+	"Keep your arms by your ears the whole way; when they drop, the set is over.",
+	"Fold only as far as your back stays flat; your seat never rests on your heels.",
+})
+move("floor_leg_lift", "Floor leg lift",
+	"Lie face down on the floor, a folded pillow under your hips, forehead on your hands.",
+	"Lift both straight legs until your knees just clear the floor. Hold for 3. Count out loud.",
+	"Stop when your knees bend or your legs swing up.")
+guide("floor_leg_lift", {
+	"Lie face down on the floor with a folded pillow under your hips.",
+	"Rest your forehead on your hands, legs straight and together.",
+	"Squeeze your seat and lift both legs until your knees just clear the floor.",
+	"Hold for a count of 3, then lower slowly.",
+	"Each lift with its hold counts as one, counted out loud.",
+}, {
+	"Lift low: your knees only just clear the floor, with no swing.",
+	"The pillow keeps your lower back long; a low lift is the whole move.",
+	"Keep your legs straight and pressed together.",
+})
+move("reverse_hyper_table", "Table reverse hyper",
+	"A heavy table on four legs; never glass, folding, a standing desk or one with monitors.",
+	"Lie across it, hips at the edge, lift both legs to level. Count out loud, breathe out up.",
+	"Stop when your legs swing past level or the table moves.")
+guide("reverse_hyper_table", {
+	"Lean on the edge, then pull gently: if the table lifts, slides or creaks, stop.",
+	"Lay a folded towel on the edge and lie across the table, chest and belly on the top.",
+	"Set your hip crease at the edge, hold the far edge, legs straight and hanging.",
+	"Squeeze your seat and lift both legs until they are level with your back.",
+	"Pause at the line, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Never with a weight at your feet.",
+	"Lift to level and no higher, with no swing to help.",
+	"Keep your knees straight and reach your heels to the far wall.",
+})
+move("chest_lift_long", "Long chest lift",
+	"Lie face down on the floor, a folded pillow under your belly, arms past your head.",
+	"Arms by your ears, lift your chest a hand's width, hold for 3 seconds. Count out loud.",
+	"Stop when your arms drop from your ears, your chin lifts or your feet leave the floor.")
+guide("chest_lift_long", {
+	"Lie face down on the floor with a folded pillow under your lower belly.",
+	"Reach both arms straight past your head, upper arms by your ears, feet on the floor.",
+	"Breathe out and lift your chest and arms a hand's width off the floor, eyes down.",
+	"Hold for a count of 3, then lower slowly and breathe in.",
+	"Each lift with its hold counts as one, counted out loud.",
+}, {
+	"Keep your arms by your ears the whole way; when they drop, the set is over.",
+	"The pillow keeps your lower back long; a low lift is the whole move.",
+	"Keep your chin a little tucked, never looking up.",
+})
+move("chest_lift_pack", "Chest lift with a pack",
+	"Lie face down, a folded pillow under your belly; a 5-10 kg pack worn with both straps.",
+	"Fingertips at your temples, lift your chest a hand's width, hold for 3. Count out loud.",
+	"Stop when your chin lifts, your feet leave the floor or the pack slides towards your neck.")
+guide("chest_lift_pack", {
+	"Put on the loaded pack, both straps on, worn high and snug on your back.",
+	"Lie face down on the floor with a folded pillow under your lower belly.",
+	"Rest your fingertips at your temples, elbows wide, legs straight, feet on the floor.",
+	"Breathe out and lift your chest a hand's width off the floor, eyes on the floor.",
+	"Hold for a count of 3, then lower slowly; each lift counts one, counted out loud.",
+}, {
+	"Start light, at about 5 kg; the game says when to go heavier.",
+	"Tighten the straps so the pack cannot slide towards your neck.",
+	"The pillow keeps your lower back long; a low lift is the whole move.",
+})
+implement("chest_lift_pack", "vest",
+	"Lie face down, a folded pillow under your belly; a 5-10 kg vest on, snug and even.", {
+	"Put on the weighted vest, snug and even.",
+	"Lie face down on the floor with a folded pillow under your lower belly.",
+	"Rest your fingertips at your temples, elbows wide, legs straight, feet on the floor.",
+	"Breathe out and lift your chest a hand's width off the floor, eyes on the floor.",
+	"Hold for a count of 3, then lower slowly; each lift counts one, counted out loud.",
+})
+move("back_extension_long_hold", "Long back extension hold",
+	"Heels under a heavy sofa or bed; hips on a firm cushion, arms straight past your head.",
+	"Arms by your ears, lift to one straight line and hold it there. Count out loud.",
+	"Stop when your arms drop, the sofa lifts or your chest sinks below the line.")
+guide("back_extension_long_hold", {
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+	"Reach both arms straight past your head, upper arms by your ears.",
+	"Lift until your arms, hips and heels line up, and hold still, counting out loud.",
+	"The clock times how long you hold the line, then lower slowly.",
+}, {
+	"Hold a straight line and no higher; squeeze your seat the whole time.",
+	"Keep your arms by your ears the whole hold; when they drop, the hold is over.",
+	"If the sofa lifts, hook your heels under your bed's frame instead.",
+})
+move("kneeling_good_morning_weight", "Kneeling good morning with a weight",
+	"Kneel tall on a folded towel; hug a weight of 5-10 kg to your chest: a bag or a jug.",
+	"Seat back, chest toward level, hold 2 seconds, rise. Count out loud, breathe out up.",
+	"Stop when your back rounds or your seat rests on your heels.")
+guide("kneeling_good_morning_weight", {
+	"Kneel tall on a folded towel or a mat, knees hip-width, toes tucked or flat.",
+	"Hug the weight tight to your chest with both hands, the whole way.",
+	"Seat back, tip your chest forward to level, or only as far as your back stays flat.",
+	"Hold for a count of 2, then breathe out and rise tall.",
+	"Each fold with its hold counts as one, counted out loud.",
+}, {
+	"Start light, at about 5 kg; the game says when to go heavier.",
+	"If you tip forward, set the weight down and take less.",
+	"Never kneel with a pack on your back or a bar: the weight stays at your chest.",
+})
+implement("kneeling_good_morning_weight", "kettlebell",
+	"Kneel tall on a folded towel; hold a kettlebell of 5-10 kg to your chest by its horns.")
+implement("kneeling_good_morning_weight", "dumbbells",
+	"Kneel tall on a folded towel; hold one dumbbell of 5-10 kg upright against your chest.")
+move("back_extension_long_slow", "Slow long back extension",
+	"Heels under a heavy sofa or bed; hips on a firm cushion, arms straight past your head.",
+	"Arms by your ears, lift to a straight line, hold for 3, lower for 3. Count out loud.",
+	"Stop when your arms drop, the sofa lifts or you rise past a straight line.")
+guide("back_extension_long_slow", {
+	"Lie face down on the floor, heels hooked under the edge of a heavy sofa or bed.",
+	"Put a firm cushion, such as a sofa's seat cushion, under your hips.",
+	"Reach both arms straight past your head, upper arms by your ears.",
+	"Breathe out and lift until your arms, hips and heels line up, and no higher.",
+	"Hold the line for a count of 3, then lower for a count of 3; each lift counts one.",
+}, {
+	"Count the 3 seconds out loud, at the line and on the way down.",
+	"Keep your arms by your ears the whole way; when they drop, the set is over.",
+	"If the sofa lifts, hook your heels under your bed's frame instead.",
 })
 
 -- Calf and ankle
@@ -4527,6 +4904,36 @@ guide("monster_walk", {
 	"Stay at the same squat height the whole way, with no bobbing up between steps.",
 	"Keep your toes pointing forward so your hips do the stepping.",
 	"Keep each step low and smooth so the band stays taut and never snaps back.",
+})
+-- the lower back ladder's two (2026-11-11): a flat loop band, never a tube with handles
+move("bird_dog_band", "Band bird dog",
+	"On hands and knees; a loop band round one foot and the palm of the other hand.",
+	"Reach the banded arm forward and leg back, hips level. Breathe out as you reach.",
+	"Stop when your hips tip or your back sags. Count the weaker side.")
+guide("bird_dog_band", {
+	"Use a long flat loop band, never a tube with handles.",
+	"On hands and knees, loop it round the arch of one foot and the palm of the other hand.",
+	"Reach that arm forward and that leg back against the band to level; hold for 1 second.",
+	"Come back slowly, hips level; breathe out as you reach, and count each reach.",
+	"Finish one side, press Switch sides, then move the band to the other foot and hand.",
+}, {
+	"Check the band for nicks before you start.",
+	"Keep your eyes on the floor and both hip bones pointing at it as the band pulls.",
+})
+move("reverse_hyper_band", "Band reverse hyper",
+	"Hips at the edge of your bed; a band round both ankles and a leg of the bed under you.",
+	"Lift both straight legs to level against the band, pause, lower slowly. Count out loud.",
+	"Stop when your knees bend or your legs swing past level.")
+guide("reverse_hyper_band", {
+	"Thread a long band round a leg of the bed, right under the edge, and through itself.",
+	"Step both ankles into the loop, then lie face down across the bed, hip crease at the edge.",
+	"Hold the far edge, squeeze your seat and lift both straight legs until they are level.",
+	"Pause at the line, then lower slowly against the band.",
+	"Each lift counts one, counted out loud.",
+}, {
+	"Start with a light band and check it for nicks; take a thicker one when 15 is easy.",
+	"Lift to level and no higher, with no swing to help.",
+	"If no leg of the bed is in reach under the edge, skip this move.",
 })
 
 -- Equipment: kettlebell
@@ -9998,15 +10405,15 @@ L["rating.crit"] = "Crit Chance"
 L["rating.expertise"] = "Expertise"
 L["rating.defense"] = "Defense"
 L["rating.block"] = "Block"
-L["tip.stat.strength"] = "Raised by the push, squat, pull-up, row, hinge and planche ladders: records, learning their "
-	.. "moves, a week of practice, stars and every step you reach."
+L["tip.stat.strength"] = "Raised by the push, squat, pull-up, row, hinge, lower back and planche ladders: records, "
+	.. "learning their moves, a week of practice, stars and every step you reach."
 L["tip.stat.agility"] = "Raised by cardio, power, jumps and strikes: records, learning them, a week of practice, "
 	.. "every step you reach on the cardio and power ladders and steps of the cardio progression."
 L["tip.stat.intellect"] = "Raised by balance, arm balances and the handstand: records, learning them, a week of "
 	.. "practice and every step you reach; and by every new pattern, skill moves that turn familiar and a week of "
 	.. "learning."
-L["tip.stat.stamina"] = "Raised by the core, the side core, the wall sit and the L-sit: records, learning their "
-	.. "moves, a week of practice, stars and every step you reach."
+L["tip.stat.stamina"] = "Raised by the core, the side core, the wall sit, the L-sit and the sit-up: records, learning "
+	.. "their moves, a week of practice, stars and every step you reach."
 L["tip.stat.spirit"] = "Raised by the splits, the pike, backbends, twists, ankles and squats: learning them, a week of "
 	.. "practice and every step you reach; and by active weeks, rested days and coming back."
 L["tip.stat.last"] = "Last: +%d, %s (%s)"
@@ -10100,6 +10507,7 @@ L["pattern.cardio"] = "Cardio"
 L["pattern.run"] = "Running"
 L["pattern.calf"] = "Calves"
 L["pattern.strike"] = "Strikes"
+L["group.back"] = "Lower back"
 L["group.backpack"] = "Backpack loaded with books or bottles"
 L["group.ball"] = "Medicine ball"
 L["group.bands"] = "Bands"
@@ -10650,6 +11058,9 @@ L["toast.xp"] = "+%d XP"
 L["toast.welcome"] = "Welcome back!"
 L["toast.streak"] = "Streak: day %d"
 L["toast.streak.new"] = "Day 1 of a new streak"
+-- the streak's day against its next milestone, under the day's row on the pump's banner (slice 72): the day, the
+-- milestone; it names nothing lost (contract/copy/words.json's care rule)
+L["toast.streak.goal"] = "Day %d of %d"
 L["toast.milestone"] = "A %s-day streak!"
 L["toast.milestone.years"] = "A %d-year streak!"
 L["toast.token"] = "Rest token earned: a day off keeps your streak"
@@ -11183,19 +11594,23 @@ L["settings.gear.stable_chair.tip"] = "A chair with no wheels, its back against 
 	.. "never a chair."
 L["settings.gear.table.tip"] = "A heavy table on four legs that does not lift, slide or creak when you lean on its "
 	.. "edge and pull. Never glass, folding, a standing desk or one with monitors. You lie under it and pull your "
-	.. "chest to the edge."
+	.. "chest to the edge, or lie across it for the table reverse hyper."
+L["settings.gear.towel.tip"] = "A bath towel and a hand towel. Loop one round a foot for the lying leg stretches, "
+	.. "roll it under your back, or stand on it folded on a floor that does not slip. On a smooth floor it slides "
+	.. "under your heels, toes or a hand in the sliding leg curls, the body saw and the sliding one-arm push-up. "
+	.. "With a pull-up bar it hangs over the bar for the towel pull-ups."
 L["settings.gear.bar.tip"] = "A pull-up bar fixed firmly, in a doorway or on a wall, with a stool to step down on. "
 	.. "For hangs, pull-ups, hanging knee raises and the front lever."
 L["settings.gear.fixed_bar.tip"] = "A bar bolted to a wall, a ceiling or a rack, with room above it. Never a "
 	.. "doorway bar. For muscle-ups, bar dips and fast pull-ups, and it counts for every pull-up bar move too."
 L["settings.gear.bands.tip"] = "Resistance bands, and a door anchor you shut in a closed door. Check each band for "
-	.. "nicks or tears. For rows, face pulls, curls and help in pull-ups. A small band goes round your knees for "
-	.. "the monster walk."
+	.. "nicks or tears. For rows, face pulls, curls, the band bird dog, the band reverse hyper and help in "
+	.. "pull-ups. A small band goes round your knees for the monster walk."
 L["settings.gear.kettlebell.tip"] = "A kettlebell, 8-16 kg to start. For swings, goblet squats, halos and carries. "
-	.. "In rows, deadlifts and hip thrusts it takes the place of a bag or a jug."
+	.. "In rows, deadlifts, hip thrusts and kneeling good mornings it takes the place of a bag or a jug."
 L["settings.gear.dumbbells.tip"] = "A pair of dumbbells, light ones of 2-5 kg for raises to start. For goblet "
-	.. "squats, lunges, curls, raises and carries. In rows, deadlifts and hip thrusts they take the place of a bag "
-	.. "or a jug."
+	.. "squats, lunges, curls, raises and carries. In rows, deadlifts, hip thrusts, kneeling good mornings and "
+	.. "weighted reverse hypers they take the place of a bag, a jug or a bottle."
 L["settings.gear.barbell.tip"] = "A barbell with plates in a rack. Set the safeties and put the collars on. For "
 	.. "light squats, deadlifts, overhead presses and the landmine press."
 L["settings.gear.rope.tip"] = "A jump rope. Wear shoes, with clear space overhead and around you. For rope cardio, "
@@ -11216,9 +11631,10 @@ L["settings.gear.parallettes.tip"] = "Parallettes, or two equal stacks of hard b
 L["settings.gear.rings.tip"] = "Gymnastics rings or straps, fixed firmly to something that holds your full weight. "
 	.. "For ring rows, presses, Y-raises, fallouts, hamstring curls, help in pistols and the front lever."
 L["settings.gear.vest.tip"] = "A weighted vest, 5-10 kg to start, snug and even. It adds load to squats, step-ups, "
-	.. "wall sits and stair climbs, and takes the backpack's place in squat drives."
+	.. "wall sits and stair climbs, and takes the backpack's place in squat drives, chest lifts and back extensions."
 L["settings.gear.ball.tip"] = "A medicine ball. Slams want a slam ball that does not bounce, chest passes one that "
-	.. "bounces back off a solid wall. For squats, carries, chops, slams and passes."
+	.. "bounces back off a solid wall. For squats, carries, chops, slams and passes, and between your feet in the "
+	.. "weighted reverse hyper."
 L["settings.gear.roller.tip"] = "A foam roller. For slow rolls along your calves, thighs, hips and back, leaning "
 	.. "your upper back over it, and the dead bug lying along it."
 L["settings.gear.backpack.tip"] = "A backpack you load with books or water bottles, straps tight. For backpack "

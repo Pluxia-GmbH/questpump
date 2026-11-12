@@ -418,15 +418,6 @@ qp-page.qp-saga-page {
 	color: transparent;
 }
 
-.qp-saga-number.qp-pop, .qp-best-number.qp-pop {
-	animation: qp-digit-pop var(--qp-motion-digit-pop);
-}
-
-@keyframes qp-digit-pop {
-	from {
-		transform: scale(var(--qp-motion-digit-pop-scale-from));
-	}
-}
 
 /* beside the number: its words over the knight, which takes the rest of the hero's height */
 .qp-saga-aside {

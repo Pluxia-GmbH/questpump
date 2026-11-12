@@ -295,6 +295,23 @@
      "sha256": "b9310ac8d118b906b889bf9eb9b26231217d6cd1f52a21ff557eb830015dc89b"
     }
    ]
+  },
+  {
+   "id": "play",
+   "title": "Google Play's store icon",
+   "what": "the Android phone's launcher icon as a launcher shows it, the mark on the night ground, at 512 px: a full square with no corner and no shadow of its own, since Google Play masks and shades every icon itself (its icon design specifications); the release's `listing` lane uploads it",
+   "by": "tools/helper-icons.py",
+   "sources": [
+    "contract/design/icon/mark.svg",
+    "contract/design/icon/ground.svg"
+   ],
+   "drawn": "3d36b04197f184e9",
+   "files": [
+    {
+     "path": "android/fastlane/listing/en-US/images/icon.png",
+     "sha256": "8ea7fcfdb9049887b3568a6afdd9fe450bd8bc5aad745107f558711c3ad3382f"
+    }
+   ]
   }
  ]
 }

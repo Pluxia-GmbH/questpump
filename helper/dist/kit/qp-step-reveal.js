@@ -7,7 +7,9 @@
 // unlocked" in gold caps, its name in Cinzel and its QualityWord; a new colour (`colour`) adds turning rays and a
 // second burst at the gem. `play()` runs it from Rust's instants (its parts timed as shares of `motion.stepReveal`'s
 // revealFromMs, the moment the next step opens, as the mockup timed them); `fold(rect, then)` flies the hero into the
-// unlock row's tile (`rect`, the window's px) and fades the rest. Said once as a status: its caption, name and quality.
+// unlock row's tile (`rect`, the window's px, where the tile stands once its row is in place), fading out over the
+// flight's last third as the row's own tile fades in under it (qp-reward-row.js `catches`), and fades the rest. Said
+// once as a status: its caption, name and quality.
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, h, qualityName, styled} from "./element.js";
@@ -30,6 +32,8 @@ const AT = {
 };
 const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const POP = "cubic-bezier(0.2, 1.35, 0.4, 1)";
+/** The share of the fold's flight after which the hero gives way to the tile it lands on. */
+export const FOLD_GIVES = 0.65;
 
 class QpStepReveal extends KitElement {
 	build() {
@@ -168,8 +172,8 @@ class QpStepReveal extends KitElement {
 		}, Math.max(0, at - Date.now())));
 	}
 
-	/** The fold: the hero flies into `rect` (the unlock row's tile, the window's px) while the rest fades; `then` once
-	 * it is over. */
+	/** The fold: the hero flies into `rect` (the unlock row's tile, the window's px), giving way to it over the
+	 * flight's last third, while the rest fades; `then` once it has landed. */
 	fold(rect, then) {
 		const fly = flyMs();
 		const from = this.hero.getBoundingClientRect();
@@ -181,14 +185,16 @@ class QpStepReveal extends KitElement {
 			el?.animate([{opacity: 1}, {opacity: 0}], {duration: fly, fill: "forwards"});
 		}
 		if (!rect || !fly || from.width === 0) {
+			this.hero.animate([{opacity: 1}, {opacity: 0}], {duration: fly, fill: "forwards"});
 			setTimeout(done, fly);
 			return;
 		}
 		const k = Math.min(rect.width / from.width, rect.height / from.height);
 		const dx = rect.left + rect.width / 2 - (from.left + from.width / 2);
 		const dy = rect.top + rect.height / 2 - (from.top + from.height / 2);
-		this.hero.animate([{transform: "none"}, {transform: shifted(dx, dy, `scale(${k})`)}],
-			{duration: fly, easing: "cubic-bezier(0.5, 0, 0.2, 1)", fill: "forwards"}).onfinish = done;
+		this.hero.animate([{transform: "none", opacity: 1}, {opacity: 1, offset: FOLD_GIVES},
+			{transform: shifted(dx, dy, `scale(${k})`), opacity: 0}],
+		{duration: fly, easing: "cubic-bezier(0.5, 0, 0.2, 1)", fill: "forwards"}).onfinish = done;
 	}
 }
 

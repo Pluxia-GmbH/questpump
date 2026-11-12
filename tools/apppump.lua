@@ -346,16 +346,16 @@ return function(ns, opts)
 	-- match_sat_min as the offer was made) it opens on a warm move (Engine.lua warmPick), and with `arms` it keeps the
 	-- arms rest (ns.ArmsRest, no all-out window, an owed one neither). With `queue` (slice 61: the game's owed rows by
 	-- their keys, ns.OwedKey, as the game's state holds its queue, which the app's fold leaves out) it is composed on a
-	-- state that holds it, as the game composes a quest's pump (Events.lua compose: no fresh pick takes a queued move,
-	-- one owed this game day or the one before counts in its block's share, one on a ladder or a pose family is its
-	-- turn), and `owed` (the rows of it the device may pay, oldest first, as the game's availableOwed) ride it where
-	-- they fit (Engine.lua pickRiders), dosed and placed as the game's riders. With `expedition` (slice 51: { stage,
-	-- regions }) an expedition's round, whose stage sets its tier and its kind of moves (ns.Compose), `family` and `tier`
-	-- aside. With `work` (a work pump, slice 67: { block, warm }, block its place in the set from 1 to work_set_blocks,
-	-- warm present only when true) it is sized by that place at the work pace (Moves per block, profile.workPace;
-	-- Engine.lua workQuota) whatever `tier`, with no all-out window of its own or owed and no closing window (calm), its
-	-- cardio at no active minutes, and with `warm` (the device's sitting clock held work_warm_min as it was asked) it
-	-- opens on a warm move, as a match pump does.
+	-- state that holds it, as the game composes a quest's pump (Events.lua compose: a queued move counts as a set done
+	-- when it was banked, Engine.lua context: a set of its move that game day, its block's share that day and the one
+	-- after, its ladder's or pose family's turn, its anchor's attempt), and `owed` (the rows of it the device may pay,
+	-- oldest first, as the game's availableOwed) ride it where they fit (Engine.lua pickRiders), dosed and placed as
+	-- the game's riders. With `expedition` (slice 51: { stage, regions }) an expedition's round, whose stage sets its
+	-- tier and its kind of moves (ns.Compose), `family` and `tier` aside. With `work` (a work pump, slice 67: { warm },
+	-- a table whatever warm reads) it is sized at the work pace (Moves per block, profile.workPace; Engine.lua
+	-- workQuota) whatever `tier`, every work pump alike, with no all-out window of its own and no closing window
+	-- (calm; an owed window rides, pickRiders), its cardio at no active minutes, and with `warm` true (the device's
+	-- sitting clock held work_warm_min as it was asked) it opens on a warm move, as a match pump does.
 	function Engine:compose(family, tier, at, chosen, match, owed, queue, expedition, work)
 		local minutes = match and match.minutes
 		local state = queue and setmetatable({ owed = queue }, { __index = self.state }) or self.state
@@ -1603,7 +1603,15 @@ return function(ns, opts)
 			local why = ns.Shut(id, setupOnly)
 			-- its own rung's quality and step on its own ladder (a tile's edge), none off the ladders
 			local quality = m.ladder and ns.Quality(m.ladder, m.rung)
-			local topLoad, topReps, lastLoad = ns.LoadRecord(s, id)
+			-- the record its tile, window and page show, with its last count, next goal and weights: none for a move that
+			-- holds none (ns.HoldsRecord: one that turned timed keeps its old sets' record in the fold, which `trained`
+			-- above still reads), as the game's tooltip and card show none
+			local topLoad, topReps, lastLoad
+			if ns.HoldsRecord(s, id) then
+				topLoad, topReps, lastLoad = ns.LoadRecord(s, id)
+			else
+				best, last = nil, nil
+			end
 			local held = waitsOf(id)
 			moves[#moves + 1] = { move = id, record = best, last = last, familiarity = step, days = days,
 				trained = trained, above = beyond, off = why[1] ~= nil and why[1].reason == "excluded",
@@ -2098,7 +2106,7 @@ return function(ns, opts)
 	-- riders in the game's order, each rider paying its owed row (`slot.owed`), which A.ridersJSON names; the pump keeps
 	-- the queue (Swap reads it, Skip takes a rider out of it), the rows that may ride and their places. `expedition` is
 	-- an expedition round's (slice 51, A.expedition: { stage, regions }), which the pump keeps for its recompose and its
-	-- Swap. `work` is a work pump's (slice 67, Engine:compose: { block, warm }; the kind key `work`, a Normal pump,
+	-- Swap. `work` is a work pump's (slice 67, Engine:compose: { warm }; the kind key `work`, a Normal pump,
 	-- `tier` 2), which the pump keeps for its recompose, its Swap and its Ready views. Returns the pump { id, kind,
 	-- family, tier, chosen, match, expedition, work, slots, swapped, queue?, owed?, place? } and the rows written.
 	function A.compose(E_, id, kind, family, tier, at, chosen, match, rows, queue, expedition, work)
@@ -2284,7 +2292,7 @@ return function(ns, opts)
 
 	-- Composed again for the same kind and size (a move pump for its move, Engine.lua's chosen compose: its backup at
 	-- its level where the new flag refuses it, else step jacks; a match pump with its match's facts as they were at its
-	-- start, slice 48, a work pump with its place in the set, slice 67, and its riders from the rows it may pay still
+	-- start, slice 48, a work pump with its `work` as it was, slice 67, and its riders from the rows it may pay still
 	-- queued, slice 61), its offered row standing and its swaps undone: a pain flag set before any move was recorded.
 	function Pump:recompose(E_, at)
 		local owed
@@ -2320,7 +2328,7 @@ return function(ns, opts)
 		local from = self.swapped[i]
 		if from then return { back = ns.Allowed(from.move, E_.state, E_.profile) and from or nil } end
 		-- a match pump's riders and a catch-up's Swap read the unfinished list as the game's state holds its queue
-		-- (Engine.lua context's `ctx.owed`: never another owed move), which the app's fold leaves out
+		-- (Engine.lua context's `ctx.owed`: Swap never offers another owed move), which the app's fold leaves out
 		local state = E_.state
 		if self.queue then state = setmetatable({ owed = self.queue }, { __index = E_.state }) end
 		return ns.SwapOptions({ state = state, profile = E_.profile, now = at,

@@ -12,6 +12,90 @@ qp-page.qp-pump {
 	position: relative;
 	height: 100%;
 	overflow: hidden;
+	/* the pump comes over the page as a window's dim does, never cut in */
+	animation: qp-fade-in var(--qp-motion-window) both;
+}
+
+/* The dial giving way to a move's rows on its pour (lib/morph.js, stages.js `saved`): the parts that take a new place
+   there (the move's name, the dial, the pour's bar) carry one name each, so the web view moves each to it in the
+   rows' own time (motion.chip) while the rest of the page stays live. A name stands on one drawn element at a time:
+   never on a stage that is fading out (lib/stage.js) */
+.qp-pump > :not(.qp-stage-out) .qp-saved .qp-big-name {
+	view-transition-name: qp-pump-name;
+}
+
+.qp-pump > :not(.qp-stage-out) .qp-saved .qp-big-dial {
+	view-transition-name: qp-pump-dial;
+}
+
+.qp-pump > :not(.qp-stage-out) .qp-saved-bar {
+	view-transition-name: qp-pump-bar;
+}
+
+:root.qp-morph {
+	view-transition-name: none;
+}
+
+:root.qp-morph::view-transition {
+	pointer-events: none;
+}
+
+:root.qp-morph::view-transition-group(*), :root.qp-morph::view-transition-old(*),
+:root.qp-morph::view-transition-new(*) {
+	animation-duration: var(--qp-motion-chip-duration);
+	animation-timing-function: var(--qp-motion-chip-easing);
+}
+
+/* the name and the dial at their own size in the middle of their travelling box, smaller where the box is, one
+   fading into the other: never the count blown up to the size of the dial it stood in */
+::view-transition-old(qp-pump-name), ::view-transition-new(qp-pump-name),
+::view-transition-old(qp-pump-dial), ::view-transition-new(qp-pump-dial) {
+	height: 100%;
+	object-fit: scale-down;
+}
+
+::view-transition-old(qp-pump-name), ::view-transition-new(qp-pump-name) {
+	object-position: 50% 0;
+}
+
+/* What only one change brings (session.js `data-from`, the stage this one came from): at Start and at Go the dial's
+   arc sweeps in from nothing; at Done its keys come out from behind it; at Save, and as a pose is asked about, the
+   figure dims (a pose's pour finds it dimmed) */
+.qp-pump:is([data-from="ready"], [data-from="countdown"]) .qp-big-stage .qp-ring-arc {
+	animation: qp-dial-sweep var(--qp-motion-dial-sweep) both;
+}
+
+@keyframes qp-dial-sweep {
+	from {
+		stroke-dasharray: 0 100;
+	}
+}
+
+.qp-pump[data-from="running"] .qp-dial-count .qp-step-key {
+	--qp-key-from: 100%;
+	animation: qp-key-out var(--qp-motion-stage) both;
+}
+
+.qp-pump[data-from="running"] .qp-dial-count .qp-step-key:last-child {
+	--qp-key-from: -100%;
+}
+
+@keyframes qp-key-out {
+	from {
+		opacity: 0;
+		transform: translateX(var(--qp-key-from));
+	}
+}
+
+.qp-pump:not([data-from="marking"]) .qp-saved .qp-big-figure, .qp-marking .qp-big-figure {
+	animation: qp-figure-dim var(--qp-motion-stage) both;
+}
+
+@keyframes qp-figure-dim {
+	from {
+		opacity: 1;
+		transform: none;
+	}
 }
 
 .qp-pump-stage {
@@ -83,7 +167,18 @@ qp-page.qp-pump {
 	overflow-wrap: anywhere;
 }
 
-/* Big view's foot under its primary: the read-aloud button beside Back, each half the row */
+/* Big view's foot keeps its primary's room from the countdown on, where Back and the read-aloud button stand alone,
+   so the stage above it is one size from Start to the pour (a short window's foot, below, is a row) */
+@media (min-height: 420px) {
+	.qp-big .qp-pump-foot:not(:empty) {
+		justify-content: flex-end;
+		min-height: calc(var(--qp-layout-primary-height) + var(--qp-layout-quiet-height) + var(--qp-layout-space8) * 2
+			+ var(--qp-layout-space16));
+	}
+}
+
+/* Big view's foot under its primary: the quiet ways in one row, each an equal share of it (the read-aloud button
+   beside Back; the count's Could not do one and Change it before them) */
 .qp-pump-ways {
 	display: flex;
 	gap: var(--qp-layout-space8);
@@ -519,8 +614,9 @@ qp-card.qp-pump-calm {
 
 /* the PumpStage (2026-10-23, David: "why sprawl so much smaller than push up"): the figure takes the height, since most
    moves' boxes stand about as high as they are wide. On a window wider than `bigViewStackWidthFraction` (0.8) of its
-   height the figure the whole body high and `bigViewFigureWidthFraction` of the width, and beside it one column, its
-   parts together in its middle (the empty rows take what is left): the name at `bigViewSideName…`, the dial as large as
+   height the figure the whole body high and `bigViewFigureWidthFraction` of the width at the right, where Ready and
+   the game stand it (2026-11-11; at the left until then, so Start threw it across the window), and at its left one
+   column, its parts together in its middle (the empty rows take what is left): the name at `bigViewSideName…`, the dial as large as
    the column's width and the height the name and the words leave it (the track grows to the column's width, its
    padding included, before the empty rows take any), at least the clock alone's least room (kit.css
    `--qp-ring-clock-room`: the clock at half its size), which the dial takes under TimerRing's least, so the line
@@ -529,9 +625,9 @@ qp-card.qp-pump-calm {
 	--qp-big-side: calc(100vw - 2 * var(--qp-layout-margin) - var(--qp-wide-big-view-figure-width-fraction) * 100vw - 4vw);
 	display: grid;
 	flex: 1 1 0;
-	grid-template-columns: calc(var(--qp-wide-big-view-figure-width-fraction) * 100vw) minmax(0, 1fr);
+	grid-template-columns: minmax(0, 1fr) calc(var(--qp-wide-big-view-figure-width-fraction) * 100vw);
 	grid-template-rows: 1fr auto minmax(calc(var(--qp-ring-clock-room) + 4vh), calc(var(--qp-big-side) + 4vh)) auto 1fr;
-	grid-template-areas: "figure ." "figure name" "figure dial" "figure words" "figure .";
+	grid-template-areas: ". figure" "name figure" "dial figure" "words figure" ". figure";
 	column-gap: 4vw;
 	width: 100%;
 	min-height: var(--qp-surface-pump-stage-figure-least);
@@ -664,13 +760,29 @@ qp-card.qp-pump-calm {
 }
 
 /* a move's pour (slices 65 and 66, `desk.pump.saved`): the figure dimmed and the CountBar under the dial beside it; the
-   StepReveal over the figure's room; the move's rows in place of the dial and the line once they come in on a wide
-   window, of the figure on a tall one; the grains fly over everything, the window's own px */
+   StepReveal over the figure's room; the move's rows under the bar once they come in on a wide window, the dial
+   giving way to them as its count alone (TimerRing's clock alone, in the clock's least room), and in the figure's
+   place on a tall one; the grains fly over everything, the window's own px */
 .qp-big-stage.qp-saved {
 	grid-template-rows: 1fr auto minmax(calc(var(--qp-ring-clock-room) + 4vh), calc(var(--qp-big-side) + 4vh)) auto auto
 		1fr;
-	grid-template-areas: "figure ." "figure name" "figure dial" "figure bar" "figure ." "figure .";
+	grid-template-areas: ". figure" "name figure" "dial figure" "bar figure" "rows figure" ". figure";
 	cursor: pointer;
+}
+
+@media not (max-aspect-ratio: 4 / 5) {
+	.qp-big-stage.qp-saved.qp-saved-rows-in {
+		grid-template-rows: 1fr auto var(--qp-ring-clock-room) auto auto 1fr;
+	}
+
+	.qp-saved-rows-in .qp-big-dial {
+		padding-block: 0;
+	}
+
+	/* the move's own row says New record under the count */
+	.qp-saved-rows-in .qp-ring-chip {
+		display: none;
+	}
 }
 
 .qp-saved .qp-big-figure, .qp-marking .qp-big-figure {
@@ -711,7 +823,7 @@ qp-card.qp-pump-calm {
 /* the rows read from their tile, as the Result's do: never the big column's centring, which set a move's name and its
    XP adrift in the middle of their rows */
 .qp-saved-rows {
-	grid-area: dial;
+	grid-area: rows;
 	align-self: center;
 	display: flex;
 	flex-direction: column;
@@ -720,7 +832,7 @@ qp-card.qp-pump-calm {
 	text-align: start;
 }
 
-.qp-saved-rows[hidden], .qp-saved-rows-in .qp-big-dial, .qp-saved .qp-big-words {
+.qp-saved-rows[hidden], .qp-saved .qp-big-words {
 	display: none;
 }
 
@@ -765,10 +877,6 @@ qp-card.qp-pump-calm {
 		grid-area: figure;
 	}
 
-	.qp-saved-rows-in .qp-big-dial {
-		display: grid;
-	}
-
 	.qp-saved-rows-in .qp-big-figure {
 		visibility: hidden;
 	}
@@ -795,6 +903,15 @@ qp-card.qp-pump-calm {
 	width: min(calc(var(--qp-layout-space4) * 52), 32vh);
 	margin-inline: auto;
 	filter: drop-shadow(0 0 var(--qp-layout-space16) var(--qp-tone, transparent));
+	/* its glow pulses (slice 72, motion.pulse), still under reduced motion, whose token gives the pulse no time */
+	animation: qp-legend-pulse var(--qp-motion-pulse) infinite alternate;
+}
+
+@keyframes qp-legend-pulse {
+	to {
+		filter: drop-shadow(0 0 var(--qp-layout-space16) color-mix(in srgb, var(--qp-tone, transparent)
+			calc(var(--qp-surface-reward-row-pulse-opacity) * 100%), transparent));
+	}
 }
 
 /* An expedition (slice 51): its bar over each round's stages and the breather, in the column's width; the breather's
@@ -850,3 +967,148 @@ qp-card.qp-pump-calm {
 	height: var(--qp-surface-body-map-card-height);
 }
 
+
+/* The floating Result (Rapha, 2026-11-11, "Into Hero"; surface.ResultFloat): the cover and the page see-through, the
+ * card under the window's top in the toast's look, the motes over everything ------------------------------------- */
+
+.qp-cover:has(> qp-page.qp-pump-floating), qp-page.qp-pump-floating {
+	background: none;
+	pointer-events: none;
+}
+
+.qp-pump-floats {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	padding: var(--qp-layout-space12) var(--qp-layout-margin) 0;
+}
+
+.qp-pump-float {
+	display: flex;
+	flex-direction: column;
+	gap: var(--qp-layout-space8);
+	width: min(var(--qp-surface-result-float-max-width), 100%);
+	max-height: calc(100% - var(--qp-layout-space24));
+	overflow-y: auto;
+	padding: var(--qp-layout-space12) var(--qp-layout-space16);
+	border-radius: var(--qp-layout-card-radius);
+	background: var(--qp-surface-card-fill);
+	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong),
+		var(--qp-surface-tooltip-shadow);
+	pointer-events: auto;
+	animation: qp-float-in var(--qp-motion-result-float-in) both;
+}
+
+.qp-pump-float.qp-out {
+	animation: qp-float-out var(--qp-motion-result-float-out) both;
+}
+
+.qp-pump-float-head {
+	display: flex;
+	align-items: flex-start;
+	padding-right: var(--qp-layout-space4);
+	justify-content: space-between;
+	gap: var(--qp-layout-space12);
+}
+
+.qp-pump-float-words {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	column-gap: var(--qp-layout-space12);
+	min-width: 0;
+}
+
+.qp-pump-float-title {
+	flex-basis: 100%;
+	margin: 0;
+	color: var(--qp-color-gold-hi);
+}
+
+.qp-pump-float .qp-pump-gain {
+	justify-content: flex-start;
+}
+
+/* the XP at the medium number's size, the card being no page, and the streak's day's count as it (slice 72) */
+.qp-pump-float .qp-pump-gain, .qp-pump-float .qp-pump-gain .qp-type-num-large,
+.qp-pump-float qp-streak-day .qp-type-num-large {
+	font: var(--qp-type-num-medium-font);
+}
+
+/* the title's words rising again as they turn to a level, a rank or a streak milestone, as the banner's do */
+.qp-pump-float-title.qp-turned {
+	animation: qp-fade-in var(--qp-motion-fanfare-words);
+}
+
+.qp-pump-float qp-card.qp-pump-rows {
+	padding: 0;
+	background: none;
+	box-shadow: none;
+}
+
+/* the close button in its ring, gold for the share of the hold still to run (`--qp-ring`, 1 to 0) */
+.qp-pump-float-close {
+	position: relative;
+	flex: none;
+	border-radius: 50%;
+}
+
+.qp-pump-float-close::before {
+	content: "";
+	position: absolute;
+	/* clear of the focus ring the close button wears as the card takes the focus */
+	inset: calc((var(--qp-wide-focus-ring-offset) + var(--qp-wide-focus-ring-width)
+		+ var(--qp-surface-result-float-ring-width)) * -1);
+	border-radius: 50%;
+	background: conic-gradient(var(--qp-color-gold) calc(var(--qp-ring, 1) * 360deg), transparent 0);
+	mask: radial-gradient(farthest-side, transparent calc(100% - var(--qp-surface-result-float-ring-width)), #000 0);
+	pointer-events: none;
+}
+
+.qp-pump-motes {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+}
+
+.qp-pump-mote {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: var(--qp-surface-result-float-mote-size);
+	height: var(--qp-surface-result-float-mote-size);
+	margin: calc(var(--qp-surface-result-float-mote-size) / -2) 0 0 calc(var(--qp-surface-result-float-mote-size) / -2);
+	border-radius: 50%;
+	background: radial-gradient(circle, var(--qp-color-gold-hi) 40%, transparent 72%);
+	box-shadow: 0 0 var(--qp-surface-result-float-mote-size) var(--qp-color-gold);
+}
+
+@keyframes qp-float-in {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--qp-layout-space24) * -1));
+	}
+}
+
+@keyframes qp-float-out {
+	to {
+		opacity: 0;
+		transform: translateY(calc(var(--qp-layout-space16) * -1));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	@keyframes qp-float-in {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@keyframes qp-float-out {
+		to {
+			opacity: 0;
+		}
+	}
+}

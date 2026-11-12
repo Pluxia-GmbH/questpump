@@ -151,7 +151,7 @@ impl<P: Platform> Desk<P> {
 
 	/// The loop's look (every 2 s, after the games'): the games running played now, kept in settings.json as one
 	/// starts or closes (the quit keeps the last moment, `wind_down`), and World of Warcraft handed to the games' icons
-	/// while Pump home may show it.
+	/// while Pump home may show it (`recent_games`' `wow_last`: a game with moves in all shows with none kept recent).
 	pub fn recent_look(&mut self, now: i64) {
 		if self.recent_seen(now) {
 			prune(&mut self.settings.desk.played, now, None);
@@ -159,6 +159,7 @@ impl<P: Platform> Desk<P> {
 		}
 		let known = self.p.game().client
 			|| !self.home.recent.wow.is_empty()
+			|| self.home.recent.wow_all > 0
 			|| self.settings.desk.played.iter().any(|p| p.key == WOW);
 		self.p.recent_wow(known);
 	}

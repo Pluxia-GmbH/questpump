@@ -1,5 +1,5 @@
 {
- "about": "The phones' sound set (docs/ui.md, \"Sound and haptics\"): one entry per sound the feedback table in contract/design/tokens.json names, each one file of a CC0 pack kept under src/<pack>/ beside the pack's License.txt, or of Pluxia's own synthesised pack (its `synth`, MIT, slice 65), whose sources tools/sound.py makes itself (never Sonniss, whose licence bars supplying its sounds as sound effects in a public tree, and never CC BY). tools/sound.py trims each source's silent ends, brings its true peak to processing.truePeakDb, adds its gainDb (0 or less) and writes apple/iOS/Sounds/<id>.caf and android/phone/src/main/res/raw/<id>.ogg; receipts.json records what it built. A short sound lasts maxMs.short or less, a jingle maxMs.jingle. The watches play no sound. Picked 2026-10-03 from durations and spectra (nobody listened yet; slice 19 tunes them on the phones): a phone speaker gives little below about 400 Hz, so each pick keeps its body above it, close aside (see its why). Each pack's credit is the line the Acknowledgements page shows; creditRequired says whether its licence asks for one.",
+ "about": "The phones' sound set (docs/ui.md, \"Sound and haptics\"): one entry per sound the feedback table in contract/design/tokens.json names, each one file of a CC0 pack kept under src/<pack>/ beside the pack's License.txt, or of one of Pluxia's own synthesised packs (its `synth`, MIT: the ticks of slice 65, the chimes of slice 72), whose sources tools/sound.py makes itself (never Sonniss, whose licence bars supplying its sounds as sound effects in a public tree, and never CC BY). tools/sound.py trims each source's silent ends, brings its true peak to processing.truePeakDb, adds its gainDb (0 or less) and writes apple/iOS/Sounds/<id>.caf and android/phone/src/main/res/raw/<id>.ogg; receipts.json records what it built. A short sound lasts maxMs.short or less, a jingle maxMs.jingle. The watches play no sound. Picked 2026-10-03 from durations and spectra (nobody listened yet; slice 19 tunes them on the phones): a phone speaker gives little below about 400 Hz, so each pick keeps its body above it, close aside (see its why). Each pack's credit is the line the Acknowledgements page shows; creditRequired says whether its licence asks for one.",
  "processing": {"truePeakDb": -1.5, "rate": 48000, "silenceDb": -60, "edgeMs": 5, "vorbisQuality": 5},
  "maxMs": {"short": 300, "jingle": 2500},
  "voices": {"about": "The voice's takes on the phones (docs/plan.md slice 1, \"The voice\"; David, 2026-10-12: the phones play the addon's audio): every take tools/voice/clips.json names in one of families, its id's part before the first dot: the callouts (2026-10-09), the cadence lines, the legends' lines, the counts (the rep count's numbers and the holds' and timers' marks, every count.<n> the game says; 2026-10-09), \"Switch sides.\" (side.switch, said as a side move's other side's countdown starts), the pace ask's question (ask.pace, said as the ask opens; slice 42) and the move lines (a move's name and cue as the game says them at its Ready); the guides stay the game's alone (the week's omen's cues, omen.<key>, went on 2026-11-03). Each is the addon's own recording in the game's voice (Media/Voice/<id>.ogg; its licence the ledger's voice row), written as apple/iOS/Sounds/<name>.<iphone> (caf: IMA4 at the takes' rate; m4a: AAC-LC at about aacKbps kbit/s from macOS's own encoder, for the move lines, which as IMA4 would add about 32 MB to the iPhone app) and, byte for byte, android/phone/src/main/res/raw/<name>.ogg, the name the id with underscores for its dots (move_inverted_row, count_150); each lasts its family's maxMs or less (the longest move line 12.2 s, 2026-10-12). None is a feedback sound: in their own pumps the phones say them where the game does.", "families": {"ask": {"iphone": "caf", "maxMs": 6000}, "callout": {"iphone": "caf", "maxMs": 6000}, "cadence": {"iphone": "caf", "maxMs": 6000}, "count": {"iphone": "caf", "maxMs": 6000}, "legend": {"iphone": "caf", "maxMs": 6000}, "move": {"iphone": "m4a", "maxMs": 15000}, "side": {"iphone": "caf", "maxMs": 6000}}, "rate": 24000, "aacKbps": 32},
@@ -48,6 +48,18 @@
    "synth": "tools/sound.py synthesises each source itself from its entry's `synth` (seeded white noise through a band-pass biquad under two exponential ramps, the mockup's Web Audio voice Ticks of 2026-11-03), the same bytes on every run; License.txt is the repository's LICENSE",
    "credit": "Ticks synthesised by Pluxia GmbH for QuestPump, MIT",
    "creditRequired": "no (Pluxia's own)"
+  },
+  "pluxia-chimes": {
+   "title": "QuestPump's chimes",
+   "author": "Pluxia GmbH",
+   "page": null,
+   "download": null,
+   "zipSha256": null,
+   "licence": "MIT",
+   "retrieved": null,
+   "synth": "tools/sound.py synthesises each source itself from its entry's `synth` (a struck bell's partials, each a sine under two exponential ramps, and for a knock one burst of seeded white noise through a band-pass biquad), the same bytes on every run; License.txt is the repository's LICENSE",
+   "credit": "Chimes synthesised by Pluxia GmbH for QuestPump, MIT",
+   "creditRequired": "no (Pluxia's own)"
   }
  },
  "sounds": [
@@ -76,6 +88,10 @@
   {"id": "done", "role": "a move done: a short low chime", "kind": "short",
    "pack": "kenney-interface-sounds", "member": "Audio/confirmation_001.ogg", "gainDb": 0,
    "why": "the lowest confirmation chime (two notes, about 0.4 then 1.2 kHz, 290 ms), under go's ding"},
+  {"id": "call", "role": "a pump that opens itself in front on the computer, after a match or at work mode's time (slice 72): one soft bell-like knock", "kind": "short",
+   "pack": "pluxia-chimes", "member": "call.wav", "gainDb": -6,
+   "synth": {"seed": 7202, "bursts": [[0, 1800, 1.2, 0.3, 0.014]], "tones": [[0, 1046.5, 0.5, 0.24], [0, 2511.6, 0.2, 0.1], [0, 4186.0, 0.06, 0.05]]},
+   "why": "a 14-ms noise burst at 1.8 kHz, the knock, over one bell at 1.05 kHz (C6) whose partials at 2.4 and 4 times it die within 100 ms, 180 ms in all: nine-tenths of its energy at 1-2 kHz, so it is lower, shorter and 6 dB softer than go's ding (1.9 kHz, 280 ms), one note where done plays two, and far above error's low knock; picked 2026-11-11 from the numbers (nobody listened yet)"},
   {"id": "pour_tick", "role": "one second of a hold landing in its bar during the seconds pour (slice 65): a soft dry tick, fixed in pitch, many in a row", "kind": "short",
    "pack": "pluxia-ticks", "member": "pour_tick.wav", "gainDb": -10.5,
    "synth": {"seed": 6501, "bursts": [[0, 3800, 2.5, 0.12, 0.018]]},
@@ -97,6 +113,10 @@
   {"id": "title", "role": "a new title's toast: a short bright flourish", "kind": "jingle",
    "pack": "kenney-music-jingles", "member": "Audio/Steel jingles/jingles_STEEL16.ogg", "gainDb": 0,
    "why": "a steel pan rising a fifth (D#4, A#4) and ringing 0.91 s; a 400-Hz high-pass takes 1.6 dB off it, 4.1 off the pizzicato"},
+  {"id": "streak", "role": "the streak's day, the first move saved on a game day that makes the streak a day longer (slice 72): a warm rising two-note chime", "kind": "jingle",
+   "pack": "pluxia-chimes", "member": "streak.wav", "gainDb": -3,
+   "synth": {"tones": [[0, 659.26, 0.5, 0.42], [0, 1318.51, 0.16, 0.22], [0, 1977.77, 0.05, 0.12], [0.15, 880.0, 0.5, 0.55], [0.15, 1760.0, 0.16, 0.3], [0.15, 2640.0, 0.05, 0.16]]},
+   "why": "two soft bells a fourth apart, E5 then A5 150 ms on, each its fundamental with its octave at a third of it and its twelfth at a tenth, 0.56 s in all: over nine-tenths of its energy at 0.4-1 kHz, under the bells of go and unlock (1.9 and 2.2 kHz), and two rung notes where record plucks four and fanfare six, so it is neither's jingle; 3 dB under them; picked 2026-11-11 from the numbers (nobody listened yet)"},
   {"id": "reveal", "role": "a reward chip's reveal: a soft shine rising in pitch; the day reel's number popping at its total (slice 45, at the reel's gainDb)", "kind": "short",
    "pack": "kenney-interface-sounds", "member": "Audio/maximize_009.ogg", "gainDb": -3,
    "why": "a soft tone gliding up from 1.1 to 1.5 kHz in 210 ms, the lowest maximize rise, short enough for four"},
