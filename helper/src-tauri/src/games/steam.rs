@@ -37,8 +37,7 @@ pub(super) fn root() -> Option<PathBuf> {
 /// Every library once: Steam's own folder first, then those `libraryfolders.vdf` lists.
 fn libraries(root: &Path) -> Vec<PathBuf> {
 	let listed = std::fs::read_to_string(root.join("steamapps").join("libraryfolders.vdf"))
-		.map(|text| vdf::library_paths(&text))
-		.unwrap_or_default();
+		.map_or_default(|text| vdf::library_paths(&text));
 	let mut out = vec![root.to_path_buf()];
 	for library in listed {
 		if !out.contains(&library) {
@@ -57,7 +56,7 @@ pub(super) fn read_here(path: &Path) -> bool {
 /// The libraries that may be read (`games::readable`: on macOS none in a folder that asks the player's consent, and one
 /// under `/Volumes` only with `volumes`, for a game the player asked for).
 fn readable_libraries(volumes: bool) -> Vec<PathBuf> {
-	let libraries = root().map(|root| libraries(&root)).unwrap_or_default();
+	let libraries = root().map_or_default(|root| libraries(&root));
 	libraries.into_iter().filter(|l| super::readable(l, volumes)).collect()
 }
 
@@ -223,9 +222,7 @@ pub(super) fn apps() -> Vec<App> {
 /// Every library's `steamapps/common`, where Steam puts its games; none without Steam.
 #[cfg(target_os = "macos")]
 pub(super) fn commons() -> Vec<PathBuf> {
-	root()
-		.map(|root| libraries(&root).into_iter().map(|l| l.join("steamapps").join("common")).collect())
-		.unwrap_or_default()
+	root().map_or_default(|root| libraries(&root).into_iter().map(|l| l.join("steamapps").join("common")).collect())
 }
 
 /// The folder a game's cfg goes into, under its install: CS2's `game/csgo/cfg` (Valve's page), Dota 2's
@@ -258,6 +255,6 @@ fn steam_path() -> Option<String> {
 /// file missing or of a version not read, the app not in it).
 pub(super) fn app_types(asked: &[u32]) -> HashMap<u32, Option<String>> {
 	let bytes = root().and_then(|root| std::fs::read(root.join("appcache").join("appinfo.vdf")).ok());
-	let mut types = bytes.map(|bytes| appinfo::types(&bytes, asked)).unwrap_or_default();
+	let mut types = bytes.map_or_default(|bytes| appinfo::types(&bytes, asked));
 	asked.iter().map(|&app| (app, types.remove(&app))).collect()
 }

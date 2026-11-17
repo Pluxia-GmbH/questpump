@@ -289,11 +289,11 @@ impl Platform for Shell {
 	}
 
 	fn games_open(&self) -> Vec<String> {
-		self.games.as_ref().map(|g| g.open().to_vec()).unwrap_or_default()
+		self.games.as_ref().map_or_default(|g| g.open().to_vec())
 	}
 
 	fn game_tiles(&self, games: &GamesSettings) -> Vec<GameTile> {
-		let tiles = self.games.as_ref().map(|g| g.lists(games).tiles).unwrap_or_default();
+		let tiles = self.games.as_ref().map_or_default(|g| g.lists(games).tiles);
 		tiles.into_iter().map(|t| GameTile { key: t.key, name: t.name, icon: t.icon }).collect()
 	}
 

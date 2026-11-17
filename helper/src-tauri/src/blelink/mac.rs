@@ -389,7 +389,7 @@ impl Delegate {
 				result = CBATTError::WriteNotPermitted;
 				break;
 			}
-			let value = value.map(|v| v.to_vec()).unwrap_or_default();
+			let value = value.map_or_default(|v| v.to_vec());
 			let joins = offset > 0 && chunks.last().is_some_and(|(c, chunk)| *c == central && chunk.len() == offset);
 			if joins && let Some((_, chunk)) = chunks.last_mut() {
 				chunk.extend(value);

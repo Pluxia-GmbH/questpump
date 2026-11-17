@@ -4,13 +4,16 @@
 //! `streak_milestones` and the best streak. It goes out with Pump home's topic (`home_publish`); the page steps
 //! through the months it is given and sends nothing.
 
+use questpump_core::body::Body;
 use questpump_core::link::Sheet;
 use serde::Serialize;
+use serde_json::Value;
 
 use super::facts::facts;
 use super::history::{civil, date_index, weekday};
 use super::home::{Board, Mark};
-use crate::{Desk, Platform};
+use super::menu_pages::setup::stamped;
+use crate::{Desk, Intent, Platform};
 
 /// The streak page's topic.
 pub const STREAK: &str = "streak";
@@ -28,8 +31,15 @@ struct StreakView {
 	token_days: i64,
 	/// The active days to the next rest token; none while the most are held.
 	next_token: Option<i64>,
-	/// The next of `streak_milestones` and the one before it (0 before the first); none past the last.
+	/// What the streak's day stands against (`Board::against`, slice 74): the player's goal while it is on or ahead
+	/// of the day, else the next of `streak_milestones`, and the milestone before it (0 before the first); none past
+	/// the last with no goal ahead.
 	milestone: Option<Milestone>,
+	/// The page's row of goals, as the phones' streak pages have it: `goal` the one that stands, the player's while it
+	/// is on or ahead of the day, else 0 (None); `steps` the ones to choose from after None, those of
+	/// `streak_goal_steps` above the day and the standing goal itself, a step or not (21 from another build).
+	goal: i64,
+	steps: Vec<i64>,
 	best: i64,
 	/// The game months from the one the streak began in (this one without a streak), the earliest first.
 	months: Vec<MonthMarks>,
@@ -39,6 +49,8 @@ struct StreakView {
 struct Milestone {
 	from: i64,
 	next: i64,
+	/// It is the player's own goal, not a milestone's turn.
+	own: bool,
 }
 
 /// A game month: its days' marks from its first, `lead` days of its first week before it (0 Monday … 6 Sunday), and
@@ -80,6 +92,83 @@ fn run_start(board: &Board, today: i64, floor: i64) -> i64 {
 }
 
 impl<P: Platform> Desk<P> {
+	/// The streak's goal in days (slice 74; the body's `streak_goal`, which every device shares), none before any
+	/// device chose one and once the player chose none: what the streak page shows and `Board::against` takes.
+	#[must_use]
+	pub fn streak_goal(&self) -> Option<i64> {
+		self.streak_goal_said().filter(|&g| g > 0)
+	}
+
+	/// What the player said of the streak's goal, on any device (the body's `streak_goal` as it stands): none while
+	/// nothing was said, 0 once a None was said (with its time), else the goal's days. `Board::goal_steps` offers by
+	/// it; `Board::against` reads none and 0 alike.
+	#[must_use]
+	pub fn streak_goal_said(&self) -> Option<i64> {
+		self.body.body.streak_goal.as_ref().map(|g| i64::from(g.value))
+	}
+
+	/// The streak's goal chosen on this computer, a change of the body made now (`body_changed`): `days` one of
+	/// library.json's `streak_goal_steps`, or 0 for None, the player's word too (the streak page's None, a Result ended
+	/// with its choices shown and none picked), which is written with its time where nothing was said yet. What stands
+	/// said again changes nothing.
+	///
+	/// # Errors
+	/// A number of days that is no step.
+	pub fn set_streak_goal(&mut self, days: u16) -> Result<(), String> {
+		// what stands said again, the goal of another build that is no step here too (the streak page's own chip)
+		if self.streak_goal_said() == Some(i64::from(days)) {
+			return Ok(());
+		}
+		if days != 0 && !facts().constants().streak_goal_steps.contains(&i64::from(days)) {
+			return Err(format!("no streak goal of {days} days"));
+		}
+		let changed = stamped(days, self.body.body.streak_goal.as_ref(), self.p.now_ms());
+		self.body_changed(&Body { streak_goal: Some(changed), ..Body::default() });
+		Ok(())
+	}
+
+	/// The body changed (this computer's own choice, a phone's exchange, the sync's stamps, the game's body; each
+	/// merges, saves and calls `profile_changed`): where what the player said of the streak's goal is another than
+	/// what shows it last read (a None in nothing's place too, which takes a Result's choices away as a goal ahead
+	/// does), a pick the Result on screen holds under choices that went with it is written first
+	/// (`pump_goal_overtaken`: the player's latest word, stamped past what arrived), and Pump home with the streak
+	/// page and the pump's Result read the goal again.
+	pub(crate) fn streak_goal_read(&mut self) {
+		let goal = self.streak_goal_said();
+		if self.home.goal_read == goal {
+			return;
+		}
+		self.home.goal_read = goal;
+		self.pump_goal_overtaken();
+		// the pick written: that change read the goal again and published it
+		if self.streak_goal_said() != goal {
+			return;
+		}
+		self.home_publish();
+		self.pump_publish();
+	}
+
+	/// The streak's intents: `streak.goal` with `days`, the goal the player chose on a Result's streak moment or on
+	/// the streak page's row (slice 74; 0 for none there), set through `set_streak_goal` and shown at once.
+	///
+	/// # Errors
+	/// Why the intent was refused.
+	pub fn streak_intent(&mut self, intent: &Intent) -> Result<(), String> {
+		match intent.kind() {
+			"streak.goal" => {
+				let days = intent
+					.arg("days")
+					.and_then(Value::as_u64)
+					.and_then(|d| u16::try_from(d).ok())
+					.ok_or("streak.goal takes days")?;
+				self.set_streak_goal(days)?;
+				self.home_publish();
+				Ok(())
+			}
+			_ => Err(intent.unknown()),
+		}
+	}
+
 	/// The streak page's topic from the sheet Hero shows and its board (`home_publish`): the board again with its marks
 	/// back to the first of the month the streak began in, reached in steps that double while the run goes past them.
 	pub fn publish_streak(&self, sheet: &Sheet, board: &Board, now: i64) {
@@ -104,8 +193,17 @@ impl<P: Platform> Desk<P> {
 			months.push(MonthMarks { year, month, lead: weekday(f), today: on, days });
 			first = Some(next);
 		}
-		let next = tune.streak_milestones.iter().copied().filter(|&m| m > board.days).min();
-		let from = tune.streak_milestones.iter().copied().filter(|&m| m <= board.days).max().unwrap_or(0);
+		let goal = self.streak_goal();
+		let standing = goal.filter(|&g| g >= board.days);
+		let mut offered: Vec<i64> =
+			tune.streak_goal_steps.iter().copied().filter(|&n| n > board.days).chain(standing).collect();
+		offered.sort_unstable();
+		offered.dedup();
+		let next = Board::against(board.days, goal);
+		let own = next.is_some() && next == goal;
+		// the bar's start: the milestone before what the day stands against
+		let below = |n: i64| tune.streak_milestones.iter().copied().filter(|&m| m < n && m <= board.days).max();
+		let from = next.and_then(below).unwrap_or(0);
 		let full = board.tokens >= tune.token_max || tune.token_days <= 0;
 		let next_token = board.counted.filter(|_| !full).map(|c| tune.token_days - c.rem_euclid(tune.token_days));
 		let view = StreakView {
@@ -116,7 +214,9 @@ impl<P: Platform> Desk<P> {
 			token_max: tune.token_max,
 			token_days: tune.token_days,
 			next_token,
-			milestone: next.map(|next| Milestone { from, next }),
+			milestone: next.map(|next| Milestone { from, next, own }),
+			goal: standing.unwrap_or(0),
+			steps: offered,
 			best: marked.best,
 			months,
 		};

@@ -307,19 +307,15 @@ impl<P: Platform> Desk<P> {
 			move |engine| engine.summary(at),
 			|helper, answer| {
 				let tones: BTreeMap<u8, u8> = match answer {
-					Ok(summary) => summary
-						.get("mq")
-						.and_then(Value::as_array)
-						.map(|mq| {
-							mq.iter()
-								.enumerate()
-								.filter_map(|(i, q)| {
-									let q = u8::try_from(q.as_u64()?).ok().filter(|&q| q > 0)?;
-									Some((u8::try_from(i + 1).ok()?, q))
-								})
-								.collect()
-						})
-						.unwrap_or_default(),
+					Ok(summary) => summary.get("mq").and_then(Value::as_array).map_or_default(|mq| {
+						mq.iter()
+							.enumerate()
+							.filter_map(|(i, q)| {
+								let q = u8::try_from(q.as_u64()?).ok().filter(|&q| q > 0)?;
+								Some((u8::try_from(i + 1).ok()?, q))
+							})
+							.collect()
+					}),
 					Err(e) => {
 						log::warn!("welcome: the engine's sheet: {e}");
 						BTreeMap::new()

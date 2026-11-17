@@ -40,10 +40,11 @@ tools/figures/.venv/
 tools/figures/.tools/
 tools/figures/build/
 tools/figures/*.log
-# the site's product films (tools/site-films/build.sh): a local install, HyperFrames' renders and snapshots
+# the site's product films (tools/site-films/build.sh): a local install, HyperFrames' renders and its state folder
+# (its checks' reports and snapshots)
 tools/site-films/*/node_modules/
 tools/site-films/*/renders/
-tools/site-films/*/snapshots/
+tools/site-films/*/.hyperframes/
 # local build output: the art previews (tools/art.py), and Xcode's derived data when a build's -derivedDataPath is here
 /build/
 # the copy's merge lock (tools/copytext.py merge)

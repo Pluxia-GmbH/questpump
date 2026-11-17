@@ -361,8 +361,8 @@ fn on_event(app: &AppHandle, event: &WindowEvent) {
 		}
 		WindowEvent::Focused(focused) => {
 			let focused = *focused;
-			// a screen reader turned on or off while the window was away shows at its return (the Book's Tree | List
-			// default, the `shell` topic's `reader`)
+			// a screen reader turned on or off while the window was away shows at its return (the Sound and voice
+			// page's note, the `shell` topic's `reader`)
 			let reader = super::audio::screen_reader();
 			ui::update(app, |v| {
 				v.shell.focused = focused;

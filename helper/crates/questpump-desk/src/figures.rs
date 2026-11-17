@@ -84,7 +84,7 @@ pub fn beat(key: &str) -> Option<f64> {
 /// The seconds in a move's loop at which each of its reps but the last ends (a dead bug's two sides), by its key; none
 /// for a loop of one rep, a move without a figure or a table that does not read.
 pub fn rep_ends(key: &str) -> Vec<f64> {
-	TABLE.as_ref().and_then(|t| t.moves.get(key)).map(|m| m.counts.clone()).unwrap_or_default()
+	TABLE.as_ref().and_then(|t| t.moves.get(key)).map_or_default(|m| m.counts.clone())
 }
 
 /// Whether a library move has a film the day reel can show, by its id (its key in `contract/moves.json`): its owner's

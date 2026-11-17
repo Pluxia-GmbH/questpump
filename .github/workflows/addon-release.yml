@@ -188,7 +188,7 @@ jobs:
           fi
           svn --version --quiet
       - name: Package the add-on (dry run)
-        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           # the clone holds HEAD's blobs alone and no token: a git command that needs another fails here at once
           GIT_NO_LAZY_FETCH: "1"
@@ -201,13 +201,13 @@ jobs:
             python3 -B tools/addon_packs.py stage "$pack" --version v0 --out "$RUNNER_TEMP/packs/$pack"
           done
       - name: Package the voice pack (dry run)
-        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           ZIPOPT: -n .ogg:.png
         with:
           args: -d -t ${{ runner.temp }}/packs/QuestPump_Voice -r ${{ github.workspace }}/.release
       - name: Package the figure pack (dry run)
-        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           ZIPOPT: -n .ogg:.png
         with:
@@ -265,12 +265,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # release.sh itself, at the commit the packager action is pinned to (v2.6.1): run as a command, its output can
+      # release.sh itself, at the commit the packager action is pinned to (v2.7.0): run as a command, its output can
       # be read for a store's answer, which a `uses:` step keeps to its log
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: BigWigsMods/packager
-          ref: e50a250f8705041e40f2fa1ddcb280a686d65aa0
+          ref: 01e8631a69c69d7654c788d152630d5fed9e3812
           path: .packager
           persist-credentials: false
       - name: The pack's version and what each store lacks
@@ -361,7 +361,7 @@ jobs:
         if: steps.plan.outputs.curseforge == 'send'
         continue-on-error: true
         env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_KEY }}
         run: bash .packager/release.sh -t "$RUNNER_TEMP/pack" -r "$RUNNER_TEMP/curseforge" -p "$CURSE_ID"
       - name: CurseForge holds it
         if: steps.curseforge.outcome == 'success'
@@ -376,11 +376,15 @@ jobs:
         continue-on-error: true
         env:
           WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+        # pipefail: a step's default shell is `bash -e`, so without it the step ends as `tee` does, green, whatever
+        # the packager answered (2026-11-12: both packs were refused with 413 and written down as held)
         run: |
+          set -o pipefail
           bash .packager/release.sh -t "$RUNNER_TEMP/pack" -r "$RUNNER_TEMP/wago" -a "$WAGO_ID" 2>&1 |
             tee "$RUNNER_TEMP/wago.log"
       # "Error! (413)" is the packager's line for a request the store's front found too large (release.sh,
-      # upload_wago): written down as refused at this digest, never as a failure of the run
+      # upload_wago): written down as refused at this digest, never as a failure of the run. The log is read before
+      # the step's outcome, and a refusal also takes back a "held" an earlier run wrote for this digest
       - name: What Wago answered
         id: answer
         if: steps.plan.outputs.wago == 'send' && steps.kept.outcome == 'success'
@@ -389,14 +393,15 @@ jobs:
           VERSION: ${{ steps.plan.outputs.version }}
         run: |
           . tools/release-state.sh
-          if [ "$OUTCOME" = success ]; then
-            jq '.wago = .digest | .wago_refused = ""' "state/$STATE" > state/next.json
-          elif grep -qF 'Error! (413)' "$RUNNER_TEMP/wago.log"; then
-            jq '.wago_refused = .digest' "state/$STATE" > state/next.json
+          if grep -qF 'Error! (413)' "$RUNNER_TEMP/wago.log"; then
+            jq 'if .wago == .digest then .wago = "" else . end | .wago_refused = .digest' "state/$STATE" \
+              > state/next.json
             echo "refused=true" >> "$GITHUB_OUTPUT"
             echo "::warning::Wago refused $PACK $VERSION as too large (413). It is written down: Wago lists" \
               "QuestPump without this pack, and no run sends this content there again unless asked (packs with" \
               "retry_refused)."
+          elif [ "$OUTCOME" = success ]; then
+            jq '.wago = .digest | .wago_refused = ""' "state/$STATE" > state/next.json
           else
             exit 0
           fi
@@ -525,10 +530,10 @@ jobs:
         id: curseforge
         if: steps.ready.outputs.curseforge == 'send'
         continue-on-error: true
-        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           GIT_NO_LAZY_FETCH: "1"
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_KEY }}
         with:
           # the id checked above, digits alone
           args: -m ${{ runner.temp }}/pkgmeta.yaml -p ${{ vars.CURSEFORGE_PROJECT_ID }}
@@ -543,7 +548,7 @@ jobs:
         id: wago
         if: steps.ready.outputs.wago == 'send'
         continue-on-error: true
-        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           GIT_NO_LAZY_FETCH: "1"
           WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
@@ -561,10 +566,10 @@ jobs:
       - name: The tag's release on GitHub
         id: github
         if: steps.ready.outputs.zips == 'true'
-        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           GIT_NO_LAZY_FETCH: "1"
-          GITHUB_OAUTH: ${{ github.token }}
+          GH_API_TOKEN: ${{ github.token }}
         with:
           args: -m ${{ runner.temp }}/pkgmeta.yaml
       - name: The packs' zips beside it
@@ -687,7 +692,7 @@ jobs:
             --phone-apps "$PHONE_APPS" --repo "$GITHUB_REPOSITORY" --merged feed/QuestPump-addon-v2.zip \
             --out feed/addon-v2.json
       - name: The Tauri CLI, pinned to the tauri crate's version
-        run: npm install -g @tauri-apps/cli@2.12.4
+        run: npm install -g @tauri-apps/cli@2.12.5
       - name: Signed with the updater's key
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

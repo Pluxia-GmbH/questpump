@@ -24,7 +24,7 @@ addon-v2.json, with the fields in this order:
     version     "X.Y.Z", the release's tag without its "v" (the add-on's QuestPump.toc ## Version, the tag itself, must
                 equal it once its "v" goes; a pack's TOC names the pack's own version, a number)
     pub_date    the addon release's publication, RFC 3339 in UTC ("2026-11-04T10:00:00Z"); a republished feed keeps it
-    interfaces  QuestPump.toc's ## Interface list as numbers ([16001, 120105])
+    interfaces  QuestPump.toc's ## Interface list as numbers ([16001, 120105, 120107])
     phone_apps  whether the phone apps can be installed from the stores (the repository variable PHONE_APPS)
     zip         {"url": the helper-updater release's QuestPump-addon-v2.zip, "size": bytes, "sha256": hex}
     files       [{"path": "QuestPump/QuestPump.toc", "size": bytes, "sha256": hex}, ...]: every file, by path

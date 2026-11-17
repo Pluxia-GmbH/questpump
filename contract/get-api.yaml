@@ -30,16 +30,18 @@ info:
       home page (a HEAD counts nothing; the host's own answer to an address it lacks is never a 302): a probe for each
       target that has an address of its own, but for the two other installers, which share the probed one's release;
     - `.github/workflows/helper-release.yml`: the installers' fixed names, which the three installer targets name; the
-      add-on's release puts its zip, the same file CurseForge and Wago get, on the same release as
-      `QuestPump-addon.zip`, which the `zip` target names.
+      add-on's release puts one zip of the add-on with both media packs on the same release as
+      `QuestPump-addon-v2.zip` (`addon-release.yml`'s `feed` job, `tools/addon_feed.py`), which the `zip` target
+      names; the stores get the add-on's own zip and each pack's.
 
     **The targets.** `mac-arm`, `mac-intel` and `windows` go to the installers of QuestPump for Mac and Windows, and
-    `zip` to the add-on's zip, `QuestPump-addon.zip` (all four on the helper-updater release of the public repository,
+    `zip` to the add-on's zip, `QuestPump-addon-v2.zip` since 1.1.0 (`QuestPump-addon.zip`, 1.0.1's, until then; all
+    four on the helper-updater release of the public repository,
     `https://github.com/Pluxia-GmbH/questpump/releases/download/helper-updater/`, under fixed names each new version
     replaces). `ios`, `android` and `phone` have no address until the phone apps are in the stores (the site's
     `PHONES` switch, `site/src/launch.ts`), `curseforge` to the add-on's CurseForge page,
-    `https://www.curseforge.com/wow/addons/questpump` (since 2026-11-06, its `CURSEFORGE` switch), `wago` none until
-    that listing has the add-on's file (its `WAGO` switch), and
+    `https://www.curseforge.com/wow/addons/questpump` (since 2026-11-06, its `CURSEFORGE` switch), `wago` to its
+    Wago page, `https://addons.wago.io/addons/questpump` (since 2026-11-12, its `WAGO` switch), and
     `discord` none until the community opens (the public release, docs/tasks.md); each goes to
     `https://questpump.com/start` until it has one. `phone` is
     the one button for either phone: once both stores have an address it reads the request's `User-Agent` only to pick

@@ -870,11 +870,11 @@ qp-choice-chip {
 	background: var(--qp-color-raised);
 }
 
-.qp-choice[aria-pressed="true"] {
+.qp-choice[aria-pressed="true"], .qp-choice[aria-checked="true"] {
 	color: var(--qp-color-text);
 }
 
-.qp-choice[aria-pressed="true"]::before {
+.qp-choice[aria-pressed="true"]::before, .qp-choice[aria-checked="true"]::before {
 	background: var(--qp-color-raised);
 	box-shadow: inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong);
 }
@@ -886,6 +886,18 @@ qp-choice-chip {
 
 .qp-choice.qp-locked, .qp-choice:disabled {
 	color: var(--qp-color-text3);
+}
+
+/* ChoiceGroup: its chips in a row that wraps, centred */
+qp-choice-group {
+	display: block;
+}
+
+.qp-choice-group {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0 var(--qp-layout-space8);
 }
 
 qp-segmented {
@@ -3213,12 +3225,22 @@ qp-streak-board {
 
 /* the streak's day on the Result (slice 72): the count over its label, the week's marks, the day against the next
    milestone */
-qp-streak-day {
+qp-streak-day, .qp-streak-moment {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: var(--qp-layout-space4);
 	text-align: center;
+}
+
+.qp-streak-moment {
+	width: 100%;
+}
+
+/* the goals to choose from under their caps label: their chips' targets reach past the pills, which stand the moment's
+   gap under it */
+qp-streak-day qp-choice-group {
+	margin-block: calc((var(--qp-layout-chip-height) - var(--qp-layout-quiet-height)) / 2);
 }
 
 qp-streak-day qp-week-dots {

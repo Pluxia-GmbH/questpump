@@ -11,7 +11,7 @@ import {feedback} from "../lib/sound.js";
 import {h} from "../kit/element.js";
 
 /** QuestPump on your computer from the browser (docs/plan.md slice 63): the site's click count (`/from/play`, the
- * source `play`, contract/get-api.yaml), which goes on to the download page. */
+ * source `play`, contract/get-api.yaml), which goes on to the home page. */
 export const GET_COMPUTER = "https://questpump.com/from/play";
 
 /** QuestPump on your phone from the browser while the phone apps are in the stores (the `play` topic's `phones`): the

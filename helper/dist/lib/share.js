@@ -970,8 +970,9 @@ function sagaModel(card) {
 /** A list's words as a screen reader hears them ("30-day streak, A quest a day., Tue 14 Oct"). */
 const SAID = new Intl.ListFormat(LOCALE, {type: "conjunction", style: "narrow"});
 
-/** The streak sticker's model (slice 45; surface.StreakCard): the streak's days (its whole years from 730 days, with
- * Year streak) with Day streak and, on a milestone count, the Milestone tag; its line A quest a day. */
+/** The streak sticker's model (slice 45; in the Saga sticker's look, surface.SagaCard): the streak's days (its whole
+ * years from 730 days, with Year streak) with Day streak and, on a milestone count, the Milestone tag; its line A quest
+ * a day. */
 function streakModel(card) {
 	const years = streakYears(card.days);
 	return {

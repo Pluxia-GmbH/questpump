@@ -1,4 +1,4 @@
-## Interface: 16001, 120105
+## Interface: 16001, 120105, 120107
 ## Title: QuestPump Lines
 ## Notes: The quests' flavour lines for QuestPump, in English. QuestPump loads them when it needs them.
 ## Author: Pluxia GmbH

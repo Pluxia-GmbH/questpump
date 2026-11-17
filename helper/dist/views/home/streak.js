@@ -8,8 +8,12 @@
 // the next one and how one is earned; the next milestone in words over a bar from the milestone before it with the
 // days to go (Every milestone reached past the last); the best streak; and Share streak (the Share window on the
 // streak card as it stands; none at 0 days). Its words keep `words.json`'s `care` rule: nothing is lost, owed or due.
+// Since slice 74 the player's own goal stands in the next milestone's place while it is on or ahead of the day (Your
+// goal; Reached today on its day), and under that card, in a card of its own, the Streak goal row: None the first,
+// then the steps above the day and the goal that stands (a ChoiceGroup from the leading edge, which sends
+// `streak.goal`; Rust writes a None the player says also where nothing was said, and nothing for what stands).
 
-import {get} from "../../lib/bridge.js";
+import {get, intent} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {register} from "../../lib/router.js";
 import {openShare, streakCard} from "../../lib/share.js";
@@ -89,6 +93,8 @@ register("desk.streak", () => {
 	};
 	// the arrow keys step the month as its buttons do
 	view.onKey = (e) => {
+		// the goal's choices keep their own arrow keys
+		if (e.target instanceof Element && e.target.closest("qp-choice-group")) return false;
 		if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return false;
 		step(e.key === "ArrowLeft" ? -1 : 1);
 		return true;
@@ -106,8 +112,15 @@ register("desk.streak", () => {
 	const fill = h("i");
 	const bar = h("div", {class: "qp-streak-bar", "aria-hidden": "true"}, fill);
 	const togo = h("p", {class: "qp-type-meta"});
-	const milestone = h("qp-card", {class: "qp-streak-next"},
-		h("p", {class: "qp-type-caps", text: t("pump.streak.next")}), goal, bar, togo);
+	const against = h("p", {class: "qp-type-caps"});
+	const milestone = h("qp-card", {class: "qp-streak-next"}, against, goal, bar, togo);
+	// the goals to choose from in a card of their own, under the caps label that names the group; the goal that
+	// stands is lit (None while none is on or ahead of the day), and what a click says is Rust's to weigh
+	// (`set_streak_goal`: None on a profile that said nothing is the player's None, what stands again is nothing)
+	const goalLabel = h("p", {class: "qp-type-caps", id: "qp-streak-goal-row", text: t("pump.streak.goal.pick")});
+	const goals = h("qp-choice-group", {named: goalLabel.id,
+		"on:qp-change": (e) => intent("streak.goal", {days: Number(e.detail)}).catch(console.error)});
+	const goalCard = h("qp-card", {class: "qp-streak-goal"}, goalLabel, goals);
 
 	const best = h("p", {class: "qp-type-body-strong"});
 	const bestCard = h("qp-card", {class: "qp-streak-best"},
@@ -115,7 +128,7 @@ register("desk.streak", () => {
 
 	const share = h("qp-primary-button", {label: t("pump.streak.share"), glyph: "mark_share",
 		"on:click": () => openShare(streakCard(get("streak")?.days ?? 0))});
-	view.body.append(hero, month, tokens, milestone, bestCard, share);
+	view.body.append(hero, month, tokens, milestone, goalCard, bestCard, share);
 
 	watch(view, "streak", (s) => {
 		number.textContent = count(s.days);
@@ -141,13 +154,18 @@ register("desk.streak", () => {
 			{days: s.token_days, max: s.token_max});
 
 		const m = s.milestone;
+		against.textContent = t(m?.own ? "pump.streak.goal" : "pump.streak.next");
 		goal.textContent = m ? milestoneWords(m.next) : t("pump.streak.next.none");
 		bar.hidden = !m;
 		togo.hidden = !m;
 		if (m) {
 			styled(fill, {"--qp-share": Math.max(0, Math.min(1, (s.days - m.from) / (m.next - m.from)))});
-			togo.textContent = t("pump.streak.next.togo", {count: m.next - s.days});
+			togo.textContent = m.next > s.days ? t("pump.streak.next.togo", {count: m.next - s.days})
+				: t("pump.streak.goal.reached");
 		}
+		goals.options = [{value: "0", label: t("pump.streak.goal.none")},
+			...s.steps.map((days) => ({value: String(days), label: t("pump.streak.goal.days", {days})}))];
+		goals.value = String(s.goal);
 
 		best.textContent = t("pump.streak.best.days", {count: s.best});
 		share.hidden = s.days === 0;

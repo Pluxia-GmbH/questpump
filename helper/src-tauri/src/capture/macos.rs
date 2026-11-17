@@ -1,5 +1,5 @@
 //! The macOS backend (rust-helper `macos-capture-and-tcc.md`): ScreenCaptureKit through the `screencapturekit` crate
-//! (11.1.1), a display filter that includes the game's window alone, placed on the display it is on, `sourceRect` in
+//! (11.1.2), a display filter that includes the game's window alone, placed on the display it is on, `sourceRect` in
 //! points at the window's top-left corner, 390 × 96 output pixels (one per screen pixel: the strip's band, and room for
 //! a windowed game's title bar), BGRA, sRGB, at most 60 frames a second (10 on battery power, the laptop mode) and only
 //! when the corner changes. The window is the main one of the client process the helper follows (`game::running`), so

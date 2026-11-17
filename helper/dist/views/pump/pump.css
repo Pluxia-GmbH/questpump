@@ -529,6 +529,97 @@ qp-card.qp-pump-rows {
 	flex-direction: column;
 }
 
+/* The full-screen Result fits its window without a scroll down to the smallest one the app opens (slice 74: the
+   streak's goals joined its tallest state, a streak's day with a level and four rows). Its body is the container the
+   steps read: under the first the column's gaps close and the XP and the streak's count take the medium numerals, as
+   the floating card has them; under the second, the smallest windows', the banner's bars stand beside its words, the
+   XP beside its word, the streak's count beside its week, and the rows stand bare. Nothing is left out. */
+.qp-result .qp-pump-body {
+	container: qp-result / size;
+}
+
+.qp-pump-gained {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--qp-layout-space16);
+}
+
+@container qp-result (height < 780px) {
+	.qp-result .qp-pump-column {
+		gap: var(--qp-layout-space8);
+		padding-bottom: var(--qp-layout-space16);
+	}
+
+	.qp-result .qp-pump-gained {
+		gap: var(--qp-layout-space4);
+	}
+
+	.qp-result .qp-pump-gain, .qp-result .qp-pump-gain .qp-type-num-large,
+	.qp-result qp-streak-day .qp-type-num-large {
+		font: var(--qp-type-num-medium-font);
+	}
+}
+
+@container qp-result (height < 640px) {
+	.qp-result .qp-pump-column {
+		padding-bottom: var(--qp-layout-space8);
+	}
+
+	.qp-result qp-fanfare {
+		flex-direction: row;
+		justify-content: center;
+		gap: var(--qp-layout-space12);
+	}
+
+	.qp-result qp-fanfare qp-art {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	.qp-result .qp-pump-gained {
+		flex-direction: row;
+		justify-content: center;
+		align-items: baseline;
+		gap: var(--qp-layout-space12);
+	}
+
+	.qp-result qp-streak-day .qp-streak-moment {
+		display: grid;
+		grid-template-columns: max-content
+			minmax(0, calc(var(--qp-surface-week-dots-size) * 7 + var(--qp-layout-space12) * 6));
+		grid-template-areas: "count week" "label week" "line line";
+		justify-content: center;
+		column-gap: var(--qp-layout-space16);
+		row-gap: 0;
+	}
+
+	.qp-result .qp-streak-moment > .qp-type-num-large {
+		grid-area: count;
+		align-self: end;
+	}
+
+	.qp-result .qp-streak-moment > .qp-type-caps {
+		grid-area: label;
+		align-self: start;
+	}
+
+	.qp-result .qp-streak-moment > qp-week-dots {
+		grid-area: week;
+		margin-block: 0;
+	}
+
+	.qp-result .qp-streak-moment > .qp-type-meta {
+		grid-area: line;
+	}
+
+	.qp-result qp-card.qp-pump-rows {
+		padding: 0;
+		background: none;
+		box-shadow: none;
+	}
+}
+
 qp-card.qp-pump-calm {
 	display: flex;
 	flex-direction: column;
@@ -992,7 +1083,7 @@ qp-card.qp-pump-calm {
 	width: min(var(--qp-surface-result-float-max-width), 100%);
 	max-height: calc(100% - var(--qp-layout-space24));
 	overflow-y: auto;
-	padding: var(--qp-layout-space12) var(--qp-layout-space16);
+	padding: var(--qp-layout-hairline) var(--qp-layout-space16) var(--qp-layout-space12);
 	border-radius: var(--qp-layout-card-radius);
 	background: var(--qp-surface-card-fill);
 	box-shadow: var(--qp-surface-card-highlight), inset 0 0 0 var(--qp-layout-hairline) var(--qp-color-line-strong),
@@ -1001,16 +1092,41 @@ qp-card.qp-pump-calm {
 	animation: qp-float-in var(--qp-motion-result-float-in) both;
 }
 
+/* dropped in, it stands (stages.js `floating`): its drop-in plays at no later showing */
+.qp-pump-float.qp-stood {
+	animation: none;
+}
+
 .qp-pump-float.qp-out {
 	animation: qp-float-out var(--qp-motion-result-float-out) both;
 }
 
+/* its parts keep their heights: a card taller than its window scrolls, never squeezes them */
+.qp-pump-float > * {
+	flex: none;
+}
+
+/* the head stays where it is while a card taller than its window scrolls (slice 74: the X always in reach): in the
+   card's own tone inside its edge, the content scrolling from its lower edge, a hairline while anything stands under */
 .qp-pump-float-head {
+	position: sticky;
+	top: var(--qp-layout-hairline);
+	z-index: 1;
 	display: flex;
 	align-items: flex-start;
-	padding-right: var(--qp-layout-space4);
+	margin: 0 calc((var(--qp-layout-space16) - var(--qp-layout-hairline)) * -1);
+	padding: calc(var(--qp-layout-space12) - var(--qp-layout-hairline))
+		calc(var(--qp-layout-space16) + var(--qp-layout-space4) - var(--qp-layout-hairline)) 0
+		calc(var(--qp-layout-space16) - var(--qp-layout-hairline));
+	border-radius: calc(var(--qp-layout-card-radius) - var(--qp-layout-hairline))
+		calc(var(--qp-layout-card-radius) - var(--qp-layout-hairline)) 0 0;
+	background: var(--qp-color-card);
 	justify-content: space-between;
 	gap: var(--qp-layout-space12);
+}
+
+.qp-pump-float-head[data-under] {
+	box-shadow: 0 var(--qp-layout-hairline) 0 var(--qp-color-line);
 }
 
 .qp-pump-float-words {

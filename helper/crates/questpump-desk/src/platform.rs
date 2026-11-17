@@ -525,8 +525,8 @@ pub trait Platform: 'static {
 	// Work mode (slice 67, `work.rs`): the device's presence and holds, and where its state shows outside the pages.
 
 	/// The device's seconds without input at its last look (the sitting clock's `Sitting::idle_s`), from which work
-	/// mode tells a due pump's moment and whether somebody is there for it, never its count; none where the platform
-	/// reads none.
+	/// mode tells whether somebody is there for a due pump (`sit_away_s`), never its count or a pause to wait for; none
+	/// where the platform reads none.
 	fn idle_s(&self) -> Option<u32> {
 		None
 	}

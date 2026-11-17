@@ -16,7 +16,7 @@
 title = "QuestPump secret-scanning rules"
 
 [extend]
-# betterleaks' default rules (1.9.0); its private-key rule also catches a service account's JSON key and a .p8 key
+# betterleaks' default rules (1.10.1); its private-key rule also catches a service account's JSON key and a .p8 key
 useDefault = true
 
 # Each [[allowlists]] block stands on its own (a finding any block matches is quiet). Inside a block, condition = "AND"

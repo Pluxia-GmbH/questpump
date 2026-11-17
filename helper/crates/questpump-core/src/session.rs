@@ -2699,11 +2699,9 @@ impl Session {
 					// the latest sheet says what the game holds back now (none when it lists nothing)
 					let moves = |key: &str| -> Vec<u16> {
 						blob::get(&value, key)
-							.map(blob::to_json)
-							.unwrap_or_default()
+							.map_or_default(blob::to_json)
 							.as_array()
-							.map(|a| a.iter().filter_map(|v| v.as_u64()?.try_into().ok()).collect())
-							.unwrap_or_default()
+							.map_or_default(|a| a.iter().filter_map(|v| v.as_u64()?.try_into().ok()).collect())
 					};
 					self.people.held = moves("held");
 					self.people.aside = moves("aside");

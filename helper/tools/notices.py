@@ -14,7 +14,7 @@ The browser's build (docs/plan.md slice 63, play.questpump.com) gets its own, we
 publishes beside the page: the crates questpump-web builds in for wasm32-unknown-emscripten, the same way, then the two
 parts of its WebAssembly that are no crate's licence file: Lua 5.1.5's own notice (the end of lua.h in lua-src's
 lua-5.1.5, which mlua-sys compiles in) and Emscripten's runtime's licence (helper/notices/emscripten.txt, a copy of
-emsdk 6.0.12's upstream/emscripten/LICENSE).
+emsdk 7.0.0's upstream/emscripten/LICENSE).
 
     python3 helper/tools/notices.py [--offline]           writes helper/notices/crates.txt and web/notices.txt
     python3 helper/tools/notices.py --check [--offline]   fails when either is not what it would write (the helper's
@@ -233,7 +233,7 @@ def web_render(meta):
     """web/notices.txt: questpump-web's crates as crates.txt words them, then Lua's notice and Emscripten's licence."""
     crates = render(shipped(meta, WEB_APP), WEB_HEAD).rstrip("\n")
     lua = "\n\n".join((RULE, "Lua 5.1.5 (lua-src's lua-5.1.5, compiled in by mlua-sys):", lua_notice(meta)))
-    emscripten = "\n\n".join((RULE, "Emscripten 6.0.12's runtime:", read(EMSCRIPTEN)))
+    emscripten = "\n\n".join((RULE, "Emscripten 7.0.0's runtime:", read(EMSCRIPTEN)))
     return "\n\n".join((crates, lua, emscripten)) + "\n"
 
 

@@ -97,7 +97,7 @@ pub enum Status {
 	/// The game ran when its file went in, or ran `SILENT_MS` without a word (StarCraft II's client API among them, slice
 	/// 48): start it again.
 	Restart,
-	/// Dota 2 ran `SILENT_MS` without a word: its launch option is missing.
+	/// Dota 2, Deadlock or Team Fortress 2 ran `SILENT_MS` without a word: its launch option is missing.
 	Launch,
 	/// Windows keeps the game's folder closed: the one-time elevated grant opens it.
 	Permission,
@@ -120,7 +120,8 @@ pub enum Status {
 	UdpFormat,
 	/// Elite Dangerous ran `SILENT_MS` and no journal of it came (slice 48).
 	NoJournal,
-	/// iRacing or Assetto Corsa Competizione ran `SILENT_MS` and its shared memory could not be read (slice 48).
+	/// A racing game read by its shared memory (iRacing, Assetto Corsa Competizione, Assetto Corsa, Automobilista 2)
+	/// ran `SILENT_MS` and that memory could not be read (slice 48).
 	NoShared,
 }
 

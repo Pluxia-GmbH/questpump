@@ -2,7 +2,9 @@
 // Android's ui/WorkCard.kt is its twin), drawn from the `work` topic (helper/crates/questpump-desk/src/work.rs
 // `WorkView`, its `work` property), one layout in every state: off, a compact row of Work mode and a trailing Start;
 // on, the ring with the whole minutes left in it beside Work mode, and Stop under the title in stop; held, the ring
-// dimmed and the hold's words between the title and Stop ("On a call"); due, the ring full with a check, and under
+// dimmed and the hold's words between the title and Stop ("On a call"); due (the ask stands: its pump opens itself as
+// the block comes due, so this state shows only where it could not, nobody there or a start that went nowhere), the
+// ring full with a check, and under
 // the block the gold Pump now and Later side by side; a Later refused says why under them. No dots and no count of
 // pumps: work mode runs until Stop. Start fires qp-start, Pump now qp-now, Later qp-later and Stop qp-stop; a focused
 // button a state change hides hands the focus to the card's title, never to another button (a second Enter on Stop
@@ -35,9 +37,9 @@ function refusedWords(key) {
 	return REFUSED[key]?.() ?? "";
 }
 
-/** Whether a work pump is due on `work` (the topic): its ask stands or waits for its moment. */
+/** Whether a work pump is due on `work` (the topic): its ask stands. */
 export function workDue(work) {
-	return Boolean(work?.on) && (work.phase === "due" || work.phase === "ask");
+	return Boolean(work?.on) && work.phase === "ask";
 }
 
 class QpWorkCard extends KitElement {

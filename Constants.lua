@@ -296,6 +296,13 @@ ns.C = {
 	-- (rest tokens can jump one: 29 to 31 reaches 30), a Result moment of its own in the game and the phones; past a
 	-- year a moment each year and at 1,000 days (2026-10-09)
 	streak_milestones = { 7, 30, 100, 365, 730, 1000, 1095, 1460, 1825 },
+	-- the streak's goal (slice 74): the days a player may pick as their own goal, the streak_goal_offer smallest above
+	-- the streak's day offered at a time (ns.StreakGoalSteps); the day shows against the goal while it stands
+	-- (ns.StreakAgainst)
+	streak_goal_steps = { 7, 14, 30, 50, 100, 365 }, streak_goal_offer = 3,
+	-- the most days a goal may hold wherever one is read (ns.StreakGoal): the most the body every device shares carries
+	-- (contract/companion-api.yaml `Body.streak_goal`), so a later build's new step still reads here
+	streak_goal_max = 65535,
 	-- the weekly vault: its moves done (every performed move counts one; 2026-10-27, David: "Instead of pumps count moves
 	-- please": 20 pumps finished until then), its records and since slice 55 its embers, three goals of the week's
 	-- embers (a day of three, three days, five days), each paying xp_vault_goal; a cardio move done in full lights an
@@ -393,11 +400,11 @@ ns.C = {
 	-- work mode (slice 67), exported for the desktop app, the phones and the browser (the addon reads none): a work pump
 	-- is due once the work clock counts work_every_min minutes of the player's time at it (the player picks one of
 	-- work_every_choices), every one the same size, for as long as work mode runs (no set of them and no long one since
-	-- 2026-11-11); once due and nothing holds it, the ask comes at the first pause of work_moment_s seconds without
-	-- input, at most work_late_s seconds after it was due; a work pump opens on its warm move only once the device's
-	-- sitting clock holds work_warm_min
+	-- 2026-11-11); once due and nothing holds it, the computer's work pump opens at once (since 2026-11-12: no wait for
+	-- a pause in the input), a pump's Result standing work_moment_s seconds first; a work pump opens on its warm move
+	-- only once the device's sitting clock holds work_warm_min
 	work_every_min = 25, work_every_choices = { 25, 30, 45, 60 }, work_moment_s = 30,
-	work_late_s = 120, work_warm_min = 60,
+	work_warm_min = 60,
 	-- the account's unfinished list (slice 67): an owed row a device without a computer banks (the browser, a phone not
 	-- linked to the desktop app) carries in its questID a bank number from bank_quest_min up, never a quest's id
 	-- (contract/sync-api.yaml, "The account's unfinished list"), so two devices' banks of one second keep apart and

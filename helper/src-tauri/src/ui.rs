@@ -95,8 +95,8 @@ pub struct Shell {
 	/// The main window has the keyboard's focus (Rust's `WindowEvent::Focused`, never the page's blur).
 	pub focused: bool,
 	/// A screen reader runs (`desk::audio::screen_reader`: macOS's `VoiceOver`; on Windows the system's flag that one
-	/// does, which Narrator may leave unset), read at each change of the window's focus: the Book's Tree | List switch
-	/// defaults to List under it (slice 38).
+	/// does, which Narrator leaves unset), read at each change of the window's focus: the Sound and voice page shows
+	/// its note while one runs.
 	pub reader: bool,
 	/// A close or a quit asked while a pump holds the window: the pump asks "Leave the pump?".
 	pub leave: Option<Leave>,
@@ -895,5 +895,5 @@ pub fn update(app: &AppHandle, change: impl FnOnce(&mut View)) {
 
 /// A copy of the view as it is now.
 pub fn view(app: &AppHandle) -> View {
-	app.state::<Shared>().view.lock().map(|v| v.clone()).unwrap_or_default()
+	app.state::<Shared>().view.lock().map_or_default(|v| v.clone())
 }

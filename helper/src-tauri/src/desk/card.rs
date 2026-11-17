@@ -502,7 +502,7 @@ impl Helper {
 		}
 		let Some(games) = self.desk.p.games.as_ref() else { return };
 		let game = self.offering.card.game_of(&due.id).map(str::to_owned);
-		let pids = game.as_deref().map(|game| games.pids(game, snap)).unwrap_or_default();
+		let pids = game.as_deref().map_or_default(|game| games.pids(game, snap));
 		let area = pids.iter().find_map(|&pid| procs::window_monitor(pid));
 		if let (Some(game), Some(_)) = (game, area) {
 			self.offering.card.seen.insert(game, Seen { area, at: now });
@@ -803,7 +803,8 @@ impl Helper {
 			let hid = self.app.run_on_main_thread(move || {
 				let away = !ACTIVE_AT_CARD.load(std::sync::atomic::Ordering::Relaxed);
 				if (handle.get_webview_window(MAIN).is_none() || away)
-					&& app_active() && let Err(e) = handle.hide()
+					&& app_active()
+					&& let Err(e) = handle.hide()
 				{
 					log::warn!("card: {e}");
 				}

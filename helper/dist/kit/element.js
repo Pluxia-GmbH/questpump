@@ -129,6 +129,31 @@ export function animationMs(el) {
 	return Math.max(...style.animationDuration.split(",").map(one)) + Math.max(...style.animationDelay.split(",").map(one));
 }
 
+/** The one-shot classes on their way, by element and class: each run's number, so an older run's end leaves a newer
+ * one alone. */
+const shots = new WeakMap();
+
+/** Plays the one-shot animation the class `name` gives `el` or the parts under it, from its start (again where it was
+ * playing), and takes the class off as its animations end: a CSS animation starts over when its element is shown
+ * again (a root the router hid, a page under a cover), so a class left on would play it at every later showing. With
+ * none running (an element out of sight, Reduce Motion's none) the class goes at once. */
+export function once(el, name) {
+	const runs = shots.get(el) ?? new Map();
+	shots.set(el, runs);
+	const run = (runs.get(name) ?? 0) + 1;
+	runs.set(name, run);
+	el.classList.remove(name);
+	// the class taken and given in one task would not start the animation again
+	void el.offsetWidth;
+	el.classList.add(name);
+	// the ones that end (a glow that breathes on under it never does)
+	const playing = el.getAnimations({subtree: true})
+		.filter((a) => Number.isFinite(a.effect?.getComputedTiming().endTime));
+	Promise.allSettled(playing.map((a) => a.finished)).then(() => {
+		if (runs.get(name) === run) el.classList.remove(name);
+	});
+}
+
 /** Fires a component's own event, which bubbles to the view (and the router: qp-tab, qp-menu, qp-back). */
 export function emit(el, type, detail) {
 	el.dispatchEvent(new CustomEvent(type, {bubbles: true, detail}));

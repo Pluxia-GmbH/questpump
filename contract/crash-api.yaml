@@ -57,7 +57,7 @@ info:
       `/api/coach-report` on the same Worker (contract/feedback-api.yaml, contract/coach-api.yaml).
 
     **The phones (the iPhone app and the Android app): Firebase Crashlytics, its collection always off, its reports
-    sent by the app.** The SDK (`FirebaseCrashlytics` in the iPhone app, Firebase Apple 13.1.1; `firebase-crashlytics`
+    sent by the app.** The SDK (`FirebaseCrashlytics` in the iPhone app, Firebase Apple 13.2.0; `firebase-crashlytics`
     from the Firebase BoM with the Crashlytics Gradle plugin in the Android phone app) catches the crash in the app's
     own process. The build holds collection off (Info.plist `FirebaseCrashlyticsCollectionEnabled` false, the
     manifest's `firebase_crashlytics_collection_enabled` false, as learnclash's builds do), and the app never turns it

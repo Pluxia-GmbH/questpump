@@ -365,6 +365,42 @@ impl Board {
 		}
 		(self.after_pump - self.days - 1).max(0)
 	}
+
+	/// A streak goal as the two functions below read it: `goal` within 1 to the most the body carries (its `u16`),
+	/// none for 0 and for anything outside, as Stats.lua `ns.StreakGoal` and the cores' `EngineProfile.streakGoal` read.
+	fn goal_days(goal: Option<i64>) -> Option<i64> {
+		goal.filter(|g| (1..=i64::from(u16::MAX)).contains(g))
+	}
+
+	/// The number the streak's day shows against ("Day 3 of 7"; slice 74), the streak counting `days`: the player's
+	/// goal in days (`goal`, the body's `streak_goal`, `Desk::streak_goal`; `goal_days` reads it) while it is on or
+	/// ahead of that day, so the day that reaches it reads "Day 14 of 14"; else the next of `streak_milestones` above
+	/// the day, none past the last. Stats.lua `ns.StreakAgainst` and the cores' `StreakBoard.against` are its twins.
+	#[must_use]
+	pub fn against(days: i64, goal: Option<i64>) -> Option<i64> {
+		Self::goal_days(goal)
+			.filter(|&g| g >= days)
+			.or_else(|| facts().constants().streak_milestones.iter().copied().filter(|&m| m > days).min())
+	}
+
+	/// The goals to offer on the streak's day `days` (slice 74), by what the player said of a goal (`said`,
+	/// `Desk::streak_goal_said`: none, nothing yet; 0, None, chosen by the player or left when a Result's choices were
+	/// declined; else the goal's days): none once the player said None, and none while a goal stands ahead of the day;
+	/// else the `streak_goal_offer` smallest of `streak_goal_steps` above it (7, 14 and 30 on day 1; fewer near the last
+	/// step, none past it). So they are offered while the player said nothing, on the day a goal is reached and on any
+	/// day past one, and never again after a None until the player sets a goal themselves and reaches it. Stats.lua
+	/// `ns.StreakGoalSteps` and the cores' `StreakBoard.steps` are its twins.
+	#[must_use]
+	pub fn goal_steps(days: i64, said: Option<i64>) -> Vec<i64> {
+		if said == Some(0) || Self::goal_days(said).is_some_and(|g| g > days) {
+			return Vec::new();
+		}
+		let tune = facts().constants();
+		let mut steps: Vec<i64> = tune.streak_goal_steps.iter().copied().filter(|&n| n > days).collect();
+		steps.sort_unstable();
+		steps.truncate(tune.streak_goal_offer);
+		steps
+	}
 }
 
 /// The streak and the tokens after a performed move on game day `d` (Stats.lua activeDay), the last active day `last`:
@@ -432,6 +468,8 @@ const LATER_S: i64 = 7 * 24 * 60 * 60;
 #[expect(clippy::struct_excessive_bools, reason = "the loop's marks between looks, each a yes or no of its own")]
 pub struct Home {
 	pub days: Days,
+	/// What the player said of the streak's goal as what shows it last read it (`Desk::streak_goal_read`).
+	pub(crate) goal_read: Option<i64>,
 	/// How many sheets the game's log held at the last look: a new one asks the engine's Book rows again.
 	sheets: usize,
 	/// The app's own fold's summary, its last answer.
@@ -523,6 +561,7 @@ impl Home {
 			focus_asked: false,
 			recent: Recent::default(),
 			paid: PaidMoves::default(),
+			goal_read: None,
 		}
 	}
 }
@@ -971,7 +1010,7 @@ impl<P: Platform> Desk<P> {
 		});
 		let fresh: Vec<&OwedMove> = self.fresh_owed(sheet, now).collect();
 		let dot = if held_by_game { 0 } else { fresh.iter().filter(|o| !rested_by(o.move_id)).count() };
-		let game_flags = self.engine_folded().map(|folded| folded.game_flags.as_slice()).unwrap_or_default();
+		let game_flags = self.engine_folded().map_or_default(|folded| folded.game_flags.as_slice());
 		let checkin_view = || Checkin {
 			words: f.sheet.words.checkin.clone(),
 			pain: f.sheet.words.pain.clone(),

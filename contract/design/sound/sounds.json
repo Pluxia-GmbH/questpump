@@ -88,7 +88,7 @@
   {"id": "done", "role": "a move done: a short low chime", "kind": "short",
    "pack": "kenney-interface-sounds", "member": "Audio/confirmation_001.ogg", "gainDb": 0,
    "why": "the lowest confirmation chime (two notes, about 0.4 then 1.2 kHz, 290 ms), under go's ding"},
-  {"id": "call", "role": "a pump that opens itself in front on the computer, after a match or at work mode's time (slice 72): one soft bell-like knock", "kind": "short",
+  {"id": "call", "role": "a pump that opens itself in front on the computer, after a match or at work mode's time (slice 72), and since slice 74 the notification sound of the phone alerts that ask for a pump now: one soft bell-like knock", "kind": "short",
    "pack": "pluxia-chimes", "member": "call.wav", "gainDb": -6,
    "synth": {"seed": 7202, "bursts": [[0, 1800, 1.2, 0.3, 0.014]], "tones": [[0, 1046.5, 0.5, 0.24], [0, 2511.6, 0.2, 0.1], [0, 4186.0, 0.06, 0.05]]},
    "why": "a 14-ms noise burst at 1.8 kHz, the knock, over one bell at 1.05 kHz (C6) whose partials at 2.4 and 4 times it die within 100 ms, 180 ms in all: nine-tenths of its energy at 1-2 kHz, so it is lower, shorter and 6 dB softer than go's ding (1.9 kHz, 280 ms), one note where done plays two, and far above error's low knock; picked 2026-11-11 from the numbers (nobody listened yet)"},

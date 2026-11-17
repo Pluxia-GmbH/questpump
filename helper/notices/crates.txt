@@ -2,7 +2,7 @@ QuestPump on this computer builds in these Rust crates (Cargo.lock; the macOS an
 
 ========================================
 
-344 crates: addr2line 0.27.1, adler2 2.0.1, aead 0.6.1, aes 0.9.3, aes-gcm 0.11.1, aho-corasick 1.1.5, anyhow 1.0.104, apple-cf 0.11.7, apple-metal 0.10.4, arrayvec 0.7.8, async-trait 0.1.92, atomic-waker 1.1.2, axum 0.8.9, axum-core 0.5.6, backtrace 0.3.77, base16ct 1.0.0, base64 0.21.7, base64 0.23.1, base64ct 1.8.3, bit-set 0.8.0, bit-vec 0.8.0, bitflags 1.3.2, bitflags 2.13.2, block-buffer 0.10.4, block-buffer 0.12.1, brotli 9.1.1, bs58 0.5.1, bstr 1.13.1, byteorder 1.5.0, byteorder-lite 0.1.0, bytes 1.12.1, camino 1.2.6, cargo-platform 0.1.9, cargo_metadata 0.19.2, cfb 0.14.0, cfg-if 1.0.5, chacha20 0.10.2, cipher 0.5.2, cmov 0.5.4, const-oid 0.10.2, cookie 0.18.2, core-foundation 0.9.4, core-foundation 0.10.1, core-foundation-sys 0.8.7, core-graphics 0.25.0, core-graphics-types 0.2.0, core_detect 1.0.0, coreaudio-rs 0.14.2, cpubits 0.1.1, cpufeatures 0.2.17, cpufeatures 0.3.1, crc32fast 1.5.3, crossbeam-channel 0.5.17, crossbeam-deque 0.8.8, crossbeam-epoch 0.9.21, crossbeam-utils 0.8.23, crypto-bigint 0.7.10, crypto-common 0.1.7, crypto-common 0.2.2, ctor 1.0.13, ctr 0.10.1, ctutils 0.4.7, darling 0.24.1, darling_core 0.24.1, darling_macro 0.24.1, dashmap 6.2.1, data-encoding 2.11.1, defmt 1.2.0, defmt-macros 1.2.0, defmt-parser 1.1.0, der 0.8.3, der_derive 0.8.0, deranged 0.5.9, derive_more 2.1.1, derive_more-impl 2.1.1, digest 0.10.7, digest 0.11.3, dirs 7.0.0, dirs-sys 0.5.0, displaydoc 0.2.7, doom-fish-utils 0.4.3, dtoa 1.0.11, dyn-clone 1.0.20, ecdsa 0.17.0, either 1.19.0, elliptic-curve 0.14.3, embed_plist 1.2.2, encoding_rs 0.8.42, equivalent 1.0.3, erased-serde 0.4.11, errno 0.3.14, fastrand 2.5.0, fdeflate 0.3.7, fern 0.7.1, ff 0.14.0, filetime 0.2.29, flate2 1.1.10, fnv 1.0.7, foreign-types 0.5.0, foreign-types-macros 0.2.4, foreign-types-shared 0.3.1, form_urlencoded 1.2.2, futures 0.3.34, futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34, generic-array 0.14.7, getrandom 0.3.4, getrandom 0.4.3, ghash 0.6.0, gimli 0.34.0, glob 0.3.4, group 0.14.0, h2 0.4.20, half 2.7.1, hashbrown 0.12.3, hashbrown 0.14.5, hashbrown 0.17.1, heck 0.5.0, hex 0.4.3, hkdf 0.13.0, hmac 0.13.0, html5ever 0.39.0, http 1.5.0, http-body 1.1.0, http-body-util 0.1.5, http-range 0.1.6, httparse 1.10.1, httpdate 1.0.3, hybrid-array 0.4.15, hyper 1.12.0, hyper-tls 0.6.0, hyper-util 0.1.21, iana-time-zone 0.1.65, ico 0.6.0, ident_case 1.0.1, idna 1.1.0, idna_adapter 1.2.2, if-addrs 0.15.0, image 0.25.10, indexmap 1.9.3, indexmap 2.14.2, infer 0.22.0, inout 0.2.5, ipnet 2.12.2, itertools 0.14.0, itoa 1.0.18, jiff 0.2.38, jiff-core 0.1.1, jiff-tzdb 0.1.9, jiff-tzdb-platform 0.1.3, json-patch 4.2.0, jsonptr 0.7.1, keyboard-types 0.8.3, lazy_static 1.5.1, libc 0.2.191, libproc 0.14.11, lock_api 0.4.14, log 0.4.34, mach2 0.6.0, markup5ever 0.39.0, matchit 0.8.4, memchr 2.8.3, mime 0.3.17, miniz_oxide 0.8.9, miniz_oxide 0.9.1, mio 1.2.4, mlua 0.12.2, muda 0.20.0, multiversion_no_op 1.0.0, native-tls 0.2.18, new_debug_unreachable 1.0.6, num-bigint 0.4.8, num-conv 0.2.2, num-integer 0.1.47, num-rational 0.4.2, num-traits 0.2.19, num_threads 0.1.8, object 0.40.0, once_cell 1.21.4, ordered-float 2.10.1, osakit 0.3.1, p256 0.14.0, p384 0.14.0, parking_lot 0.12.5, parking_lot_core 0.9.12, percent-encoding 2.3.2, phf 0.13.1, phf_generator 0.13.1, phf_macros 0.13.1, phf_shared 0.13.1, pin-project-lite 0.2.17, plist 1.10.3, png 0.18.1, polyval 0.7.3, powerfmt 0.2.1, precomputed-hash 0.1.1, primefield 0.14.0, primeorder 0.14.0, proc-macro2 1.0.107, qrcode 0.14.1, quick-xml 0.42.0, quote 1.0.47, rand 0.10.3, rand_core 0.10.1, raw-window-handle 0.6.2, rayon 1.12.0, rayon-core 1.13.0, ref-cast 1.0.27, ref-cast-impl 1.0.27, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11, reqwest 0.13.5, rfc6979 0.6.0, rfd 0.17.2, rodio 0.23.0, rustc-demangle 0.1.28, rustc-hash 2.1.3, rustix 1.1.6, rustls-pki-types 1.15.1, same-file 1.0.6, schannel 0.1.30, schemars 0.8.22, schemars 0.9.0, schemars 1.2.3, schemars_derive 0.8.22, scopeguard 1.2.0, screencapturekit 11.1.1, sec1 0.8.1, security-framework 3.7.0, security-framework-sys 2.17.0, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde-value 0.7.0, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.154, serde_path_to_error 0.1.20, serde_repr 0.1.21, serde_spanned 1.1.2, serde_urlencoded 0.7.1, serde_with 3.24.0, serde_with_macros 3.24.0, serialize-to-javascript 0.1.2, serialize-to-javascript-impl 0.1.2, servo_arc 0.4.3, sha1 0.11.0, sha2 0.10.9, sha2 0.11.1, signal-hook-registry 1.4.8, signature 3.0.0, simd-adler32 0.3.10, simdutf8 0.1.5, siphasher 1.0.4, slab 0.4.12, smallvec 1.16.4, socket2 0.6.5, softbuffer 0.4.8, spki 0.8.1, stable_deref_trait 1.2.1, static_assertions 1.1.0, string_cache 0.9.0, strsim 0.11.1, swift-rs 1.0.9, syn 2.0.119, syn 3.0.9, synstructure 0.14.0, system-configuration 0.7.0, system-configuration-sys 0.6.0, tar 0.4.46, tauri 2.12.5, tauri-codegen 2.7.4, tauri-macros 2.7.4, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.1, tauri-plugin-single-instance 2.5.5, tauri-plugin-updater 2.14.1, tauri-runtime 2.12.2, tauri-runtime-wry 2.12.3, tauri-utils 2.10.2, tempfile 3.27.0, tendril 0.5.1, thiserror 2.0.21, thiserror-impl 2.0.21, time 0.3.55, time-core 0.1.9, time-macros 0.2.32, tinyvec 1.13.3, tokio 1.54.1, tokio-macros 2.7.2, tokio-native-tls 0.3.1, tokio-stream 0.1.19, tokio-tungstenite 0.30.0, tokio-util 0.7.20, toml 1.1.8+spec-1.1.0, toml_datetime 1.1.2+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.1.3+spec-1.1.0, tower 0.5.3, tower-http 0.6.11, tower-layer 0.3.3, tower-service 0.3.3, tracing 0.1.44, tracing-attributes 0.1.31, tracing-core 0.1.36, tray-icon 0.25.1, try-lock 0.2.5, tungstenite 0.30.0, typeid 1.0.3, typenum 1.20.1, unicode-ident 1.0.27, unicode-segmentation 1.13.3, universal-hash 0.6.1, url 2.5.8, urlpattern 0.6.0, utf8_iter 1.1.0, utf_types 1.0.0, uuid 1.29.0, walkdir 2.5.0, want 0.3.2, web-time 1.1.0, web_atoms 0.2.6, widestring 1.2.1, winapi-util 0.1.11, window-vibrancy 0.8.1, windows-capture 2.0.1, winnow 1.0.4, wnaf 0.14.1, wry 0.57.1, x509-cert 0.3.0, xattr 1.7.0, zerocopy 0.8.63, zerocopy-derive 0.8.63, zeroize 1.9.1, zmij 1.0.23
+335 crates: addr2line 0.27.1, adler2 2.0.1, aead 0.6.1, aes 0.9.4, aes-gcm 0.11.1, aho-corasick 1.1.5, anyhow 1.0.104, apple-cf 0.11.7, apple-metal 0.10.4, arrayvec 0.7.8, async-trait 0.1.92, atomic-waker 1.1.2, axum 0.8.9, axum-core 0.5.6, backtrace 0.3.77, base16ct 1.0.0, base64 0.21.7, base64 0.23.1, base64ct 1.8.3, bit-set 0.8.0, bit-vec 0.8.0, bitflags 1.3.2, bitflags 2.13.2, block-buffer 0.12.1, brotli 9.1.3, bs58 0.5.1, bstr 1.13.1, byteorder 1.5.0, byteorder-lite 0.1.0, bytes 1.12.1, camino 1.2.6, cargo-platform 0.1.9, cargo_metadata 0.19.2, cfb 0.14.0, cfg-if 1.0.5, chacha20 0.10.2, cipher 0.5.2, cmov 0.5.4, const-oid 0.10.3, cookie 0.18.2, core-foundation 0.9.4, core-foundation 0.10.1, core-foundation-sys 0.8.7, core-graphics 0.25.0, core-graphics-types 0.2.0, core_detect 1.0.0, coreaudio-rs 0.14.2, cpubits 0.1.1, cpufeatures 0.3.1, crc32fast 1.5.5, crossbeam-channel 0.5.17, crossbeam-deque 0.8.8, crossbeam-epoch 0.9.21, crossbeam-utils 0.8.23, crypto-bigint 0.7.11, crypto-common 0.2.2, ctor 1.0.14, ctr 0.10.1, ctutils 0.4.8, darling 0.24.1, darling_core 0.24.1, darling_macro 0.24.1, dashmap 6.2.1, data-encoding 2.11.1, der 0.8.3, der_derive 0.8.0, deranged 0.5.9, derive_more 2.1.1, derive_more-impl 2.1.1, digest 0.11.3, dirs 7.0.0, dirs-sys 0.5.0, displaydoc 0.2.7, doom-fish-utils 0.4.3, dtoa 1.0.11, dyn-clone 1.0.20, ecdsa 0.17.0, either 1.19.0, elliptic-curve 0.14.3, embed_plist 1.2.2, encoding_rs 0.8.44, equivalent 1.0.3, erased-serde 0.4.11, errno 0.3.15, fastrand 2.5.0, fdeflate 0.3.7, fern 0.7.1, ff 0.14.0, filetime 0.2.30, flate2 1.1.11, fnv 1.0.7, foreign-types 0.5.0, foreign-types-macros 0.2.4, foreign-types-shared 0.3.1, form_urlencoded 1.2.2, futures 0.3.34, futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34, getrandom 0.3.4, getrandom 0.4.3, ghash 0.6.0, gimli 0.34.0, glob 0.3.4, group 0.14.0, h2 0.4.20, half 2.7.1, hashbrown 0.12.3, hashbrown 0.14.5, hashbrown 0.17.1, heck 0.5.0, hex 0.4.3, hkdf 0.13.0, hmac 0.13.0, html5ever 0.39.0, http 1.5.0, http-body 1.1.0, http-body-util 0.1.5, http-range 0.1.6, httparse 1.10.1, httpdate 1.0.3, hybrid-array 0.4.15, hyper 1.12.0, hyper-tls 0.6.0, hyper-util 0.1.21, iana-time-zone 0.1.65, ico 0.6.0, ident_case 1.0.1, idna 1.1.0, idna_adapter 1.2.2, if-addrs 0.15.0, image 0.25.10, indexmap 1.9.3, indexmap 2.14.2, infer 0.22.0, inout 0.2.6, ipnet 2.12.2, itertools 0.15.0, itoa 1.0.19, jiff 0.2.46, jiff-core 0.1.8, jiff-tzdb 0.1.10, jiff-tzdb-platform 0.1.3, json-patch 4.2.0, jsonptr 0.7.1, keyboard-types 0.8.3, lazy_static 1.5.1, libc 0.2.191, libproc 0.15.0, lock_api 0.4.14, log 0.4.35, mach2 0.6.0, markup5ever 0.39.0, matchit 0.8.4, memchr 2.8.3, mime 0.3.18, miniz_oxide 0.8.9, miniz_oxide 0.9.1, mio 1.2.5, mlua 0.12.2, muda 0.20.0, multiversion_no_op 1.0.0, native-tls 0.2.18, new_debug_unreachable 1.0.6, num-bigint 0.4.8, num-conv 0.2.2, num-integer 0.1.47, num-rational 0.4.2, num-traits 0.2.19, num_threads 0.1.8, object 0.40.0, once_cell 1.21.4, ordered-float 2.10.1, osakit 0.3.1, p256 0.14.0, p384 0.14.0, parking_lot 0.12.5, parking_lot_core 0.9.12, percent-encoding 2.3.2, phf 0.13.1, phf_generator 0.13.1, phf_macros 0.13.1, phf_shared 0.13.1, pin-project-lite 0.2.17, plist 1.10.4, png 0.18.1, polyval 0.7.3, powerfmt 0.2.1, precomputed-hash 0.1.1, primefield 0.14.0, primeorder 0.14.0, proc-macro2 1.0.107, qrcode 0.14.1, quick-xml 0.42.0, quote 1.0.47, rand 0.10.4, rand_core 0.10.1, raw-window-handle 0.6.2, rayon 1.12.0, rayon-core 1.13.0, ref-cast 1.0.27, ref-cast-impl 1.0.27, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11, reqwest 0.13.5, rfc6979 0.6.0, rfd 0.17.2, rodio 0.23.0, rustc-demangle 0.1.28, rustc-hash 2.1.3, rustix 1.1.6, rustls-pki-types 1.16.0, same-file 1.0.6, schannel 0.1.30, schemars 0.8.22, schemars 0.9.0, schemars 1.2.3, schemars_derive 0.8.22, scopeguard 1.2.0, screencapturekit 11.1.2, sec1 0.8.1, security-framework 3.7.0, security-framework-sys 2.17.0, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde-value 0.7.0, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.154, serde_path_to_error 0.1.20, serde_repr 0.1.21, serde_spanned 1.1.3, serde_urlencoded 0.7.1, serde_with 3.24.0, serde_with_macros 3.24.0, serialize-to-javascript 0.1.2, serialize-to-javascript-impl 0.1.2, servo_arc 0.4.3, sha1 0.11.0, sha2 0.11.1, signal-hook-registry 1.4.8, signature 3.0.0, simd-adler32 0.3.10, simdutf8 0.1.5, siphasher 1.0.4, slab 0.4.12, smallvec 1.16.5, socket2 0.6.5, softbuffer 0.4.8, spki 0.8.1, stable_deref_trait 1.2.1, static_assertions 1.1.0, string_cache 0.9.0, strsim 0.11.1, swift-rs 1.0.9, syn 2.0.119, syn 3.0.10, synstructure 0.14.0, system-configuration 0.7.0, system-configuration-sys 0.6.0, tar 0.4.46, tauri 2.12.6, tauri-codegen 2.7.5, tauri-macros 2.7.5, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.2, tauri-plugin-single-instance 2.5.5, tauri-plugin-updater 2.14.1, tauri-runtime 2.12.3, tauri-runtime-wry 2.12.4, tauri-utils 2.10.3, tempfile 3.27.0, tendril 0.5.1, thiserror 2.0.21, thiserror-impl 2.0.21, time 0.3.55, time-core 0.1.9, time-macros 0.2.32, tinyvec 1.13.3, tokio 1.54.1, tokio-macros 2.7.2, tokio-native-tls 0.3.1, tokio-stream 0.1.19, tokio-tungstenite 0.30.0, tokio-util 0.7.20, toml 1.2.1+spec-1.1.0, toml_datetime 1.1.3+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.2.0+spec-1.1.0, tower 0.5.3, tower-http 0.6.11, tower-layer 0.3.3, tower-service 0.3.3, tracing 0.1.44, tracing-attributes 0.1.31, tracing-core 0.1.36, tray-icon 0.25.1, try-lock 0.2.5, tungstenite 0.30.0, typeid 1.0.3, typenum 1.20.1, unicode-ident 1.0.27, unicode-segmentation 1.13.3, universal-hash 0.6.1, url 2.5.8, urlpattern 0.6.0, utf8_iter 1.1.0, utf_types 1.0.0, uuid 1.29.3, walkdir 2.5.0, want 0.3.2, web-time 1.1.0, web_atoms 0.2.6, widestring 1.2.1, winapi-util 0.1.11, window-vibrancy 0.8.1, windows-capture 2.0.1, winnow 1.0.5, wnaf 0.14.1, wry 0.57.2, x509-cert 0.3.0, xattr 1.7.0, zerocopy 0.8.63, zerocopy-derive 0.8.63, zeroize 1.9.2, zmij 1.0.23
 
 -- addr2line 0.27.1
 Copyright (c) 2016-2018 The gimli Developers
@@ -11,14 +11,14 @@ Copyright (c) 2016-2018 The gimli Developers
 Copyright (c) 2019-2026 The RustCrypto Project Developers
 Copyright (c) 2019 MobileCoin, LLC
 
--- aes 0.9.3
+-- aes 0.9.4
 Copyright (c) 2018-2024 The RustCrypto Project Developers
 Copyright (c) 2018 Artyom Pavlov
 
 -- aes-gcm 0.11.1, chacha20 0.10.2, ghash 0.6.0, polyval 0.7.3
 Copyright (c) 2019-2026 The RustCrypto Project Developers
 
--- aho-corasick 1.1.5, byteorder 1.5.0, byteorder-lite 0.1.0, jiff 0.2.38, jiff-core 0.1.1, jiff-tzdb 0.1.9, jiff-tzdb-platform 0.1.3, memchr 2.8.3, walkdir 2.5.0
+-- aho-corasick 1.1.5, byteorder 1.5.0, byteorder-lite 0.1.0, jiff 0.2.46, jiff-core 0.1.8, jiff-tzdb 0.1.10, jiff-tzdb-platform 0.1.3, memchr 2.8.3, walkdir 2.5.0
 The MIT License (MIT)
 
 Copyright (c) 2015 Andrew Gallant
@@ -62,7 +62,7 @@ MIT License
 
 Copyright (c) 2019–2025 axum Contributors
 
--- backtrace 0.3.77, cfg-if 1.0.5, filetime 0.2.29, rustc-demangle 0.1.28, socket2 0.6.5
+-- backtrace 0.3.77, cfg-if 1.0.5, filetime 0.2.30, rustc-demangle 0.1.28, socket2 0.6.5
 Copyright (c) 2014 Alex Crichton
 
 -- base16ct 1.0.0
@@ -86,16 +86,13 @@ Copyright (c) 2021-2025 The RustCrypto Project Developers
 -- bit-set 0.8.0, bit-vec 0.8.0
 Copyright (c) 2023 The Rust Project Developers
 
--- bitflags 1.3.2, bitflags 2.13.2, glob 0.3.4, log 0.4.34, num-bigint 0.4.8, num-integer 0.1.47, num-rational 0.4.2, num-traits 0.2.19, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11
+-- bitflags 1.3.2, bitflags 2.13.2, glob 0.3.4, log 0.4.35, num-bigint 0.4.8, num-integer 0.1.47, num-rational 0.4.2, num-traits 0.2.19, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11
 Copyright (c) 2014 The Rust Project Developers
-
--- block-buffer 0.10.4
-Copyright (c) 2018-2019 The RustCrypto Project Developers
 
 -- block-buffer 0.12.1
 Copyright (c) 2018-2025 The RustCrypto Project Developers
 
--- brotli 9.1.1
+-- brotli 9.1.3
 Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
 
 -- bs58 0.5.1
@@ -121,7 +118,7 @@ Copyright (c) 2016-2025 RustCrypto Developers
 -- cmov 0.5.4, hybrid-array 0.4.15
 Copyright (c) 2022-2026 The RustCrypto Project Developers
 
--- const-oid 0.10.2, cpufeatures 0.3.1, der 0.8.3
+-- const-oid 0.10.3, cpufeatures 0.3.1, der 0.8.3
 Copyright (c) 2020-2026 The RustCrypto Project Developers
 
 -- cookie 0.18.2
@@ -134,16 +131,13 @@ Copyright (c) 2012-2013 Mozilla Foundation
 -- core_detect 1.0.0
 Copyright (c) 2017-2020 The Rust Project Developers
 
--- coreaudio-rs 0.14.2, either 1.19.0, itertools 0.14.0, serde_with 3.24.0, serde_with_macros 3.24.0
+-- coreaudio-rs 0.14.2, either 1.19.0, itertools 0.15.0, serde_with 3.24.0, serde_with_macros 3.24.0
 Copyright (c) 2015
 
 -- cpubits 0.1.1
 Copyright (c) 2023-2026 The RustCrypto Project Developers
 
--- cpufeatures 0.2.17, der_derive 0.8.0
-Copyright (c) 2020-2025 The RustCrypto Project Developers
-
--- crc32fast 1.5.3
+-- crc32fast 1.5.5
 MIT License
 
 Copyright (c) 2018 Sam Rijs, Alex Crichton and contributors
@@ -153,11 +147,8 @@ The MIT License (MIT)
 
 Copyright (c) 2019 The Crossbeam Project Developers
 
--- crypto-bigint 0.7.10, sec1 0.8.1, spki 0.8.1
+-- crypto-bigint 0.7.11, sec1 0.8.1, spki 0.8.1
 Copyright (c) 2021-2026 The RustCrypto Project Developers
-
--- crypto-common 0.1.7
-Copyright (c) 2021 RustCrypto Developers
 
 -- crypto-common 0.2.2
 Copyright (c) 2021-2026 RustCrypto Developers
@@ -166,7 +157,7 @@ Copyright (c) 2021-2026 RustCrypto Developers
 Copyright (c) 2018-2022 RustCrypto Developers
 Copyright (c) 2018 Artyom Pavlov
 
--- ctutils 0.4.7
+-- ctutils 0.4.8
 Copyright (c) 2025-2026 The RustCrypto Project Developers
 
 -- darling 0.24.1, darling_core 0.24.1, darling_macro 0.24.1
@@ -185,8 +176,8 @@ The MIT License (MIT)
 Copyright (c) 2015-2020 Julien Cretin
 Copyright (c) 2017-2020 Google Inc.
 
--- defmt 1.2.0, defmt-macros 1.2.0, defmt-parser 1.1.0
-Copyright (c) Ferrous Systems
+-- der_derive 0.8.0
+Copyright (c) 2020-2025 The RustCrypto Project Developers
 
 -- deranged 0.5.9
 Copyright (c) 2024 Jacob Pratt et al.
@@ -195,9 +186,6 @@ Copyright (c) 2024 Jacob Pratt et al.
 The MIT License (MIT)
 
 Copyright (c) 2016 Jelte Fennema
-
--- digest 0.10.7, hmac 0.13.0
-Copyright (c) 2017 Artyom Pavlov
 
 -- digest 0.11.3
 Copyright (c) 2017-2025 RustCrypto Developers
@@ -217,13 +205,13 @@ MIT License
 
 Copyright (c) 2020 Nikolai Vazquez
 
--- encoding_rs 0.8.42, multiversion_no_op 1.0.0, utf8_iter 1.1.0, utf_types 1.0.0
+-- encoding_rs 0.8.44, multiversion_no_op 1.0.0, utf8_iter 1.1.0, utf_types 1.0.0
 Copyright Mozilla Foundation
 
 -- equivalent 1.0.3
 Copyright (c) 2016--2023
 
--- errno 0.3.14
+-- errno 0.3.15
 Copyright (c) 2014 Chris Wong
 
 -- fdeflate 0.3.7, half 2.7.1, ident_case 1.0.1, image 0.25.10, simdutf8 0.1.5, widestring 1.2.1
@@ -237,7 +225,7 @@ The MIT License (MIT)
 
 Copyright (c) 2017 Sean Bowe
 
--- flate2 1.1.10
+-- flate2 1.1.11
 Copyright (c) 2014-2026 Alex Crichton
 
 -- fnv 1.0.7
@@ -252,11 +240,6 @@ Copyright (c) 2013-2016 The rust-url developers
 -- futures 0.3.34, futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34
 Copyright (c) 2016 Alex Crichton
 Copyright (c) 2017 The Tokio Authors
-
--- generic-array 0.14.7
-The MIT License (MIT)
-
-Copyright (c) 2015 Bartłomiej Kamiński
 
 -- getrandom 0.3.4
 Copyright (c) 2018-2025 The rust-random Project Developers
@@ -282,6 +265,9 @@ Copyright (c) 2015-2020 The rust-hex Developers
 -- hkdf 0.13.0
 Copyright (c) 2015-2018 Vlad Filippov
 Copyright (c) 2018-2021 RustCrypto Developers
+
+-- hmac 0.13.0
+Copyright (c) 2017 Artyom Pavlov
 
 -- html5ever 0.39.0, markup5ever 0.39.0, web_atoms 0.2.6
 Copyright (c) 2014 The html5ever Project Developers
@@ -338,7 +324,7 @@ MIT License
 
 Copyright (c) 2019 Bojan
 
--- inout 0.2.5
+-- inout 0.2.6
 Copyright (c) 2022-2025 The RustCrypto Project Developers
 Copyright (c) 2022 Artyom Pavlov
 
@@ -361,7 +347,7 @@ Copyright (c) 2017 Pyfisch
 -- libc 0.2.191
 Copyright (c) The Rust Project Developers
 
--- libproc 0.14.11
+-- libproc 0.15.0
 The MIT License
 
 Copyright (c) 2010 3scale networks S.L.
@@ -377,7 +363,7 @@ MIT License
 
 Copyright (c) 2022 Ibraheem Ahmed
 
--- mime 0.3.17
+-- mime 0.3.18
 Copyright (c) 2014 Sean McArthur
 
 -- miniz_oxide 0.8.9, miniz_oxide 0.9.1
@@ -388,7 +374,7 @@ Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
 Copyright (c) 2017 Frommi
 Copyright (c) 2017-2024 oyvindln
 
--- mio 1.2.4
+-- mio 1.2.5
 Copyright (c) 2014 Carl Lerche and other MIO contributors
 
 -- mlua 0.12.2
@@ -431,7 +417,7 @@ The MIT License (MIT)
 
 Copyright (c) 2014-2022 Steven Fackler, Yuki Okushi
 
--- plist 1.10.3
+-- plist 1.10.4
 Copyright (c) 2015 Edward Barnard
 
 -- png 0.18.1
@@ -459,7 +445,7 @@ The MIT License (MIT)
 
 Copyright (c) 2016 Johann Tuffe
 
--- rand 0.10.3
+-- rand 0.10.4
 Copyright 2018 Developers of the Rand project
 Copyright (c) 2014 The Rust Project Developers
 
@@ -485,7 +471,7 @@ Copyright (c) 2022 Bartłomiej Maryńczak
 -- rodio 0.23.0
 Copyright (c) The Rodio Project Contributors
 
--- rustls-pki-types 1.15.1
+-- rustls-pki-types 1.16.0
 Copyright (c) 2023 Dirkjan Ochtman <dirkjan@ochtman.nl>
 
 -- same-file 1.0.6, winapi-util 0.1.11
@@ -504,7 +490,7 @@ Copyright (c) 2019 Graham Esau
 -- scopeguard 1.2.0
 Copyright (c) 2016-2019 Ulrik Sverdrup "bluss" and scopeguard developers
 
--- screencapturekit 11.1.1
+-- screencapturekit 11.1.2
 The MIT License (MIT)
 
 Copyright (c) 2023 Per Johansson, Svt Labs
@@ -517,7 +503,7 @@ Copyright (c) 2015 Steven Fackler
 -- serde-value 0.7.0
 Copyright (c) 2016 arcnmx
 
--- serde_spanned 1.1.2, toml 1.1.8+spec-1.1.0, toml_datetime 1.1.2+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.1.3+spec-1.1.0
+-- serde_spanned 1.1.3, toml 1.2.1+spec-1.1.0, toml_datetime 1.1.3+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.2.0+spec-1.1.0
 Copyright (c) Individual contributors
 
 -- serde_urlencoded 0.7.1
@@ -534,11 +520,6 @@ Copyright (c) 2016 Artyom Pavlov
 Copyright (c) 2009-2013 Mozilla Foundation
 Copyright (c) 2006-2009 Graydon Hoare
 
--- sha2 0.10.9
-Copyright (c) 2006-2009 Graydon Hoare
-Copyright (c) 2009-2013 Mozilla Foundation
-Copyright (c) 2016 Artyom Pavlov
-
 -- signal-hook-registry 1.4.8
 Copyright (c) 2017 tokio-jsonrpc developers
 
@@ -550,7 +531,7 @@ Copyright (c) [2021] [Marvin Countryman]
 -- slab 0.4.12
 Copyright (c) 2019 Carl Lerche
 
--- smallvec 1.16.4
+-- smallvec 1.16.5
 Copyright (c) 2018 The Servo Project Developers
 
 -- softbuffer 0.4.8
@@ -583,7 +564,7 @@ Copyright (c) 2024 Mullvad VPN AB
 -- tar 0.4.46
 Copyright (c) The tar-rs Project Contributors
 
--- tauri 2.12.5, tauri-codegen 2.7.4, tauri-macros 2.7.4, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.1, tauri-plugin-updater 2.14.1, tauri-runtime 2.12.2, tauri-runtime-wry 2.12.3, tauri-utils 2.10.2
+-- tauri 2.12.6, tauri-codegen 2.7.5, tauri-macros 2.7.5, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.2, tauri-plugin-updater 2.14.1, tauri-runtime 2.12.3, tauri-runtime-wry 2.12.4, tauri-utils 2.10.3
 MIT License
 
 Copyright (c) 2017 - Present Tauri Apps Contributors
@@ -647,7 +628,7 @@ MIT License
 
 Copyright (c) 2021 the Deno authors
 
--- uuid 1.29.0
+-- uuid 1.29.3
 Copyright (c) 2014 The Rust Project Developers
 Copyright (c) 2018 Ashley Mannix, Christopher Armstrong, Dylan DPC, Hunar Roop Kahlon
 
@@ -673,7 +654,7 @@ Copyright (c) 2023 NiiightmareXD
 Copyright (c) 2026 RustCrypto Developers
 Copyright (c) 2018-2025 `group` crate developers
 
--- wry 0.57.1
+-- wry 0.57.2
 MIT License
 
 Copyright (c) 2020-2023 Ngo Iok Ui & Tauri Programme within The Commons Conservancy
@@ -684,7 +665,7 @@ Copyright (c) 2021-2025 The RustCrypto Project Developers
 -- zerocopy 0.8.63, zerocopy-derive 0.8.63
 Copyright 2023 The Fuchsia Authors
 
--- zeroize 1.9.1
+-- zeroize 1.9.2
 Copyright (c) 2018-2026 The RustCrypto Project Developers
 
 Permission is hereby granted, free of charge, to any
@@ -713,7 +694,7 @@ DEALINGS IN THE SOFTWARE.
 
 ========================================
 
-294 crates: addr2line 0.27.1, adler2 2.0.1, aead 0.6.1, aes 0.9.3, aes-gcm 0.11.1, anyhow 1.0.104, apple-cf 0.11.7, apple-metal 0.10.4, arrayvec 0.7.8, async-trait 0.1.92, atomic-waker 1.1.2, backtrace 0.3.77, base16ct 1.0.0, base64 0.21.7, base64 0.23.1, base64ct 1.8.3, bit-set 0.8.0, bit-vec 0.8.0, bitflags 1.3.2, bitflags 2.13.2, block-buffer 0.10.4, block-buffer 0.12.1, bs58 0.5.1, bstr 1.13.1, btleplug 0.13.5, bytemuck 1.25.2, camino 1.2.6, cargo-platform 0.1.9, cfg-if 1.0.5, chacha20 0.10.2, chrono 0.4.45, ciborium 0.2.2, ciborium-io 0.2.2, ciborium-ll 0.2.2, cipher 0.5.2, cmov 0.5.4, const-oid 0.10.2, cookie 0.18.2, core-foundation 0.9.4, core-foundation 0.10.1, core-foundation-sys 0.8.7, core-graphics 0.25.0, core-graphics-types 0.2.0, core_detect 1.0.0, coreaudio-rs 0.14.2, cpal 0.18.2, cpubits 0.1.1, cpufeatures 0.2.17, cpufeatures 0.3.1, crc32fast 1.5.3, crossbeam-channel 0.5.17, crossbeam-deque 0.8.8, crossbeam-epoch 0.9.21, crossbeam-utils 0.8.23, crypto-bigint 0.7.10, crypto-common 0.1.7, crypto-common 0.2.2, ctor 1.0.13, ctr 0.10.1, ctutils 0.4.7, defmt 1.2.0, defmt-macros 1.2.0, defmt-parser 1.1.0, der 0.8.3, der_derive 0.8.0, deranged 0.5.9, digest 0.10.7, digest 0.11.3, displaydoc 0.2.7, doom-fish-utils 0.4.3, dpi 0.1.2, dtoa 1.0.11, dyn-clone 1.0.20, ecdsa 0.17.0, either 1.19.0, elliptic-curve 0.14.3, embed_plist 1.2.2, encoding_rs 0.8.42, equivalent 1.0.3, erased-serde 0.4.11, errno 0.3.14, fastrand 2.5.0, fdeflate 0.3.7, ff 0.14.0, filetime 0.2.29, flagset 0.4.7, flate2 1.1.10, fnv 1.0.7, foreign-types 0.5.0, foreign-types-macros 0.2.4, foreign-types-shared 0.3.1, form_urlencoded 1.2.2, futures 0.3.34, futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34, getrandom 0.3.4, getrandom 0.4.3, ghash 0.6.0, gimli 0.34.0, glob 0.3.4, group 0.14.0, half 2.7.1, hashbrown 0.12.3, hashbrown 0.14.5, hashbrown 0.17.1, heck 0.5.0, hex 0.4.3, hkdf 0.13.0, hmac 0.13.0, html5ever 0.39.0, http 1.5.0, httparse 1.10.1, httpdate 1.0.3, hybrid-array 0.4.15, hyper-tls 0.6.0, iana-time-zone 0.1.65, idna 1.1.0, idna_adapter 1.2.2, image 0.25.10, indexmap 1.9.3, indexmap 2.14.2, inout 0.2.5, interprocess 2.4.7, ipnet 2.12.2, itertools 0.14.0, itoa 1.0.18, json-patch 4.2.0, jsonptr 0.7.1, keyboard-types 0.8.3, lazy_static 1.5.1, libc 0.2.191, lock_api 0.4.14, log 0.4.34, mach2 0.6.0, markup5ever 0.39.0, mime 0.3.17, miniz_oxide 0.8.9, miniz_oxide 0.9.1, moxcms 0.8.1, muda 0.20.0, multiversion_no_op 1.0.0, native-tls 0.2.18, num-bigint 0.4.8, num-conv 0.2.2, num-integer 0.1.47, num-rational 0.4.2, num-traits 0.2.19, num_threads 0.1.8, object 0.40.0, once_cell 1.21.4, osakit 0.3.1, p256 0.14.0, p384 0.14.0, parking_lot 0.12.5, parking_lot_core 0.9.12, percent-encoding 2.3.2, pin-project-lite 0.2.17, png 0.18.1, polyval 0.7.3, powerfmt 0.2.1, primefield 0.14.0, primeorder 0.14.0, proc-macro2 1.0.107, prost 0.14.4, prost-derive 0.14.4, pxfm 0.1.30, qrcode 0.14.1, quote 1.0.47, rand 0.10.3, rand_core 0.10.1, raw-window-handle 0.6.2, rayon 1.12.0, rayon-core 1.13.0, ref-cast 1.0.27, ref-cast-impl 1.0.27, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11, reqwest 0.13.5, rfc6979 0.6.0, rodio 0.23.0, rustc-demangle 0.1.28, rustc-hash 2.1.3, rustix 1.1.6, rustls-pki-types 1.15.1, ryu 1.0.23, scopeguard 1.2.0, screencapturekit 11.1.1, sec1 0.8.1, security-framework 3.7.0, security-framework-sys 2.17.0, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.154, serde_path_to_error 0.1.20, serde_repr 0.1.21, serde_spanned 1.1.2, serde_urlencoded 0.7.1, serde_with 3.24.0, serde_with_macros 3.24.0, serialize-to-javascript 0.1.2, serialize-to-javascript-impl 0.1.2, servo_arc 0.4.3, sha1 0.11.0, sha2 0.10.9, sha2 0.11.1, signal-hook-registry 1.4.8, signature 3.0.0, simdutf8 0.1.5, siphasher 1.0.4, smallvec 1.16.4, socket2 0.6.5, softbuffer 0.4.8, spki 0.8.1, stable_deref_trait 1.2.1, static_assertions 1.1.0, string_cache 0.9.0, swift-rs 1.0.9, syn 2.0.119, syn 3.0.9, sync_wrapper 1.0.2, system-configuration 0.7.0, system-configuration-sys 0.6.0, tao 0.37.2, tar 0.4.46, tauri 2.12.5, tauri-codegen 2.7.4, tauri-macros 2.7.4, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.1, tauri-plugin-single-instance 2.5.5, tauri-plugin-updater 2.14.1, tauri-runtime 2.12.2, tauri-runtime-wry 2.12.3, tauri-utils 2.10.2, tempfile 3.27.0, tendril 0.5.1, thiserror 2.0.21, thiserror-impl 2.0.21, time 0.3.55, time-core 0.1.9, time-macros 0.2.32, tinyvec 1.13.3, toml 1.1.8+spec-1.1.0, toml_datetime 1.1.2+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.1.3+spec-1.1.0, tray-icon 0.25.1, tungstenite 0.30.0, typeid 1.0.3, typenum 1.20.1, unicode-ident 1.0.27, unicode-segmentation 1.13.3, universal-hash 0.6.1, url 2.5.8, utf8_iter 1.1.0, utf_types 1.0.0, uuid 1.29.0, web-time 1.1.0, web_atoms 0.2.6, widestring 1.2.1, window-vibrancy 0.8.1, windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-registry 0.6.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.61.2, windows-threading 0.2.1, windows-version 0.1.7, wnaf 0.14.1, wry 0.57.1, x509-cert 0.3.0, xattr 1.7.0, zerocopy 0.8.63, zerocopy-derive 0.8.63, zeroize 1.9.1
+286 crates: addr2line 0.27.1, adler2 2.0.1, aead 0.6.1, aes 0.9.4, aes-gcm 0.11.1, anyhow 1.0.104, apple-cf 0.11.7, apple-metal 0.10.4, arrayvec 0.7.8, async-trait 0.1.92, atomic-waker 1.1.2, backtrace 0.3.77, base16ct 1.0.0, base64 0.21.7, base64 0.23.1, base64ct 1.8.3, bit-set 0.8.0, bit-vec 0.8.0, bitflags 1.3.2, bitflags 2.13.2, block-buffer 0.12.1, bs58 0.5.1, bstr 1.13.1, btleplug 0.13.5, bytemuck 1.25.2, camino 1.2.6, cargo-platform 0.1.9, cfg-if 1.0.5, chacha20 0.10.2, chrono 0.4.45, ciborium 0.2.2, ciborium-io 0.2.2, ciborium-ll 0.2.2, cipher 0.5.2, cmov 0.5.4, const-oid 0.10.3, cookie 0.18.2, core-foundation 0.9.4, core-foundation 0.10.1, core-foundation-sys 0.8.7, core-graphics 0.25.0, core-graphics-types 0.2.0, core_detect 1.0.0, coreaudio-rs 0.14.2, cpal 0.18.2, cpubits 0.1.1, cpufeatures 0.3.1, crc32fast 1.5.5, crossbeam-channel 0.5.17, crossbeam-deque 0.8.8, crossbeam-epoch 0.9.21, crossbeam-utils 0.8.23, crypto-bigint 0.7.11, crypto-common 0.2.2, ctor 1.0.14, ctr 0.10.1, ctutils 0.4.8, der 0.8.3, der_derive 0.8.0, deranged 0.5.9, digest 0.11.3, displaydoc 0.2.7, doom-fish-utils 0.4.3, dpi 0.1.2, dtoa 1.0.11, dyn-clone 1.0.20, ecdsa 0.17.0, either 1.19.0, elliptic-curve 0.14.3, embed_plist 1.2.2, encoding_rs 0.8.44, equivalent 1.0.3, erased-serde 0.4.11, errno 0.3.15, fastrand 2.5.0, fdeflate 0.3.7, ff 0.14.0, filetime 0.2.30, flagset 0.4.7, flate2 1.1.11, fnv 1.0.7, foreign-types 0.5.0, foreign-types-macros 0.2.4, foreign-types-shared 0.3.1, form_urlencoded 1.2.2, futures 0.3.34, futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34, getrandom 0.3.4, getrandom 0.4.3, ghash 0.6.0, gimli 0.34.0, glob 0.3.4, group 0.14.0, half 2.7.1, hashbrown 0.12.3, hashbrown 0.14.5, hashbrown 0.17.1, heck 0.5.0, hex 0.4.3, hkdf 0.13.0, hmac 0.13.0, html5ever 0.39.0, http 1.5.0, httparse 1.10.1, httpdate 1.0.3, hybrid-array 0.4.15, hyper-tls 0.6.0, iana-time-zone 0.1.65, idna 1.1.0, idna_adapter 1.2.2, image 0.25.10, indexmap 1.9.3, indexmap 2.14.2, inout 0.2.6, interprocess 2.4.8, ipnet 2.12.2, itertools 0.15.0, itoa 1.0.19, json-patch 4.2.0, jsonptr 0.7.1, keyboard-types 0.8.3, lazy_static 1.5.1, libc 0.2.191, lock_api 0.4.14, log 0.4.35, mach2 0.6.0, markup5ever 0.39.0, mime 0.3.18, miniz_oxide 0.8.9, miniz_oxide 0.9.1, moxcms 0.8.1, muda 0.20.0, multiversion_no_op 1.0.0, native-tls 0.2.18, num-bigint 0.4.8, num-conv 0.2.2, num-integer 0.1.47, num-rational 0.4.2, num-traits 0.2.19, num_threads 0.1.8, object 0.40.0, once_cell 1.21.4, osakit 0.3.1, p256 0.14.0, p384 0.14.0, parking_lot 0.12.5, parking_lot_core 0.9.12, percent-encoding 2.3.2, pin-project-lite 0.2.17, png 0.18.1, polyval 0.7.3, powerfmt 0.2.1, primefield 0.14.0, primeorder 0.14.0, proc-macro2 1.0.107, prost 0.14.6, prost-derive 0.14.6, pxfm 0.1.30, qrcode 0.14.1, quote 1.0.47, rand 0.10.4, rand_core 0.10.1, raw-window-handle 0.6.2, rayon 1.12.0, rayon-core 1.13.0, ref-cast 1.0.27, ref-cast-impl 1.0.27, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11, reqwest 0.13.5, rfc6979 0.6.0, rodio 0.23.0, rustc-demangle 0.1.28, rustc-hash 2.1.3, rustix 1.1.6, rustls-pki-types 1.16.0, ryu 1.0.23, scopeguard 1.2.0, screencapturekit 11.1.2, sec1 0.8.1, security-framework 3.7.0, security-framework-sys 2.17.0, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.154, serde_path_to_error 0.1.20, serde_repr 0.1.21, serde_spanned 1.1.3, serde_urlencoded 0.7.1, serde_with 3.24.0, serde_with_macros 3.24.0, serialize-to-javascript 0.1.2, serialize-to-javascript-impl 0.1.2, servo_arc 0.4.3, sha1 0.11.0, sha2 0.11.1, signal-hook-registry 1.4.8, signature 3.0.0, simdutf8 0.1.5, siphasher 1.0.4, smallvec 1.16.5, socket2 0.6.5, softbuffer 0.4.8, spki 0.8.1, stable_deref_trait 1.2.1, static_assertions 1.1.0, string_cache 0.9.0, swift-rs 1.0.9, syn 2.0.119, syn 3.0.10, sync_wrapper 1.0.2, system-configuration 0.7.0, system-configuration-sys 0.6.0, tao 0.37.2, tar 0.4.46, tauri 2.12.6, tauri-codegen 2.7.5, tauri-macros 2.7.5, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.2, tauri-plugin-single-instance 2.5.5, tauri-plugin-updater 2.14.1, tauri-runtime 2.12.3, tauri-runtime-wry 2.12.4, tauri-utils 2.10.3, tempfile 3.27.0, tendril 0.5.1, thiserror 2.0.21, thiserror-impl 2.0.21, time 0.3.55, time-core 0.1.9, time-macros 0.2.32, tinyvec 1.13.3, toml 1.2.1+spec-1.1.0, toml_datetime 1.1.3+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.2.0+spec-1.1.0, tray-icon 0.25.1, tungstenite 0.30.0, typeid 1.0.3, typenum 1.20.1, unicode-ident 1.0.27, unicode-segmentation 1.13.3, universal-hash 0.6.1, url 2.5.8, utf8_iter 1.1.0, utf_types 1.0.0, uuid 1.29.3, web-time 1.1.0, web_atoms 0.2.6, widestring 1.2.1, window-vibrancy 0.8.1, windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-registry 0.6.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.61.2, windows-threading 0.2.1, windows-version 0.1.7, wnaf 0.14.1, wry 0.57.2, x509-cert 0.3.0, xattr 1.7.0, zerocopy 0.8.63, zerocopy-derive 0.8.63, zeroize 1.9.2
 
 -- btleplug 0.13.5
 btleplug is covered under the following BSD-3-Clause license:
@@ -1446,7 +1427,7 @@ prospectively choose to deem waived or otherwise exclude such Section(s) of
 the License, but only in their entirety and only with respect to the Combined
 Software.
 
--- rustls-pki-types 1.15.1
+-- rustls-pki-types 1.16.0
 Copyright 2023 Dirkjan Ochtman
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1461,7 +1442,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
--- serde_spanned 1.1.2, toml 1.1.8+spec-1.1.0, toml_datetime 1.1.2+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.1.3+spec-1.1.0
+-- serde_spanned 1.1.3, toml 1.2.1+spec-1.1.0, toml_datetime 1.1.3+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.2.0+spec-1.1.0
    Copyright Individual contributors
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -1824,7 +1805,7 @@ ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation a
 
 ========================================
 
-10 crates: aho-corasick 1.1.5, byteorder 1.5.0, jiff 0.2.38, jiff-core 0.1.1, jiff-tzdb 0.1.9, jiff-tzdb-platform 0.1.3, memchr 2.8.3, same-file 1.0.6, walkdir 2.5.0, winapi-util 0.1.11
+10 crates: aho-corasick 1.1.5, byteorder 1.5.0, jiff 0.2.46, jiff-core 0.1.8, jiff-tzdb 0.1.10, jiff-tzdb-platform 0.1.3, memchr 2.8.3, same-file 1.0.6, walkdir 2.5.0, winapi-util 0.1.11
 
 This project is dual-licensed under the Unlicense and MIT licenses.
 
@@ -1832,7 +1813,7 @@ You may use this code under the terms of either license.
 
 ========================================
 
-5 crates: tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.1, tauri-plugin-single-instance 2.5.5, tauri-plugin-updater 2.14.1
+5 crates: tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-log 2.10.2, tauri-plugin-single-instance 2.5.5, tauri-plugin-updater 2.14.1
 
 SPDXVersion: SPDX-2.1
 DataLicense: CC0-1.0
@@ -1857,7 +1838,7 @@ Creator: Person: Daniel Thompson-Yvetot
 
 ========================================
 
-3 crates: alloc-no-stdlib 3.0.0, brotli 9.1.1, brotli-decompressor 6.2.0
+3 crates: alloc-no-stdlib 3.0.0, brotli 9.1.3, brotli-decompressor 6.3.2
 
 Copyright (c) 2016 Dropbox, Inc.
 All rights reserved.
@@ -2807,7 +2788,7 @@ express Statement of Purpose.
 
 ========================================
 
-1 crate: encoding_rs 0.8.42
+1 crate: encoding_rs 0.8.44
 
 Copyright © WHATWG (Apple, Google, Mozilla, Microsoft).
 
@@ -2879,7 +2860,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ========================================
 
-1 crate: interprocess 2.4.7
+1 crate: interprocess 2.4.8
 
 BSD Zero Clause License
 
@@ -3659,7 +3640,7 @@ Creator: Person: Daniel Thompson-Yvetot
 
 ========================================
 
-1 crate: wry 0.57.1
+1 crate: wry 0.57.2
 
 SPDXVersion: SPDX-2.1
 DataLicense: CC0-1.0

@@ -14,15 +14,18 @@
 //! work without touching the keys: "why is the clock stuck in work mode right now at 22? fix", then "it should just
 //! always run down. no matter if there is typing?!"; a pause of `sit_away_s` in the input started the count over
 //! until then): only a hold freezes it and only a move of the anchor starts it again. Whether somebody is there
-//! (`Platform::idle_s` against `sit_away_s`) decides only when a due pump opens (`Desk::work_open`); a platform that
-//! reads no input says none, and its due pump waits for no pause.
+//! (`Platform::idle_s` against `sit_away_s`) decides only whether a due pump opens now or at the return
+//! (`Desk::work_open`); a platform that reads no input says none.
 //!
 //! The ask opens its pump itself (David, 2026-11-10: "It should work the same way as after a lol match ... go to the
-//! foreground and start the exercise. No chosing wether to pump now or later"): while the ask stands a work pump comes
-//! at its Ready view from outside the window, which opens in front for it (`Desk::work_open`), once for a due block,
-//! as "Open the pump after each match" opens a match's once; its Bank all puts it off. It never opens while nobody is
-//! there, waits for a pause in the player's keys, and one that opened itself and stands untouched once the player went
-//! away closes until the return (`Desk::work_unattended`).
+//! foreground and start the exercise. No chosing wether to pump now or later"): as the block comes due a work pump
+//! comes at its Ready view from outside the window, which opens in front for it (`Desk::work_open`), once for a due
+//! block, as "Open the pump after each match" opens a match's once; its Bank all puts it off. It waits for no pause
+//! in the player's keys (David, 2026-11-12, whose due block stood 2 min 38 s on Pump home's card with its Pump now
+//! and Later while he typed: "it did the pump now and later buttons instead of the new opening like after games"):
+//! the keys he types on as it comes are the Ready view's to pass over (`PumpView::unasked`, the page's lib/keys.js).
+//! It never opens while nobody is there, and one that opened itself and stands untouched once the player went away
+//! closes until the return (`Desk::work_unattended`).
 //!
 //! The next block counts from the moment a work pump came on screen, whatever is then done with that pump (David,
 //! 2026-11-10: "be sure that the new 25 minutes are counted right from the popup and not only after the excercises are
@@ -76,10 +79,6 @@ const MENU_TOPIC: &str = "menu.work";
 /// the phones' wait for the account before a Later (`WorkMode.LATER_PULL_MS`).
 const KEPT_WAIT_MS: i64 = 3_000;
 
-/// The input pause after which a due pump opens itself (seconds, `Desk::work_open`): two of the loop's looks with no
-/// key and no click, so the window that takes the front takes no key the player meant for another app.
-const OPEN_PAUSE_S: i64 = 4;
-
 /// Work mode's state on this device between looks.
 #[derive(Debug, Default)]
 pub struct WorkDesk {
@@ -129,8 +128,6 @@ struct Opening {
 	/// The block a work pump was started for (the one that opened itself, Pump home's or the tray's Pump now): none
 	/// opens itself for it again.
 	done: Option<i64>,
-	/// The block whose opening waits for the player's keys to pause, and since when (unix seconds).
-	waits: Option<(i64, i64)>,
 	/// The block whose opening a gate refused, said once in the log.
 	refused: Option<i64>,
 	/// The next work pump to come on screen opened itself (`WorkPump::unasked`).
@@ -172,7 +169,6 @@ pub enum Phase {
 	Off,
 	Counting,
 	Held,
-	Due,
 	Ask,
 }
 
@@ -265,8 +261,8 @@ impl<P: Platform> Desk<P> {
 		self.settings.work.on
 	}
 
-	/// The anchor of the block due on this device (its ask standing or waiting for its moment, or held since): none
-	/// while work mode is off, the block still counts, or the anchor moved since the clock's last look.
+	/// The anchor of the block due on this device (its ask standing, or held since): none while work mode is off, the
+	/// block still counts, or the anchor moved since the clock's last look.
 	fn work_due(&self) -> Option<i64> {
 		let w = &self.settings.work;
 		(w.on && self.work.clock.due() == Some(w.reset_at)).then_some(w.reset_at)
@@ -363,33 +359,23 @@ impl<P: Platform> Desk<P> {
 		started
 	}
 
-	/// The ask's pump opens itself (each look while the ask stands): a work pump at its Ready view from outside the
-	/// window, which comes to the front for it, once for a due block (`Opening::done`). Never while nobody is there (no
-	/// input for `sit_away_s`: it opens at the return), and not between two keystrokes: it waits for the input to pause
-	/// `OPEN_PAUSE_S`, at most `work_late_s`, so the window takes no key meant for another app. The pump still on
+	/// The ask's pump opens itself (each look while the ask stands, the look that made it first): a work pump at its
+	/// Ready view from outside the window, which comes to the front for it, once for a due block (`Opening::done`).
+	/// Never while nobody is there (no input for `sit_away_s`: it opens at the return); it waits for no pause in the
+	/// keys, which the Ready view passes over while the player types on (`PumpView::unasked`). The pump still on
 	/// screen (the last block's work pump, left open past this block, or any pump's Result) makes way first, once no
 	/// move runs in it and no count or answer is waited for (`Desk::pump_make_way`: tried again at each look while
 	/// one is) and only for a start no gate refuses; a Result stands `work_moment_s` before it does, so a pump finished
-	/// after this block came due still shows what it earned. A start a gate refuses (the engine not folded yet) is
+	/// after this block came due still shows what it earned, from its end or from the last streak goal picked on it
+	/// (`Desk::pump_stands_from`; a Result it replaces with its goals unanswered writes none, `Desk::pump_put`). A start a gate refuses (the engine not folded yet) is
 	/// tried again at the next look, said once in the log; one accepted whose pump never comes (the place window
 	/// first, a compose that makes no move) leaves the block due with nothing opened again.
 	fn work_open(&mut self, now: i64, idle_s: Option<u32>, t: &Tunables) {
 		let Some(due) = self.work_due().filter(|&due| self.work.open.done != Some(due)) else { return };
-		let idle = idle_s.map(i64::from);
-		if idle.is_some_and(|s| s >= sitting::away_s()) {
+		if idle_s.is_some_and(|s| i64::from(s) >= sitting::away_s()) {
 			return;
 		}
-		if idle.is_some_and(|s| s < OPEN_PAUSE_S) {
-			let since = match self.work.open.waits {
-				Some((anchor, since)) if anchor == due => since,
-				_ => now,
-			};
-			self.work.open.waits = Some((due, since));
-			if now - since < t.late_s {
-				return;
-			}
-		}
-		if self.pump_ended_at().is_some_and(|at| now - at.div_euclid(1_000) < t.moment_s) {
+		if self.pump_stands_from().is_some_and(|at| now - at.div_euclid(1_000) < t.moment_s) {
 			return;
 		}
 		if self.start_gate(&Start::Work).is_none() && !self.pump_make_way() {
@@ -667,8 +653,8 @@ impl<P: Platform> Desk<P> {
 			}
 			self.work.held = hold;
 		}
-		let seen = Seen { now, anchor_ms: self.settings.work.reset_at, idle_s, hold };
-		let state = self.work.clock.look(&seen, self.settings.work.every_min, &t);
+		let seen = Seen { now, anchor_ms: self.settings.work.reset_at, hold };
+		let state = self.work.clock.look(&seen, self.settings.work.every_min);
 		if state == (State::Ask { new: true }) {
 			::log::info!("work mode: a pump is due and asks");
 			// a new ask lets a refused Later's words go
@@ -775,7 +761,6 @@ impl<P: Platform> Desk<P> {
 			None => (Phase::Off, None, None),
 			Some(State::Counting { left_s }) => (Phase::Counting, Some(left_s), None),
 			Some(State::Held { hold, left_s }) => (Phase::Held, Some(left_s), Some(hold)),
-			Some(State::Due) => (Phase::Due, None, None),
 			Some(State::Ask { .. }) => (Phase::Ask, None, None),
 		};
 		let view = WorkView {

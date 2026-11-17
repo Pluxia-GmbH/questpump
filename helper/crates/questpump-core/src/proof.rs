@@ -312,7 +312,7 @@ impl Book {
 			return Scored::Wait;
 		}
 		let set_end = m.end.filter(|_| after);
-		let nulls: Vec<i32> = self.nulls.get(&source).map(|n| n.iter().copied().collect()).unwrap_or_default();
+		let nulls: Vec<i32> = self.nulls.get(&source).map_or_default(|n| n.iter().copied().collect());
 		let rise = m.class.rise(&nulls);
 		let samples = self.samples(source, m.go, w.first_go - baseline_ms());
 		let base = verdict::baseline(&samples, seconds(w.first_go - m.go));

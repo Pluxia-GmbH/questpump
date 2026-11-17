@@ -1684,7 +1684,7 @@ impl Helper {
 		if let Ok(mut place) = self.app.state::<crate::desk::Desk>().place.lock() {
 			place.clone_from(&self.desk.settings.window);
 		}
-		let program = std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default();
+		let program = std::env::current_exe().map_or_default(|p| p.display().to_string());
 		let asked = crate::capture::permission_asked(&self.dir);
 		let (os, capture) = (crate::feedback::os(), self.capture_word());
 		let (zoom, fullscreen) = (self.desk.settings.zoom, self.desk.settings.fullscreen);
@@ -2486,7 +2486,7 @@ fn keep_display(display: &Mutex<(String, f64)>, event: &Event) {
 }
 
 fn hello(state: &Arc<Mutex<(String, f64)>>) -> String {
-	let (display, scale) = state.lock().map(|s| s.clone()).unwrap_or_default();
+	let (display, scale) = state.lock().map_or_default(|s| s.clone());
 	let line = Line::Hello { pid: std::process::id(), version: env!("CARGO_PKG_VERSION").into(), display, scale };
 	line.to_json(&now().rfc3339).unwrap_or_default()
 }

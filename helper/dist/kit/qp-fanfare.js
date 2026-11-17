@@ -35,6 +35,22 @@ export function fanfareWords(kind, number) {
 	}
 }
 
+/** What a screen reader hears of a banner of `kind` with its `number` ("You reached QP 13"), the Fanfare's and the
+ * floating Result's title's alike. */
+export function fanfareSpoken(kind, number) {
+	switch (kind) {
+		case "level": return t("kit.fanfare.spoken", {level: number});
+		case "paragon": return t("kit.fanfare.paragon.spoken", {rank: number});
+		case "expedition": return t("expedition.done.spoken", {minutes: number});
+		case "streak": {
+			const y = streakYears(number);
+			return y === null ? t("kit.fanfare.streak.spoken", {days: number})
+				: t("kit.fanfare.streak.years.spoken", {years: y});
+		}
+		default: return fanfareWords(kind, number);
+	}
+}
+
 class QpFanfare extends KitElement {
 	build() {
 		this.words = h("p", {class: "qp-type-fanfare"});
@@ -45,17 +61,7 @@ class QpFanfare extends KitElement {
 
 	/** What a screen reader hears of it. */
 	spoken() {
-		switch (this.kind) {
-			case "level": return t("kit.fanfare.spoken", {level: this.number});
-			case "paragon": return t("kit.fanfare.paragon.spoken", {rank: this.number});
-			case "expedition": return t("expedition.done.spoken", {minutes: this.number});
-			case "streak": {
-				const y = streakYears(this.number);
-				return y === null ? t("kit.fanfare.streak.spoken", {days: this.number})
-					: t("kit.fanfare.streak.years.spoken", {years: y});
-			}
-			default: return fanfareWords(this.kind, this.number);
-		}
+		return fanfareSpoken(this.kind, this.number ?? 0);
 	}
 
 	/** The words fade up once more (fanfareWords), as they did when the banner came: its turn at a level, a Paragon

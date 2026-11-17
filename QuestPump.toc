@@ -1,4 +1,4 @@
-## Interface: 16001, 120105
+## Interface: 16001, 120105, 120107
 ## Title: QuestPump
 ## Notes: Every quest you turn in asks for a few moves at your desk. Beat your own records. A character sheet for your body.
 ## Author: Pluxia GmbH

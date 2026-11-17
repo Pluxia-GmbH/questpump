@@ -204,8 +204,8 @@ register("hero", () => {
 	// fills once from there and the muscles whose tone changed since fade up; the page's own memory, never replayed
 	let seen = null;
 	// the `hero` it last drew in front: while Hero is not in front (a pump's cover over it, whose floating Result leaves
-	// it showing) the level and the muscles' tones stay as it last showed, so each moves once as Hero is in front
-	// again and never before
+	// it showing) the level, the muscles' tones and the streak's chip stay as it last showed, so each moves once as
+	// Hero is in front again and never before
 	let fronted = null;
 	const tonesOf = (from) => Object.fromEntries(from.muscles.filter((m) => m.quality > 0)
 		.map((m) => [m.id, m.quality]));
@@ -213,6 +213,12 @@ register("hero", () => {
 		if (!fronted || isFront(view)) fronted = hero;
 		level.draw(fronted.level, hero.summary);
 		map.tones = tonesOf(fronted);
+		const kept = fronted.streak;
+		streak.hidden = !kept;
+		if (kept) {
+			streak.label = kept.tokens > 0 ? t("character.streak.tokens", {count: kept.tokens,
+				days: new Intl.NumberFormat(LOCALE).format(kept.days)}) : t("character.streak", {days: kept.days});
+		}
 	};
 	const carry = () => {
 		if (!hero) return;
@@ -251,11 +257,6 @@ register("hero", () => {
 		const named = hero.focuses.find((f) => f.key === hero.focus);
 		focus.glyph = focusGlyph(hero.focus);
 		focus.label = t("character.meta.focus", {focus: named?.name ?? hero.focus});
-		streak.hidden = !hero.streak;
-		if (hero.streak) {
-			streak.label = hero.streak.tokens > 0 ? t("character.streak.tokens", {count: hero.streak.tokens,
-				days: new Intl.NumberFormat(LOCALE).format(hero.streak.days)}) : t("character.streak", {days: hero.streak.days});
-		}
 		map.figure = hero.figure;
 		map.names = Object.fromEntries(hero.muscles.map((m) => [m.id, muscleName(m)]));
 		// a tooltip of colours that changed (a sync, a pump) never waits there

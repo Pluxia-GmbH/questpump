@@ -833,8 +833,9 @@ pub struct BookTree {
 }
 
 /// The ring round a ladder's step (Progress.lua `ns.StepRing` through `ns.TreeEntry`, slice 36): its fill in per
-/// mille, none while a strength or hold step has no mark yet ("Your first set sets your mark"); the ticks of its stars
-/// on a strength or hold step; and the move and the record filling it (a counted cardio step's form nearest its top).
+/// mille, none while a strength or hold step has no mark yet ("Your first max set finds your step"); the ticks of its
+/// stars on a strength or hold step; and the move and the record filling it (a counted cardio step's form nearest its
+/// top).
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Ring {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1212,16 +1213,17 @@ pub struct LadderStep {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub start: Option<Start>,
 	/// On the cardio ladder, the countable forms of the step's rung the setup allows (Progress.lua `ns.CountForms`
-	/// with the player's filter, its pain flags too; slice 40): the forms the rung climbs on, which its card's measure
-	/// names; empty on a timed rung and on a counted one whose every form the setup shuts, which climbs by full moves
-	/// as a timed one does (slice 52; ready days from slice 42); none on another ladder or an empty step.
+	/// with the setup alone, since a pain flag holds the climb and never changes its measure; slice 40): the forms the
+	/// rung climbs on, which its card's measure names; empty on a timed rung and on a counted one whose every form the
+	/// setup shuts, which climbs by full moves as a timed one does (slice 52; ready days from slice 42); none on
+	/// another ladder or an empty step.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub forms: Option<Vec<u16>>,
 	/// The stages of the climb from its rung's path in order (`tools/apppump.lua` `pathAt`, Progress.lua `ns.Stages`;
 	/// every one done on a step the sheet the steps read stands above); none for a rung without a path.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub stages: Option<Vec<Stage>>,
-	/// When the step was mastered (Progress.lua `ns.Mastered`, unix seconds), kept for good.
+	/// When the step was mastered (Progress.lua `ns.Mastered`, unix seconds), kept until its ladder starts over.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub mastered: Option<i64>,
 	/// On a step the player has that is not mastered yet: its moves the setup offers that reached their top once, of

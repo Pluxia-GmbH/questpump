@@ -1939,6 +1939,47 @@
    "json": {
     "nonce": "AAAAAAAAAAAAAAAB"
    }
+  },
+  {
+   "about": "a phone's body with the streak's goal (slice 74): 14 days, picked on the streak day's moment, with the field's own changed_at on the phone's clock; a device or a helper that does not know streak_goal reads past it and keeps the rest",
+   "kind": "body_request",
+   "json": {
+    "device": "android",
+    "sent_at": 1790000600100,
+    "body": {
+     "no_jump": {
+      "value": true,
+      "changed_at": 1790000300000
+     },
+     "streak_goal": {
+      "value": 14,
+      "changed_at": 1790000590000
+     }
+    }
+   }
+  },
+  {
+   "about": "the body after the merge with the streak's goal changed later in the game (slice 74): none, value 0, at the profile's bodyAt.streakGoal (the game's seconds as milliseconds), which wins over the phone's 14 days; the phone takes it and shows the day against the next milestone again",
+   "kind": "body_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000600114
+    },
+    "body": {
+     "no_jump": {
+      "value": true,
+      "changed_at": 1790000300000
+     },
+     "streak_goal": {
+      "value": 0,
+      "changed_at": 1790000595000
+     }
+    }
+   }
   }
  ]
 }

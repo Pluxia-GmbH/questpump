@@ -7,7 +7,8 @@ pub(crate) fn screen_reader() -> bool {
 	objc2_app_kit::NSWorkspace::sharedWorkspace().isVoiceOverEnabled()
 }
 
-/// A screen reader runs: Windows' flag that one is (`SPI_GETSCREENREADER`, which Narrator, NVDA and JAWS set).
+/// A screen reader runs: Windows' flag that one is (`SPI_GETSCREENREADER`, which NVDA and JAWS set and Narrator does
+/// not, Microsoft's `SystemParametersInfoW` page: under Narrator alone it reads false).
 #[cfg(windows)]
 pub(crate) fn screen_reader() -> bool {
 	use windows::Win32::UI::WindowsAndMessaging::{

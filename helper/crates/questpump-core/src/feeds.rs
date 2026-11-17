@@ -321,7 +321,7 @@ pub mod pathofexile {
 		let mut parts = id.split('_');
 		let first = parts.next().unwrap_or_default();
 		let numbered = |part: &str| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit());
-		let zone = numbered(first.strip_prefix('G').unwrap_or(first)) && parts.next().is_some();
+		let zone = numbered(first.trim_prefix('G')) && parts.next().is_some();
 		zone && !id.ends_with("_town")
 	}
 

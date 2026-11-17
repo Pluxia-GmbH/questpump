@@ -494,6 +494,39 @@ local function milestone(before, streak)
 	return reached
 end
 
+-- The number the streak's day shows against ("Day 3 of 7"; slice 74), the streak counting `days`: the player's goal
+-- in days (`goal`, the profile's streakGoal as it stands: ns.StreakGoal reads it, so nil, 0 and anything that is no
+-- goal are none) while it is on or ahead of that day, so the day that reaches it reads "Day 14 of 14"; else the next
+-- of C.streak_milestones above the day, nil past the last. The cores' StreakBoard.against and the desktop app's
+-- Board::against are its twins.
+function ns.StreakAgainst(days, goal)
+	goal = ns.StreakGoal(goal)
+	if goal and goal >= days then return goal end
+	for _, m in ipairs(C.streak_milestones) do
+		if m > days then return m end
+	end
+	return nil
+end
+
+-- The goals to offer on the streak's day `days` (slice 74), by what the player said of a goal (`said`, a profile's
+-- streakGoal as it stands: nil, nothing yet; 0, None, chosen by the player or left when a Result's choices were
+-- declined; else the goal's days): none ({}) once the player said None, and none while a goal stands ahead of the
+-- day; else the C.streak_goal_offer smallest of C.streak_goal_steps above it (7, 14 and 30 on day 1; fewer near the
+-- last step, none past it). So they are offered while the player said nothing, on the day a goal is reached and on
+-- any day past one, and never again after a None until the player sets a goal themselves and reaches it. What is
+-- neither 0 nor a goal (ns.StreakGoal) reads as nothing said. The cores' StreakBoard.steps and the desktop app's
+-- Board::goal_steps are its twins.
+function ns.StreakGoalSteps(days, said)
+	local out = {}
+	if said == 0 then return out end
+	local goal = ns.StreakGoal(said)
+	if goal and goal > days then return out end
+	for _, n in ipairs(C.streak_goal_steps) do
+		if n > days and #out < C.streak_goal_offer then out[#out + 1] = n end
+	end
+	return out
+end
+
 -- The first finished move of a game day: the streak (the locked days of a gap skipped: they neither break it nor add a
 -- day to it; the rest of the gap covered by rest tokens counts as rested days, one token a day, only when the tokens
 -- cover it whole, said by a "rested" event before the day's streak), a token every token_days active days, Spirit for

@@ -77,9 +77,10 @@
 //! loaded move's next set, the reveal's instants) or `calm`. The day-2 check-in is Pump home's (`home.rs`).
 //!
 //! **The intents** (`{"type": "pump.<what>", ...}`): `pump.quick`, `pump.start {kind, size, offer?}`, `pump.catchup`,
-//! `pump.move {target: {ladder, rung} | {move} | {check}, from: {place: ladder|move|list, ladder?, step?,
+//! `pump.move {target: {ladder, rung} | {move} | {check}, from: {place: ladder|move|list|home, ladder?, step?,
 //! opens?}}` (a step's card's or a move's window's Start, slice 38; since slice 42 a stretch check's, "Do the check",
-//! with what it opens; the gates and the place window hold it as every app pump),
+//! with what it opens; since 2026-11-03 Pump home's cardio row's; the gates and the place window hold it as every app
+//! pump),
 //! `pump.choose {kind?, size?, offer?}` (the Start a pump window), each with `outside` when the tray or the card asked
 //! (QuestPump's window opens for it), and a size missing taken from the offer (its tier, slice 48:
 //! `offer_tier`), else Balanced; a start from an offer that goes through answers its card (`offer_started`); a plain
@@ -258,10 +259,10 @@ impl Start {
 	}
 }
 
-/// Where a move pump started, which its Result's Continue names and returns to (slice 38): the tree (the started
-/// step, by its ladder and its step on the one scale: the step whose card started it, or for a start that ran another
-/// ladder, `via`, that ladder's step), a ladder's page, a move's window or page, the Book's list (a ladder that
-/// waits whole, whose card opened from it) or Pump home's cardio row (2026-11-03); and on a stretch check (slice 42), what passing it opens, by which the
+/// Where a move pump started, which its Result's Continue names and returns to (slice 38): a ladder's page (the step
+/// whose card started it, by its ladder and its step on the one scale), a move's window or page, the Book's list (a
+/// ladder that waits whole, whose card opened from it) or Pump home's cardio row (2026-11-03); and on a stretch check
+/// (slice 42), what passing it opens, by which the
 /// engine finds the check the pump runs (`StartedCheck`, `ns.RunsCheck`), which the Result names.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StartedFrom {
@@ -309,7 +310,6 @@ impl Opens {
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 enum Place {
-	Tree,
 	Ladder,
 	Move,
 	List,
@@ -668,12 +668,13 @@ struct Run {
 	titles_before: Vec<u8>,
 	/// The move last read aloud on its Ready view (index and move).
 	spoken: Option<(usize, u16)>,
-	/// Its callout while it waits on its Ready view: when it is due (ms, after the move's line), its family and its take;
-	/// and when the callout said last ends (ms), which a Start before then hushes (none on the countdown).
+	/// Its callout while it waits on its Ready view: when it is due (ms, after the move's line), its family and its take.
 	callout: Option<(i64, String, String)>,
-	callout_ends: Option<i64>,
 	/// When its first Ready view's line is said (ms), on a pump that opened itself: after its `call` (`CALL_MS`).
 	voice_at: Option<i64>,
+	/// It opened itself (`Desk::pump_unasked`), in front of whatever the player was typing: its first Ready view passes
+	/// those keys over (`PumpView::unasked`).
+	unasked: bool,
 	cues: Cues,
 	/// Big view's full screen was put on for this pump.
 	full: bool,
@@ -685,6 +686,21 @@ struct Run {
 	/// The Legendary moment on show over the Result (2026-10-09): the index of its orange or gold step's row among the
 	/// Result's rows; Continue walks them in order before the Result closes.
 	legend: Option<usize>,
+	/// The streak's goal the player picked on the Result's streak moment (slice 74, `pump.goal`), the last pick, which
+	/// is written as the Result ends or as another device's word takes the choices away (`pump_goal_owed`, which takes
+	/// it); none while none was picked, as the choices show, and once it is written.
+	goal: Option<u16>,
+	/// How often a goal was picked on its Result (each accepted `pump.goal`, the same goal again too): the floating
+	/// card's hold starts over at each, on what the page is sent, never on its own click.
+	picks: u32,
+	/// When the last of them was picked (unix ms): the Result's stand before a due work pump starts over with it
+	/// (`pump_stands_from`), as the card's hold does.
+	picked_at: Option<i64>,
+	/// The page was sent this pump's Result with the streak's goals to choose from (`pump_publish`).
+	goals_shown: bool,
+	/// A catch-up whose payment opened a return (slice 74, S4): the engine's fold of the rows it wrote counted the
+	/// game's Welcome back for it (`pump_welcomed`), which its Result leads with.
+	welcome: bool,
 	paid: Option<Payment>,
 	/// The streak's board as it began (Pump home's; the phones' `streakBefore`), and what a catch-up reached by it as it
 	/// paid (an app pump's goes into its Result as that is read).
@@ -769,8 +785,8 @@ impl Run {
 			titles_before: Vec::new(),
 			spoken: None,
 			callout: None,
-			callout_ends: None,
 			voice_at: None,
+			unasked: false,
 			cues: Cues::default(),
 			full: false,
 			done_at: None,
@@ -778,6 +794,11 @@ impl Run {
 			reveal: None,
 			pour: None,
 			legend: None,
+			goal: None,
+			picks: 0,
+			picked_at: None,
+			goals_shown: false,
+			welcome: false,
 			paid: None,
 			streak_before: None,
 			reached: view::Reached::default(),
@@ -1067,6 +1088,10 @@ pub struct Pumps {
 	/// The last voice line other than a count (ms): a mark's count due within `mark_gap_s` of it ticks instead (a rep's
 	/// count keeps its beat: nothing else speaks while a set of reps runs).
 	line_at: i64,
+	/// The line the voice speaks now: its take's id and when its length has passed (ms), from which nothing speaks
+	/// (Speech.lua's `playing` and `playingId`; `Desk::pump_line_plays`), so what stops the voice names the takes it
+	/// means (`pump_leave_ready`, `pump_back`).
+	speaking: Option<(String, i64)>,
 	/// Each callout family's take said last on this computer: the next is another (Speech.lua's `lastTake`).
 	takes: BTreeMap<String, String>,
 	/// The computer is held awake.
@@ -1273,7 +1298,7 @@ fn rep_beat(m: &PlannedMove) -> Option<i64> {
 /// The ms in a set of reps' loop at which each rep but the last ends (`figures::rep_ends`: a dead bug's two sides);
 /// none for a loop of one rep.
 fn rep_ends(m: &PlannedMove) -> Vec<i64> {
-	facts().text(m.r#move).map(|t| figures::rep_ends(&t.key).into_iter().map(run::millis).collect()).unwrap_or_default()
+	facts().text(m.r#move).map_or_default(|t| figures::rep_ends(&t.key).into_iter().map(run::millis).collect())
 }
 
 /// A running set of reps' count (Speech.lua repCount; the phones' `RepCount`): on its figure's beat (`rep_beat`) up to
@@ -1318,6 +1343,20 @@ pub(super) const HAUL_CADENCE: u8 = 1;
 /// pump's warm cardio move's (`PlannedMove::warm`, slice 48's double-check: the first move after a long sit runs
 /// easy), which the voice says at its go and its Ready and Running views word as `pump.pace.easy`.
 pub(super) const EASY_CADENCE: u8 = 0;
+
+/// The take `id` is a callout's: the line a move's Ready view says after the move's line, and an all-out window's
+/// shout, a callout family's take too (`Speech.lua` readyLine, by the take's id; `Desk::callout_take` makes them). It
+/// is the one take a move leaving its Ready view stops (`Desk::pump_leave_ready`), and with the move's own line the
+/// one that speaks on when Back brings the move to its Ready view again (`Desk::pump_back`).
+fn ready_line(id: &str) -> bool {
+	id.starts_with("callout.") // copy-lint: not shown (a voice take's id)
+}
+
+/// A move's own line, its name and its cue, which its Ready view says (`Speech.lua`'s `move.<key>`); none for a move
+/// the facts lack.
+fn move_line(id: u16) -> Option<String> {
+	facts().text(id).map(|text| format!("move.{}", text.key)) // copy-lint: not shown (a voice take's id)
+}
 
 /// An all-out window's line at its start (`Speech.lua` windowLine): the build's, or a counted set's all out at once
 /// with its count.
@@ -1370,7 +1409,7 @@ fn projected(
 ) -> Result<Option<(LevelAt, LevelAt)>, EngineError> {
 	let gained = own["last"][0].as_i64().unwrap_or(0);
 	let Some(game) = game.filter(|_| gained > 0) else { return Ok(None) };
-	let paid = Summary::read(own).map(|s| s.pump_xp).unwrap_or_default();
+	let paid = Summary::read(own).map_or_default(|s| s.pump_xp);
 	let xp = game.xp + offered.map_or(0, |o| game.uncounted_xp(&paid, o));
 	Ok(match e.levels(&[xp, xp + gained])?.as_slice() {
 		&[from, to] => Some((from, to)),
@@ -1471,6 +1510,7 @@ impl<P: Platform> Desk<P> {
 			}
 			"pump.fullscreen" | "pump.land" | "pump.saved.land" | "pump.window" => self.pump_page_intent(intent),
 			"pump.saved.next" => self.pump_saved_next(),
+			"pump.goal" => self.pump_goal(intent),
 			"pump.continue" => self.pump_continue(),
 			"pump.guide" => self.pump_guide(),
 			_ => Err(intent.unknown()),
@@ -1604,10 +1644,15 @@ impl<P: Platform> Desk<P> {
 		self.pumps.starting
 	}
 
-	/// When the pump whose Result or calm card is on screen ended (unix ms), none while a pump runs or none shows: work
-	/// mode's next pump lets a Result stand a moment before it takes its place (`Desk::work_open`).
-	pub(crate) fn pump_ended_at(&self) -> Option<i64> {
-		self.pumps.run.as_ref().and_then(|r| r.done_at)
+	/// From when the Result or calm card on screen stands (unix ms), none while a pump runs or none shows: its pump's
+	/// end, or the last streak goal picked on it (slice 74). Work mode's next pump lets a Result stand
+	/// `work_moment_s` from it before it takes its place (`Desk::work_open`), so the one clock that puts a Result away
+	/// unasked starts over at a pick as the floating card's own hold does, and that hold, the shorter of the two, ends
+	/// a card a goal was picked on before the work pump comes: the page's hold and this stand never end the same
+	/// Result against each other.
+	pub(crate) fn pump_stands_from(&self) -> Option<i64> {
+		let run = self.pumps.run.as_ref()?;
+		run.done_at.map(|at| run.picked_at.map_or(at, |picked| at.max(picked)))
 	}
 
 	/// A move runs in the pump on this computer, or one is being made: a pump on screen that is not idle (`Run::idle`:
@@ -1641,7 +1686,7 @@ impl<P: Platform> Desk<P> {
 				log::warn!("pump: the idle pump did not end: {e}");
 			}
 		}
-		self.pump_dismiss();
+		self.pump_dismiss(Ended::Else);
 		true
 	}
 
@@ -1688,7 +1733,6 @@ impl<P: Platform> Desk<P> {
 	/// # Errors
 	/// Why no pump starts now.
 	pub fn pump_ask(&mut self, start: Start, outside: bool) -> Result<(), String> {
-		self.pumps.unasked = false;
 		if let Some(gate) = self.start_gate(&start) {
 			return Err(format!("no pump while {gate:?} holds")); // copy-lint: not shown (an intent's error)
 		}
@@ -1698,6 +1742,9 @@ impl<P: Platform> Desk<P> {
 		if outside {
 			self.p.open_window()?;
 		}
+		// an ask accepted is a start of its own, which `pump_unasked` marks again where nobody pressed for it; one
+		// refused (a key in the page while the pump that opens itself is still being made) leaves that pump its mark
+		self.pumps.unasked = false;
 		if !self.settings.place_asked {
 			self.pumps.waiting = Some(Asked { start, outside });
 			self.pump_publish();
@@ -1923,8 +1970,11 @@ impl<P: Platform> Desk<P> {
 		// a pump that opened itself says so: `call` once as it comes, its first move's line after it (slice 72)
 		let called = std::mem::take(&mut self.pumps.unasked);
 		run.voice_at = called.then(|| self.p.now_ms() + CALL_MS);
-		self.pumps.run = Some(run);
+		run.unasked = called;
+		self.pump_put(Some(run), Ended::Else);
 		if called {
+			// over no line of the pump before it (an idle pump that made way, a Result's Legendary line)
+			self.pump_hush();
 			self.cue(Cue::Event("call"));
 		} else if !self.expedition_resting() {
 			// an expedition's next round waits under the breather: its first move is read as the breather ends
@@ -2065,13 +2115,14 @@ impl<P: Platform> Desk<P> {
 		let now = unix_s(self.p.now_ms());
 		let embers_before = self.embers_today(&self.session.sheet(now), now);
 		let owed = plan.iter().copied().enumerate().collect();
-		self.pumps.run = Some(Run {
+		let next = Run {
 			owed,
 			embers_before,
 			on_engine,
 			streak_before,
 			..Run::new(id, What::CatchUp, outside, moves, slots, rungs)
-		});
+		};
+		self.pump_put(Some(next), Ended::Else);
 		self.pump_swaps();
 		self.pump_read_aloud();
 		self.pump_publish();
@@ -2278,8 +2329,7 @@ impl<P: Platform> Desk<P> {
 		}
 		run.spoken = Some(id);
 		run.callout = None;
-		if let Some(text) = facts().text(m.r#move) {
-			let line = format!("move.{}", text.key); // copy-lint: not shown (a voice take's id)
+		if let Some(line) = move_line(m.r#move) {
 			let length = Self::line_seconds(&line);
 			self.pump_say(line);
 			if let Some(length) = length {
@@ -2361,6 +2411,44 @@ impl<P: Platform> Desk<P> {
 		self.cue(Cue::Line(line));
 	}
 
+	/// A voice line `seconds` long plays now (`id`; `Desk::line_plays`, as its take goes to the voice): it is the line
+	/// speaking until that long has passed (Speech.lua's `nowPlaying`), and a move's guide holds for it
+	/// (`pump_guide_hold`).
+	pub(crate) fn pump_line_plays(&mut self, id: &str, seconds: f64) {
+		self.pumps.speaking = Some((id.to_owned(), self.p.now_ms() + run::millis(seconds)));
+		self.pump_guide_hold(id, seconds);
+	}
+
+	/// The take the voice speaks now, by its id (Speech.lua's `playingId`); none once its length has passed.
+	fn pump_speaking(&self) -> Option<&str> {
+		let now = self.p.now_ms();
+		self.pumps.speaking.as_ref().filter(|(_, ends)| *ends > now).map(|(id, _)| id.as_str())
+	}
+
+	/// The pump's line still speaking stops, whatever it is (`Desk::hush`; nothing where none speaks): a guide begins
+	/// (`guide_begin`), a pump that opened itself sounds its `call` (`pump_composed`: the voice never talks over the
+	/// cue), or the game asks for its own pump or the moves here (`pump_finish` after `Stop::Game`,
+	/// `pump_game_offered`), whose own voice speaks on this computer next.
+	fn pump_hush(&mut self) {
+		let now = self.p.now_ms();
+		if self.pumps.speaking.take().is_some_and(|(_, ends)| ends > now) {
+			self.hush();
+		}
+	}
+
+	/// A move leaves its Ready view (Speech.lua `leaveReady`): its Start (`pump_go`), its side's end (`pump_end_side`),
+	/// the pump's end (`pump_finish`) and the pump leaving the screen (`pump_dismiss`). Its callout still waiting stays
+	/// unsaid and a callout's take speaking stops (`ready_line`, a shout's too); any other line plays on: the move's own
+	/// over the countdown, a line of the run or a number to its own end.
+	fn pump_leave_ready(&mut self) {
+		if let Some(run) = self.pumps.run.as_mut() {
+			run.callout = None;
+		}
+		if self.pump_speaking().is_some_and(ready_line) {
+			self.pump_hush();
+		}
+	}
+
 	/// Start on Ready: the countdown to the current move, from its first side; Big view's full screen at the pump's
 	/// first countdown where the player keeps it.
 	fn pump_go(&mut self) -> Result<(), String> {
@@ -2369,15 +2457,12 @@ impl<P: Platform> Desk<P> {
 		}
 		let fullscreen = self.settings.fullscreen;
 		let now = self.p.now_ms();
-		let run = self.pumps.run.as_mut().ok_or("no pump")?;
+		let run = self.pumps.run.as_ref().ok_or("no pump")?;
 		if run.stage != Stage::Ready || run.busy > 0 {
 			return Err("no Start now".to_owned());
 		}
-		// no callout on the countdown: one still waiting stays unsaid, one still speaking stops
-		run.callout = None;
-		if run.callout_ends.take().is_some_and(|ends| ends > now) {
-			self.hush();
-		}
+		// no callout on the countdown: one still waiting stays unsaid, one still speaking stops; the move's line plays on
+		self.pump_leave_ready();
 		let run = self.pumps.run.as_mut().ok_or("no pump")?;
 		let (kind, seconds, side) = run.shown().map(|m| (m.kind, m.seconds, m.side)).ok_or("no move")?;
 		run.side = Some(MoveRun::new(kind, seconds, side));
@@ -2478,10 +2563,6 @@ impl<P: Platform> Desk<P> {
 				if run::secs(now - at) >= MARK_LATE_S {
 					return;
 				}
-				let ends = now + run::millis(Self::line_seconds(&take).unwrap_or(0.0));
-				if let Some(run) = self.pumps.run.as_mut() {
-					run.callout_ends = Some(ends);
-				}
 				self.pumps.takes.insert(family, take.clone());
 				self.pump_say(take);
 			}
@@ -2512,7 +2593,7 @@ impl<P: Platform> Desk<P> {
 				}
 			}
 			Stage::Done => {
-				let due = run.reveal.as_mut().map(|r| r.take_due(now)).unwrap_or_default();
+				let due = run.reveal.as_mut().map_or_default(|r| r.take_due(now));
 				for event in due {
 					self.cue(Cue::Event(event));
 				}
@@ -2705,6 +2786,10 @@ impl<P: Platform> Desk<P> {
 	/// under the ask's share of its seconds asking first whether it was done whole.
 	fn pump_end_side(&mut self, start: i64, elapsed: f64, end: i64) {
 		let c = facts().constants();
+		// the run is over (Speech.lua `leaveReady` on every state but a Ready view): an all-out window's shout still
+		// speaking stops, a callout's take; its pace line or a number sounding plays to its end, the counts due gone
+		// with the stage
+		self.pump_leave_ready();
 		let Some(run) = self.pumps.run.as_mut() else { return };
 		// the move's kind and planned seconds: a move of reps is judged by its count, a timed move that ran its time
 		// never short
@@ -3573,7 +3658,10 @@ impl<P: Platform> Desk<P> {
 
 	/// Back (David, 2026-10-05: "go back and have it like I never started the exercise"): the move's Ready view as if
 	/// Start never came, nothing written, the pump's first go and last end as the Start found them, and Swap's options
-	/// asked again where none are kept (an answer that came after the Start, which the stale guard dropped).
+	/// asked again where none are kept (an answer that came after the Start, which the stale guard dropped). The voice
+	/// as the game's leaves it there (Speech.lua's State on a move back on its Ready view): a line of its run stops with
+	/// it (its pace, its window's line, "Switch sides.", the pace ask, a number), while the move's own line and a
+	/// callout's take speak on, and the move is not read again.
 	fn pump_back(&mut self) -> Result<(), String> {
 		let run = self.pumps.run.as_mut().filter(|r| r.can_back()).ok_or("no Back now")?;
 		if let Some(slot) = run.shown().map(|m| m.slot) {
@@ -3590,10 +3678,13 @@ impl<P: Platform> Desk<P> {
 			(run.pump_start, run.riders_start, run.last_end) = (start, riders, end);
 		}
 		run.stage = Stage::Ready;
+		let own = run.shown().and_then(|m| move_line(m.r#move));
 		if run.swaps.is_none() {
 			self.pump_swaps();
 		}
-		self.hush();
+		if self.pump_speaking().is_some_and(|id| Some(id) != own.as_deref() && !ready_line(id)) {
+			self.pump_hush();
+		}
 		self.pump_publish();
 		Ok(())
 	}
@@ -3634,7 +3725,7 @@ impl<P: Platform> Desk<P> {
 			self.pump_ready();
 			self.pump_publish();
 		} else if run.ran.is_empty() {
-			self.pump_dismiss();
+			self.pump_dismiss(Ended::Else);
 		} else {
 			self.pump_finish(false);
 		}
@@ -3666,7 +3757,7 @@ impl<P: Platform> Desk<P> {
 		self.pump_advance(false);
 		let empty = |r: &Run| r.ran.is_empty() && r.recorded.is_empty() && !matches!(r.what, What::Expedition { .. });
 		if self.pumps.run.as_ref().is_some_and(|r| !r.running() && empty(r)) {
-			self.pump_dismiss();
+			self.pump_dismiss(Ended::Else);
 		}
 	}
 
@@ -4312,11 +4403,10 @@ impl<P: Platform> Desk<P> {
 			// done, its riders left unfinished
 			Stop::Rest => {}
 		}
-		self.hush();
 		self.pump_finish(true);
 		// an expedition's rounds done before it end on their Result
 		if leaves && !self.expedition_kept() {
-			self.pump_dismiss();
+			self.pump_dismiss(Ended::Else);
 		}
 		Ok(())
 	}
@@ -4327,6 +4417,14 @@ impl<P: Platform> Desk<P> {
 	/// once the Result's reads are asked (slice 61), so the engine still reads the app pump's own as it answers.
 	fn pump_finish(&mut self, stopped: bool) {
 		let now = self.p.now_ms();
+		// as the game ends a pump (Speech.lua `leaveReady`): a callout due or speaking on the Ready view it ended from
+		// (felt unwell, Bank all, Leave, the last Skip) stays unsaid, and nothing else stops: the move's line, a line of
+		// the run or a number still sounding plays to its end. One the game cut (`Stop::Game`: it asks for its own pump,
+		// or the moves here) says no more at all: the game's own voice speaks on this computer next.
+		self.pump_leave_ready();
+		if self.pumps.run.as_ref().is_some_and(|r| r.cut == Some(Cut::Game)) {
+			self.pump_hush();
+		}
 		if !stopped
 			&& let Some(run) = self.pumps.run.as_ref().filter(|r| r.side.is_some())
 			&& let Stage::Running { start } = run.stage
@@ -4454,7 +4552,8 @@ impl<P: Platform> Desk<P> {
 			return;
 		}
 		let total: i64 = moves.iter().map(|m| i64::from(m.seconds)).sum();
-		let first = if run.what.app() { run.riders_start } else { run.pump_start };
+		let app = run.what.app();
+		let first = if app { run.riders_start } else { run.pump_start };
 		let start = first.map_or_else(|| unix_s(now) - total, unix_s);
 		let start_s = u32::try_from(start.max(0)).unwrap_or(u32::MAX);
 		let unwell_at = unwell.then(|| u32::try_from(unix_s(now).max(start)).unwrap_or(u32::MAX));
@@ -4476,6 +4575,12 @@ impl<P: Platform> Desk<P> {
 			Ok(written) => {
 				log::info!("pump {}: the riders' payment wrote {} rows", pump.id, written.len());
 				self.home_paid(&banked);
+				// a catch-up that opened a return leads its Result with Welcome back (slice 74, S4): the engine's own
+				// fold says so of the rows just merged, its sheet's last pump being this one
+				if !app {
+					let at = unix_s(now);
+					self.pump_call(move |e| e.summary(at), |h, summary| h.pump_welcomed(&summary));
+				}
 				Payment::Paid
 			}
 			Err(e) => {
@@ -4492,12 +4597,28 @@ impl<P: Platform> Desk<P> {
 		};
 		// the moves' payment, where moves ran and this computer paid them, and what the streak's board says they reached
 		let after = (paid == Payment::Paid).then(|| self.board_now());
+		let goal = self.streak_goal_said();
 		if let Some(run) = self.pumps.run.as_mut().filter(|_| some_ran && !wow) {
 			run.paid = Some(paid);
 			if let Some(after) = &after {
-				run.reached = view::Reached::of(run.streak_before.as_ref(), after);
+				run.reached = view::Reached::of(run.streak_before.as_ref(), after, goal);
 			}
 		}
+	}
+
+	/// The sheet after a catch-up's payment (`pump_paid`): where the engine's fold counted the game's Welcome back for
+	/// it, its Result leads with it, and its reveal is planned again with that row (its beat, no streak's day).
+	fn pump_welcomed(&mut self, summary: &Value) {
+		if !view::Sum::read(summary).is_some_and(|s| s.welcomed()) {
+			return;
+		}
+		let now = self.p.now_ms();
+		let Some(run) = self.pumps.run.as_mut().filter(|r| !r.what.app()) else { return };
+		run.welcome = true;
+		if run.resulted() && run.reveal.is_some() {
+			run.reveal = Some(view::Reveal::plan(now, &view::caught_up(run)));
+		}
+		self.pump_publish();
 	}
 
 	/// The riders' payment: the counts the engine judged leave its state (`Engine::settle`), asked just before the merge
@@ -4569,14 +4690,16 @@ impl<P: Platform> Desk<P> {
 				// `wearFirstTitle` and the game's `Sheet.lua`, 2026-10-21's review)
 				let first = h.pumps.run.as_ref().is_some_and(|r| r.titles_before.is_empty());
 				if hero_own
-					&& first && h.body.body.title.is_none()
+					&& first
+					&& h.body.body.title.is_none()
 					&& h.settings.title.is_none()
 					&& let Some(key) = titles.first().and_then(|&code| facts().title(code)).map(|t| t.key.clone())
 				{
 					h.wear_title(Some(key));
 				}
+				let goal = h.streak_goal_said();
 				let Some(run) = h.pumps.run.as_mut() else { return };
-				let reached = view::Reached::of(run.streak_before.as_ref(), &after);
+				let reached = view::Reached::of(run.streak_before.as_ref(), &after, goal);
 				let (riders, own): (Vec<PlannedMove>, Vec<PlannedMove>) =
 					run.moves.iter().cloned().partition(|m| run.rider(m.slot));
 				let earned = view::earned(
@@ -4655,7 +4778,7 @@ impl<P: Platform> Desk<P> {
 			return Ok(());
 		}
 		let (done, resulted, back) = (run.ended_done(), run.resulted(), run.back);
-		self.pump_dismiss();
+		self.pump_dismiss(Ended::Player);
 		// a work pump's Back to work: the app it came from in front again, this window left open behind it
 		if back {
 			self.p.back_to_work();
@@ -4671,17 +4794,89 @@ impl<P: Platform> Desk<P> {
 		Ok(())
 	}
 
+	/// A streak goal picked on the Result's streak moment (slice 74): one of those its day offers, held until the
+	/// Result ends (`pump_put`), which writes the last one picked; the page shows the pick itself.
+	fn pump_goal(&mut self, intent: &Intent) -> Result<(), String> {
+		let days = intent
+			.arg("days")
+			.and_then(Value::as_u64)
+			.and_then(|d| u16::try_from(d).ok())
+			.ok_or("pump.goal takes days")?;
+		let goal_now = self.streak_goal_said();
+		let now_ms = self.p.now_ms();
+		let run = self.pumps.run.as_mut().filter(|r| !r.running()).ok_or("no Result to choose on")?;
+		if !view::goal_offer(run, goal_now).contains(&i64::from(days)) {
+			return Err(format!("no streak goal of {days} days on offer"));
+		}
+		run.goal = Some(days);
+		run.picks += 1;
+		run.picked_at = Some(now_ms);
+		self.pump_publish();
+		Ok(())
+	}
+
 	/// The QP 10 focus ask's cue, taken once no pump is on screen or starting: an app pump that ended done was just put
 	/// away (`pump_continue`); Hero's next look asks where the ask is due then, or never for that pump.
 	pub fn pump_focus_due(&mut self) -> bool {
 		self.pumps.run.is_none() && !self.pumps.starting && std::mem::take(&mut self.pumps.focus_due)
 	}
 
-	/// The pump leaves the screen.
-	fn pump_dismiss(&mut self) {
-		self.hush();
+	/// What the Result on screen now owes the streak's goal (slice 74), the one rule for what its choices write, asked
+	/// at the two moments they go: as the Result ends (`ended`, who ended it: `pump_put`) and as a goal or a None from
+	/// another device takes the offer away under it (none: `streak_goal_read`). Only where its streak's day offered
+	/// goals and the page was sent them (`Run::goals_shown`). A pick (`Run::goal`, the last one) is the player's latest
+	/// word and is written at either moment, once (it leaves the run here): the click came while the offer stood, the
+	/// player saw the chip light, and what arrives from another device is nearly always an older change only now
+	/// delivered, which the pick, stamped past it, wins over on every device (the phones' `settleGoal`). With none
+	/// picked: None with its time (0: asked and declined, after which no Result asks) where the player ended the Result
+	/// with the choices still standing, and nothing in every other case (another pump or the window ended it, or the
+	/// offer went), so the next streak's day asks again: no clock, no other pump and no other device answers for
+	/// the player.
+	fn pump_goal_owed(&mut self, ended: Option<Ended>) -> Option<u16> {
+		let said = self.streak_goal_said();
+		let run = self.pumps.run.as_mut().filter(|run| run.goals_shown)?;
+		let stands = !view::goal_offer(run, said).is_empty();
+		match ended {
+			Some(who) => run.goal.take().or((stands && who == Ended::Player).then_some(0)),
+			None if stands => None,
+			None => run.goal.take(),
+		}
+	}
+
+	/// Another device's word on the streak's goal reached this computer (`streak_goal_read`): the pick the Result on
+	/// screen holds, where that word took its choices away, is written now (`pump_goal_owed`), the body already
+	/// merged, so the pick's stamp is the later one (`stamped`).
+	pub(crate) fn pump_goal_overtaken(&mut self) {
+		if let Some(days) = self.pump_goal_owed(None)
+			&& let Err(e) = self.set_streak_goal(days)
+		{
+			log::warn!("pump: the streak's goal: {e}");
+		}
+	}
+
+	/// The pump on screen gives way, to none (`pump_dismiss`) or to the next one (a pump that opens over a Result still
+	/// showing: a match's or work mode's, one started from the tray or a phone): the one place a run ends, so what its
+	/// Result held is written here whatever ended it, by who ended it (`ended`): the streak's goal as
+	/// `pump_goal_owed` rules it (the last pick; None where the player ended it over standing choices with none
+	/// picked; else nothing), through `set_streak_goal`.
+	fn pump_put(&mut self, next: Option<Run>, ended: Ended) -> Option<Run> {
+		let write = self.pump_goal_owed(Some(ended));
+		let was = std::mem::replace(&mut self.pumps.run, next);
+		if let Some(days) = write
+			&& let Err(e) = self.set_streak_goal(days)
+		{
+			log::warn!("pump: the streak's goal: {e}");
+		}
+		was
+	}
+
+	/// The pump leaves the screen, by who ended it (`pump_put`): a callout of the Ready view it leaves from stops, and
+	/// any other line plays to its end, as the game's does once its panel closes (`pump_leave_ready`; a Legendary
+	/// moment's line too).
+	fn pump_dismiss(&mut self, ended: Ended) {
+		self.pump_leave_ready();
 		self.pumps.trip = None;
-		if let Some(run) = self.pumps.run.take()
+		if let Some(run) = self.pump_put(None, ended)
 			&& run.full
 		{
 			self.pump_full_screen(false);
@@ -4703,7 +4898,7 @@ impl<P: Platform> Desk<P> {
 			run.held.leave = Some(quit);
 			return Ok(());
 		}
-		self.pump_dismiss();
+		self.pump_dismiss(Ended::Else);
 		self.p.leave(quit)
 	}
 
@@ -4780,8 +4975,11 @@ impl<P: Platform> Desk<P> {
 		waits && self.pump_stop(Stop::Left).is_ok()
 	}
 
-	/// A pump the game offered on the strip: the pump here ends, as it ends one on the wrist (one pump at a time).
+	/// A pump the game offered on the strip: the pump here ends, as it ends one on the wrist (one pump at a time), and
+	/// a line of a pump that ended already says no more either (its Result's or calm card's line still speaking): the
+	/// game's own voice reads its pump on this computer now.
 	pub fn pump_game_offered(&mut self) {
+		self.pump_hush();
 		if self.pumps.run.as_ref().is_some_and(Run::running) {
 			log::info!("pump: the game offered a pump; the pump here ends");
 			let _ = self.pump_stop(Stop::Game);
@@ -4904,6 +5102,13 @@ impl<P: Platform> Desk<P> {
 	/// while a pump runs, and the tray's items.
 	pub fn pump_publish(&mut self) {
 		self.pump_keep_guide();
+		// a Result sent with the streak's goals to choose from: the choice is kept as it ends (`pump_put`)
+		let goal = self.streak_goal_said();
+		if let Some(run) = self.pumps.run.as_mut().filter(|r| !r.goals_shown && !r.running())
+			&& !view::goal_offer(run, goal).is_empty()
+		{
+			run.goals_shown = true;
+		}
 		let topic = view::topic(self);
 		self.publisher.publish(TOPIC, &topic);
 		let running = self.pumps.on();
@@ -4941,6 +5146,17 @@ enum Refit {
 	Pain(Vec<u8>),
 	Profile,
 	Flags(Vec<u8>),
+}
+
+/// Who ends the pump on screen (`Desk::pump_put`; slice 74's rule for a Result's unanswered choices).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Ended {
+	/// The player, by the Result's own end: Continue, the floating card's X, Escape, or its hold run out, which runs
+	/// only after a pick while choices stand (`pump_continue`).
+	Player,
+	/// Anything else: a pump taking its place (work mode's due block, a match's, one the tray or a phone started), the
+	/// window's or QuestPump's Leave, a pump that leaves with no Result.
+	Else,
 }
 
 /// How a pump ends early.

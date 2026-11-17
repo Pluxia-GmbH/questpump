@@ -141,7 +141,7 @@ function measure(w, book, lad, st, kind, said) {
 }
 
 /** The countable forms of a cardio ladder's step the setup allows, in the words' order (road order, slice 54): the
- * Book's `forms` (ns.CountForms with the player's filter, the forms its rung climbs on, as the game's card reads them);
+ * Book's `forms` (ns.CountForms with the setup alone, the forms its rung climbs on, as the game's card reads them);
  * none on a timed rung and none where the setup shuts every form, whose rung climbs by full moves. */
 function formsOf(w, lad, st) {
 	const allowed = new Set(st.forms ?? []);

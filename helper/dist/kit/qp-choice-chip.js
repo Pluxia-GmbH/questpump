@@ -2,7 +2,9 @@
 // card with a line edge and text2 words in a 44-high target, chosen raised with a lineStrong edge, a check and text
 // words; `locked` (a choice of Pro's without Pro: the lock glyph before its words, never chosen); `disabled` (a choice
 // that cannot act now, text3 words: the check-in's answers while the engine folds). A native button pressed while
-// `selected`; `hint` is what its Tooltip says (a gear chip's in Your setup), read after its name.
+// `selected`; `hint` is what its Tooltip says (a gear chip's in Your setup), read after its name. `radio` (one of a
+// ChoiceGroup's, qp-choice-group.js): a radio checked while `selected`, in the focus order only then, or as its
+// group's one `stop` there while none of the group is chosen.
 
 import {KitElement, define, h} from "./element.js";
 
@@ -17,7 +19,14 @@ class QpChoiceChip extends KitElement {
 		const mark = this.locked ? "mark_lock" : this.selected ? "mark_check" : null;
 		this.words.textContent = this.label ?? "";
 		this.control.replaceChildren(...[mark ? h("qp-art", {name: mark}) : null, this.words].filter(Boolean));
-		this.control.setAttribute("aria-pressed", String(this.selected && !this.locked));
+		const chosen = String(this.selected && !this.locked);
+		if (this.radio) {
+			this.control.setAttribute("role", "radio");
+			this.control.setAttribute("aria-checked", chosen);
+			this.control.tabIndex = this.selected || this.stop ? 0 : -1;
+		} else {
+			this.control.setAttribute("aria-pressed", chosen);
+		}
 		this.control.classList.toggle("qp-locked", this.locked);
 		this.control.disabled = this.disabled;
 		if (this.hint) this.control.setAttribute("aria-description", this.hint);
@@ -26,4 +35,4 @@ class QpChoiceChip extends KitElement {
 }
 
 define("qp-choice-chip", QpChoiceChip, {label: String, selected: Boolean, locked: Boolean, disabled: Boolean,
-	hint: String});
+	hint: String, radio: Boolean, stop: Boolean});

@@ -266,7 +266,7 @@ impl<P: Platform> Desk<P> {
 	pub fn publish_setup(&self) {
 		let body = &self.body.body;
 		let on = |switch: &Option<Changed<bool>>| switch.as_ref().is_some_and(|s| s.value);
-		let moves = body.moves.as_ref().map(|m| m.value.clone()).unwrap_or_default();
+		let moves = body.moves.as_ref().map_or_default(|m| m.value.clone());
 		// the setup in force (`Desk::setup_in_force`) beside the place in use's id
 		let (place_id, in_use) = self.place_in_use();
 		let place = self.work_setup().unwrap_or(in_use);
@@ -370,7 +370,7 @@ impl<P: Platform> Desk<P> {
 	/// Book's Include in pumps, each through `Moves::check`), a change of the body made now; nothing when they stay as
 	/// they are.
 	pub fn change_moves(&mut self, change: impl FnOnce(&mut Moves)) {
-		let before = self.body.body.moves.as_ref().map(|m| m.value.clone()).unwrap_or_default();
+		let before = self.body.body.moves.as_ref().map_or_default(|m| m.value.clone());
 		let mut moves = before.clone();
 		change(&mut moves);
 		if moves == before {

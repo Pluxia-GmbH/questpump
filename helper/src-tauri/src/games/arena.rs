@@ -61,7 +61,7 @@ impl Arena {
 				let mut bytes = Vec::new();
 				f.take(HEAD_BYTES).read_to_end(&mut bytes).ok().map(|_| bytes)
 			});
-			let head = head.map(|b| String::from_utf8_lossy(&b).into_owned()).unwrap_or_default();
+			let head = head.map_or_default(|b| String::from_utf8_lossy(&b).into_owned());
 			let began = head.lines().filter_map(arena::line).find(|l| *l == Line::Began);
 			words.extend(began.into_iter().flat_map(word));
 		}

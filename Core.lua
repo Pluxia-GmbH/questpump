@@ -414,8 +414,13 @@ function ns.Plural(key, n)
 	return L[key]
 end
 
+-- A ready line in chat under the addon's prefix: the one place that prints it.
+function ns.PrintLine(line)
+	print(L["chat.prefix"] .. " " .. line)
+end
+
 function ns.Print(key, ...)
-	print(L["chat.prefix"] .. " " .. L[key]:format(...))
+	ns.PrintLine(L[key]:format(...))
 end
 
 -- /qp <name> <args>; each command registers itself with one help line.

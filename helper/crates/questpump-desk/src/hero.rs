@@ -67,7 +67,7 @@ impl Facts {
 	/// A move's name with its id and key; none for a move of a newer library.
 	fn move_name(&self, id: u16) -> Option<MoveName> {
 		let name = self.name(id)?.to_owned();
-		Some(MoveName { id, name, key: self.text(id).map(|t| t.key.clone()).unwrap_or_default() })
+		Some(MoveName { id, name, key: self.text(id).map_or_default(|t| t.key.clone()) })
 	}
 
 	/// The ladder whose rung the rung rule compares a move with (ns.ScaleLadder): its own, else cardio's for a cardio
@@ -940,8 +940,8 @@ fn hero_view(from: &HeroFrom, now: i64) -> HeroView {
 	let f = facts();
 	let (game, own_summary, own) = (from.game, from.own_summary, &from.own);
 	let shown = game.map(|g| &g.summary).or(own_summary);
-	let game_marks = game.map(|g| marks(f, &g.summary, own, true)).unwrap_or_default();
-	let app_marks = own_summary.map(|s| marks(f, s, own, false)).unwrap_or_default();
+	let game_marks = game.map_or_default(|g| marks(f, &g.summary, own, true));
+	let app_marks = own_summary.map_or_default(|s| marks(f, s, own, false));
 	let colours = merged(game_marks, &app_marks);
 	let muscles = f
 		.sheet
@@ -981,11 +981,7 @@ fn hero_view(from: &HeroFrom, now: i64) -> HeroView {
 	// the focus in force: the app's fold's (its latest focus row, the game sheet's as its oldest), else the game
 	// sheet's, Balanced before any (`FreeMode.focusKey`)
 	let focus_code = own_summary.and_then(|s| s.focus).or_else(|| game.and_then(|g| g.summary.focus));
-	let focus = focus_code
-		.and_then(|c| f.focus(c))
-		.or_else(|| f.sheet.focus.first())
-		.map(|w| w.key.clone())
-		.unwrap_or_default();
+	let focus = focus_code.and_then(|c| f.focus(c)).or_else(|| f.sheet.focus.first()).map_or_default(|w| w.key.clone());
 	let level = shown.map_or_else(
 		|| XpLine { level: 1, into: 0, need: f.xp_to_next(1), paragon: 0, rested: 0 },
 		|s| XpLine { level: s.level, into: s.into, need: s.need, paragon: s.paragon, rested: f.rested(s, now) },

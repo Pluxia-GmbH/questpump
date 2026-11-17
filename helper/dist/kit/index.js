@@ -18,6 +18,7 @@ import "./qp-section-label.js";
 import "./qp-toggle.js";
 import "./qp-chip.js";
 import "./qp-choice-chip.js";
+import "./qp-choice-group.js";
 import "./qp-segmented.js";
 import "./qp-slider.js";
 import "./qp-text-input.js";

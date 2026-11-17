@@ -285,8 +285,9 @@ files and `tools/host.lua` to the TOC (`tools/lint.lua`'s `host` section).
 
 To test the phone and watch apps in an emulator or a simulator with no game running, `cargo run --example sim_helper`
 (from `helper/`, `src-tauri/examples/sim_helper.rs`) starts a stand-in helper: the real LAN routes on 127.0.0.1:8787
-with a new pairing key, a pair link for the Android emulator (host 10.0.2.2) and one for the iOS simulator (host
-127.0.0.1, which the apps' pair link refuses until a debug build allows loopback), and a control port on 8788 where a
+with a new pairing key and a pair link for the Android emulator (host 10.0.2.2); started with `--lan <address>`, the
+Mac's own private address, the same routes there too and a pair link for the iOS simulator, whose apps take no
+loopback address; and a control port on 8788 where a
 script queues the game's commands, sets the felt-unwell lock and the unfinished list, and reads the state with `curl`.
 It prints one JSON line per pairing, sync, event and command; the file's header lists the flags and the routes.
 

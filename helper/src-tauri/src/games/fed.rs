@@ -15,12 +15,12 @@
 //! (`shm.rs`); and ELDEN RING's and ELDEN RING NIGHTREIGN's boss banners, read off the game's own window while it runs
 //! (`banner.rs`, Windows). Each feed tells
 //! only `Word`s: that it answered (the game is heard), whether a match runs (questpump-core's `Fed`, which the watcher
-//! turns into a finish that offers at once, as Rocket League's does), and a step the player takes first (Detailed
-//! Logs, a port another program holds, an F1 UDP format to change). A game that ran `SILENT_MS` with no word in this
-//! run asks for its step too (`check_fed`): the loopback games, MTG Arena's and Elite Dangerous' logs and the racing
+//! turns into a finish that offers at once, as Rocket League's does), and a step the player takes first (a port
+//! another program holds, an F1 UDP format to change). A game that ran `SILENT_MS` with no word in this
+//! run asks for its step too (`check_fed`): the loopback games, Elite Dangerous' journal and the racing
 //! games' shared memory (Automobilista 2's for its Shared Memory setting), and Deadlock and Team Fortress 2 for their
-//! launch option `-condebug`, never the UDP games
-//! (silent in their menus), Hearthstone, Mechabellum, Path of Exile, Warframe, Escape from Tarkov and Fortnite (whose
+//! launch option `-condebug`, never the UDP games (silent in their menus), MTG Arena,
+//! Hearthstone, Mechabellum, Path of Exile, Warframe, Escape from Tarkov and Fortnite (whose
 //! logs, on by default, have no step to ask, nor have the log games added later that day), Guild Wars 2 (its link
 //! waits for a character), Slay the Spire 2, World of Warships, Rainbow Six Siege nor the other file games (their
 //! files wait for a run, a battle, a match or a day), nor the ELDEN RING games (no setting of theirs turns a banner
@@ -739,5 +739,5 @@ fn follow<T>(
 	if follows {
 		return look(slot.get_or_insert_with(make));
 	}
-	slot.take().map(|mut reader| look(&mut reader)).unwrap_or_default()
+	slot.take().map_or_default(|mut reader| look(&mut reader))
 }

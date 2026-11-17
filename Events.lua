@@ -163,8 +163,8 @@ end
 -- Standing still: speed 0 (guarded, it can be secret), or on a taxi once the taxi map has closed. nil when unknown.
 function Lc.Moving()
 	if UnitOnTaxi("player") then return false end
-	local speed = GetUnitSpeed("player")
-	if issecretvalue(speed) then return nil end
+	local speed = ns.Readable(GetUnitSpeed("player"))
+	if not speed then return nil end
 	return speed > 0
 end
 

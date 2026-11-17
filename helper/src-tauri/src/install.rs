@@ -74,7 +74,7 @@ const AGENT_UIDS: [&str; 2] = ["agent", "battle.net"];
 /// rewriting it, another schema).
 fn battlenet_products() -> Vec<ProductInstall> {
 	let Some(db) = agent_database().and_then(|p| std::fs::read(p).ok()) else { return Vec::new() };
-	Database::decode(db.as_slice()).map(|db| db.products).unwrap_or_default()
+	Database::decode(db.as_slice()).map_or_default(|db| db.products)
 }
 
 /// A product's install folder, when it is there on this computer's own disks (`on_this_computer`).

@@ -485,7 +485,7 @@ impl Watched {
 		let lower = image.to_ascii_lowercase();
 		let own = |names: &[&str]| names.iter().any(|n| n.eq_ignore_ascii_case(image));
 		let bootstrap = self.windows_images().iter().any(|i| {
-			let stem = i.strip_suffix(".exe").unwrap_or(i);
+			let stem = i.trim_suffix(".exe");
 			lower == format!("{}_eac.exe", stem.to_ascii_lowercase())
 		});
 		bootstrap
@@ -1087,7 +1087,7 @@ impl Watcher {
 				"gameover" => (false, true),
 				_ => (false, false),
 			},
-			Gsi::Dota => match phase.strip_prefix("DOTA_GAMERULES_STATE_").unwrap_or(phase) {
+			Gsi::Dota => match phase.trim_prefix("DOTA_GAMERULES_STATE_") {
 				"GAME_IN_PROGRESS" => {
 					*feed = Feed { in_match: true, armed: true };
 					(false, false)

@@ -1,19 +1,20 @@
 //! A stand-in for the QuestPump helper, to test the phone and watch apps in the Android emulator and the iOS simulator
 //! with no game and no tray app running (docs/plan.md slice 7; `contract/companion-api.yaml`). It serves the helper's
 //! own LAN routes (`src/lan.rs`: the bearer, the seal, the real held sync, 5 s or a request's `wait` up to 15 s) on
-//! the loopback only, answers what they ask like a paired helper with one character (the sheet, the unfinished list,
-//! the history, the sheets and the app rows of `contract/fixtures/wire.json`, paged as the helper pages them), and
-//! takes the game's side from a script: commands, the felt-unwell lock, the unfinished list and the helper block's
-//! game, on a second loopback port. It is an example of the helper crate, so it never ships.
+//! the loopback, and with `--lan` on this computer's own address too, answers what they ask like a paired helper with
+//! one character (the sheet, the unfinished list, the history, the sheets and the app rows of
+//! `contract/fixtures/wire.json`, paged as the helper pages them), and takes the game's side from a script: commands,
+//! the felt-unwell lock, the unfinished list and the helper block's game, on a second loopback port. It is an example
+//! of the helper crate, so it never ships.
 //!
 //! Run it from `helper/` (Ctrl-C stops it, as does `POST /quit`):
 //!
 //! ```text
-//! cargo run --example sim_helper -- [--port 8787] [--control-port <port + 1>] [--key <base64url>]
+//! cargo run --example sim_helper -- [--port 8787] [--control-port <port + 1>] [--key <base64url>] [--lan <address>]
 //! ```
 //!
 //! Each run makes a new pairing key unless `--key` repeats one (the `ready` line prints it). stdout carries one JSON
-//! line per thing that happened, `ts` and `type` first: `ready` (the ports, the key, the bearer and the two pair
+//! line per thing that happened, `ts` and `type` first: `ready` (the ports, the key, the bearer and the pair
 //! links), `pair`, `sync` (a device's sample count, its last heart rate, its event count, the lock it was answered),
 //! `wrist` and `command` (the helper socket's own lines: a device's pump event, a command queued), `catch_up` (the owed
 //! moves a catch-up pump paid), `rows` (a phone's app rows: how many came, were new and were dropped), `received` (a
@@ -25,9 +26,12 @@
 //! The pair links: `android_emulator` names 10.0.2.2, which an Android emulator reaches as the Mac's loopback
 //! (developer.android.com, "Network addresses"). The phone (`adb -s <phone> shell "am start -a
 //! android.intent.action.VIEW -d '<link>' ai.pluxia.questpump"`) or a debug watch (`adb -s <watch> shell "am broadcast
-//! -n ai.pluxia.questpump/ai.pluxia.questpump.wear.DebugPair --es link '<link>'"`) takes it. `ios_simulator` names
-//! 127.0.0.1, which the simulator shares with the Mac, but the apps' pair link takes only private addresses, and
-//! loopback is none: the iPhone app and the watch's `-pairLink` refuse it until a debug build allows loopback.
+//! -n ai.pluxia.questpump/ai.pluxia.questpump.wear.DebugPair --es link '<link>'"`) takes it. `ios_simulator` is null
+//! without `--lan <address>`: a simulator shares the Mac's network, but the apps' pair link takes only private
+//! addresses, and the loopback is none. So the flag names this Mac's own private address (`ipconfig getifaddr en0`
+//! prints its first network port's), the stand-in listens there too, and the link carries it: the iPhone app takes it
+//! as any pair link, a Debug watch at its launch (`-pairLink '<link>' -showcase link`). Without the flag nothing
+//! listens beyond the loopback, so no firewall asks about the stand-in.
 //!
 //! The control port, all JSON (`contract/companion-api.yaml` names every command field):
 //!
@@ -82,7 +86,7 @@
 
 use std::collections::BTreeMap;
 use std::fmt::Display;
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
@@ -123,17 +127,21 @@ const ANDROID_HOST: Ipv4Addr = Ipv4Addr::new(10, 0, 2, 2);
 /// The contract's example bodies: the stand-in's character, its unfinished list, its history, its sheets and its app
 /// rows.
 const WIRE: &str = include_str!("../../../contract/fixtures/wire.json");
-const USAGE: &str = "usage: sim_helper [--port 8787] [--control-port <port + 1>] [--key <base64url of 32 bytes>]";
+const USAGE: &str =
+	"usage: sim_helper [--port 8787] [--control-port <port + 1>] [--key <base64url of 32 bytes>] [--lan <address>]";
 
 struct Args {
 	port: u16,
 	control: u16,
 	key: Option<[u8; 32]>,
+	/// This computer's own private address, where the LAN routes are served too and which the iOS simulator's pair
+	/// link names.
+	lan: Option<IpAddr>,
 }
 
 impl Args {
 	fn parse() -> anyhow::Result<Self> {
-		let (mut port, mut control, mut key) = (pair::PORT, None, None);
+		let (mut port, mut control, mut key, mut lan) = (pair::PORT, None, None, None);
 		let mut args = std::env::args().skip(1);
 		while let Some(flag) = args.next() {
 			let value = args.next().with_context(|| format!("{flag} takes a value; {USAGE}"))?;
@@ -144,6 +152,7 @@ impl Args {
 					let bytes = URL_SAFE_NO_PAD.decode(&value).ok().and_then(|k| <[u8; 32]>::try_from(k).ok());
 					key = Some(bytes.context("--key takes the 32-byte key in base64url, as `ready` prints it")?);
 				}
+				"--lan" => lan = Some(private_address(&value)?),
 				_ => bail!("unknown flag {flag}; {USAGE}"),
 			}
 		}
@@ -151,13 +160,18 @@ impl Args {
 			Some(c) => c,
 			None => port.checked_add(1).context("--port 65535 leaves no control port; pass --control-port")?,
 		};
-		Ok(Self { port, control, key })
+		Ok(Self { port, control, key, lan })
 	}
 }
 
 /// A port the apps' pair link accepts (1024-65535).
 fn listen_port(value: &str) -> anyhow::Result<u16> {
 	value.parse().ok().filter(|&p| p >= 1024).with_context(|| format!("{value}: a port in 1024-65535"))
+}
+
+/// An address the apps' pair link accepts (`pair::is_private`).
+fn private_address(value: &str) -> anyhow::Result<IpAddr> {
+	value.parse().ok().filter(pair::is_private).with_context(|| format!("{value}: a private address of this computer"))
 }
 
 /// The helper's clock as its socket's lines write it (`runtime.rs` `now`): RFC 3339 in UTC with milliseconds.
@@ -754,15 +768,21 @@ async fn main() -> anyhow::Result<()> {
 	let mut hid = [0; 16]; // a stand-in install's id, so its hello answers as a helper's does
 	rand::fill(&mut hid);
 	let seed = seed()?;
-	let served = TcpListener::bind((Ipv4Addr::LOCALHOST, args.port))
+	let loopback = TcpListener::bind((Ipv4Addr::LOCALHOST, args.port))
 		.await
 		.with_context(|| format!("the LAN routes on 127.0.0.1:{}", args.port))?;
+	let mut served = vec![loopback];
+	if let Some(host) = args.lan {
+		let at = SocketAddr::new(host, args.port);
+		served.push(TcpListener::bind(at).await.with_context(|| format!("the LAN routes on {at}"))?);
+	}
 	let controlled = TcpListener::bind((Ipv4Addr::LOCALHOST, args.control))
 		.await
 		.with_context(|| format!("the control routes on 127.0.0.1:{}", args.control))?;
 	let links = Links::new(now_ms());
 	let (asks_tx, asks) = mpsc::unbounded_channel();
-	// the address every response carries: a device follows only a private one, so neither emulator moves off its link
+	// the address every response carries: a device follows only a private one, so no emulator or simulator moves off
+	// its link
 	let helper = Helper {
 		name: NAME.to_owned(),
 		host: Ipv4Addr::LOCALHOST.to_string(),
@@ -777,10 +797,8 @@ async fn main() -> anyhow::Result<()> {
 		ble: None,
 	};
 	let lan = Lan::new(&key, links.clone(), helper, asks_tx, Duration::from_millis(link::HOLD_MS.unsigned_abs()));
-	let pair_link = |host| {
-		PairLink { host: IpAddr::V4(host), port: args.port, key, name: NAME.to_owned(), mdns: None, hid: Some(hid) }
-			.to_url()
-	};
+	let pair_link =
+		|host| PairLink { host, port: args.port, key, name: NAME.to_owned(), mdns: None, hid: Some(hid) }.to_url();
 	let ready = json!({
 		"lan": format!("127.0.0.1:{}", args.port),
 		"control": format!("127.0.0.1:{}", args.control),
@@ -788,12 +806,15 @@ async fn main() -> anyhow::Result<()> {
 		"wait_max_ms": link::WAIT_MAX_MS,
 		"key": URL_SAFE_NO_PAD.encode(key),
 		"bearer": Keys::derive(&key).bearer,
-		"pair_links": {"android_emulator": pair_link(ANDROID_HOST), "ios_simulator": pair_link(Ipv4Addr::LOCALHOST)},
+		"pair_links": {
+			"android_emulator": pair_link(IpAddr::V4(ANDROID_HOST)),
+			"ios_simulator": args.lan.map(pair_link),
+		},
 	});
 	let (quitting, stopped) = watch::channel(false);
 	let world = Mutex::new(World::new(seed, now_ms())?);
 	let sim = Arc::new(Sim { links, lan: lan.clone(), ready: ready.clone(), world, quit: quitting });
-	tokio::spawn(lan::serve(vec![served], lan, stopped.clone()));
+	tokio::spawn(lan::serve(served, lan, stopped.clone()));
 	tokio::spawn(answer(sim.clone(), asks));
 	print_event("ready", ready);
 	let routes = Router::new()

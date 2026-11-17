@@ -52,10 +52,20 @@ info:
     only while a switch reads on, by the player's answer or by the region, or the coach's consent is given, and the
     moment one of them turns so; with both switches off and the coach off nothing starts, so nothing reaches Google
     (FirebaseAnalyticsCore registers a Firebase installation as Firebase starts, whatever its collection says, seen
-    2026-10-12 with GoogleAppMeasurement 13.0.1). Until Firebase starts, a crash is not captured and a feedback
-    message goes without an App Check token. Android's Firebase starts with the app and sends nothing while both
-    switches read off and the coach is off (seen in an emulator's capture, 2026-10-12); Google Play Billing's own
-    diagnostics go at each start whatever the switches say (the privacy page names them).
+    2026-10-12 with GoogleAppMeasurement 13.0.1). Until Firebase starts, a crash is not captured and no App Check
+    token is asked: a sync request and a feedback message go without one, and a coach report, which never goes
+    without one, waits. Android's Firebase starts with the app and sends nothing while both switches read off and the
+    coach is off: what it would send by itself is held off in the build and by the switches (below), and the request
+    to Google that a sync request or a feedback message would bring along, the ask for an App Check token (the
+    exchange of the device's attestation), is made only while one of the three reads on, read at each ask. So there
+    too a sync request and a feedback message then go without a token, on their routes' limits for a request without
+    one (sync-api.yaml, "App Check"; feedback-api.yaml), and a coach report waits (since 2026-11-16, in the builds
+    after 3710020; up to that build each sync request and each feedback message asked, whatever the switches said).
+    Seen in an emulator's capture, 2026-10-12 and 2026-11-14, and on 2026-11-16 with Sync on: through a first start
+    in an opt-in region, Reject all, a Quick pump and the sync cycles after it, the app's connections went to
+    questpump.com and to Play Billing's log alone, none to `firebaseappcheck.googleapis.com`; with Send crash reports
+    turned on the next sync request asked for a token, and with it off again the one after asked for none. Google
+    Play Billing's own diagnostics go at each start whatever the switches say (the privacy page names them).
 
     **Fitness points need the player's own yes on a phone.** A count point marked `fitness` in telemetry.json (pumps,
     the 14-day done ratio, move quality, the training setup, the first pump, the talent trees' cards and starts, and

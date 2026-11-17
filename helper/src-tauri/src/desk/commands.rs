@@ -113,8 +113,8 @@ pub async fn save_image(app: AppHandle, request: Request<'_>) -> Result<bool, St
 /// its progress comes on the `reel` topic.
 ///
 /// # Errors
-/// The body is no bytes, the loop does not run, or it refused the order (a pump runs, felt unwell rests the pumps, the
-/// plan or a layer does not hold).
+/// The body is no bytes, the loop does not run, or it refused the order (a pump runs, or the plan, a move's film or a
+/// layer does not hold).
 #[tauri::command]
 pub async fn reel_make(request: Request<'_>, state: State<'_, Shared>) -> Result<u64, String> {
 	let InvokeBody::Raw(bytes) = request.body() else { return Err("a reel's order as the body".to_owned()) };

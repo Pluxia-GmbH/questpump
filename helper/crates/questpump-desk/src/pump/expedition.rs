@@ -638,7 +638,7 @@ impl<P: Platform> Desk<P> {
 				moves: trip.done.len(),
 				records: result.map_or(0, view::Earned::records),
 				xp: result.and_then(view::Earned::xp).unwrap_or(0),
-				brag: result.map(|r| r.brag(trip.top)).unwrap_or_default(),
+				brag: result.map_or_default(|r| r.brag(trip.top)),
 				longest: trip.longest,
 			}
 		});

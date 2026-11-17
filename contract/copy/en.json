@@ -4701,7 +4701,7 @@
    "platforms": [
     "windows"
    ],
-   "note": "Shown while Windows says a screen reader runs (Narrator, NVDA, JAWS): while QuestPump's window has the focus a pump's lines are said by the screen reader, never by QuestPump's voice over it; with the window behind another, hidden or minimized, QuestPump's voice says them."
+   "note": "Shown while Windows says a screen reader runs (NVDA and JAWS set the flag the app reads; Narrator does not, so under Narrator alone this line never shows and QuestPump's voice says the lines): while QuestPump's window has the focus a pump's lines are said by the screen reader, never by QuestPump's voice over it; with the window behind another, hidden or minimized, QuestPump's voice says them."
   },
   "desk.sound.system": {
    "text": "This computer's sound",
@@ -5408,12 +5408,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "args": {
     "minutes": "int"
@@ -6730,11 +6724,12 @@
     "Fanfare"
    ],
    "platforms": [
+    "ios",
     "android",
     "macos",
     "windows"
    ],
-   "note": "The fanfare's title after an app pump that no quest started (a Quick pump, a pump after a match or a stream), where Quest complete would say a quest was turned in."
+   "note": "The fanfare's title after an app pump that no quest started (a Quick pump, a pump after a match or a stream), where Quest complete would say a quest was turned in. On the iPhone too since slice 75 (2026-11-16), after a pump the player started in the app."
   },
   "kit.fanfare.quest": {
    "text": "Quest complete",
@@ -17716,6 +17711,13 @@
    ],
    "note": "The question after a counted set (slice 42; since slice 53 it asks the effort too): {move} the form (Squat thrusts). Its answers: Yes, to the end, Form slipped and Not all out."
   },
+  "pump.count.form.ask": {
+   "text": "All out and clean?",
+   "screens": [
+    "pump.count"
+   ],
+   "note": "The phones' question at the count after a counted set, over its answers Yes, to the end, Form slipped and Not all out: one line under the move's name, which stays in its place through the count (slice 75, since 2026-11-16; until then pump.count.form stood in the name's place). pump.count.form, with the name, stays the count's spoken label for VoiceOver and TalkBack and the head on the computer."
+  },
   "pump.count.hold": {
    "text": "{move}: how many seconds?",
    "args": {
@@ -17729,6 +17731,13 @@
    ],
    "note": "The question after a hold: how long it was held. {move} is the move's name, such as Wall sit."
   },
+  "pump.count.hold.ask": {
+   "text": "How many seconds?",
+   "screens": [
+    "pump.count"
+   ],
+   "note": "The phones' question at the count after a hold: one line under the move's name, which stays in its place through the count (slice 75, since 2026-11-16; until then pump.count.hold stood in the name's place). pump.count.hold, with the name, stays the count's spoken label for VoiceOver and TalkBack and the head on the computer and in the correction window."
+  },
   "pump.count.hold.side": {
    "text": "{move}: seconds on your weaker side?",
    "args": {
@@ -17741,6 +17750,13 @@
     "desk.book.correct"
    ],
    "note": "The question after a hold done on each side: the seconds of the weaker side. {move} is the move's name."
+  },
+  "pump.count.hold.side.ask": {
+   "text": "Seconds on your weaker side?",
+   "screens": [
+    "pump.count"
+   ],
+   "note": "The phones' question at the count after a hold done on each side: one line under the move's name, which stays in its place through the count (slice 75, since 2026-11-16; until then pump.count.hold.side stood in the name's place). pump.count.hold.side, with the name, stays the count's spoken label for VoiceOver and TalkBack and the head on the computer and in the correction window."
   },
   "pump.count.kg": {
    "text": "kg",
@@ -17854,6 +17870,13 @@
    ],
    "note": "The question after a move of reps. {move} is the move's name, such as Desk push-up."
   },
+  "pump.count.reps.ask": {
+   "text": "How many reps?",
+   "screens": [
+    "pump.count"
+   ],
+   "note": "The phones' question at the count after a move of reps: one line under the move's name, which stays in its place through the count (slice 75, since 2026-11-16; until then pump.count.reps stood in the name's place). pump.count.reps, with the name, stays the count's spoken label for VoiceOver and TalkBack and the head on the computer and in the correction window."
+  },
   "pump.count.reps.side": {
    "text": "{move}: how many on your weaker side?",
    "args": {
@@ -17866,6 +17889,13 @@
     "desk.book.correct"
    ],
    "note": "The question after a move of reps done on each side: the count of the weaker side. {move} is the move's name."
+  },
+  "pump.count.reps.side.ask": {
+   "text": "How many on your weaker side?",
+   "screens": [
+    "pump.count"
+   ],
+   "note": "The phones' question at the count after a move of reps done on each side: one line under the move's name, which stays in its place through the count (slice 75, since 2026-11-16; until then pump.count.reps.side stood in the name's place). pump.count.reps.side, with the name, stays the count's spoken label for VoiceOver and TalkBack and the head on the computer and in the correction window."
   },
   "pump.count.save": {
    "text": "Save",
@@ -18219,17 +18249,6 @@
    "max": 24,
    "note": "The follow card's button and the helper page's while Apple Health was never asked: shows Health's own permission sheet (2026-10-14). Apple Health is Apple's app: keep its name."
   },
-  "pump.follow.ble.allow": {
-   "text": "Allow Nearby devices",
-   "screens": [
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Asks Android's Nearby devices permission again."
-  },
   "pump.follow.ble.denied.ios": {
    "text": "QuestPump may not use Bluetooth on this {device}. Allow it in Settings to follow the game while it's locked.",
    "args": {
@@ -18243,28 +18262,6 @@
     "ios"
    ],
    "note": "The iPhone's state ble_denied (2026-10-17): Settings turned off QuestPump's Bluetooth or its accessory's access, while this device's Bluetooth is on. Open Settings goes to QuestPump's page there. {device} is the device's own word, iPhone or iPad (AboutPage.device; 2026-10-19)."
-  },
-  "pump.follow.ble.nearby": {
-   "text": "Allow Nearby devices for QuestPump, so this phone can follow the game by Bluetooth.",
-   "screens": [
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Nearby devices is Android's name for the permission: use the system's own words."
-  },
-  "pump.follow.ble.off": {
-   "text": "Bluetooth is off on this phone. Turn it on so pumps reach it also away from your Wi-Fi.",
-   "screens": [
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Android follows the game with the screen off on Wi-Fi already: the line names only what Bluetooth adds (2026-10-17)."
   },
   "pump.follow.ble.off.ios": {
    "text": "Bluetooth is off on this {device}. Turn it on in Control Center to follow the game while it's locked.",
@@ -18285,21 +18282,13 @@
    "screens": [
     "pump.tab"
    ],
+   "platforms": [
+    "ios"
+   ],
    "args": {
     "computer": "string"
    },
    "note": "The follow card's button: links {computer}, the computer's name, by Bluetooth (2026-10-22: no line over it)."
-  },
-  "pump.follow.ble.turnon": {
-   "text": "Turn on Bluetooth",
-   "screens": [
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Opens Android's question to turn Bluetooth on."
   },
   "pump.follow.control.about": {
    "text": "Shows each pump from the game on your Lock Screen.",
@@ -18470,12 +18459,18 @@
     "menu.helper",
     "setup.pairing"
    ],
+   "platforms": [
+    "ios"
+   ],
    "note": "The computer has not answered QuestPump's Bluetooth question yet (ble ask)."
   },
   "pump.helper.ble.away": {
    "text": "Linked, out of reach",
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ],
    "note": "The Bluetooth link row's state: linked, the computer not in Bluetooth range now."
   },
@@ -18488,12 +18483,18 @@
     "pump.tab",
     "menu.helper",
     "setup.pairing"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "pump.helper.ble.linked": {
    "text": "Linked",
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ],
    "note": "The Bluetooth link row's state: linked and in reach."
   },
@@ -18504,6 +18505,9 @@
    },
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "pump.helper.ble.noperipheral": {
@@ -18513,6 +18517,9 @@
    },
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ],
    "note": "ble no_peripheral: a Windows PC whose Bluetooth adapter cannot serve phones."
   },
@@ -18526,12 +18533,18 @@
     "menu.helper",
     "setup.pairing"
    ],
+   "platforms": [
+    "ios"
+   ],
    "note": "ble no_grant: the computer refused QuestPump's Bluetooth (macOS's Privacy & Security, or Windows' privacy settings or a policy). The phone cannot tell a Mac from a PC, so the words send the player to the computer's Phones page, which names the place (2026-10-17)."
   },
   "pump.helper.ble.remove": {
    "text": "Remove the Bluetooth link",
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "pump.helper.ble.stopped": {
@@ -18544,18 +18557,27 @@
     "menu.helper",
     "setup.pairing"
    ],
+   "platforms": [
+    "ios"
+   ],
    "note": "ble stopped: the player turned the link off on the computer, or it could not start there."
   },
   "pump.helper.ble.title": {
    "text": "Bluetooth link",
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "pump.helper.ble.unlinked": {
    "text": "Not linked",
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "pump.helper.blind": {
@@ -18597,6 +18619,9 @@
    },
    "screens": [
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "pump.helper.linked.wifi": {
@@ -20085,6 +20110,17 @@
    "noPlural": true,
    "note": "On an app pump's result when it was the first pump after two or more whole game days without one (the game's Welcome back, slice 27: +50 XP and +2 Spirit). {xp} is the XP it paid, with the streak's share. A reward, never worded as a debt."
   },
+  "pump.reward.welcome.plain": {
+   "text": "Welcome back",
+   "screens": [
+    "RewardRow",
+    "desk.expedition.done",
+    "desk.pump.done",
+    "expedition.done",
+    "pump.done"
+   ],
+   "note": "An app pump's, a catch-up's or a timed pump's Result when its first move came after two or more whole game days with no performed move and the app does not know the XP (slice 74): a player whose Hero shows the game's sheet, which pays Welcome back when the pump's rows reach the game. The row leads the Result as pump.reward.welcome does, in its place, never beside it, and with it no streak moment shows. No number, since the phone would have to invent it. A reward, never worded as a debt or a loss."
+  },
   "pump.reward.xp": {
    "text": "+{xp} XP",
    "args": {
@@ -20450,7 +20486,58 @@
     "watch.summary"
    ],
    "max": 22,
-   "note": "The streak's moment on the Result (slice 72), under the streak's count as it rolls to today's number, and the streak's row on a watch's Summary: {day} is the streak's day and {goal} the next milestone it runs toward (Day 3 of 7; the milestones are 7, 30, 100, 365 and on). Past the last milestone the count stands alone. Never worded as a deadline or a loss."
+   "note": "The streak's moment on the Result (slice 72), under the streak's count as it rolls to today's number, and the streak's row on a watch's Summary: {day} is the streak's day and {goal} the number it runs toward: since slice 74 the player's own streak goal while it is on or ahead of the day (Day 3 of 14, and Day 14 of 14 on the day that reaches it), else the next milestone (Day 3 of 7; the milestones are 7, 30, 100, 365 and on). Past the last milestone the count stands alone. Never worded as a deadline or a loss."
+  },
+  "pump.streak.goal": {
+   "text": "Your goal",
+   "screens": [
+    "desk.streak",
+    "pump.streak"
+   ],
+   "note": "Caps over the streak goal's words (14-day streak) and its bar on the streak page (slice 74), in the place of Next milestone (pump.streak.next) while the player's own goal is on or ahead of the streak's day."
+  },
+  "pump.streak.goal.days": {
+   "text": "{days} days",
+   "args": {
+    "days": "int"
+   },
+   "plural": {
+    "one": "{days} day",
+    "other": "{days} days"
+   },
+   "screens": [
+    "desk.pump.done",
+    "desk.streak",
+    "pump.done",
+    "pump.streak"
+   ],
+   "note": "A choice of the streak's goal (slice 74): a chip on the Result's streak moment, one of up to three, and on the streak page's Streak goal row, one for each step above the streak's day; each a number of days the player may pick as their own streak goal (7 days, 14 days, 30 days; the steps are 7, 14, 30, 50, 100 and 365). The chip says the days alone, with no verb. Never worded as a deadline or a loss."
+  },
+  "pump.streak.goal.none": {
+   "text": "None",
+   "screens": [
+    "desk.streak",
+    "pump.streak"
+   ],
+   "note": "A chip on the streak page's Streak goal row (slice 74), before the steps' chips: the player has no streak goal, and the day shows against the next milestone. Chosen while no goal is on or ahead of the streak's day. Never worded as a loss."
+  },
+  "pump.streak.goal.pick": {
+   "text": "Streak goal",
+   "screens": [
+    "desk.pump.done",
+    "desk.streak",
+    "pump.done",
+    "pump.streak"
+   ],
+   "note": "The streak goal's choices (slice 74): the caps label over the group of choices, on the Result's streak moment (in the look of Day streak over it) and on the streak page, where the player changes the goal later, and the group's name for a screen reader, read once. The choices under it are pump.streak.goal.days and, on the streak page, pump.streak.goal.none."
+  },
+  "pump.streak.goal.reached": {
+   "text": "Reached today",
+   "screens": [
+    "desk.streak",
+    "pump.streak"
+   ],
+   "note": "Under the streak goal's bar on the streak page on the day the streak reaches the player's goal (slice 74), in the place of the days to go (pump.streak.next.togo). Never worded as an end."
   },
   "pump.streak.month.earlier": {
    "text": "Earlier month",
@@ -22720,20 +22807,10 @@
     "pump.tab",
     "menu.helper"
    ],
-   "note": "The button that links this phone to the computer by Bluetooth (the iPhone's accessory picker, Android's Nearby devices and companion-device dialog)."
-  },
-  "setup.ble.picker": {
-   "text": "QuestPump on {computer}",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "system"
-   ],
    "platforms": [
     "ios"
    ],
-   "note": "The item's name in iOS's accessory picker and in Settings, Accessories; QuestPump is the app's name."
+   "note": "The button that links this phone to the computer by Bluetooth (the iPhone's accessory picker, Android's Nearby devices and companion-device dialog)."
   },
   "setup.camera.failed.title": {
    "text": "The camera did not start",
@@ -22927,6 +23004,9 @@
    },
    "screens": [
     "setup.pairing"
+   ],
+   "platforms": [
+    "ios"
    ]
   },
   "setup.pairing.ble.failed": {
@@ -22938,17 +23018,10 @@
     "setup.pairing",
     "menu.helper"
    ],
-   "note": "The computer advertises while a phone is paired or its pairing code shows (its Phones page or its pairing window), and the pairing code's page asks the Mac's Bluetooth grant in context, so showing the code is the step that always works (2026-10-17)."
-  },
-  "setup.pairing.ble.instead": {
-   "text": "{computer} did not answer on this Wi-Fi. Pair by Bluetooth instead: keep this phone near it while QuestPump shows its pairing code there.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing"
+   "platforms": [
+    "ios"
    ],
-   "note": "Over Pair by Bluetooth after the pairing failed on the LAN; the computer advertises while its pairing code shows (its Phones page or its pairing window) and asks the Mac's Bluetooth grant there (2026-10-17)."
+   "note": "The computer advertises while a phone is paired or its pairing code shows (its Phones page or its pairing window), and the pairing code's page asks the Mac's Bluetooth grant in context, so showing the code is the step that always works (2026-10-17)."
   },
   "setup.pairing.ble.later": {
    "text": "Not now",
@@ -22956,20 +23029,10 @@
     "pump.tab",
     "setup.pairing"
    ],
-   "note": "Skips the Bluetooth step; Pump's follow card and the Helper page offer it again. On Pump's follow card (2026-10-19, the program's double-check) it puts away the card's Bluetooth reason (the link, Nearby devices or Bluetooth refused or off, the computer's ask, its Bluetooth refused or off) for this pairing; a new pairing or Link on the Helper page brings it back, and the Helper page still offers the link. On the iPhone it also puts away the card's Apple Health reason for this pairing (Rapha, 2026-11-11); a new pairing brings it back."
-  },
-  "setup.pairing.ble.line": {
-   "text": "Connect this phone to {computer} by Bluetooth. Then pumps reach it away from your Wi-Fi too, and QuestPump restarts on its own if Android closes it.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing"
-   ],
    "platforms": [
-    "android"
+    "ios"
    ],
-   "note": "The Bluetooth step's line on Android; {computer} is the computer's name. Android follows the game with the screen off on Wi-Fi already: the line names only what Bluetooth adds (2026-10-17)."
+   "note": "Skips the Bluetooth step; Pump's follow card and the Helper page offer it again. On Pump's follow card (2026-10-19, the program's double-check) it puts away the card's Bluetooth reason (the link, Nearby devices or Bluetooth refused or off, the computer's ask, its Bluetooth refused or off) for this pairing; a new pairing or Link on the Helper page brings it back, and the Helper page still offers the link. On the iPhone it also puts away the card's Apple Health reason for this pairing (Rapha, 2026-11-11); a new pairing brings it back."
   },
   "setup.pairing.ble.line.ios": {
    "text": "Link this {device} to {computer} by Bluetooth. Then each pump shows on your Lock Screen, also while it's locked or away from your Wi-Fi.",
@@ -22993,31 +23056,10 @@
    "screens": [
     "setup.pairing",
     "menu.helper"
+   ],
+   "platforms": [
+    "ios"
    ]
-  },
-  "setup.pairing.ble.location": {
-   "text": "Turn on Location while you link. Then Android starts QuestPump again by itself if it ever stops it.",
-   "screens": [
-    "setup.pairing",
-    "menu.helper"
-   ],
-   "platforms": [
-    "android"
-   ],
-   "note": "While the phone's Location is off: Android's companion-device link needs it on to find the computer."
-  },
-  "setup.pairing.ble.nearby": {
-   "text": "Next, Android asks if QuestPump may find nearby devices. QuestPump looks only for {computer}.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing"
-   ],
-   "platforms": [
-    "android"
-   ],
-   "note": "Before Android's own Nearby devices question; QuestPump never asks for location."
   },
   "setup.pairing.ble.other": {
    "text": "The QuestPump that answered is not {computer} with this pairing code. Try again and pick the other one in the list, or scan its pairing code again.",
@@ -23028,14 +23070,10 @@
     "setup.pairing",
     "menu.helper"
    ],
-   "note": "The computer picked over Bluetooth is not the one this phone is paired with. The list (the iPhone's accessory picker, Android's companion-device dialog) cannot tell two QuestPump computers apart by name, so the words point to the other entry (2026-10-17). Since 2026-11-01 the Bluetooth hello proves only the key (the release security review of 2026-10-31, L3), so the paired computer with a new pairing code reads as another computer, and the words name both ways out."
-  },
-  "setup.pairing.ble.pair": {
-   "text": "Connect by Bluetooth",
-   "screens": [
-    "setup.pairing"
+   "platforms": [
+    "ios"
    ],
-   "note": "Pairs over Bluetooth after the computer did not answer on the Wi-Fi."
+   "note": "The computer picked over Bluetooth is not the one this phone is paired with. The list (the iPhone's accessory picker, Android's companion-device dialog) cannot tell two QuestPump computers apart by name, so the words point to the other entry (2026-10-17). Since 2026-11-01 the Bluetooth hello proves only the key (the release security review of 2026-10-31, L3), so the paired computer with a new pairing code reads as another computer, and the words name both ways out."
   },
   "setup.pairing.ble.pick": {
    "text": "In the list that opens, pick QuestPump on {computer}.",
@@ -23054,6 +23092,9 @@
    "text": "Link by Bluetooth",
    "screens": [
     "setup.pairing"
+   ],
+   "platforms": [
+    "ios"
    ],
    "note": "The pairing window's step after Paired, before the game's step (slice 43): it links this phone to the computer by Bluetooth."
   },
@@ -23280,20 +23321,6 @@
    ],
    "note": "Android only: title of the window before Android asks for two permissions the phone's pumps use."
   },
-  "setup.plist.bluetooth": {
-   "text": "QuestPump links to QuestPump on your computer by Bluetooth, so each pump from the game reaches this device while it is locked.",
-   "screens": [
-    "system"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "plist": {
-    "target": "QuestPump",
-    "key": "NSBluetoothAlwaysUsageDescription"
-   },
-   "note": "The Bluetooth usage string of the iPhone app (apple/project.yml), on iPads too. Says \"this device\", not \"iPhone\": an Info.plist string takes no placeholder, and the iPhone app runs on iPads too since 2026-10-15 (2026-10-19)."
-  },
   "setup.plist.camera": {
    "text": "QuestPump scans the QR code on your computer to pair, and the sheet code the game shows.",
    "screens": [
@@ -23368,12 +23395,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A share card's headline when its pump opened a step of a colour the player had not reached before: the colour's name (Rare, Epic). The seal stands beside it.",
    "args": {
     "colour": "string"
@@ -23384,12 +23405,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Under a colour headline: the main move of the step that opened.",
    "args": {
@@ -23402,12 +23417,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A timed pump card's headline when nothing else stands out: the streak's day the pump kept.",
    "args": {
     "days": "int"
@@ -23419,12 +23428,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Under the Day headline: the streak the pump kept.",
    "args": {
@@ -23441,12 +23444,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Under the minutes headline of a timed pump card."
   },
   "share.brag.minutes": {
@@ -23454,12 +23451,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "A timed pump card's headline when it was the player's longest timed pump yet.",
    "args": {
@@ -23476,12 +23467,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "A share card's headline when its pump set a record (slice 51 share cards, Rapha, 2026-10-21): the move's name and the new record as the record row writes it (22, 45 s). The seal stands beside it.",
    "args": {
     "move": "string",
@@ -23494,12 +23479,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Under a record headline when there was no record before it."
   },
   "share.brag.record.up": {
@@ -23507,12 +23486,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Under a record headline: the record it beat, written as the record row writes it (19, 40 s).",
    "args": {
@@ -23524,12 +23497,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The streak card's headline.",
    "args": {
@@ -23546,12 +23513,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Under the streak card's headline when this streak is the player's best."
   },
   "share.brag.streak.was": {
@@ -23559,12 +23520,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Under the streak card's headline when the player's best streak is longer.",
    "args": {
@@ -23792,12 +23747,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The rarity line under a colour headline, from questpump.com's standing (contract/standing-api.yaml): the share of players whose highest colour is this one or above, written as a percentage (0.8%, 6%), and the colour's name. Shown only for a share from 0.1% to 25%.",
    "args": {
     "percent": "string",
@@ -23810,12 +23759,6 @@
     "desk.share",
     "share.window"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "The rarity line under a colour headline when the share is under 0.1%.",
    "args": {
     "colour": "string"
@@ -23826,12 +23769,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The rarity line under a streak or Day headline, from questpump.com's standing: the share of players whose best streak reached the highest threshold (3, 7, 14, 30, 60, 100, 180, 365 days) at or under the player's streak, and that threshold. Shown only for a share from 0.1% to 25%.",
    "args": {
@@ -23845,12 +23782,6 @@
    "screens": [
     "desk.share",
     "share.window"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "The rarity line under a streak or Day headline when the share is under 0.1%.",
    "args": {
@@ -24053,9 +23984,6 @@
    "text": "My {minutes}-min pump · questpump.com",
    "screens": [
     "share.window"
-   ],
-   "platforms": [
-    "android"
    ],
    "note": "The text the share sheet gets with a timed pump card's picture. The min is short for minutes and takes no plural. Keep questpump.com as written.",
    "args": {

@@ -267,7 +267,7 @@ fn plan(f: &Facts, focus: Option<u8>) -> Plan {
 	let focus = focus.and_then(|code| f.focus(code)).or_else(|| f.sheet.focus.first());
 	let shares = focus.and_then(|fo| f.constants().focus_share.get(&fo.key));
 	Plan {
-		name: focus.map(|fo| fo.name.clone()).unwrap_or_default(),
+		name: focus.map_or_default(|fo| fo.name.clone()),
 		shares: KINDS.map(|k| shares.and_then(|s| s.get(k)).copied().unwrap_or(0)),
 	}
 }
@@ -386,7 +386,7 @@ impl<P: Platform> Desk<P> {
 		let (game, app) = self.log_rows();
 		// the game's sheet the app shows names the XP last: the engine's fold of the save names pumps no logged sheet has
 		let mut game_xp = history::named(logged);
-		game_xp.extend(shown.as_ref().map(|g| g.summary.pump_xp.clone()).unwrap_or_default());
+		game_xp.extend(shown.as_ref().map_or_default(|g| g.summary.pump_xp.clone()));
 		let xp = Xp { game: game_xp, app: self.book_log.log.app_xp.clone() };
 		let ws = history::reset(logged);
 		let fixes = history::Fixes::of(&[&game, &app]); // one map over both stores (slice 44)
@@ -395,12 +395,12 @@ impl<P: Platform> Desk<P> {
 		let pro = self.pro_on() == Some(true);
 		let weeks = if pro { pro_weeks(&game, &app, &fixes, &app_pumps, ws, &day, now) } else { Vec::new() };
 		let rows: Vec<history::Row> = game.iter().chain(&app).copied().collect();
-		let earned = summary.map(|s| s.earned.as_slice()).unwrap_or_default();
+		let earned = summary.map_or_default(|s| s.earned.as_slice());
 		let saga = Saga::new(f, &day, history::shown(&game_pumps, &app_pumps), &rows, earned);
 		let saga = anchored(saga, logged, shown.as_ref().map(|g| &g.summary), &day);
 		let entries = |d: i64| -> Vec<history::Entry> {
 			let key = history::civil(d);
-			log_days.iter().find(|x| x.id == key).map(|x| x.entries.clone()).unwrap_or_default()
+			log_days.iter().find(|x| x.id == key).map_or_default(|x| x.entries.clone())
 		};
 		let start = saga.week_start(today, ws);
 		// the days of today's game week a rest token kept (it may begin before this Monday, at the region's reset)

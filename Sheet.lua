@@ -192,7 +192,7 @@ function ns.Chat(kind, line)
 		if warned then return end
 		warned = true
 	end
-	print(L["chat.prefix"] .. " " .. line)
+	ns.PrintLine(line)
 end
 
 -- Move tooltips, in item-tooltip grammar (docs/ui.md, "Move tooltips everywhere") ---------------------------------
@@ -794,18 +794,17 @@ end
 -- 72): Welcome back with the day's XP under it and the star's sound; the rest tokens that kept the streak, one row;
 -- the streak's day, its count turning as the row stands (`from`, Sheet.BannerRoll) from the count the player last had:
 -- the day before's, or with rest tokens the day before the days they covered (the fold adds those days and today's
--- at once, and the moment holds how many: `rested`), the day against the streak's next milestone under it ("Day 3 of
--- 7"; past the last one the XP alone) and its own sound; Clean Slate with the star's. Each row { headline, subline,
--- sound, from }. They name nothing lost: a streak that started again shows its new count alone.
+-- at once, and the moment holds how many: `rested`), under it the day against the number it counts toward
+-- (ns.StreakAgainst, slice 74: the player's goal, Settings_.StreakGoal, while it is on or ahead of the day, "Day 3
+-- of 14" and on its day "Day 14 of 14", else the streak's next milestone, "Day 3 of 7"; past the last one the XP
+-- alone) and its own sound; Clean Slate with the star's. Each row { headline, subline, sound, from }. They name
+-- nothing lost: a streak that started again shows its new count alone, against the goal it kept.
 function Sheet.MomentRows(m)
 	local rows = {}
 	if m.welcome then rows[#rows + 1] = { headline = L["toast.welcome"], subline = m.welcome, sound = "star" } end
 	if m.rested then rows[#rows + 1] = { headline = ns.Plural("toast.rested", m.rested):format(m.rested) } end
 	if m.days then
-		local goal
-		for _, n in ipairs(C.streak_milestones) do
-			if not goal and n > m.days then goal = n end
-		end
+		local goal = ns.StreakAgainst(m.days, ns.Settings.StreakGoal())
 		local of = goal and L["toast.streak.goal"]:format(m.days, goal)
 		local was = m.days - 1 - (m.rested or 0)
 		rows[#rows + 1] = { headline = L["toast.streak"]:format(m.days),
@@ -3029,6 +3028,9 @@ function Sheet.Build()
 	sheet:EnableMouse(true)
 	sheet:SetMovable(true)
 	sheet:Hide()
+	-- the template's close button calls HideUIPanel on its parent, the panel manager's call, which stays off an addon
+	-- frame and is refused in combat: its own click, as Kit.Window's has
+	sheet.CloseButton:SetScript("OnClick", function() sheet:Hide() end)
 	tinsert(UISpecialFrames, "QuestPumpSheet") -- Escape closes it
 	sheet:SetScript("OnShow", function()
 		if not (dock.switching or Sheet.quiet) then Style.Play("open") end

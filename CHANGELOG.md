@@ -1,6 +1,34 @@
 # Changelog
 
-## [1.1.0]
+## [1.2.0]
+
+### Added
+
+- A streak goal. Pick how many days your streak counts toward: 7, 14, 30, 50, 100 or 365. The banner at a pump's end
+  then shows your streak's day against it, as in "Day 3 of 14". With None the day counts toward the next milestone.
+  You find the Streak goal row on the General page, and your choice holds for every character.
+- On your computer, a pump's result offers the same goals on a day your streak grows, and the streak page has a row
+  for your goal. A goal you pick there reaches the game, and one you pick in the game reaches your computer.
+
+### Changed
+
+- The add-on names World of Warcraft 12.1.7 among its game versions, so the game does not mark it out of date when
+  that update comes. QuestPump Voice and QuestPump Figures come as a new download once for it.
+- On your computer, a work mode pump opens the moment it is due. It no longer waits until you stop typing.
+- On your computer, the voice ends a line where the game ends it. Before, Back and a pump's early end cut every line
+  short.
+
+### Fixed
+
+- The close button of the character sheet now works in combat.
+- Correct a count no longer marks an old set as a record on a move that is a timed drill now, such as the bird dog.
+- A setting you just changed no longer goes back to an older value from another device whose clock runs ahead.
+- On your computer, Share opens after a timed pump in which no move counted.
+- On your computer, "Leave this pump?" says what is true at that moment. Before, it could say "No move is done yet."
+  after a move was saved.
+- On your computer, Pump home plays the day's mark and the streak count's pop once, no longer at every visit.
+
+## [1.1.0] - 2026-11-12
 
 ### Added
 

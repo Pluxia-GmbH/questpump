@@ -2,7 +2,7 @@
 // the voice in pumps, its callouts, the rep count ("Count reps aloud", 2026-10-09) and the voice for match offers, each
 // its name alone (2026-10-22); the volume, a card of Sliders, Master, Sounds and Voice (2026-10-23); the outputs they
 // play on (an OutputPicker); and the note while a screen reader takes the voice's lines (the `shell` topic's `reader`,
-// its one owner, which the Book's Tree | List default reads too). Each switch asks Rust (`sound.on`, `sound.voice`,
+// its one owner). Each switch asks Rust (`sound.on`, `sound.voice`,
 // `sound.callouts`, `sound.count`, `sound.voice_offers`) and shows the answer the `menu.sound` topic brings
 // (helper/src-tauri/src/desk/audio.rs); a level goes as it is set (`sound.level`), so closing the window keeps it, and
 // its part of the test plays once it rests (`sound.test`). In the browser (docs/plan.md slice 63) no match offers and

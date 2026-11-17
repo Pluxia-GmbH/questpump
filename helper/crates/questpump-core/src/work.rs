@@ -1,8 +1,8 @@
 //! Work mode (docs/plan.md slice 67): the player's one switch, its settings and its clock's anchor, one state for all
 //! the player's devices (`Work`: contract/companion-api.yaml's `Work`, its writes and its merge rule), and the work
 //! clock a computer or a browser runs since that anchor (`Clock`), each device its own. Pure: the device hands each
-//! look its clock, the anchor, its idle seconds and what holds it now (`Hold`); the clock says whether it counts,
-//! holds, is due or asks (`State`). The phones' cores keep their own clocks (`WorkState`: the work apps' minutes, or
+//! look its clock, the anchor and what holds it now (`Hold`); the clock says whether it counts, holds or asks
+//! (`State`). The phones' cores keep their own clocks (`WorkState`: the work apps' minutes, or
 //! plain time a walk starts over).
 //!
 //! The rules, as the plan's slice 67 states them: work mode runs until the player stops it, every work pump alike (no
@@ -13,9 +13,10 @@
 //! game, another kind of pump open, quiet hours, the felt-unwell lock) and a standing ask freeze it, and nothing asks
 //! while one holds; a work pump on screen holds nothing, since its coming moved the anchor and the next block counts
 //! on while it stands (David, 2026-11-11: "It does not matter that i dont do the excercise right away. it should
-//! always continue with the 25 min"); once due it asks at the first pause (`work_moment_s` without input; at once on
-//! a device that reads no input), the moment
-//! a hold ends, or `work_late_s` after it came due, whichever comes first; a standing ask stands until it is answered
+//! always continue with the 25 min"); once due it asks at once, or the moment the hold that held it ends (David,
+//! 2026-11-12, whose due block waited 2 min 38 s for a pause in his typing while Pump home's card showed Pump now and
+//! Later: "it did the pump now and later buttons instead of the new opening like after games"; until then it waited
+//! for a pause in the input, up to two minutes); a standing ask stands until it is answered
 //! (never a second ask, never a bank by itself). Only a move of the anchor (a work pump's coming, another pump done
 //! on any device, Later, Start, Stop) starts the count again or drops a block that is due, so an ask nobody answered
 //! waits for the player's return, and a changed Every counts from the next anchor. A device keeps a due block across
@@ -34,15 +35,14 @@ const TEMPLATE: &str = "office";
 /// hand does not (call 4).
 pub const WORK: &str = "work";
 
-/// Work mode's tunables (contract/library.json, slice 67): Every's default and its choices (minutes), the seconds
-/// without input at which a due pump asks and after which it asks anyway, and the sitting minutes from which a work
-/// pump opens on its warm move.
+/// Work mode's tunables (contract/library.json, slice 67): Every's default and its choices (minutes), the seconds a
+/// pump's Result stands before a due block's pump takes its place, and the sitting minutes from which a work pump
+/// opens on its warm move.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Tunables {
 	pub every_min: u16,
 	pub every_choices: &'static [u16],
 	pub moment_s: i64,
-	pub late_s: i64,
 	pub warm_min: i64,
 }
 
@@ -54,7 +54,6 @@ pub fn tunables() -> Option<Tunables> {
 		every_min: c.work_every_min,
 		every_choices: &c.work_every_choices,
 		moment_s: c.work_moment_s,
-		late_s: c.work_late_s,
 		warm_min: c.work_warm_min,
 	})
 }
@@ -283,13 +282,11 @@ pub enum Hold {
 }
 
 /// One look's facts: now in unix seconds, the clock's anchor (`Work::reset_at`, unix milliseconds, so every move of it
-/// is seen, one of a millisecond too), the device's seconds without input (none where it reads none: a due block's
-/// moment, never its count) and what holds it.
+/// is seen, one of a millisecond too) and what holds it. Never the device's input: no pause in it counts or asks.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Seen {
 	pub now: i64,
 	pub anchor_ms: i64,
-	pub idle_s: Option<u32>,
 	pub hold: Option<Hold>,
 }
 
@@ -300,8 +297,6 @@ pub enum State {
 	Counting { left_s: i64 },
 	/// Held, with the seconds left as they stood.
 	Held { hold: Hold, left_s: i64 },
-	/// Due, waiting for its moment.
-	Due,
 	/// An ask stands; `new` at the look that made it.
 	Ask { new: bool },
 }
@@ -318,8 +313,6 @@ pub struct Clock {
 	held_s: i64,
 	/// The last look, and whether a hold or an ask held it.
 	last: Option<(i64, bool)>,
-	/// Whether a hold held the last look (its end is a moment).
-	hold_last: bool,
 	/// When the block came due.
 	due_at: Option<i64>,
 	/// An ask stands.
@@ -329,21 +322,20 @@ pub struct Clock {
 impl Clock {
 	/// One look at `seen` with Every at `every_min`. The count starts again (and a due block or a standing ask goes)
 	/// only when the anchor moved: no pause in the input and no time without a look does. An anchor ahead of `now`
-	/// (another device's clock ahead, this one set back) counts from the first look that saw it.
-	pub fn look(&mut self, seen: &Seen, every_min: u16, t: &Tunables) -> State {
+	/// (another device's clock ahead, this one set back) counts from the first look that saw it. A block asks at the
+	/// look that finds it due with nothing holding it, never later.
+	pub fn look(&mut self, seen: &Seen, every_min: u16) -> State {
 		let now = seen.now;
-		let (last, hold_last) = (self.last, self.hold_last);
+		let last = self.last;
 		if self.anchor_ms != Some(seen.anchor_ms) {
 			*self = Self { anchor_ms: Some(seen.anchor_ms), base: seen.anchor_ms.div_euclid(1_000), ..Self::default() };
 		}
 		self.base = self.base.min(now);
 		let base = self.base;
-		let freed = hold_last && seen.hold.is_none();
 		if let Some((at, true)) = last {
 			self.held_s += (now - at.max(base)).max(0);
 		}
 		self.last = Some((now, seen.hold.is_some() || self.asking));
-		self.hold_last = seen.hold.is_some();
 		// a block due stays due whatever Every reads now: a changed Every counts from the next anchor
 		let left_s = if self.due_at.is_some() {
 			0
@@ -362,19 +354,13 @@ impl Clock {
 		if left_s > 0 {
 			return State::Counting { left_s };
 		}
-		let due_at = *self.due_at.get_or_insert(now);
-		// a device that reads no input (the browser, whose tab says only that somebody is there) has no pause to
-		// wait for: its block asks as it comes due
-		let paused = seen.idle_s.is_none_or(|s| i64::from(s) >= t.moment_s);
-		if freed || paused || now - due_at >= t.late_s {
-			self.asking = true;
-			return State::Ask { new: true };
-		}
-		State::Due
+		self.due_at.get_or_insert(now);
+		self.asking = true;
+		State::Ask { new: true }
 	}
 
-	/// The standing ask answered (Pump now, Later, Stop): the clock waits for the anchor to move, and asks again at its
-	/// next moment while it does not (a start accepted whose pump never came).
+	/// The standing ask answered (Pump now, Later, Stop): the clock waits for the anchor to move, and asks again at the
+	/// next look that finds nothing holding it while it does not (a start accepted whose pump never came).
 	pub fn answered(&mut self) {
 		self.asking = false;
 	}
@@ -385,8 +371,8 @@ impl Clock {
 		self.asking |= self.due_at.is_some();
 	}
 
-	/// The anchor a due block (its ask standing or waiting for its moment, or held since) counts after
-	/// (`Seen::anchor_ms`); none while the block still counts.
+	/// The anchor a due block (its ask standing, or held since) counts after (`Seen::anchor_ms`); none while the block
+	/// still counts.
 	#[must_use]
 	pub fn due(&self) -> Option<i64> {
 		self.due_at.and(self.anchor_ms)
@@ -400,8 +386,8 @@ impl Clock {
 	}
 
 	/// The clock of a block that came due at `due_at` (unix seconds) after the anchor `anchor_ms`, as a device kept it
-	/// before a restart or a reload: due still at its first look while the anchor stands, so it asks at its next moment
-	/// or at once where `work_late_s` passed since; a moved anchor starts the count again as any look does.
+	/// before a restart or a reload: due still at its first look while the anchor stands, so it asks at that look
+	/// where nothing holds it; a moved anchor starts the count again as any look does.
 	#[must_use]
 	pub fn due_from(anchor_ms: i64, due_at: i64) -> Self {
 		Self { anchor_ms: Some(anchor_ms), base: anchor_ms.div_euclid(1_000), due_at: Some(due_at), ..Self::default() }

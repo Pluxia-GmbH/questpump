@@ -337,6 +337,8 @@ impl<P: Platform> Desk<P> {
 	/// the Book, Your setup, Pump home and Hero read it again, and where what the pumps' filters read changed
 	/// (`filtered`) the pump on its Ready view is composed again or refit after it (`setup_refilter`).
 	pub fn profile_changed(&mut self) {
+		// the streak's goal is the body's and no part of the engine's profile: what shows it reads it again
+		self.streak_goal_read();
 		if self.engine.profile.is_none() || self.engine.state == EngineState::Failed {
 			return;
 		}

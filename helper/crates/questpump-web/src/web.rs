@@ -26,7 +26,7 @@
 //! - **Work mode** (slice 67, the desk's `questpump_desk::work`): its clock always runs down, the tab seen or not; the
 //!   tab's presence, the sitting clock's input (the page's `presence.seen`: the tab visible, or with `IdleDetector`
 //!   granted in the Start click, Chrome and Edge, the computer in use), says only whether somebody is there for a due
-//!   pump, which opens once somebody is, with no wait for a pause in an input it cannot read (`Web::idle_s`); it reads
+//!   pump, which opens as its block comes due while somebody is and at the return otherwise (`Web::idle_s`); it reads
 //!   no call, presenting or full screen of other apps, so its holds are the desk's own (a pump open, quiet hours, the
 //!   felt-unwell lock). The work pump opens itself in the tab at its ask's moment (`Desk::work_open`), and since a tab
 //!   cannot come to the front the page is told (`{"work_opened": ask}`) and shows a notification while the tab is
@@ -497,9 +497,8 @@ impl Platform for Web {
 		self.publisher.publish(SHELL, &self.shell);
 	}
 
-	/// A browser reads no input: none while the tab is seen, so a due block asks and its pump opens as it comes due
-	/// (0 would read as a keystroke just made, and both of work mode's waits for a pause would run to their bound,
-	/// 4 minutes on a 25-minute block, measured on 2026-11-11), the seconds since the page went away otherwise.
+	/// A browser reads no input: none while the tab is seen (somebody is there, so a due block's pump opens as it
+	/// comes due), the seconds since the page went away otherwise.
 	fn idle_s(&self) -> Option<u32> {
 		self.away_since.and(self.sitting.idle_s())
 	}

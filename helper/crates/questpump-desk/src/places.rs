@@ -359,8 +359,7 @@ impl<P: Platform> Desk<P> {
 				}
 				let kept = id
 					.and_then(|id| self.other_places().into_iter().find(|p| p.id == id))
-					.map(|p| p.setup.gear)
-					.unwrap_or_default();
+					.map_or_default(|p| p.setup.gear);
 				let setup = setup_of(intent, &kept)?;
 				let name = text(intent, "name").map(str::trim).filter(|n| !n.is_empty()).map(str::to_owned);
 				let template = text(intent, "template").map(str::to_owned);

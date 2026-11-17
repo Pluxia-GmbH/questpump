@@ -7,7 +7,7 @@
 import {get, intent, subscribe} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {figureName} from "../../lib/figure.js";
-import {topWindow} from "../../lib/focus.js";
+import {announce, topWindow} from "../../lib/focus.js";
 import {time} from "../../lib/format.js";
 import {openMenu, whenStarted} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
@@ -43,16 +43,24 @@ function row(win, props, act) {
 	}});
 }
 
-/** Leave keeps a move (`pump_stop`, the Android phone's `keepsOnLeave`): one done; a pose, a steady move or a hold's
- * saved count waiting at its ask, which an end keeps with no answer; an app pump's own counted set at its count or its
- * whole-move ask, kept done with Form slipped (never a rider's); or a steady move Keep going ran past its plan, saved
- * as its Done would (`pump_kept`); or, in a timed pump, a move of a stage before the one on screen
- * (`pump.expedition.moved`: each stage is a pump of its own, so `pump.moves` holds this stage's alone). */
-function anyDone(pump) {
+/** The instant (unix ms) from which Leave keeps a steady move Keep going runs on: its plan run (`pump_kept`); none for
+ * any other pump. */
+function keptFrom(pump) {
+	if (pump.stage !== "running" || !pump.kept) return null;
+	return pump.start + (pump.moves[pump.current]?.seconds ?? 0) * 1000;
+}
+
+/** Leave keeps a move at `now` (unix ms; `pump_stop`, the phones' `keepsOnLeave`): one done; a pose, a steady move or a
+ * hold's saved count waiting at its ask, which an end keeps with no answer; an app pump's own move whose saved count
+ * or seconds pour, which an end lands (`pump_pour_left`; never a rider's, which pours nothing); an app pump's own
+ * counted set at its count or its whole-move ask, kept done with Form slipped (never a rider's); or a steady move Keep
+ * going ran past its plan, saved as its Done would (`keptFrom`); or, in a timed pump, a move of a stage before the one
+ * on screen (`pump.expedition.moved`: each stage is a pump of its own, so `pump.moves` holds this stage's alone). */
+function anyDone(pump, now) {
 	const m = pump.moves[pump.current];
 	const counted = !m?.rider && m?.counted && (pump.stage === "counting" || pump.stage === "asking");
-	const kept = pump.stage === "running" && pump.kept && Date.now() - pump.start >= (m?.seconds ?? 0) * 1000;
-	return ["marking", "pacing", "longer"].includes(pump.stage) || counted || kept
+	const from = keptFrom(pump);
+	return ["marking", "pacing", "longer", "saved"].includes(pump.stage) || counted || (from !== null && now >= from)
 		|| pump.moves.some((x) => x.state === "done") || Boolean(pump.expedition?.moved);
 }
 
@@ -144,22 +152,40 @@ export function pauseMenu(topic, from) {
 }
 
 /** Leaving the pump before its end (its ×, the window's close, Quit QuestPump): what stays of it, in a catch-up's
- * words where only riders are left (`rest`, slice 61); Leave ends it (`then`: the window closes or QuestPump quits
- * after), its × stays. */
-export function leave(pump, then) {
-	const done = anyDone(pump);
-	const words = pump.rest ? (done ? t("pump.leave.owed") : t("pump.leave.owed.none"))
-		: done ? t("pump.leave.free") : t("pump.leave.free.none");
+ * words where only riders are left (`rest`, slice 61), said of the pump as it stands while the window does (a move
+ * saved under it, a kept move running past its plan), a sentence that turns under the open window said to a screen
+ * reader too (the window's live region); Leave ends it (`then`: the window closes or QuestPump quits after), its ×
+ * stays. */
+export function leave(then) {
+	const words = h("p", {class: "qp-type-body qp-text2"});
+	let timer = 0;
+	const say = (pump) => {
+		clearTimeout(timer);
+		const now = Date.now();
+		const done = anyDone(pump, now);
+		const text = pump.rest ? (done ? t("pump.leave.owed") : t("pump.leave.owed.none"))
+			: done ? t("pump.leave.free") : t("pump.leave.free.none");
+		// the first sentence is read with the window; one that takes its place is announced
+		if (words.textContent && words.textContent !== text) announce(text);
+		words.textContent = text;
+		// only the words wait on this timer: Rust keeps the move by its own clock when Leave ends the pump
+		const from = keptFrom(pump);
+		if (from !== null && now < from) timer = setTimeout(() => say(pump), from - now);
+	};
+	const stop = subscribe("pump", (topic) => {
+		if (topic.pump) say(topic.pump);
+	});
 	let left = false;
 	return openWindow({heading: t("pump.leave.title")}, (content, win) => {
-		content.append(h("p", {class: "qp-type-body qp-text2", text: words}), h("qp-secondary-button",
-			{label: t("pump.leave.confirm"), "on:click": () => {
-				left = true;
-				if (then) heard(intent("pump.leave", {then}));
-				else heard(intent("pump.end"));
-				win.close();
-			}}));
+		content.append(words, h("qp-secondary-button", {label: t("pump.leave.confirm"), "on:click": () => {
+			left = true;
+			if (then) heard(intent("pump.leave", {then}));
+			else heard(intent("pump.end"));
+			win.close();
+		}}));
 	}, () => {
+		stop();
+		clearTimeout(timer);
 		if (then && !left) heard(intent("pump.stay"));
 	});
 }
@@ -288,7 +314,7 @@ function followShell(shell) {
 	if (!shell.leave || shell.leave.seq <= leaveSeq) return;
 	leaveSeq = shell.leave.seq;
 	if (!pump || pump.stage === "done" || asked.leave) return;
-	asked.leave = leave(pump, shell.leave.then);
+	asked.leave = leave(shell.leave.then);
 	asked.leave.addEventListener("qp-closed", () => {
 		asked.leave = null;
 	}, {once: true});

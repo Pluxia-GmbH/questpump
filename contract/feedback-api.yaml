@@ -31,7 +31,8 @@ info:
     - the iPhone app (`iphone`) and the Android app (`android`): a "Send feedback" row in the Menu's QuestPump group,
       beside Safety and about, opens the page; the app counts its numbers and posts the message itself, with its
       Firebase App Check token in the header `X-Firebase-AppCheck` when App Check gives it one, and without the header
-      when it gives none (a phone that fails its device check, a build without the Firebase config), while its coach
+      when it gives none (a phone that fails its device check, a build without the Firebase config) or is not asked
+      (no purpose reads on: telemetry-api.yaml, "Firebase starts only for a purpose that reads on"), while its coach
       reports never go without one (coach-api.yaml);
     - the desktop app, QuestPump on this computer (`helper`, the source's name since slice 24): "Send feedback" on its
       Feedback page beside "Copy a report for help" (slice 35; "Copy diagnostics" until 2026-10-08, a word the content

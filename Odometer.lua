@@ -56,8 +56,8 @@ end
 local last
 
 local function sample()
-	local speed = GetUnitSpeed("player")
-	if issecretvalue(speed) then return nil end -- SecretWhenUnitStatsRestricted: no arithmetic on it
+	local speed = ns.Readable(GetUnitSpeed("player")) -- SecretWhenUnitStatsRestricted: no arithmetic on it
+	if not speed then return nil end
 	return {
 		speed = speed,
 		mounted = IsMounted(),

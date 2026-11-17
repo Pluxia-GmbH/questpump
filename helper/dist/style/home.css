@@ -178,7 +178,7 @@ qp-card.qp-rest > qp-art {
 	visibility: hidden;
 }
 
-.qp-streak-tokens, .qp-streak-next, .qp-streak-best {
+.qp-streak-tokens, .qp-streak-next, .qp-streak-goal, .qp-streak-best {
 	display: flex;
 	flex-direction: column;
 	gap: var(--qp-layout-space8);
@@ -222,6 +222,11 @@ qp-card.qp-rest > qp-art {
 .qp-streak-slot qp-art {
 	width: var(--qp-surface-streak-page-slot-glyph);
 	height: var(--qp-surface-streak-page-slot-glyph);
+}
+
+/* the goals to choose from, in a card of their own from its leading edge */
+.qp-streak-goal .qp-choice-group {
+	justify-content: flex-start;
 }
 
 /* the next milestone's bar in StepsBar's look: done goldLo to the days reached, the track after */

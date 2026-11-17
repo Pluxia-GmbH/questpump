@@ -125,7 +125,7 @@ impl Helper {
 	/// `menu.about` as it stands: at the start, when Pro's state changes (`runtime/pro.rs`) and at the page's look.
 	pub(crate) fn publish_about(&self) {
 		let games = &self.desk.settings.games;
-		let watched = self.desk.p.games.as_ref().map(|g| g.watched(games)).unwrap_or_default();
+		let watched = self.desk.p.games.as_ref().map_or_default(|g| g.watched(games));
 		let named = watched.iter().map(|w| w.name().to_owned()).collect();
 		let path = |p: &PathBuf| p.display().to_string();
 		// the named games watched (the Games tab's on tiles) whose feed QuestPump hears, by how it hears them (its

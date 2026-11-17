@@ -376,7 +376,6 @@ pub enum ShareStyle {
 	Gilded,
 }
 
-/// The Book's Ladders side as the player set its Tree | List switch on this computer (slice 38).
 /// The span Pump home's recent games count as the player set their This week | All time switch on this computer
 /// (2026-10-28): the moves done this game week, the default, or in all.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]

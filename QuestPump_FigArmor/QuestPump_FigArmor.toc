@@ -1,4 +1,4 @@
-## Interface: 16001, 120105
+## Interface: 16001, 120105, 120107
 ## Title: QuestPump Figures
 ## Notes: The animated move figures for QuestPump (loaded on demand).
 ## IconTexture: Interface\AddOns\QuestPump\Media\Icon

@@ -125,6 +125,11 @@ struct PumpView {
 	/// Work mode's work pump (slice 67, `Run::work`): its Pause menu holds Your body alone, never the offers' pauses
 	/// (`Desk::pump_pause` refuses them on it).
 	work: bool,
+	/// The pump opened itself (`Run::unasked`: a match's end, work mode's block) and stands on its first move's Ready
+	/// view: the window came in front of whatever the player was doing, so the stage it came with takes no key until
+	/// the keys pause, and no click before then (lib/keys.js `mounted`, the view's `typedOver`): a sentence typed on
+	/// starts no move, and a click meant for the app under it banks none.
+	unasked: bool,
 	/// The pump ended done (`Run::ended_done`): an app pump over with a move done and no felt-unwell stop, which a
 	/// browser's Save offer and its `play` topic count (questpump-web `Play::seen`, docs/plan.md slice 63); never one
 	/// that ended before a move ran (a pain flag or a setup change over Ready that left no move).
@@ -132,6 +137,10 @@ struct PumpView {
 	reveal: Option<Reveal>,
 	/// The Legendary moment on show over the Result: its row's index among the result's rows.
 	legend: Option<usize>,
+	/// The streak's goal the player chose among the ones its streak's day offers (slice 74; `pump.goal`), none while
+	/// the first one stands chosen, and how often one was picked (`Run::picks`).
+	goal: Option<u16>,
+	picks: u32,
 	/// The Result floats over the page under the pump and leaves by itself (Rapha, 2026-11-11: "The into hero is best go
 	/// with that"): a pump that ended with its result, no Legendary moment among its rows, no streak milestone's day
 	/// and no expedition's end (`Earned::floats`); a calm end, a Legendary step, a milestone's day and an expedition's
@@ -511,6 +520,13 @@ impl Sum {
 
 	fn day(&self, i: usize) -> i64 {
 		self.ld.get(i).copied().unwrap_or(0)
+	}
+
+	/// Its last pump opened a return: the game's own Welcome back (Stats.lua, the pump's first move after
+	/// `welcome_after_days` whole game days with no performed move), as the engine's fold of the rows this computer
+	/// holds counted it.
+	pub(super) fn welcomed(&self) -> bool {
+		self.day(1) > 0
 	}
 }
 
@@ -1135,7 +1151,7 @@ pub(super) struct Paid<'a> {
 /// began and as it ended: the milestone (0 for none) and the rest tokens that covered the game days before it; a
 /// paired player's app pump's and a catch-up's, whose rows the game folds at its next load (the phones'
 /// `boardMilestone`); and the streak's day it made (slice 72), every pump's.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub(super) struct Reached {
 	milestone: i64,
 	rested: i64,
@@ -1145,44 +1161,59 @@ pub(super) struct Reached {
 /// The streak's day (slice 72, the Result's moment before its rows): the first move saved on a game day made the
 /// streak a day longer, from the count the board showed as the pump began (`from`, never past the day before: a streak
 /// that starts again rolls from 0 and says nothing of the old one) to the count now (`days`), this game week's marks
-/// with today's done, and the next of `streak_milestones` above the day (`goal`: "Day 3 of 7"; none past the last).
-#[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// with today's done, the number the day shows against (`goal`: "Day 3 of 7"; `Board::against`, the player's own goal
+/// while it is on or ahead of the day, else the next milestone, none past the last) and, since slice 74, the goals to
+/// offer on this day (`steps`, `Board::goal_steps`: none while a goal stands ahead of it or the player said None),
+/// which the moment shows as choices in the line's place, under the line on the day that reaches a goal ("Day 14 of
+/// 14").
+#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub(super) struct StreakDay {
 	from: i64,
 	days: i64,
 	week: [Mark; 7],
 	today_index: i64,
 	goal: Option<i64>,
+	steps: Vec<i64>,
 }
 
 impl StreakDay {
-	/// The day a pump made, from the board as it began and as it ended; none where its game day was done already.
-	fn of(before: &Board, after: &Board) -> Option<Self> {
+	/// The day a pump made, from the board as it began and as it ended, against what the player said of a goal (`goal`,
+	/// `Desk::streak_goal_said`: none nothing yet, 0 None, else its days); none where its game day was done already.
+	fn of(before: &Board, after: &Board, goal: Option<i64>) -> Option<Self> {
 		if before.today || !after.today || after.days < 1 {
 			return None;
 		}
-		let goal = facts().constants().streak_milestones.iter().copied().filter(|&m| m > after.days).min();
-		Some(Self {
+		let day = Self {
 			from: before.days.clamp(0, after.days - 1),
 			days: after.days,
 			week: after.week,
 			today_index: after.today_index,
-			goal,
-		})
+			goal: None,
+			steps: Vec::new(),
+		};
+		Some(day.against(goal))
+	}
+
+	/// The day against the player's goal as it stands now: its number and the goals to offer are read live, so a goal
+	/// that arrives from another device while the Result shows takes the choices away.
+	fn against(mut self, goal: Option<i64>) -> Self {
+		self.goal = Board::against(self.days, goal);
+		self.steps = Board::goal_steps(self.days, goal);
+		self
 	}
 }
 
 impl Reached {
-	pub(super) fn of(before: Option<&Board>, after: &Board) -> Self {
+	pub(super) fn of(before: Option<&Board>, after: &Board, goal: Option<i64>) -> Self {
 		before.map_or_else(Self::default, |b| Self {
 			milestone: b.milestone(after),
 			rested: b.rested(after),
-			day: StreakDay::of(b, after),
+			day: StreakDay::of(b, after, goal),
 		})
 	}
 
 	/// Its rows: the milestone (unless the banner carries it) and the rest tokens.
-	fn rows(self, milestone: bool) -> Vec<Row> {
+	fn rows(&self, milestone: bool) -> Vec<Row> {
 		let mut rows = Vec::new();
 		if milestone && self.milestone > 0 {
 			rows.push(Row { reward: Reward::Milestone { days: self.milestone }, tile: None });
@@ -1337,7 +1368,7 @@ impl Reveal {
 		};
 		// the streak's day once the bar stands, where the rows would begin, the rows once its roll is over
 		let streak_at = counted;
-		let streak_event = earned.streak.map(|_| STREAK_DAY);
+		let streak_event = earned.streak.as_ref().map(|_| STREAK_DAY);
 		let rows_from = streak_at + streak_event.map_or(0, |_| m.carry);
 		// Welcome back leads as a beat of its own: the rows after it one stagger later
 		let beat = if earned.welcomes() { stagger } else { 0 };
@@ -1491,7 +1522,8 @@ pub(super) fn firsts(
 			Some(&Recorded::Count(n, None))
 				if n > 0
 					&& m.record.is_none()
-					&& max_set(m) && m.top.is_none_or(|top| n < top)
+					&& max_set(m)
+					&& m.top.is_none_or(|top| n < top)
 					&& m.placing.is_none() =>
 			{
 				Some((m.slot, m.r#move, n))
@@ -1830,7 +1862,7 @@ pub(super) fn earned(p: &Paid<'_>, max_set: impl Fn(&PlannedMove) -> bool) -> Ea
 			paid: p.payment.map(paid_word),
 			embers: p.kindled.map(Kindled::of),
 		}
-		.with_day(p.reached.day);
+		.with_day(p.reached.day.clone());
 	};
 	let bar = if p.hero_own {
 		Some(Bar { now: Point::of(after), rested: after.rest, from: p.before.map(Point::of) })
@@ -1875,6 +1907,12 @@ pub(super) fn earned(p: &Paid<'_>, max_set: impl Fn(&PlannedMove) -> bool) -> Ea
 	if p.hero_own {
 		extra.extend(day(after));
 	} else {
+		// Welcome back for a player whose Hero shows the game's sheet too (slice 74, S4): the engine's own fold of the
+		// rows this computer holds says the pump opened a return (the summary's day, as `day` reads it), and the game
+		// pays its XP when the rows reach it, so the row leads with no number
+		if after.welcomed() {
+			extra.push(Row { reward: Reward::Day { line: "welcome", value: 0 }, tile: None });
+		}
 		// the milestone is the banner's or a row of its own above; the rest tokens the board spent
 		extra.extend(p.reached.rows(false));
 	}
@@ -1890,7 +1928,7 @@ pub(super) fn earned(p: &Paid<'_>, max_set: impl Fn(&PlannedMove) -> bool) -> Ea
 		paid: p.payment.map(paid_word),
 		embers: p.kindled.map(Kindled::of),
 	}
-	.with_day(p.reached.day)
+	.with_day(p.reached.day.clone())
 }
 
 /// An expedition's Result (slice 51): every round's Result together, `minutes` the minutes it took on a whole one
@@ -1952,7 +1990,7 @@ pub(super) fn join(rounds: &[Earned], minutes: Option<i64>) -> Earned {
 		embers: rounds.iter().rev().find_map(|e| e.embers),
 	}
 	// the round that made the day
-	.with_day(rounds.iter().find_map(|e| e.streak))
+	.with_day(rounds.iter().find_map(|e| e.streak.clone()))
 }
 
 /// The unlocks of the summary's last pump (`lu`) as rows, with each one's numbers; with `before` (a summary of the
@@ -2062,6 +2100,10 @@ pub(super) fn caught_up(run: &Run) -> Earned {
 	let count = i64::try_from(moves.len()).unwrap_or(0);
 	// the milestone leads, as on an app pump's Result
 	let mut rows = run.reached.rows(true);
+	// Welcome back where its payment opened a return (slice 74, S4; `Run::welcome`), with no number: the game pays it
+	if run.welcome {
+		rows.push(Row { reward: Reward::Day { line: "welcome", value: 0 }, tile: None });
+	}
 	rows.extend(moves);
 	rows.extend(cardio((run.embers_lit > 0).then_some(run.embers_before + run.embers_lit)));
 	rows.sort_by_key(|row| row.reward.rank());
@@ -2075,7 +2117,7 @@ pub(super) fn caught_up(run: &Run) -> Earned {
 		paid,
 		embers: None,
 	}
-	.with_day(run.reached.day)
+	.with_day(run.reached.day.clone())
 }
 
 /// The rows of the moves a pump paid as owed rows (`riders`: a catch-up's moves, a match pump's riders, slice 61), in
@@ -2564,13 +2606,27 @@ fn stage_name<P: Platform>(h: &Desk<P>, run: &Run) -> &'static str {
 	}
 }
 
-fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
-	let now = h.p.now_ms();
-	let result = if run.what.app() {
+/// The pump's Result as the page shows it: an app pump's own, a catch-up's from its run once it ended whole; its
+/// streak's day against the player's goal `goal` as it stands now (`StreakDay::against`).
+fn result_of(run: &Run, goal: Option<i64>) -> Option<Earned> {
+	let mut result = if run.what.app() {
 		run.result.clone()
 	} else {
 		(run.stage == Stage::Done && !run.unwell && run.cut.is_none()).then(|| caught_up(run))
-	};
+	}?;
+	result.streak = result.streak.map(|day| day.against(goal));
+	Some(result)
+}
+
+/// The streak goals the pump's Result offers on its streak's day (slice 74, `StreakDay::steps`) while the player's
+/// goal is `goal`: none without that moment, and none after a felt-unwell stop, whose card shows no Result.
+pub(super) fn goal_offer(run: &Run, goal: Option<i64>) -> Vec<i64> {
+	result_of(run, goal).filter(|_| !run.unwell).and_then(|r| r.streak).map_or_default(|day| day.steps)
+}
+
+fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
+	let now = h.p.now_ms();
+	let result = result_of(run, h.streak_goal_said());
 	let trip = h.trip_view(run);
 	let shown = run.shown();
 	let side = run.side.as_ref().and_then(MoveRun::side).map(|s| if s == Side::First { "first" } else { "other" });
@@ -2635,13 +2691,10 @@ fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
 		kept,
 		moves: run.moves.iter().enumerate().map(|(i, m)| move_view(run, i, m, seen(i), counts)).collect(),
 		rewards: rewards(run),
-		lines: shown
-			.filter(|_| ready)
-			.map(|m| lines(m, pace_rung(run, run.current, m), pose_days(run, m)))
-			.unwrap_or_default(),
+		lines: shown.filter(|_| ready).map_or_default(|m| lines(m, pace_rung(run, run.current, m), pose_days(run, m))),
 		setup: words.and_then(|m| facts().setup(m.r#move, m.implement.as_deref())),
 		how: words.map_or(&[], |m| facts().how(m.r#move, m.implement.as_deref())),
-		tips: words.map(|m| facts().tips(m.r#move)).unwrap_or_default(),
+		tips: words.map_or_default(|m| facts().tips(m.r#move)),
 		guide: h.pump_guide_state(),
 		swap: run
 			.swaps
@@ -2655,9 +2708,12 @@ fn pump_view<P: Platform>(h: &Desk<P>, run: &Run) -> PumpView {
 		result,
 		back: run.back,
 		work: run.work,
+		unasked: run.unasked && ready && run.current == 0,
 		ended_done: run.ended_done(),
 		reveal: run.reveal.clone(),
 		legend: run.legend,
+		goal: run.goal,
+		picks: run.picks,
 		calm,
 		saved: run.pour.as_ref().filter(|_| run.stage == Stage::Saved).map(pour::Pour::view),
 		expedition: trip,

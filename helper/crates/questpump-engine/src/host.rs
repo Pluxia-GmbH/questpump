@@ -588,9 +588,10 @@ impl Host {
 				// stretch check (an `any` group's by the choice the setup offers) its least answer and how it was passed
 				// (slice 42, ns.CheckPassed)
 				let a: api::NeedsAt = parse(args)?;
-				let list = lua.create_sequence_from(
-					a.needs.iter().map(|need| self.encode(need)).collect::<Result<Vec<Value>, EngineError>>()?,
-				)?;
+				let list =
+					lua.create_sequence_from(
+						a.needs.iter().map(|need| self.encode(need)).collect::<Result<Vec<Value>, EngineError>>()?,
+					)?;
 				let answers: Vec<NeedState> = self.decode(self.player()?.call_method("needs", (list, a.at))?)?;
 				json(&answers)
 			}

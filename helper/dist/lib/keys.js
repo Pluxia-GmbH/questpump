@@ -4,7 +4,14 @@
 // (`onKey`: the count's digits, Escape as Done on a running move or back to Ready from the countdown; true when it
 // took the key). A held key
 // repeats nothing, and for its first half second a view (or a window) takes no Enter or Space, so a key held from the
-// screen before never presses its primary. Escape closes a window, never one marked closedby="none" (the place window,
+// screen before never presses its primary. A view that came by itself in front of whatever the player was doing (its
+// `typedOver`: a pump that opened itself, on its first Ready view) takes no key at all until the keys pause that half
+// second: each key before then starts the wait again, so a sentence typed on starts no move (David, 2026-11-12: a due
+// work pump opens at once, never waiting for a pause in the typing). Its wait counts from the window taking the focus
+// where that comes after the view (macOS may make QuestPump the active app some hundred ms after its window), and
+// inside it the view takes no click either, which was meant for the app under it; a click past it is the player's
+// turn to the view, whose keys are its own from then on. Escape closes a window, never one marked
+// closedby="none" (the place window,
 // the check-in's joints), which a capture-phase guard keeps open where the engine lacks closedby (WebKit), and never
 // banks, skips or ends a pump. Cmd/Ctrl + and - and 0 zoom the page through Rust (`view.zoom`, kept in settings.json),
 // Cmd/Ctrl+1 to 5 choose the five roots' tabs in the ActionBar's order as the macOS View menu's items do (slice 46; the
@@ -36,6 +43,7 @@ export function guardMs() {
 
 let current = null; // the view the keys go to
 let mountedAt = 0;
+let typedOver = false; // the view came by itself over what the player did: its wait starts again at each key
 // the main window's frame (the card's page has none): Cmd/Ctrl+1 to 5's `tab` and `has` (a root with a tab in the
 // ActionBar), Cmd/Ctrl+F's `find`
 let frame = null;
@@ -56,10 +64,13 @@ const SCROLL_KEYS = {
 	Home: (area) => -area.scrollHeight,
 };
 
-/** A view (or a window's content) took the screen: keys go to it, and its first half second takes no Enter or Space. */
+/** A view (or a window's content) took the screen: keys go to it, and its first half second takes no Enter or Space;
+ * one that came by itself over what the player did (its `typedOver()`) takes no key until the keys pause that long,
+ * and no click before then. */
 export function mounted(view) {
 	current = view;
 	mountedAt = performance.now();
+	typedOver = Boolean(view?.typedOver?.());
 }
 
 /** A window opened over the view: the same half-second guard. */
@@ -141,6 +152,19 @@ function onScrollKey(e) {
 }
 
 function onKeyDown(e) {
+	if (typedOver) {
+		if (performance.now() - mountedAt >= guardMs()) {
+			typedOver = false;
+		} else {
+			// typed on over a view that came by itself: the key is the other app's, and the wait starts again; a key
+			// with Cmd or Ctrl stays the app's own (its menu, its zoom)
+			mountedAt = performance.now();
+			if (!e.metaKey && !e.ctrlKey) {
+				stop(e);
+				return;
+			}
+		}
+	}
 	if (e.isComposing) return;
 	if (zoom(e) || browserKey(e)) {
 		stop(e);
@@ -180,6 +204,20 @@ function onKeyDown(e) {
 	if (taken === e.key) stop(e);
 }
 
+/** A click over a view that came by itself: nothing inside its wait (it was meant for what stood there before), and
+ * past it the player has turned to the view, whose keys are its own from then on. */
+function onPointer(e) {
+	if (!typedOver) return;
+	if (performance.now() - mountedAt < guardMs()) stop(e);
+	else typedOver = false;
+}
+
+/** The window took the focus: a view that came by itself counts its wait from now, the first moment a key or a click
+ * reaches it. */
+function onFocus() {
+	if (typedOver) mountedAt = performance.now();
+}
+
 function onKeyUp(e) {
 	// Space presses a button on its key up: the guard keeps that one too
 	if (e.key === " " && !typing(e.target) && performance.now() - mountedAt < guardMs()) stop(e);
@@ -190,6 +228,9 @@ export function startKeys() {
 	window.addEventListener("keydown", onKeyDown, true);
 	window.addEventListener("keydown", onScrollKey);
 	window.addEventListener("keyup", onKeyUp, true);
+	window.addEventListener("pointerdown", onPointer, true);
+	window.addEventListener("click", onPointer, true);
+	window.addEventListener("focus", onFocus);
 	window.addEventListener("contextmenu", (e) => {
 		if (!typing(e.target)) e.preventDefault();
 	}, true);

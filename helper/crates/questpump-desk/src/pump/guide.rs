@@ -4,7 +4,7 @@
 //! as the take before ends, on the loop's wake (`Desk::pump_wake`), never a page timer. The button (`pump.guide`)
 //! begins it on the move's Ready view, its countdown or its run, pauses it while it reads (held too) and goes on from
 //! the take it paused in, once a line said meanwhile and the gap after it have passed. A line the pump says over it
-//! holds it (`Desk::guide_hold`): its take stops, and it goes on from that take `callout_gap_s` after the line ends;
+//! holds it (`Desk::line_plays`): its take stops, and it goes on from that take `callout_gap_s` after the line ends;
 //! a count plays over it. It reads for one move's run, the pump, the move's index and the move: another stage, another
 //! move or the pump's end stops it (`Desk::pump_keep_guide`, at each publish), and Back keeps it.
 
@@ -133,9 +133,8 @@ impl<P: Platform> Desk<P> {
 		}
 		if let Some(run) = self.pumps.run.as_mut() {
 			run.callout = None;
-			run.callout_ends = None;
 		}
-		self.hush();
+		self.pump_hush();
 		self.pumps.guide =
 			Some(Guide { run: read, takes, at: 0, ends: now, due: None, state: State::Reading, quiet: now });
 		self.guide_read_take(0, now);
@@ -160,7 +159,7 @@ impl<P: Platform> Desk<P> {
 	/// A voice line `seconds` long plays now (`id`; Speech.lua `Say`): a guide reading, or held already, stops at its
 	/// take and goes on from it `callout_gap_s` after this line ends (a line stops the one before, so its end is the
 	/// voice's); a paused one keeps when the line ends, which its resume waits for; a count plays over the guide.
-	pub fn pump_guide_hold(&mut self, id: &str, seconds: f64) {
+	pub(super) fn pump_guide_hold(&mut self, id: &str, seconds: f64) {
 		if id.starts_with("count.") {
 			return;
 		}

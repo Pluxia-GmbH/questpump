@@ -11058,7 +11058,8 @@ L["toast.xp"] = "+%d XP"
 L["toast.welcome"] = "Welcome back!"
 L["toast.streak"] = "Streak: day %d"
 L["toast.streak.new"] = "Day 1 of a new streak"
--- the streak's day against its next milestone, under the day's row on the pump's banner (slice 72): the day, the
+-- the streak's day against the number it counts toward, under the day's row on the pump's banner (slice 72): the
+-- day, then the player's streak goal while it is on or ahead of the day (slice 74, ns.StreakAgainst), else the next
 -- milestone; it names nothing lost (contract/copy/words.json's care rule)
 L["toast.streak.goal"] = "Day %d of %d"
 L["toast.milestone"] = "A %s-day streak!"
@@ -11140,6 +11141,14 @@ L["settings.enabled.tip"] = "Off on every character: turn-ins cost nothing and Q
 L["settings.focus"] = "Focus"
 L["settings.focus.tip"] = "What your pumps lean toward: more strength, more cardio, or more stretching and yoga. "
 	.. "Every focus keeps a bit of everything, and it counts for every character."
+-- the streak's goal (slice 74): General's row, a select of None, each of C.streak_goal_steps above the streak's day
+-- and the goal that stands, in days; the day on a pump's banner counts toward it (toast.streak.goal). Its words name
+-- nothing lost (contract/copy/words.json's care rule, which reads these keys)
+L["settings.streakGoal"] = "Streak goal"
+L["settings.streakGoal.tip"] = "How many days your streak counts toward after a pump, as in \"Day 3 of 14\". None "
+	.. "counts toward the next milestone, and your choice holds for every character."
+L["settings.streakGoal.none"] = "None"
+L["settings.streakGoal.days"] = "%d days"
 L["settings.pace"] = "Moves per quest"
 -- each pace's line in its tooltip (TIP_ARGS)
 L["settings.pace.tip"] = "How many moves each quest asks, from the next quest you turn in.\nLight: %s\nBalanced: %s\n"
@@ -11869,11 +11878,12 @@ L["correct.elsewhereNone"] = "Corrected to no count on another device."
 L["status.reset.elsewhere"] = "A /qp reset all newer than this save was found, so your progress starts over from it, "
 	.. "here and, through QuestPump on this computer, in the app and your other game installs. The old save is kept "
 	.. "as a backup, which /qp restore-backup brings back in this game only."
--- the Body switches, the Exercises page's list and Home's setup (its equipment and its switches: slice 51) one body
--- shares with the other devices (ns.TakeBody): what came
+-- the Body switches, the Exercises page's list, Home's setup (its equipment and its switches: slice 51) and the
+-- streak's goal (slice 74) one body shares with the other devices (ns.TakeBody): what came
 L["status.body.synced"] = "From your other devices: %s."
 L["status.body.moves"] = "the Exercises page's list of moves"
 L["status.body.home"] = "your equipment and where you train"
+L["status.body.streakGoal"] = "your streak goal"
 L["ui.io.title"] = "Export and import"
 L["ui.io.export"] = "Export"
 L["ui.io.import"] = "Import"

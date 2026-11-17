@@ -4,8 +4,9 @@
 //! `--restarted-quick` when it ended within `QUICK` of its start), unless this start was itself such a quick restart
 //! and ended within `QUICK` too: then QuestPump stays up showing its Failed state (the tray red, This computer's line),
 //! so a part that panics at every start never loops. The restart is Tauri's (`tauri::process::restart`: through
-//! LaunchServices on macOS, so the grants hold), after the single-instance lock is let go, so the new process never
-//! hands itself to this one. A part that ends without a panic (the loop's Quit, the LAN server's stop) is left as it is.
+//! LaunchServices on macOS, so the grants hold, and behind the app in front), after the single-instance lock is let
+//! go, so the new process never hands itself to this one. A part that ends without a panic (the loop's Quit, the LAN
+//! server's stop) is left as it is.
 
 use std::ffi::OsString;
 use std::sync::LazyLock;

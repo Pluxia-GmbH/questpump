@@ -86,7 +86,21 @@ ns.defaults = {
 	-- streak milestone, best day and day's third ember (slice 55) the game toasted (Sheet.lua, Sheet.Toasted), in every
 	-- profile because the beta reads no save back and only the profiles return through the mirror, and every profile
 	-- alike because the streak, the day's moves and the embers are the account's
+	-- `streakGoal` is no default either (slice 74): the streak's goal in days, one of C.streak_goal_steps, 0 once the
+	-- player chose none, nil while never chosen here; written into every profile with its `bodyAt` time
+	-- (Settings.lua Settings_.SetStreakGoal), since the streak is the account's, and one more field of the body every
+	-- device shares (ns.TakeBody)
 }
+
+-- The streak's goal as every reader and writer here takes it (slice 74): `v` when it is a whole number of days from 1
+-- to C.streak_goal_max, else nil, none. A profile's `streakGoal` is nil while never chosen here and 0 once the player
+-- chose none, and both read as none; so does anything a save edited by hand, an import or a mirror could hold in its
+-- place (a string, a fraction, a number past the most the body carries). A writer tells the two apart: nil says
+-- nothing to the other devices, 0 says None with its time (`bodyAt.streakGoal`); and so does the offer of goals on a
+-- streak's day (Stats.lua ns.StreakGoalSteps), which comes while nothing was said and never against a None.
+function ns.StreakGoal(v)
+	return type(v) == "number" and v >= 1 and v <= ns.C.streak_goal_max and v == math.floor(v) and v or nil
+end
 
 local MOVE_KIND = { [K.rep] = true, [K.hold] = true, [K.cardio] = true, [K.flow] = true }
 -- The outcomes of a typed count (a record, a miss, a placement, censored, last beat), read by tools/apppump.lua (a
@@ -2830,6 +2844,9 @@ function ns.ProfileFor(db, guid)
 	end
 	-- a title worn under its id from before the renames of 2026-10-03 (its code stayed) is worn under the new one
 	p.title = RENAMED_TITLES[p.title] or p.title
+	-- a streak goal that is neither 0 nor a goal (ns.StreakGoal), on whatever path the profile came back, reads as
+	-- never chosen: nil says nothing, and its time then holds no goal of the body back (ns.TakeBody)
+	if p.streakGoal ~= 0 and not ns.StreakGoal(p.streakGoal) then p.streakGoal = nil end
 	return p
 end
 
@@ -3053,17 +3070,28 @@ end
 -- the game's change; the mirror's `body` carries each field with the time it last changed anywhere. Since slice 51 the
 -- game's setup is the place Home, whose equipment (`gear`) and three switches (`floor`, `space`, `quiet`) are one more
 -- field, `home` (Settings.lua stamps it), travelling between the game, the computer and the phones as the body does;
--- the other places stay the phones' and the computer's.
+-- the other places stay the phones' and the computer's. Since slice 74 the streak's goal (`streakGoal`, in days; 0
+-- none) is one more, and unlike the others it says nothing while the profile lacks it: the helper reads the game's
+-- goal only from a profile that holds both the value and its time, so a profile whose settings an older addon reset
+-- (which keeps `bodyAt` and drops a key it does not know) never clears the goal elsewhere.
 ns.BODY_SWITCHES = { "noJump", "noStrain", "noHeadDown" }
 -- Home's switches
 local HOME_SWITCHES = { "floor", "space", "quiet" }
 -- each switch's name on the Body page, the key after "gear." in the locale
 local BODY_NAMES = { noJump = "nojump", noStrain = "nostrain", noHeadDown = "noheaddown" }
 
--- A Body field of the profile `p` changed at `at` (now by default): the player's change here, or a body field taken in.
+-- A Body field of the profile `p` changed: at `at`, a body field taken in with the time it changed elsewhere; with
+-- none, the player's change here, now, or one second past the field's own time where that is ahead of this clock (a
+-- time taken from a device whose clock runs ahead), so the player's newest change wins its own merge at the helper
+-- and is not taken back at the next load. A time at or behind this clock is never moved past: the helper gives the
+-- game a tie, and one second a change would walk the time ahead of the clock under quick clicks.
 function ns.BodyStamp(p, field, at)
 	if type(p.bodyAt) ~= "table" then p.bodyAt = {} end
-	p.bodyAt[field] = at or ns.now()
+	if not at then
+		local now, was = ns.now(), tonumber(p.bodyAt[field]) or 0
+		at = was > now and was + 1 or now
+	end
+	p.bodyAt[field] = at
 end
 
 -- A set from a mirror's list: the move ids (positive whole numbers) or the group names (strings) it holds.
@@ -3091,7 +3119,10 @@ local function sameSet(a, b)
 end
 
 -- The mirror's body (`body`: noJump, noStrain and noHeadDown as { value, at }, moves as { at, ids, groups, include },
--- since slice 51 home as { at, gear (the equipment's keys; one not in ns.Gear is dropped), floor, space, quiet })
+-- since slice 51 home as { at, gear (the equipment's keys; one not in ns.Gear is dropped), floor, space, quiet },
+-- since slice 74 streakGoal as { value (0 none, or a goal by ns.StreakGoal), at }, which also comes where the profile
+-- holds no goal of its own (nil), whatever its time says: an older addon's settings reset drops the key and keeps
+-- `bodyAt`, and that time alone must not hold the body's goal back)
 -- into the profile in use `p`: each field that changed later than the profile's own change of it (`bodyAt`; none
 -- counts as before every time) takes the body's value and time, so a switch set on a phone, a watch or the computer
 -- reaches the game's pumps at its next load, and one set here later than that stays. The profile counts as changed
@@ -3099,9 +3130,9 @@ end
 -- loads a mirror one /reload behind, a stale copy of the profile taking the body again would otherwise outrank a
 -- setting changed here since, ns.ProfileNewer and the helper's `profile_newer`), and the `bodyAt` stamps carry the
 	-- fields back to the helper. Returns the fields whose value came (`field`, a switch's key with its new state `on`,
-	-- "moves", the Exercises page's list, or "home", Home's equipment and switches), for the login's chat line
-	-- (bodyWords); nil when none did. It reads no text, so the desktop app's engine takes the body the same way into its
-	-- fold of the game's save (tools/apppump.lua gameProfile).
+	-- "moves", the Exercises page's list, "home", Home's equipment and switches, or "streakGoal", the streak's goal),
+	-- for the login's chat line (bodyWords); nil when none did. It reads no text, so the desktop app's engine takes the
+	-- body the same way into its fold of the game's save (tools/apppump.lua gameProfile).
 function ns.TakeBody(p, body)
 	if type(body) ~= "table" then return nil end
 	local own = type(p.bodyAt) == "table" and p.bodyAt or {}
@@ -3142,17 +3173,26 @@ function ns.TakeBody(p, body)
 		ns.BodyStamp(p, "home", home.at)
 		latest = math.max(latest or 0, home.at)
 	end
+	local goal = body.streakGoal
+	local unheld = p.streakGoal == nil and type(goal) == "table" and type(goal.at) == "number"
+	if (unheld or later(goal, "streakGoal")) and (goal.value == 0 or ns.StreakGoal(goal.value)) then
+		if (p.streakGoal or 0) ~= goal.value then came[#came + 1] = { field = "streakGoal" } end
+		p.streakGoal = goal.value
+		ns.BodyStamp(p, "streakGoal", goal.at)
+		latest = math.max(latest or 0, goal.at)
+	end
 	if latest then p.changedAt = math.max(tonumber(p.changedAt) or 0, latest) end
 	return #came > 0 and came or nil
 end
 
 -- The login's chat line's words for the body fields that came (ns.TakeBody): a switch's name on the Body page with
--- its new state, the Exercises page's list, Home's equipment and switches.
+-- its new state, the Exercises page's list, Home's equipment and switches, the streak's goal.
 local function bodyWords(came)
 	local words = {}
 	for i, c in ipairs(came) do
 		words[i] = c.field == "moves" and ns.L["status.body.moves"]
 			or c.field == "home" and ns.L["status.body.home"]
+			or c.field == "streakGoal" and ns.L["status.body.streakGoal"]
 			or ns.L["gear." .. BODY_NAMES[c.field]] .. " " .. ns.L[c.on and "gear.on" or "gear.off"]
 	end
 	return table.concat(words, ", ")

@@ -96,7 +96,7 @@ Tauri.
 `contract/` holds the files the add-on and the two apps share. The workflows in `.github/workflows/` release each part
 from a tag of its own.
 
-Interface: 16001 (World of Warcraft: Forever) and 120105 (the current World of Warcraft).
+Interface: 16001 (World of Warcraft: Forever), 120105 and 120107 (World of Warcraft 12.1.5 and 12.1.7).
 
 ## Licence, names and security
 

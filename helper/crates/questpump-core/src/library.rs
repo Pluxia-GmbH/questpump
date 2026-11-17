@@ -59,13 +59,12 @@ pub(crate) struct Constants {
 	/// The seconds of no input (or between two looks) after which the sitting clock starts again, and with it the work
 	/// clock's presence (`sitting::away_s`, slice 67).
 	pub sit_away_s: i64,
-	/// Work mode's (slice 67, `work::Tunables`): Every's default and its choices in minutes, the seconds without
-	/// input at which a due work pump asks and after which it asks anyway, and the sitting minutes from which it opens
+	/// Work mode's (slice 67, `work::Tunables`): Every's default and its choices in minutes, the seconds a pump's
+	/// Result stands before a due block's pump takes its place, and the sitting minutes from which a work pump opens
 	/// on its warm move.
 	pub work_every_min: u16,
 	pub work_every_choices: Vec<u16>,
 	pub work_moment_s: i64,
-	pub work_late_s: i64,
 	pub work_warm_min: i64,
 	/// The least bank number, which an owed row of the account's unfinished list carries in its questID
 	/// (`session::bank_quest`, slice 67).

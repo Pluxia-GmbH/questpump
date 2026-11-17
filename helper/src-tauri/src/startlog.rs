@@ -74,7 +74,7 @@ pub(crate) fn install() {
 /// The log plugin's logger, from the app's setup: the records kept so far go to it first, in their order, then every
 /// record.
 pub(crate) fn attach(logger: Box<dyn Log>, level: LevelFilter) {
-	let kept = START.kept.lock().map(|mut k| std::mem::take(&mut *k)).unwrap_or_default();
+	let kept = START.kept.lock().map_or_default(|mut k| std::mem::take(&mut *k));
 	for k in &kept {
 		logger.log(&Record::builder().level(k.level).target(&k.target).args(format_args!("{}", k.message)).build());
 	}
@@ -112,8 +112,7 @@ pub(crate) fn fail(identifier: &str, error: &dyn std::fmt::Display) {
 	let mut text: String = START
 		.kept
 		.lock()
-		.map(|mut k| std::mem::take(&mut *k))
-		.unwrap_or_default()
+		.map_or_default(|mut k| std::mem::take(&mut *k))
 		.iter()
 		.map(|k| line(k.at, k.level, &k.target, &k.message))
 		.collect();

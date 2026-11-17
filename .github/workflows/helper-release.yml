@@ -155,7 +155,7 @@ jobs:
         # the cargo-deny action's image carries an older Rust: cargo-deny runs on the toolchain file's channel
         run: echo "channel=$(sed -n 's/^channel = "\(.*\)"$/\1/p' helper/rust-toolchain.toml)" >> "$GITHUB_OUTPUT"
       - name: Licences, advisories, bans and sources (cargo deny)
-        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        uses: EmbarkStudios/cargo-deny-action@70f81531115945ba6eb6b941ec9d39d063438eb9 # v2.1.2
         with:
           manifest-path: helper/Cargo.toml
           rust-version: ${{ steps.rust.outputs.channel }}
@@ -232,7 +232,7 @@ jobs:
       # input equals helper/rust-toolchain.toml's channel, so the matrix target lands in the toolchain cargo runs
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, 2026-10-16
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
           targets: ${{ matrix.target }}
       # the Xcode that builds the installed app on David's Mac; actool, codesign and notarytool all follow DEVELOPER_DIR.
       # The bundler runs `actool` from PATH with the CLI's own stdin, which tauri-action leaves closed, and Xcode 27.2's
@@ -266,7 +266,7 @@ jobs:
           DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer "$shims/actool" --version \
             --output-format human-readable-text <&-
       - name: The Tauri CLI, pinned to the tauri crate's version
-        run: npm install -g @tauri-apps/cli@2.12.4
+        run: npm install -g @tauri-apps/cli@2.12.5
       - name: The notarisation key file
         if: runner.os == 'macOS'
         env:
@@ -350,10 +350,10 @@ jobs:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, 2026-10-16
         with:
-          toolchain: 1.99.1
-      - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
+          toolchain: 1.100.0
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
-          tool: cargo-cyclonedx@0.5.9
+          tool: cargo-cyclonedx@0.5.10
       - name: One CycloneDX SBOM per shipped target (every dependency, JSON, spec 1.5)
         working-directory: helper
         env:
@@ -583,9 +583,9 @@ jobs:
           # microsoft/winget-pkgs under its owner
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
           V: ${{ needs.check.outputs.version }}
-          # wingetcreate 1.12.13.0 (2026-07-23), checked by its SHA-256 before it runs with the token
-          WINGETCREATE_URL: https://github.com/microsoft/winget-create/releases/download/v1.12.13.0/wingetcreate.exe
-          WINGETCREATE_SHA256: 24042bd37915805615e6cf969ac57c6439124c3fe85823327f5f3fb24bd9ffea
+          # wingetcreate 1.28.1.0 (2026-11-11), checked by its SHA-256 before it runs with the token
+          WINGETCREATE_URL: https://github.com/microsoft/winget-create/releases/download/v1.28.1.0/wingetcreate.exe
+          WINGETCREATE_SHA256: 63d980ba79e97042395bd6eb5992c2db9e01e9e7a8a22958a95c288f27310413
         run: |
           # wingetcreate update needs the package in winget-pkgs: its first version goes in by hand
           # (helper/packaging/winget)

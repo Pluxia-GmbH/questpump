@@ -6,7 +6,7 @@ resolver = "3"
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.99"
+rust-version = "1.100"
 license = "MIT"
 authors = ["Pluxia GmbH"]
 

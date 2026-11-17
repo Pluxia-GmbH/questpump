@@ -384,7 +384,7 @@ register(LADDER, ({ladder: id, step: asked = null}) => {
 		const box = view.body.querySelector('.qp-step-row[aria-current="step"] .qp-path-tile');
 		if (!play || !box) return;
 		if (play.opened) {
-			box.classList.add("qp-opened");
+			once(box, "qp-opened");
 			return;
 		}
 		const fill = box.querySelector(".qp-path-ring-fill");

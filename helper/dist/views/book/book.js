@@ -455,7 +455,8 @@ register("book", () => {
 		const row = list.querySelector(`[data-focus-key="ladder:${ladder}"]`);
 		if (!play || !row) return;
 		if (play.opened) {
-			row.querySelector(".qp-duo-spot")?.classList.add("qp-opened");
+			const spot = row.querySelector(".qp-duo-spot");
+			if (spot) once(spot, "qp-opened");
 			return;
 		}
 		const bar = row.querySelector(".qp-fill-bar");

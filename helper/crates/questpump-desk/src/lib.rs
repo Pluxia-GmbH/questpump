@@ -250,6 +250,7 @@ impl<P: Platform> Desk<P> {
 	pub fn intent(&mut self, intent: &Intent) -> Result<(), String> {
 		match intent.area() {
 			"home" => self.home_intent(intent),
+			"streak" => self.streak_intent(intent),
 			"hero" => self.hero_intent(intent),
 			"setup" => self.setup_intent(intent),
 			"places" => self.places_intent(intent),
@@ -273,13 +274,21 @@ impl<P: Platform> Desk<P> {
 		matches!(
 			area,
 			"home"
-				| "hero" | "setup"
-				| "places" | "expedition"
-				| "welcome" | "book"
-				| "share" | "log"
-				| "pump" | "sound"
-				| "sync" | "email"
-				| "restore" | "work"
+				| "streak"
+				| "hero"
+				| "setup"
+				| "places"
+				| "expedition"
+				| "welcome"
+				| "book"
+				| "share"
+				| "log"
+				| "pump"
+				| "sound"
+				| "sync"
+				| "email"
+				| "restore"
+				| "work"
 		)
 	}
 }

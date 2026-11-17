@@ -519,8 +519,8 @@ impl IpsBody {
 			fixed.extend(more.iter().filter_map(|(label, v)| v.as_ref().map(|v| format!("{label}: {v}"))));
 		}
 		if let Some(t) = &self.termination {
-			let code = t.code.map(|c| format!(" {c:#x}")).unwrap_or_default();
-			let indicator = t.indicator.as_ref().map(|i| format!(", {i}")).unwrap_or_default();
+			let code = t.code.map_or_default(|c| format!(" {c:#x}"));
+			let indicator = t.indicator.as_ref().map_or_default(|i| format!(", {i}"));
 			fixed.push(format!("Termination: {}{code}{indicator}", t.namespace.as_deref().unwrap_or("?")));
 		}
 		for (image, said) in self.asi.iter().flatten() {
@@ -533,12 +533,12 @@ impl IpsBody {
 		}
 		let (index, thread) = self.crashed();
 		if let Some((image, offset)) = self.faulting() {
-			let offset = offset.map(|o| format!(" + {o:#x}")).unwrap_or_default();
+			let offset = offset.map_or_default(|o| format!(" + {o:#x}"));
 			fixed.push(format!("Faulting module: {image}{offset}"));
 		}
 		let mut tails = Vec::new();
 		if let (Some(i), Some(t)) = (index, thread) {
-			let on = t.queue.as_ref().or(t.name.as_ref()).map(|q| format!(" ({q})")).unwrap_or_default();
+			let on = t.queue.as_ref().or(t.name.as_ref()).map_or_default(|q| format!(" ({q})"));
 			tails.push((format!("Thread {i} crashed{on}:"), self.frames(&t.frames)));
 		}
 		let last = match (&self.last_exception_backtrace, &self.asi_backtraces) {
@@ -577,7 +577,7 @@ impl IpsBody {
 			.iter()
 			.enumerate()
 			.map(|(i, f)| {
-				let offset = f.image_offset.map(|o| format!("  {o:#x}")).unwrap_or_default();
+				let offset = f.image_offset.map_or_default(|o| format!("  {o:#x}"));
 				let symbol = match (&f.symbol, f.symbol_location) {
 					(Some(s), Some(at)) => format!("  {s} + {at}"),
 					(Some(s), None) => format!("  {s}"),

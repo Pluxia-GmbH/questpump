@@ -6,10 +6,11 @@
 // mirrored move draws its cells flipped; and of the phones' still in a colour (`recolour`, FigureLibrary.recolour):
 // over the card, the still's own tint taken out in the crimson and put back in the colour. One module for three pages
 // (docs/plan.md slice 35): the review page (tools/figures/review.py writes this file's text into its own module script,
-// since a page opened from disk cannot import one), questpump.com's hero (`publish.py --site <move>` copies it to
-// site/public/figure.js, the move's two sheets and its pack entry to site/public/figure/) and the desktop app, whose
-// films and stills (helper/dist/lib/figure.js) take their colour through `addTint` and `recolour` from the copy
-// `publish.py` keeps at helper/dist/lib/player.js.
+// since a page opened from disk cannot import one), questpump.com, whose films (site/src/scripts/film.js) take their
+// colour through `addTint`, and the desktop app, whose films and stills (helper/dist/lib/figure.js) take theirs through
+// `addTint` and `recolour`. The source is tools/figures/player.js alone: site/src/scripts/player.js and
+// helper/dist/lib/player.js are its copies, byte for byte, which `publish.py --player` writes and `publish.py --check`
+// holds to it, so an edit goes into the source and never into a copy.
 //
 // On a page that loads it, it plays every <canvas data-figure="<the move's JSON>">: the JSON is the pack's shape for
 // one move (hz, box, bg, moves) with `move`, the key it shows, and `colour`, the tint's #RRGGBB, its sheet names

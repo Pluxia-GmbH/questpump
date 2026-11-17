@@ -274,8 +274,10 @@ impl<P: Platform> Desk<P> {
 		self.count_switched()
 	}
 
-	/// The voice stops at once: a pump stopped (pain, felt unwell, the player's or the game's end), went back to Ready
-	/// or left the screen (Speech.lua's `StopSound`). Owner: DESK-MEDIA (`audio.rs`). Caller: DESK-PUMP.
+	/// The line the voice speaks stops at once (Speech.lua's `StopSound`), only where the game's does or another
+	/// sound takes its place: a callout as its move leaves its Ready view, a line of the run at Back, the line under a
+	/// guide that begins or under a self-opened pump's `call`, and every line once the game asks for its own pump
+	/// (DESK-PUMP's `pump_leave_ready`, `pump_back`, `pump_hush`). Owner: DESK-MEDIA (`audio.rs`). Caller: DESK-PUMP.
 	pub fn hush(&self) {
 		self.p.hush();
 	}
@@ -306,11 +308,13 @@ impl<P: Platform> Desk<P> {
 		self.p.stop_guide();
 	}
 
-	/// A voice line `seconds` long plays now (`id`): a move's guide reading stops at its take and goes on
-	/// `callout_gap_s` after the line ends, a count aside, which plays over it (Speech.lua `Say`). Owner: DESK-PUMP
-	/// (`pump/guide.rs`). Caller: DESK-MEDIA (`audio.rs` `voice_line`, the one way a pump's line reaches the voice).
-	pub fn guide_hold(&mut self, id: &str, seconds: f64) {
-		self.pump_guide_hold(id, seconds);
+	/// A voice line `seconds` long plays now (`id`): the pump keeps it as the line speaking until that long has passed,
+	/// by which it knows what a Back, a Start or its end stops (Speech.lua's `playingId`), and a move's guide reading
+	/// stops at its take and goes on `callout_gap_s` after the line ends, a count aside, which plays over it (Speech.lua
+	/// `Say`). Owner: DESK-PUMP (`pump.rs` `pump_line_plays`, `pump/guide.rs`). Caller: DESK-MEDIA (`audio.rs`
+	/// `voice_line`, the one way a pump's line reaches the voice).
+	pub fn line_plays(&mut self, id: &str, seconds: f64) {
+		self.pump_line_plays(id, seconds);
 	}
 
 	/// The paired phone's name for the window: the name it gave at pairing, else its kind; none while no phone is

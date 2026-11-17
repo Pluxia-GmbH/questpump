@@ -265,23 +265,3 @@ export function blockSize(bars, plot, rows, gap) {
 	const between = plot / tallest < 2 * gap ? 0 : gap;
 	return {unit: Math.max(0.5, (plot - (tallest - 1) * between) / tallest), gap: between};
 }
-
-/** The streak card's day grid (rule 19; surface.StreakCard): a cell a day of a streak of `days` days in a box `width` ×
- * `height` points, each column count tried, its rows the days over it and its cell the most `cellMost`, the width and
- * the height leave (a gap a `gapFraction` of a cell between cells); the largest cell wins (alike within a millionth of
- * a point), then the fewest rows, then the fewest columns. `check`: the cell is large enough for its check mark
- * (`checkFrom`). Cells fill from the top left, a row left to right, the oldest day first. */
-export function placeGrid(days, width, height, gapFraction, cellMost, checkFrom) {
-	let best = {cols: 0, rows: 0, cell: 0};
-	for (let cols = 1; cols <= days; cols += 1) {
-		const rows = Math.ceil(days / cols);
-		const cell = Math.min(cellMost, width / (cols + (cols - 1) * gapFraction),
-			height / (rows + (rows - 1) * gapFraction));
-		const larger = cell > best.cell + 1e-6;
-		const alike = Math.abs(cell - best.cell) <= 1e-6;
-		if (larger || (alike && (rows < best.rows || (rows === best.rows && cols < best.cols)))) {
-			best = {cols, rows, cell};
-		}
-	}
-	return {...best, gap: best.cell * gapFraction, check: best.cell >= checkFrom};
-}

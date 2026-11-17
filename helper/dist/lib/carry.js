@@ -4,18 +4,16 @@
 // what the surface last showed). Under Reduce Motion every number stands at its end at once, and so does a roll that
 // is overtaken (`settle`: the reveal landed by a click, the page left, a pump's cover over it, a new roll).
 
-import {token} from "../kit/element.js";
+import {once, token} from "../kit/element.js";
 import {number} from "./saga.js";
 
 /** Reduce Motion, as the system says it now. */
 export const still = matchMedia("(prefers-reduced-motion: reduce)");
 
-/** Pops `el`'s digits once (kit.css `.qp-pop`, digitPop: nothing to see under Reduce Motion), again at each call. */
+/** Pops `el`'s digits once (kit.css `.qp-pop`, digitPop: nothing to see under Reduce Motion), again at each call and
+ * never at a later showing of its page (`once`). */
 export function pop(el) {
-	el.classList.remove("qp-pop");
-	// the class taken and given in one task would not start the animation again
-	void el.offsetWidth;
-	el.classList.add("qp-pop");
+	once(el, "qp-pop");
 }
 
 /** The rolls on their way, by their element: what stands each at its end. */
@@ -56,7 +54,8 @@ export function roll(el, from, to, name, {landing = false, done = null} = {}) {
 	});
 	const step = (now) => {
 		if (!live) return;
-		const p = Math.min(1, (now - began) / ms);
+		// a frame's time may stand before the roll began (it is the frame's start, the roll a task in it)
+		const p = Math.min(1, Math.max(0, (now - began) / ms));
 		el.textContent = number(Math.round(from + (to - from) * (1 - (1 - p) ** 3)));
 		if (!popped && now - began >= popAt) {
 			popped = true;

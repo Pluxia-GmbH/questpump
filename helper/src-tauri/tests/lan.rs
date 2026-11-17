@@ -691,7 +691,7 @@ impl Server {
 		use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 		let addr = self.url.trim_start_matches("http://");
 		let mut stream = tokio::net::TcpStream::connect(addr).await.unwrap();
-		let host = host.map(|h| format!("Host: {h}\r\n")).unwrap_or_default();
+		let host = host.map_or_default(|h| format!("Host: {h}\r\n"));
 		let head = format!("GET {path} HTTP/1.1\r\n{host}Authorization: Bearer {}\r\n\r\n", self.keys.bearer);
 		stream.write_all(head.as_bytes()).await.unwrap();
 		let mut line = [0; 12];

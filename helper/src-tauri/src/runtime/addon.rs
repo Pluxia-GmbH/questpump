@@ -493,7 +493,7 @@ impl Helper {
 	/// those the helper's record still holds.
 	fn scope(&self, addons: &Path, packs: bool) -> rules::Scope {
 		if packs {
-			rules::Scope::Packs { kept: self.addon.record(addons).map(|r| r.files.clone()).unwrap_or_default() }
+			rules::Scope::Packs { kept: self.addon.record(addons).map_or_default(|r| r.files.clone()) }
 		} else {
 			rules::Scope::Differing
 		}
@@ -630,13 +630,15 @@ impl Helper {
 			if !files.is_empty() {
 				self.addon.records.push(Record { addons: addons.to_path_buf(), version, files });
 			}
-			self.addon.packs_due.remove(addons);
 		} else {
 			self.addon.asked = None;
 			self.addon.records.push(Record { addons: addons.to_path_buf(), version, files: feed.hashes() });
 			self.addon.owners.insert(addons.to_path_buf(), Owner::Helper);
 			self.addon.stated = None; // stated again at the next look, once the install is followed
 		}
+		// either job leaves no pack behind the feed: a whole one put in every folder that differed, the packs among
+		// them, so no packs job follows it to fetch nothing
+		self.addon.packs_due.remove(addons);
 		self.save_records();
 		if let Some(game) = self.desk.p.game.as_ref().filter(|g| g.addons == addons) {
 			self.addon.added_while = Some(game.pid);

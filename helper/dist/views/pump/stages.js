@@ -21,9 +21,9 @@ import {guardMs} from "../../lib/keys.js";
 import {morph} from "../../lib/morph.js";
 import {openMenu, over, tabOf} from "../../lib/router.js";
 import {openShare, streakCard} from "../../lib/share.js";
-import {animationMs, h, qualityName, token} from "../../kit/element.js";
+import {animationMs, h, once, qualityName, token} from "../../kit/element.js";
 import {flyMs, shifted, turned} from "../../kit/qp-count-bar.js";
-import {fanfareWords} from "../../kit/qp-fanfare.js";
+import {fanfareSpoken, fanfareWords} from "../../kit/qp-fanfare.js";
 import {countUnit} from "../../kit/qp-stepper.js";
 import {rest, tripResult} from "./expedition.js";
 import {howAndTips, stopLine} from "../../kit/move-how.js";
@@ -1166,9 +1166,7 @@ function middle(el) {
  * with its own motion. */
 function heroLanded(tab, xp, last) {
 	if (!tab) return;
-	tab.classList.remove("qp-tab-bump");
-	void tab.offsetWidth;
-	tab.classList.add("qp-tab-bump");
+	once(tab, "qp-tab-bump");
 	if (!last || xp == null) return;
 	tab.querySelector(".qp-tab-gain")?.remove();
 	const chip = h("span", {class: "qp-tab-gain", "aria-hidden": "true", text: t("log.xp", {xp})});
@@ -1176,13 +1174,26 @@ function heroLanded(tab, xp, last) {
 	setTimeout(() => chip.remove(), animationMs(chip));
 }
 
+/** A gap between two frames from which on the page was away (a display asleep tells the page nothing): no frame is
+ * a second late while it draws. */
+const AWAY_MS = 1000;
+
 /** The floating Result (Rapha, 2026-11-11, "Into Hero"; surface.ResultFloat): `card` dropping in under the window's top
  * over the page under the pump (its cover see-through), the reveal playing on in it (`reveals(now)`, true while it
  * runs), gold motes flying from the XP (`from`, none where it shows no XP) into the Hero tab as it counts up (none
  * under Reduce Motion, where the tab shows the XP at once), then the ring round its close button `close` emptying over motion.resultFloatHold, held
  * while the pointer is on the card; at its end, at the close or at Escape the card leaves upward and the pump goes
- * (`pump.continue`). A click on the card lands the reveal; `update` takes the pump as Rust sends it again. */
-function floating(card, close, from, xp, reveal, reveals, update) {
+ * (`pump.continue`). A click on the card lands the reveal; `update` takes the pump as Rust sends it again. Since slice
+ * 74 no choice stands on a timer (WCAG 2.2.1): while the streak's goals to choose from show (`choice.shows()`) and the
+ * player has picked none (`choice.picked`, Rust's as the stage is built; no chip is chosen as they show), the hold
+ * does not run and the ring stands full; a pick Rust took starts it (`picks`), and each further pick starts it over,
+ * so the hold's end always writes a pick; its X and Escape with none picked decline (Rust writes None,
+ * `pump_put`), a pump that takes the Result's place writes nothing, and a goal or a None that arrives from another
+ * device takes the choices away, so the hold runs as ever (Rust writes a pick already made at that moment). The choices
+ * (`choice.part()`) come into view by themselves as the reveal reaches the streak's day, where the card is taller than
+ * its window lets it be and the player has not scrolled it. The card stays clear of the ActionBar, whose Hero tab the
+ * motes fly to: above it where it lies along the foot, beside it where it is the rail. */
+function floating(card, close, from, xp, reveal, reveals, update, choice) {
 	const layer = h("div", {class: "qp-pump-motes"});
 	const el = h("div", {class: "qp-pump-floats"}, card, layer);
 	const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1195,6 +1206,38 @@ function floating(card, close, from, xp, reveal, reveals, update) {
 	let last = null; // the frame the hold last counted from
 	let pointed = false;
 	let leaving = false;
+	let picked = choice.picked;
+	let picks = choice.picks; // the picks Rust took, as it last sent them
+	let scrolled = false; // the player scrolled the card
+	let brought = false; // the choices were brought into view
+	const head = card.querySelector(".qp-pump-float-head");
+	card.addEventListener("scroll", () => {
+		scrolled = true;
+		// the pinned head's hairline while anything stands under it (pump.css)
+		head.toggleAttribute("data-under", card.scrollTop > 0);
+	}, {passive: true});
+	// time away is no part of the hold: a window in the background or a display asleep draws no frame, and the
+	// first one after it would count the whole gap
+	const away = () => {
+		last = null;
+	};
+	document.addEventListener("visibilitychange", away);
+	/** The room the ActionBar takes stays free of the card. */
+	const clearBar = () => {
+		const bar = tab?.closest("qp-action-bar")?.getBoundingClientRect();
+		if (!bar) return;
+		const foot = bar.width > bar.height;
+		// copy-lint: not shown (CSS lengths)
+		el.style.paddingBottom = foot ? `${Math.max(0, innerHeight - bar.top)}px` : "";
+		// copy-lint: not shown (a CSS length)
+		el.style.paddingInlineStart = foot ? "" : `calc(${bar.width}px + var(--qp-layout-margin))`;
+	};
+	const resized = () => {
+		if (el.isConnected) return clearBar();
+		removeEventListener("resize", resized);
+		document.removeEventListener("visibilitychange", away);
+	};
+	addEventListener("resize", resized);
 	const leave = () => {
 		if (leaving) return;
 		leaving = true;
@@ -1203,6 +1246,10 @@ function floating(card, close, from, xp, reveal, reveals, update) {
 		setTimeout(() => heard(intent("pump.continue")), animationMs(card));
 	};
 	close.addEventListener("click", leave);
+	// dropped in, the card stands: shown again (a window over the pump closed) it drops in no second time
+	card.addEventListener("animationend", (e) => {
+		if (e.target === card && !leaving) card.classList.add("qp-stood");
+	});
 	card.addEventListener("pointerenter", () => {
 		pointed = true;
 	});
@@ -1216,7 +1263,16 @@ function floating(card, close, from, xp, reveal, reveals, update) {
 		el,
 		floats: true,
 		primary: () => close,
-		update,
+		update(next) {
+			// a goal picked on the card, by a click or its keys, as Rust took it (one it refused starts nothing): the
+			// hold runs from now, over again at each pick, the picked chip's own again too
+			if (next.picks !== picks) {
+				picks = next.picks;
+				picked = true;
+				held = 0;
+			}
+			update(next);
+		},
 		onKey(e) {
 			if (e.key !== "Escape") return false;
 			leave();
@@ -1225,7 +1281,15 @@ function floating(card, close, from, xp, reveal, reveals, update) {
 		frame(now) {
 			const going = reveals(now);
 			const r = reveal();
+			if (hold == null) clearBar();
 			hold ??= token(card, "--qp-motion-result-float-hold-duration");
+			if (!brought && choice.shows() && (r.landed || (r.streak != null && now >= r.streak))) {
+				brought = true;
+				const part = choice.part();
+				if (part && !scrolled && card.scrollHeight > card.clientHeight) {
+					part.scrollIntoView({block: "nearest", behavior: still ? "auto" : "smooth"});
+				}
+			}
 			if (!flown && (r.landed || now >= r.gain)) {
 				flown = true;
 				const count = still || r.landed ? 0 : token(card, "--qp-surface-result-float-mote-count");
@@ -1241,9 +1305,12 @@ function floating(card, close, from, xp, reveal, reveals, update) {
 			}
 			if (leaving) return false;
 			if (!going) {
-				if (last != null && !pointed) held += now - last;
+				// no choice on a timer: the hold waits for the first pick while the goals to choose from show
+				if (!picked && choice.shows()) held = 0;
+				else if (last != null && !pointed && now - last < AWAY_MS) held += now - last;
 				last = now;
-				close.style.setProperty("--qp-ring", String(Math.max(0, 1 - held / hold)));
+				// under Reduce Motion the same hold with the ring still (motion.resultFloatHold)
+				if (!still) close.style.setProperty("--qp-ring", String(Math.max(0, 1 - held / hold)));
 				if (held >= hold) leave();
 			}
 			return !leaving;
@@ -1278,6 +1345,14 @@ export function done(pump, topic, ctx) {
 	if (pump.calm && !trip) body.push(calm(pump));
 	let draw = () => false;
 	let float = null;
+	let streak = null;
+	let goalPicked = pump.goal ?? null;
+	/** The streak's day takes what Rust sends again of it: the goal chosen, the day's number and the goals on offer. */
+	const taken = (next) => {
+		goalPicked = next.goal ?? null;
+		streak.chosen = next.goal ?? null;
+		streak.offer = next.result?.streak;
+	};
 	if (celebrates || kept) {
 		const banner = celebrates && r.banner && !floats ? h("qp-fanfare", {kind: r.banner.kind, number: r.banner.number})
 			: null;
@@ -1303,8 +1378,14 @@ export function done(pump, topic, ctx) {
 		// a level or a rank turned on the bar: to its end, the flash with the level's rise, the new level from empty
 		// (motion.levelRoll, levelRise)
 		const levels = !stands && Boolean(r.bar?.from && r.turn && r.turn.kind !== "streak");
-		const streak = r.streak ? h("qp-streak-day") : null;
-		if (streak) streak.day = r.streak;
+		streak = r.streak ? h("qp-streak-day") : null;
+		if (streak) {
+			streak.day = r.streak;
+			streak.chosen = pump.goal ?? null;
+			// a goal picked among the day's (slice 74), none as they show: Rust holds the last pick and writes it as
+			// the Result ends, or None where the player ends it with none picked (`pump_put`)
+			streak.addEventListener("qp-goal", (e) => heard(intent("pump.goal", {days: e.detail})));
+		}
 		const rows = r.rows.map((row) => {
 			const el = h("qp-reward-row");
 			el.reward = reward(row.reward);
@@ -1325,8 +1406,9 @@ export function done(pump, topic, ctx) {
 			float = {card: h("div", {class: "qp-pump-float", role: "group", "aria-label": title.textContent},
 				head, bar, streak, list), close, from: xp ? number : null, xp: xp ? r.xp : null};
 		} else {
-			body.push(...[banner, bannerShare, trip?.line, xp ? gain : null, xp ? gainWord : null, bar, streak, list]
-				.filter(Boolean));
+			// the XP and its word are one part, which a short window sets on one line (pump.css `.qp-result`)
+			const gained = xp ? h("div", {class: "qp-pump-gained"}, gain, gainWord) : null;
+			body.push(...[banner, bannerShare, trip?.line, gained, bar, streak, list].filter(Boolean));
 		}
 		let turned = false;
 		let filled = false;
@@ -1358,7 +1440,7 @@ export function done(pump, topic, ctx) {
 				// bar flashes at a level or a rank
 				if (!landed) {
 					if (banner) banner.rise();
-					else title.classList.add("qp-turned");
+					else once(title, "qp-turned");
 					if (levels) bar.flash();
 				}
 			}
@@ -1397,7 +1479,11 @@ export function done(pump, topic, ctx) {
 		};
 		if (!ctx.told(pump.id)) {
 			if (celebrates) {
-				announce([banner?.spoken() ?? title?.textContent ?? "", xp ? t("pump.reward.xp", {xp: r.xp}) : "",
+				// one line for the whole Result, the level, the rank or the milestone its banner turns to with it: the
+				// turn comes within a second, and a second line then would cut this one short (lib/focus.js `announce`
+				// holds one line)
+				announce([banner?.spoken() ?? title?.textContent ?? "",
+					r.turn ? fanfareSpoken(r.turn.kind, r.turn.number) : "", xp ? t("pump.reward.xp", {xp: r.xp}) : "",
 					streak?.spoken() ?? "", ...rows.flatMap((row) => row.spoken())].filter(Boolean).join(". "));
 			}
 			// the game day's last ember a move lit (slice 55), a kept end's too: the window's one Toast host shows it
@@ -1415,18 +1501,26 @@ export function done(pump, topic, ctx) {
 		else body.push(paid);
 		paid.classList.toggle("qp-pump-centre", !float);
 	}
-	if (float) return floating(float.card, float.close, float.from, float.xp, () => reveal, draw, (next) => {
-		reveal = next.reveal;
-	});
+	if (float) {
+		return floating(float.card, float.close, float.from, float.xp, () => reveal, draw, (next) => {
+			reveal = next.reveal;
+			if (streak) taken(next);
+		}, {shows: () => Boolean(streak?.day?.steps?.length), part: () => streak?.goals ?? null,
+			picked: pump.goal != null, picks: pump.picks});
+	}
 	if (trip) body.push(...trip.tail);
 	const offer = trip ? null : saveOffer(pump, continueButton);
 	const {el, column} = frame({body, foot: trip ? trip.foot : offer.foot});
+	// the full-screen Result, which fits a window by its height (pump.css)
+	el.classList.add("qp-result");
 	// the Share window by itself as the reveal ends (at once on one ended part way)
 	let opened = false;
 	const reveals = draw;
 	draw = (now) => {
 		const going = reveals(now);
-		if (trip && !going && !opened) {
+		// never over the streak goal's choices while none is picked: closing it puts the Result away
+		const asks = Boolean(streak?.day?.steps?.length) && goalPicked == null;
+		if (trip && !going && !opened && !asks) {
 			opened = true;
 			queueMicrotask(() => trip.opened());
 		}
@@ -1452,6 +1546,7 @@ export function done(pump, topic, ctx) {
 		frame: (now) => draw(now),
 		update(next) {
 			reveal = next.reveal;
+			if (streak) taken(next);
 			showLegend(next.legend);
 		},
 	};

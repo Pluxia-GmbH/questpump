@@ -138,10 +138,10 @@ impl Follow {
 			if let Some(path) = find().filter(|p| self.tail.as_ref().is_none_or(|t| t.path() != p)) {
 				let new = !first && std::fs::metadata(&path).and_then(|m| m.modified()).is_ok_and(|at| at >= since);
 				let next = if new { Tail::at_start(path) } else { Tail::at_end(path) };
-				left = self.tail.replace(next).map(|mut old| old.lines()).unwrap_or_default();
+				left = self.tail.replace(next).map_or_default(|mut old| old.lines());
 			}
 		}
-		(left, self.tail.as_mut().map(Tail::lines).unwrap_or_default())
+		(left, self.tail.as_mut().map_or_default(Tail::lines))
 	}
 
 	/// Whether the log followed began anew (another log found, or this one made anew under its name) since the last

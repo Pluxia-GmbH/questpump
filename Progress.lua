@@ -4256,7 +4256,8 @@ end
 -- ring horizon, `horizon`, the game's sheet summary's rh, for an app's log, which holds rows the game's ring let go,
 -- or the log's own baseline's, ns.Horizon, whichever is later; the game's own log passes neither), newest first: the
 -- newest correct_sets of them, then the set holding the move's record (its best, and a loaded move's weighted record)
--- where it is older. Each { row (as stored), kind (ns.CorrectableRow's), value (as the fold reads it now, ns.SetValue:
+-- where it is older; a move that holds no record now (ns.HoldsRecord: one that turned timed keeps its old sets) has no
+-- such set. Each { row (as stored), kind (ns.CorrectableRow's), value (as the fold reads it now, ns.SetValue:
 -- a count, a hold's seconds, a pose's answer), outcome (as the fold reads it now, ns.SetOutcome: done where a count of
 -- 0 is "Done without a count", a corrected one too; slice 44's review), load (its weight in tenths of a kg, nil none),
 -- round (the round a correction of it takes now, ns.CorrectionRound), record (true for a set holding the record),
@@ -4278,7 +4279,7 @@ function ns.Correctable(state, db, move, now, horizon, more)
 		if a.row.ts ~= b.row.ts then return a.row.ts > b.row.ts end
 		return a.at > b.at
 	end)
-	local rec, out = state.moves[id], {}
+	local rec, out = ns.HoldsRecord(state, id) and state.moves[id] or nil, {}
 	for n, e in ipairs(found) do
 		local r = e.row
 		local record = rec ~= nil and (r.ts == rec.bestTs or r.ts == rec.topTs)
@@ -5390,8 +5391,8 @@ end
 -- shuts or one that waits for another ladder) fills only a strength step's first half; a ladder's top, which no climb
 -- is left from, fills whole on a pose family and the cardio ladder and, on a strength or hold ladder, its record up its
 -- window over the whole ring. Returns the fill and, on a strength or hold step, the ticks of its stars (ns.StarLine) on
--- the span its record fills; nil while a strength or hold step has no mark (no record and no day yet: "Your first set
--- sets your mark").
+-- the span its record fills; nil while a strength or hold step has no mark (no record and no day yet: "Your first max
+-- set finds your step").
 local RING, HALF = 1000, 500
 
 local function part(num, den, span)

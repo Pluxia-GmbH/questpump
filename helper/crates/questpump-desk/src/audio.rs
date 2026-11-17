@@ -54,14 +54,12 @@ pub static FEEDBACK: LazyLock<HashMap<String, Column>> = LazyLock::new(|| {
 		feedback: HashMap<String, Value>,
 	}
 	let tokens: Option<Tokens> = serde_json::from_str(include_str!("../../../../contract/design/tokens.json")).ok();
-	tokens
-		.map(|t| {
-			t.feedback
-				.into_iter()
-				.filter_map(|(name, event)| Some((name, serde_json::from_value::<Event>(event).ok()?.desktop)))
-				.collect()
-		})
-		.unwrap_or_default()
+	tokens.map_or_default(|t| {
+		t.feedback
+			.into_iter()
+			.filter_map(|(name, event)| Some((name, serde_json::from_value::<Event>(event).ok()?.desktop)))
+			.collect()
+	})
 });
 
 /// A voice line's receipt: the words it says, their djb2 hash (as VoiceClips.lua keeps it) and its take's length in
@@ -110,7 +108,8 @@ impl<P: Platform> Desk<P> {
 	}
 
 	/// A take by its id: to the live region while the screen reader hears it (`reader_hears`), else the voice when it
-	/// is on, a move's guide held while it plays (`guide_hold`). An id the voice does not know says nothing.
+	/// is on, the pump told it plays (`line_plays`: the line speaking, a move's guide held under it). An id the voice
+	/// does not know says nothing.
 	fn voice_line(&mut self, id: &str) {
 		let Some((words, seconds)) = CLIPS.get(id).map(|clip| (clip.text.clone(), clip.seconds)) else {
 			log::warn!("sound: no voice line {id}");
@@ -119,7 +118,7 @@ impl<P: Platform> Desk<P> {
 		if self.p.reader_hears() {
 			self.p.announce(words);
 		} else if self.settings.sound.voice {
-			self.guide_hold(id, seconds);
+			self.line_plays(id, seconds);
 			self.p.play_take(id);
 		}
 	}

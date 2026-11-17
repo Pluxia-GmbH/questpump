@@ -14,7 +14,9 @@
 //! other places as `places` between the phones and the computer only, and since 2026-11-03 their plan (the default
 //! place and the weekly schedule) as `place_plan` beside them; the place in use stays each device's own and is never
 //! here (until slice 51 the whole place did). The pain flags and the focus are rows, so they are not here either.
-//! The helper keeps it in `body.json`.
+//! Since slice 74 the streak's goal (`streak_goal`, in days, 0 for none) is one more field between the game, the
+//! computer and the phones: the game's joins at its `bodyAt.streakGoal`, only from a profile that holds both the value
+//! and that time, and the mirror carries it back. The helper keeps it in `body.json`.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -61,8 +63,7 @@ pub fn sizes_alike(pace: &str) -> bool {
 #[must_use]
 pub fn experiences() -> Vec<&'static str> {
 	let mut words: Vec<(&'static str, u8)> = library::constants()
-		.map(|c| c.start_rung.iter().map(|(word, rung)| (word.as_str(), *rung)).collect())
-		.unwrap_or_default();
+		.map_or_default(|c| c.start_rung.iter().map(|(word, rung)| (word.as_str(), *rung)).collect());
 	words.sort_by_key(|&(word, rung)| (rung, word));
 	words.into_iter().map(|(word, _)| word).collect()
 }
@@ -249,7 +250,8 @@ impl Place {
 		place_id(&self.id)
 			&& self.id != home
 			&& self.template.as_ref().is_none_or(|t| letters(t, 16))
-			&& name && glyph
+			&& name
+			&& glyph
 			&& self.setup.checks_out()
 	}
 }
@@ -364,6 +366,12 @@ pub struct Body {
 	/// computer, never in the mirror; the place in use never travels.
 	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "crate::link::lenient")]
 	pub place_plan: Option<Changed<PlacePlan>>,
+	/// The streak's goal in days (slice 74), 0 for none: the number the streak's day shows against while it is on or
+	/// ahead of the day ("Day 3 of 14"). A device writes 0 or one of library.json's `streak_goal_steps` and takes any
+	/// whole number of days, so a later build's new step needs nothing of this one. Between the game, the computer and
+	/// the phones; absent before any device chose, which reads as none.
+	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "crate::link::lenient")]
+	pub streak_goal: Option<Changed<u16>>,
 }
 
 /// A field is taken from `theirs` when it changed later than `mine` (at the same time too when `ties`), or `mine` has
@@ -431,6 +439,7 @@ impl Body {
 		dated(&mut self.home, now);
 		dated(&mut self.places, now);
 		dated(&mut self.place_plan, now);
+		dated(&mut self.streak_goal, now);
 	}
 
 	/// Takes each field of `theirs` that changed later than this body's (at the same time too when
@@ -450,6 +459,7 @@ impl Body {
 			take(&mut self.home, theirs.home.as_ref(), ties),
 			take(&mut self.places, theirs.places.as_ref(), ties),
 			take(&mut self.place_plan, theirs.place_plan.as_ref(), ties),
+			take(&mut self.streak_goal, theirs.streak_goal.as_ref(), ties),
 		]
 		.contains(&true)
 	}
@@ -471,6 +481,9 @@ pub struct GameStamps {
 	/// Home's setup (slice 51: `bodyAt.home`, Settings.lua's stamp of an equipment piece, a place switch or a preset).
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub home: Option<i64>,
+	/// The streak's goal (slice 74: `bodyAt.streakGoal`, Settings.lua `Settings_.SetStreakGoal`).
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub streak_goal: Option<i64>,
 }
 
 impl GameStamps {
@@ -490,8 +503,8 @@ fn entries(v: Option<&Value>) -> Vec<(Value, Value)> {
 }
 
 /// The game's body in one profile, as the strip paints it or a file holds it (DB.lua's `noJump`, `noStrain`,
-/// `noHeadDown`, `exclude` and `include`, and since slice 51 Home's `gear`, `floor`, `space` and `quiet`; the active
-/// profile of the character the player plays), with when the game changed each (`at`).
+/// `noHeadDown`, `exclude` and `include`, since slice 51 Home's `gear`, `floor`, `space` and `quiet`, and since slice
+/// 74 `streakGoal`; the active profile of the character the player plays), with when the game changed each (`at`).
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
 #[serde(default)]
 pub struct GameBody {
@@ -505,6 +518,11 @@ pub struct GameBody {
 	/// Home's setup (slice 51): the profile's equipment in `gear_order` (the profile keeps a set), and its three
 	/// switches; the addon's defaults in a `body.json` from before slice 51.
 	pub home: PlaceSetup,
+	/// The streak's goal in days (slice 74; DB.lua's `streakGoal`, 0 once the player chose none); none while the
+	/// profile lacks it: never chosen in the game, a profile of an addon from before it, or one whose settings such an
+	/// addon reset (it keeps `bodyAt` whole and drops the key), none of which says anything about the goal.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub streak_goal: Option<u16>,
 	#[serde(skip_serializing_if = "GameStamps::is_empty")]
 	pub at: GameStamps,
 }
@@ -557,12 +575,14 @@ impl GameBody {
 			no_head_down: on("noHeadDown"),
 			moves: moves.checks_out().then_some(moves),
 			home,
+			streak_goal: blob::get(profile, "streakGoal").and_then(blob::as_u64).and_then(|d| u16::try_from(d).ok()),
 			at: GameStamps {
 				no_jump: stamp("noJump"),
 				no_strain: stamp("noStrain"),
 				no_head_down: stamp("noHeadDown"),
 				moves: stamp("moves"),
 				home: stamp("home"),
+				streak_goal: stamp("streakGoal"),
 			},
 		}
 	}
@@ -630,9 +650,10 @@ impl Kept {
 	/// brings back its own time and changes nothing; each field from before the stamps that differs from the last the
 	/// helper saw in that profile is the player's change in the game and joins at `at`, the first the helper sees of a
 	/// profile counting against the addon's defaults (every switch off, nothing left out), so a switch the player
-	/// turned on before counts and an untouched one never overrides a phone's. Another profile's body (another
-	/// character's, another install's) is never a change. Whether anything to keep changed (the body or the game's body
-	/// seen).
+	/// turned on before counts and an untouched one never overrides a phone's. The streak's goal (slice 74) has no time
+	/// from before the stamps: it joins only where the profile holds both its value and its time, so a profile without
+	/// the key changes nothing. Another profile's body (another character's, another install's) is never a change.
+	/// Whether anything to keep changed (the body or the game's body seen).
 	pub fn game(&mut self, profile: &str, seen: &GameBody, at: i64) -> bool {
 		let last = self.game.insert(profile.to_owned(), seen.clone());
 		if last.as_ref() == Some(seen) {
@@ -652,6 +673,10 @@ impl Kept {
 				Some(t) => Some(Changed { value: seen.home.clone(), changed_at: t }),
 				None => (!seen.home.same(&was.home)).then(|| Changed { value: seen.home.clone(), changed_at: at }),
 			},
+			streak_goal: seen
+				.streak_goal
+				.zip(seen.at.streak_goal)
+				.map(|(value, changed_at)| Changed { value, changed_at }),
 			..Body::default()
 		};
 		theirs.validate(at);

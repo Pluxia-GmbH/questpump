@@ -260,7 +260,13 @@ info:
     device's own and never travels: a device whose place in use left the list takes Home. A device that does not know
     `home` or `places` ignores them, and a helper that does not keeps neither, which is harmless: each device keeps
     its own list until both sides know them. Until 2026-10-21 the place (the equipment, the space, quiet, the floor)
-    stayed each device's own.
+    stayed each device's own. Since slice 74 the streak's goal travels as the field `streak_goal` between the game,
+    the computer and the phones (and through the phone to its watch, in the profile it relays): the days the streak's
+    day shows against, 0 for none, the player's own pick of contract/library.json's `streak_goal_steps`. The game's
+    joins at the profile's `bodyAt.streakGoal`, only from a profile that holds both `streakGoal` and that time (a
+    profile without the key says nothing, so one an older addon reset never clears it), and the mirror's `body`
+    carries it back. A device or a helper that does not know the field ignores it and keeps the rest; absent reads as
+    none.
     A watch never calls the route:
     its phone relays its whole profile to it. An instant on a device's own clock that lies more than a day past the
     helper's clock (a clock set ahead) never counts: the helper drops a body field whose `changed_at` does, and leaves
@@ -2141,7 +2147,9 @@ components:
         helper's check) more than a day past the helper's clock. A device ignores a field it does not know. Since
         slice 51 `home` (Home's equipment and switches, which the game shares) and `places` (the other places, between
         the phones and the computer), each a field of its own; the place in use is never in the body, nor is work
-        mode's own equipment, which travels in `Work` (since slice 67, contract/places.json).
+        mode's own equipment, which travels in `Work` (since slice 67, contract/places.json). Since slice 74
+        `streak_goal`, the streak's goal in days, which the game shares; a goal that is no whole number from 0 to 65535
+        is dropped alone.
       properties:
         no_jump: { $ref: "#/components/schemas/BodySwitch" }
         no_strain: { $ref: "#/components/schemas/BodySwitch" }
@@ -2230,6 +2238,26 @@ components:
           properties:
             value: { $ref: "#/components/schemas/PlacePlan" }
             changed_at: { $ref: "#/components/schemas/ChangedAt" }
+        streak_goal:
+          type: object
+          required: [value, changed_at]
+          description: |
+            Since slice 74: the streak's goal in days, 0 for none, the player's own. Everywhere the streak's day shows
+            against a number ("Day 3 of 14": the Result's moment, the watches' Summary, the game's banner row, the
+            streak page's bar), the number is the goal while it is on or ahead of the day, else the next of
+            contract/library.json's `streak_milestones`. A device writes only 0 or one of library.json's
+            `streak_goal_steps` (7, 14, 30, 50, 100, 365), and takes and shows any whole number of days, so a later
+            build's new step needs nothing of an older one. Between the game, the computer and the phones: the game's
+            own change joins at the profile's `bodyAt.streakGoal` (in every profile, since the streak is the
+            account's), read only where the profile holds both the value and its time, and the mirror's `body` carries
+            it back as `streakGoal = { value, at }`. Absent before any device chose, which reads as none. Absent and
+            0 differ in one thing: absent says nothing was said, 0 is the player's own None (chosen, or left when a
+            Result's choices showed and none was picked), and a streak's day offers the goal's choices while nothing
+            was said or the goal is on or behind the day, never against a None. No XP, title or row comes of it, and
+            no fold reads it.
+          properties:
+            value: { type: integer, minimum: 0, maximum: 65535 }
+            changed_at: { $ref: "#/components/schemas/ChangedAt" }
     PlaceSetup:
       type: object
       required: [gear, floor, space, quiet]
@@ -2291,7 +2319,13 @@ components:
       minimum: 1
       description: |
         When the field changed: unix milliseconds on the clock of the device that made the change (the helper's for a
-        change the game showed), never shifted by an offset
+        change the game showed), never shifted by an offset. A device stamps the player's own change at its clock, or
+        one past the time the field had where that is not earlier (a time it took from a device whose clock runs
+        ahead), so the player's newest change wins its own merge and is not taken back (the desktop app always; the
+        game and both phones since 2026-11-11). Two exceptions keep a time on the device's own clock: the game, whose
+        times are whole seconds, moves past only a time ahead of its clock (the helper gives the game a tie), and a
+        phone's `place_plan`, whose time is also the instant that phone holds a pick of a place against
+        (contract/places.json).
     Work:
       type: object
       required: ["on", on_at, every_min, pace, gear, floor, space, quiet, settings_at, reset_at, reset_by]

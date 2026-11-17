@@ -90,6 +90,36 @@ function Settings_.Set(key, value)
 	changed()
 end
 
+-- The streak's goal in force, in whole days, 0 for none: the profile's `streakGoal`, which is nil while never chosen
+-- and 0 once the player chose none, read alike; a value that is no number (a save edited by hand, an import) reads as
+-- none too. The General page's row and the pump's banner (Sheet.MomentRows) read it here.
+function Settings_.StreakGoal()
+	return ns.profile and tonumber(ns.profile.streakGoal) or 0
+end
+
+-- The streak's goal (slice 74): `days` one of C.streak_goal_steps, or 0 for none; anything else changes nothing. It
+-- goes into every profile with the change's time, as a toast's game day does (Sheet.MarkToasted): the streak is the
+-- account's, and the goal is one more field of the body every device shares (`bodyAt.streakGoal`, ns.TakeBody). A
+-- profile that says exactly this already is left as it is, so what stands said again writes nothing. None is the
+-- player's word too: it is written as 0 with its time, after a goal and on a profile that never chose alike (nil
+-- there says nothing to the other devices, 0 says None, which ns.StreakGoalSteps then offers no goal against), so a
+-- caller calls with 0 only where the player said None (the General row's None, picked in its menu).
+function Settings_.SetStreakGoal(days)
+	local step = days == 0
+	for _, n in ipairs(ns.C.streak_goal_steps) do step = step or n == days end
+	local profiles = ns.db and ns.db.profiles
+	if not (step and profiles) then return end
+	local wrote = false
+	for _, p in pairs(profiles) do
+		if type(p) == "table" and p.streakGoal ~= days then
+			p.streakGoal = days
+			ns.BodyStamp(p, "streakGoal")
+			wrote = true
+		end
+	end
+	if wrote then changed(profiles) end
+end
+
 -- Whether a move or a group is unchecked on the Exercises page: in the exclusion list, or an opt-in move the player has
 -- not checked (the headstand, slice 21; the profile's `include`).
 function Settings_.Excluded(key)
@@ -444,13 +474,14 @@ end
 
 -- What a reset of the profile's settings keeps: the Body page's six switches (the room and the body the player trains
 -- with: floor, space, quiet, no jumping, no breath-hold strain, no head-down positions), the exclusion list, the
--- opt-in moves checked (with when each Body field changed, `bodyAt`: one body everywhere), the favourites and who sees
--- the card, so a reset never shares a card the player keeps private (the Body and Social pages are canvases for the
--- same reasons: no Defaults button changes them); the pact, the duel and the duels won (slice 23), which are no
--- settings: a reset never ends them by surprise; and that Your setup was answered, so a settings reset never brings
--- the setup window's questions back (/qp setup asks them at any time).
+-- opt-in moves checked (with when each Body field changed, `bodyAt`: one body everywhere), the streak's goal, which
+-- `bodyAt` stamps too (slice 74), the favourites and who sees the card, so a reset never shares a card the player
+-- keeps private (the Body and Social pages are canvases for the same reasons: no Defaults button changes them); the
+-- pact, the duel and the duels won (slice 23), which are no settings: a reset never ends them by surprise; and that
+-- Your setup was answered, so a settings reset never brings the setup window's questions back (/qp setup asks them at
+-- any time).
 local KEPT = { "floor", "space", "quiet", "noJump", "noStrain", "noHeadDown", "exclude", "include", "bodyAt",
-	"favourites", "share", "pact", "duel", "duelPast", "duelWins", "setupAnswered" }
+	"streakGoal", "favourites", "share", "pact", "duel", "duelPast", "duelWins", "setupAnswered" }
 
 -- One move's record cleared or one ladder started over (David, 2026-10-08: "maybe its good if we cna reset specific
 -- excericises in the settings and delte the records"): offered for a move with a record (ns.HoldsRecord) and for a
@@ -1449,6 +1480,51 @@ local GENERAL_PAUSE = { "pause", "select", w = 170, needs = "enabled",
 		if v == "on" then ns.Lifecycle.Resume() else ns.Lifecycle.Pause(ns.PAUSE[v]) end
 	end }
 
+-- The streak's goal (slice 74), a select by the kit's rule for more than four choices. Its choices are the ones every
+-- surface's streak page offers (docs/plan.md slice 74, S1.5 and S1.8; the phones' StreakPage goalRow and GoalRow):
+-- None, each of C.streak_goal_steps above the streak's day as it stands now (ns.Streak: all six before a streak, None
+-- alone past the last), and the goal that stands, a step or not (another device's later build may offer one this
+-- build does not know). A goal stands while it is on or ahead of the day, by ns.StreakAgainst's own rule (it answers
+-- the goal then, else a milestone past the day, never the goal), so one reached today keeps its entry and one the
+-- streak has passed reads None, as the banner's row no longer counts toward it; a step at or behind the day is no
+-- goal to pick. A pick goes to Settings_.SetStreakGoal as the player made it, and the setter alone says whether it
+-- changes anything, against what the profile holds and never against what the row shows: None on a profile that never
+-- said anything shows as None already and is still recorded (0 with its time, which tells every device the player was
+-- asked and chose none, so no streak day offers the choices again), and so is None over a goal the streak has passed;
+-- None on a None and the goal that stands picked again write nothing. The menu runs an entry's pick whether or not it
+-- is the one shown (Popups.lua's onClick asks no isSelected), so the row can record that None. The game asks for a
+-- goal nowhere else: this row and the pump's banner (Sheet.MomentRows) are all it shows of it.
+local function goalStanding(day)
+	local goal = ns.StreakGoal(ns.profile and ns.profile.streakGoal)
+	return goal and ns.StreakAgainst(day, goal) == goal and goal or 0
+end
+
+local function streakDay()
+	return ns.state and (ns.Streak(ns.state, ns.now())) or 0
+end
+
+local GENERAL_GOAL = { "streakGoal", "select", w = 170,
+	choices = function()
+		local day = streakDay()
+		local standing = goalStanding(day)
+		local days, held = {}, standing == 0
+		for _, n in ipairs(ns.C.streak_goal_steps) do
+			if n > day then
+				days[#days + 1] = n
+				held = held or n == standing
+			end
+		end
+		if not held then
+			days[#days + 1] = standing
+			table.sort(days)
+		end
+		local list = { { 0, L["settings.streakGoal.none"] } }
+		for _, n in ipairs(days) do list[#list + 1] = { n, L["settings.streakGoal.days"]:format(n) } end
+		return list
+	end,
+	get = function() return goalStanding(streakDay()) end,
+	set = Settings_.SetStreakGoal }
+
 local GENERAL = {
 	{ rows = {
 		{ "enabled", "box" },
@@ -1463,6 +1539,7 @@ local GENERAL = {
 		-- the player's focus (Lc.SetFocus): one for every character, as the rows are
 		{ "focus", "select", w = 170, choices = choices("focus.", ns.Enum.focusKeys),
 			get = function() return ns.Focus(ns.state) end, set = function(v) ns.Lifecycle.SetFocus(v) end },
+		GENERAL_GOAL,
 		-- when pumps ask (Lc.AskWhen, slice 70): at each turn-in, or held unopened for the next flight. The profile's
 		-- `askWhen`, nil until chosen, as `afterPump` is
 		{ "askWhen", "select", w = 170, choices = choices("settings.askWhen.", ns.Lifecycle.ASK_WHEN),

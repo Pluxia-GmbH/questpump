@@ -40,10 +40,13 @@ info:
     token's SHA-256 beside its device. A wrong, revoked or unknown token answers 401 with no body; the device then drops
     its token and turns Sync off with `menu.sync.removed`.
 
-    **App Check.** The phones send their Firebase App Check token in `X-Firebase-AppCheck` on every request, as the
-    report Worker reads it (`site/report/src`, the one verifier); the desktop app and a browser have none. A request
-    with a token that does not verify, or whose keys Google did not serve, is taken as one without, under the tighter
-    limits below: App Check sets only the limits, never who may sync, so it never answers 401.
+    **App Check.** The phones send their Firebase App Check token in `X-Firebase-AppCheck` on every request when they
+    have one, as the report Worker reads it (`site/report/src`, the one verifier); the desktop app and a browser have
+    none. A phone asks App Check for a token only while a purpose reads on (a privacy switch, by the player's answer
+    or by the region, or the coach's consent: telemetry-api.yaml, "Firebase starts only for a purpose that reads on"),
+    since the ask is a request to Google; with both switches off and the coach off its requests go without one. A
+    request with a token that does not verify, or whose keys Google did not serve, is taken as one without, under the
+    tighter limits below: App Check sets only the limits, never who may sync, so it never answers 401.
 
     **Origins.** The apps, Paddle and Apple send no `Origin`; questpump.com/delete sends `https://questpump.com` and a
     browser at play.questpump.com (slice 63, its own origin) `https://play.questpump.com`, which every route takes as it
@@ -81,7 +84,8 @@ info:
     waiting for its computer is the device's own business); `kind` `device`: `body` is
     `{"name","kind","profile","stamps","sheets"}`, the device's own name, its kind (`ios`, `android`, `desktop`, `web`),
     its profile with the body stamps (merged field by field, the latest `changed_at` winning, the place fields kept each
-    device's own) and each character's newest game sheet (`contract/sheet.json`), a field the device has none of left
+    device's own; since slice 74 the streak's goal among them, `streak_goal`, which a device that does not know it
+    reads past) and each character's newest game sheet (`contract/sheet.json`), a field the device has none of left
     out, never `null`; the server keeps only the newest `device` batch of each device. Since slice 67, `kind` `work`:
     `body` is the device's work state after its last merge (`Work` in contract/companion-api.yaml, its merge rule
     there), pushed whenever a Start, a Stop, a setting, a Later or a pump done changes it, never inside the `device`
@@ -137,6 +141,40 @@ info:
     saw on that connection (the first message after a connect counts as different), and besides at its start, after a
     session and every 24 hours; never on every message. A message without `pro` (a server before slice 64's) asks
     nothing, and one without `keys` (a server before the new key's) pulls on nothing more.
+
+    **The wake** (docs/plan.md slice 73; David, 2026-11-12: "Silent wake push"). The live socket reaches a phone only
+    while its app is in front, and an iPhone runs no code when a local notification it planned comes: a streak reminder
+    planned on a day before showed although the day's pump was done on a computer. So the server wakes an iPhone that
+    waits for a pump, and the phone reads what came itself.
+
+    - *Asking.* While Sync is on and its streak reminder may show, an iPhone keeps `PUT /api/sync/v1/devices/self/push`
+      current (`WakeAsk`): `apns`, the push token Apple gave it, in lower-case hex; `sandbox`, whether a development
+      build holds it (its token belongs to Apple's sandbox host); and `from` (unix ms), the start of the first game day
+      it knows no performed move on, today's while today has none and the next one's once it has. The phone sends it
+      again only when one of the three changes; when its streak reminder goes off, notifications are refused or Sync
+      goes off, it sends `DELETE` (a device that leaves or is removed loses its token with its row). Only a device of
+      kind `ios` asks (400 for another): Android decides a reminder as its alarm fires and pulls first.
+    - *Sending.* Each `rows` batch another device of the account sends at or after a phone's `from` waits for that
+      phone. Once those rows have been quiet for 2 minutes (a pump's rows come move by move, and the phone needs the
+      one that holds the day's first performed move), at most 10 minutes after the first of them and never within 20
+      minutes of the last push to that phone, the server sends it one background push through Apple's push service:
+      `{"aps":{"content-available":1}}`, `apns-push-type: background`, `apns-priority: 5`, kept by Apple for a phone it
+      cannot reach for 24 hours, a newer one in an older one's place. It shows nothing and carries nothing: no row,
+      no count, no id, no word of what came. The server reads no row for it (it cannot): any `rows` batch counts, so a
+      phone may be woken for rows that hold no performed move, and it then waits on.
+    - *Waking.* A woken phone has about 30 seconds: it pulls, reads its computer's sheet where it is paired, plans its
+      reminders again (a streak reminder the day's pump answered goes) and writes its widgets' snapshot; it posts no
+      notification for the wake, the sitting cue's among them. A phone that
+      now knows today's pump sends its new `from`, so nothing more comes that game day; one that does not stays as it
+      is and is woken by the next rows.
+    - *What the server keeps.* Beside the device: the push token, `sandbox`, `from`, when rows for it first and last
+      came since, and when it was last sent a push; all gone with `DELETE`, the device or the account, and a token
+      Apple answers as no longer registered is deleted at once. Apple receives the token and an empty push.
+    - *What it does not do.* Apple does not promise a background push: it may hold one back, and it sends none to an
+      app the player force-quit until the app is opened again, so a reminder can still come after a pump elsewhere. No
+      device but an iPhone is woken. Without the Worker's push key no push is sent, and every device behaves as before
+      slice 73. A device, an app or a server from before it needs no change: a batch's shape and every answer are as
+      they were.
 
     **Linking a device by a code.** A device with R shows `questpump-link:1:<account>:<R>` (both base64url without
     padding) as a QR; a phone scans it with the pairing's scanner. A device without R and without a camera (a computer)
@@ -411,7 +449,8 @@ info:
     delete the account's batches, its email hash, its devices, its tokens, its pending links, its devices' keys, wraps
     and chain, and its Pro grants with their bindings and their Paddle state at once; an account none of whose devices
     is left and that no email holds is deleted when its last device leaves. Removing a device (`DELETE
-    /devices/{device}`, `DELETE /session`, the 730-day removal) also takes its key and its wrap and makes the new R due
+    /devices/{device}`, `DELETE /session`, the 730-day removal) also takes its key, its wrap and its push token (above,
+    "The wake") and makes the new R due
     (above, "The account's new key"). A device whose last request (`seen_at`) is 730 days (24 months) old is removed
     as `DELETE /devices/{device}` removes one, its token then answering 401, and the account is deleted the same way,
     whole, once no device is left that way: when its newest device's last request is 730 days old, and for an account an
@@ -533,7 +572,8 @@ paths:
     delete:
       summary: Remove another device
       description: >-
-        Revokes its token and drops its `device` and `work` batches, its key and its wrap; the rows it sent stay. It makes a new R
+        Revokes its token and drops its `device` and `work` batches, its key, its wrap and its push token; the rows it
+        sent stay. It makes a new R
         due (above, "The account's new key"): a device that removed another reads `GET /account/keys` at once (its own
         id signs it out, and the devices left hear it on their sockets).
       security: [{ device: [] }]
@@ -563,6 +603,31 @@ paths:
         "409":
           description: "`kid`: another kid than the account's; the device takes its wrap first"
           content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+  /api/sync/v1/devices/self/push:
+    put:
+      operationId: putDevicePush
+      summary: Ask to be woken when the account's other devices send rows
+      description: >-
+        This iPhone's push token and the moment it waits from, in place of any it left before (above, "The wake"). Rows
+        that came before `from` wait for it no more.
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WakeAsk" }
+      responses:
+        "204": { description: Kept }
+        "400": { description: "A body that does not read, a `from` more than 3 days ahead, or a device that is no iPhone" }
+        "401": { description: Unknown token }
+    delete:
+      operationId: deleteDevicePush
+      summary: Ask for no wake any more
+      description: The device's push token and what was kept with it go; 204 too when it left none.
+      security: [{ device: [] }]
+      responses:
+        "204": { description: Gone }
+        "401": { description: Unknown token }
   /api/sync/v1/email/code:
     post:
       summary: Mail a code
@@ -1016,6 +1081,20 @@ components:
         key: { type: string, description: "P-256, SEC1 uncompressed, 65 bytes, base64url without padding" }
         mac: { type: string, description: "32 bytes, base64url without padding (above, \"Each device's key\")" }
         kid: { type: string, description: "The kid of the R it was made under, the account's once one is named" }
+    WakeAsk:
+      type: object
+      required: [apns, sandbox, from]
+      additionalProperties: false
+      properties:
+        apns:
+          type: string
+          pattern: "^([0-9a-f]{2}){32,100}$"
+          description: "The push token Apple gave this install (32 bytes today), lower-case hex"
+        sandbox: { type: boolean, description: "A development build's token, which Apple's sandbox host takes" }
+        from:
+          type: integer
+          minimum: 0
+          description: "Unix ms: rows other devices send at or after it wake this phone; at most 3 days ahead"
     Rekey:
       type: object
       required: [generation, auth, kid, mac, prev_kid, prev, wraps]

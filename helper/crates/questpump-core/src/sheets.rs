@@ -140,7 +140,7 @@ impl SheetLog {
 	#[must_use]
 	pub fn page(&self, after: u64, size: usize) -> SheetsPage {
 		let (sheets, next, more) = link::page(&self.records, after, size);
-		let store = self.records.first().map(|r| r.ts_helper.clone()).unwrap_or_default();
+		let store = self.records.first().map_or_default(|r| r.ts_helper.clone());
 		SheetsPage { store, next, more, sheets }
 	}
 }

@@ -9,7 +9,7 @@
 // another as their days arrive (the streak's day on the Result, a reward carried home: kit.css), so the marks are made
 // again only when what they show changed.
 
-import {KitElement, define, h} from "./element.js";
+import {KitElement, define, h, once} from "./element.js";
 
 class QpWeekDots extends KitElement {
 	set days(value) {
@@ -22,14 +22,15 @@ class QpWeekDots extends KitElement {
 	}
 
 	/** Lights the marks of the week's days `indices` (0 the week's first day), each the chip's stagger after the one
-	 * before (motion.carry; at once under Reduce Motion, whose tokens give no time). */
+	 * before (motion.carry; at once under Reduce Motion, whose tokens give no time), once: never again at a later
+	 * showing of the page. */
 	light(indices) {
 		const marks = this.querySelectorAll(".qp-dot");
 		indices.forEach((day, order) => {
 			const mark = marks[day];
 			if (!mark) return;
 			mark.style.setProperty("--qp-lit-order", String(order));
-			mark.classList.add("qp-lit-in");
+			once(mark, "qp-lit-in");
 		});
 	}
 

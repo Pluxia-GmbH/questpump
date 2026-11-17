@@ -72,8 +72,11 @@ class QpMuscleMap extends KitElement {
 		if (this.built) this.update();
 	}
 
-	/** Lights the day's muscles one after another, from dark (the Saga's first open each game day). */
+	/** Lights the day's muscles one after another, from dark (the Saga's first open each game day). Nothing on a map
+	 * no page holds, which was never built: a timed pump's Result leaves its map out where no move of it counted (a
+	 * whole one whose every move ended too short), and its Share window still opens (expedition.js `opened`). */
 	light() {
+		if (!this.built) return;
 		const lit = [...this.svg.querySelectorAll(".qp-day-most, .qp-day-some")];
 		const step = token(this, "--qp-motion-saga-reveal-stagger") || 0;
 		for (const path of lit) path.classList.add("qp-day-dark");
@@ -86,6 +89,7 @@ class QpMuscleMap extends KitElement {
 	/** Fades the lit muscles `ids` up from the untrained dark into their tones, once (muscleLight: the muscles trained
 	 * since Hero last showed; at once under Reduce Motion, whose token gives the fade no time). */
 	fade(ids) {
+		if (!this.built) return;
 		const lit = [...this.svg.querySelectorAll(".qp-lit")]
 			.filter((path) => ids.includes(Number(path.dataset.muscle)));
 		for (const path of lit) path.classList.add("qp-dark");

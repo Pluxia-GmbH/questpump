@@ -324,7 +324,7 @@ struct WorkItems {
 /// The state line while work mode is on: the minutes left, the hold, or Pump ready.
 fn work_line(view: &WorkView) -> String {
 	match (view.phase, view.hold) {
-		(Phase::Due | Phase::Ask, _) => copy::work_due().to_owned(),
+		(Phase::Ask, _) => copy::work_due().to_owned(),
 		(_, Some(hold)) => hold_words(hold).to_owned(),
 		_ => copy::work_next(view.left_min.unwrap_or_else(|| i64::from(view.every))),
 	}
@@ -350,7 +350,7 @@ fn work_ring(view: &WorkView) -> Option<u16> {
 	}
 	let every = i64::from(view.every.max(1));
 	Some(match (view.phase, view.left_min) {
-		(Phase::Due | Phase::Ask, _) => 1_000,
+		(Phase::Ask, _) => 1_000,
 		(_, Some(left)) => u16::try_from((every - left.clamp(0, every)) * 1_000 / every).unwrap_or(0),
 		_ => 0,
 	})

@@ -52,7 +52,8 @@ const QUIET = new Set(["check_waits", "check_held", "best", "slipped", "not_all_
 
 function dayWords(day) {
 	switch (day.line) {
-		case "welcome": return t("pump.reward.welcome", {xp: day.xp});
+		// with no XP (a player whose Hero shows the game's sheet, which pays it: slice 74) the words alone
+		case "welcome": return day.xp > 0 ? t("pump.reward.welcome", {xp: day.xp}) : t("pump.reward.welcome.plain");
 		case "rested": return t("pump.reward.rested", {count: day.count});
 		default: return t("pump.reward.token");
 	}

@@ -167,7 +167,7 @@ fn is_sha256(hex: &str) -> bool {
 #[must_use]
 pub fn version(v: &str) -> Option<[u32; 3]> {
 	let v = v.trim();
-	let mut parts = v.strip_prefix('v').unwrap_or(v).split('.');
+	let mut parts = v.trim_prefix('v').split('.');
 	let mut part = || {
 		let p = parts.next().filter(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()))?;
 		p.parse().ok()

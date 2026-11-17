@@ -431,7 +431,7 @@ mod win {
 		let mut buf = [0u16; TITLE_UNITS];
 		// SAFETY: writes at most the slice's length of UTF-16 units into `buf`, which lives for the call.
 		let len = usize::try_from(unsafe { GetWindowTextW(hwnd, &mut buf) }).unwrap_or(0);
-		buf.get(..len).map(String::from_utf16_lossy).unwrap_or_default().trim().to_owned()
+		buf.get(..len).map_or_default(String::from_utf16_lossy).trim().to_owned()
 	}
 
 	/// The programs with a window Alt+Tab lists, each once by its image name with its first such window's title, this

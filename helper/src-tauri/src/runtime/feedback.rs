@@ -73,7 +73,7 @@ impl Helper {
 	/// The window's Send: the message with the diagnostics the form shows when its tick is on, kept, then sent; the form
 	/// hears how it went.
 	pub(super) fn window_feedback(&mut self, text: &str, diagnostics: bool, done: FeedbackReply) {
-		let shown = self.app.state::<Shared>().view.lock().map(|v| v.feedback.clone()).unwrap_or_default();
+		let shown = self.app.state::<Shared>().view.lock().map_or_default(|v| v.feedback.clone());
 		let diagnostics = diagnostics.then(|| Diagnostics::new(&shown.os, &shown.capture));
 		let version = env!("CARGO_PKG_VERSION");
 		let message = match Message::helper(crate::lan::now_ms(), text, version, diagnostics.as_ref()) {

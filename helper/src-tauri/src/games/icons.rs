@@ -125,7 +125,7 @@ impl Icons {
 	/// (`settings.games.asked`).
 	pub(super) fn look(&mut self, listed: &HashSet<String>, sources: &HashMap<String, Source>, asked: &[String]) {
 		let Some((dir, _)) = self.folder().cloned() else { return };
-		let made: Vec<String> = self.done.as_ref().map(|done| done.try_iter().collect()).unwrap_or_default();
+		let made: Vec<String> = self.done.as_ref().map_or_default(|done| done.try_iter().collect());
 		// an icon made for a key pruned since it was asked for went with that prune: it counts for nothing
 		for key in made.into_iter().filter(|key| self.kept.contains(key)) {
 			self.files.insert(key.clone());

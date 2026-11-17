@@ -35,7 +35,7 @@ pub const ALIVE: &str = "Alive.lua";
 /// The addon's TOC `## Interface` line when the helper was built: the mirror's TOC repeats the installed addon's own
 /// line (`interface`), and this one only when that TOC cannot be read. `tools/lint.lua` keeps it and `ICON` equal to
 /// `QuestPump.toc`'s.
-pub const INTERFACE: &str = "16001, 120105";
+pub const INTERFACE: &str = "16001, 120105, 120107";
 /// The addon's TOC `## IconTexture`, its own icon (`Media/Icon.tga`, tools/helper-icons.py): the AddOns list groups the
 /// mirror under QuestPump and draws a question mark for a row without an icon.
 pub const ICON: &str = r"Interface\AddOns\QuestPump\Media\Icon";
@@ -502,8 +502,9 @@ pub fn state_lua(s: &State<'_>) -> String {
 }
 
 /// The mirror's `body` as the game takes it at its next load (DB.lua `ns.TakeBody`): each Body switch a device changed
-/// as `{ value, at }`, the moves as `{ at, ids, groups, include }` and Home's setup (slice 51) as
-/// `{ at, gear, floor, space, quiet }`, each with the second it changed (`at`, the
+/// as `{ value, at }`, the moves as `{ at, ids, groups, include }`, Home's setup (slice 51) as
+/// `{ at, gear, floor, space, quiet }` and the streak's goal (slice 74) as `{ value, at }`, its days (0 for none),
+/// each with the second it changed (`at`, the
 /// change's milliseconds rounded down, as the addon stamps its own: DB.lua `ns.BodyStamp`). `state_lua` writes it into
 /// `State.lua`, and the engine's fold of the game's save takes it as that load does (`session::GameSave`).
 #[must_use]
@@ -539,6 +540,11 @@ pub fn body_value(body: &Body) -> Value {
 			(text("quiet"), Value::Bool(v.quiet)),
 		];
 		out.push((text("home"), Value::Map(home)));
+	}
+	// the streak's goal (slice 74), which an addon from before it reads past
+	if let Some(g) = &body.streak_goal {
+		let goal = vec![(text("value"), Value::Integer(g.value.into())), at(g.changed_at)];
+		out.push((text("streakGoal"), Value::Map(goal)));
 	}
 	Value::Map(out)
 }

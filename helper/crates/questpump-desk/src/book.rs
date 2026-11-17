@@ -318,8 +318,8 @@ fn words() -> Result<Words, String> {
 			terms.dedup();
 			MoveWords {
 				id,
-				key: text.map(|t| t.key.clone()).unwrap_or_default(),
-				name: text.map(|t| t.name.clone()).unwrap_or_default(),
+				key: text.map_or_default(|t| t.key.clone()),
+				name: text.map_or_default(|t| t.name.clone()),
 				ladder: m.ladder,
 				rung: m.rung,
 				dose: m.dose.clone(),
@@ -330,9 +330,9 @@ fn words() -> Result<Words, String> {
 				count: m.count,
 				load: m.load.clone(),
 				setup: text.map(|t| t.setup.clone()),
-				setups: text.map(|t| t.setups.clone()).unwrap_or_default(),
+				setups: text.map_or_default(|t| t.setups.clone()),
 				how: f.how(id, None).to_vec(),
-				hows: text.map(|t| t.hows.clone()).unwrap_or_default(),
+				hows: text.map_or_default(|t| t.hows.clone()),
 				tips: f.tips(id).into_iter().map(str::to_owned).collect(),
 				stop: text.and_then(|t| t.stop.clone()),
 				mark: f.mark(id).map(str::to_owned),
@@ -797,7 +797,7 @@ impl<P: Platform> Desk<P> {
 		let at = self.p.now_ms().div_euclid(1_000);
 		let game =
 			self.game_shown(&self.session.sheet(at)).and_then(|g| serde_json::from_value::<GameLadders>(g.sheet).ok());
-		let needs = WORDS_BUILT.as_ref().map(needs_of).unwrap_or_default();
+		let needs = WORDS_BUILT.as_ref().map_or_default(needs_of);
 		let (mut pages, horizon) = (self.book_log.pages.clone(), self.correct_horizon(at));
 		pages.sort_unstable();
 		pages.dedup();
@@ -829,8 +829,7 @@ impl<P: Platform> Desk<P> {
 					.as_ref()
 					.ok()
 					.zip(states)
-					.map(|(w, states)| needs_by_ladder(w, states.into_iter()))
-					.unwrap_or_default();
+					.map_or_default(|(w, states)| needs_by_ladder(w, states.into_iter()));
 				let answer = Answer {
 					starts: ids.iter().copied().zip(starts).collect(),
 					opens: ladders.iter().copied().zip(opens).collect(),

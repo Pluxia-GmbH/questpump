@@ -196,7 +196,7 @@ impl Store {
 	/// empty while the store is.
 	#[must_use]
 	pub fn id(&self) -> String {
-		self.records.first().map(|r| format!("{}/{}", r.ts_helper, r.row_ts)).unwrap_or_default()
+		self.records.first().map_or_default(|r| format!("{}/{}", r.ts_helper, r.row_ts))
 	}
 
 	/// The rows in the order they were seen, as the mirror writes them.

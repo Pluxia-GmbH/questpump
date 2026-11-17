@@ -1221,8 +1221,8 @@ fn names_this_computer(host: &str, port: u16, mdns: Option<&str>) -> bool {
 	if let Some(v6) = name.strip_prefix('[').and_then(|n| n.strip_suffix(']')) {
 		return v6.split_once('%').map_or(v6, |(addr, _)| addr).parse::<Ipv6Addr>().is_ok();
 	}
-	let name = name.strip_suffix('.').unwrap_or(name);
-	let own = |m: &str| name.eq_ignore_ascii_case(m.strip_suffix('.').unwrap_or(m));
+	let name = name.trim_suffix('.');
+	let own = |m: &str| name.eq_ignore_ascii_case(m.trim_suffix('.'));
 	name.parse::<Ipv4Addr>().is_ok() || name.eq_ignore_ascii_case("localhost") || mdns.is_some_and(own)
 }
 

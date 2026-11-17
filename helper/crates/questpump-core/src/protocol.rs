@@ -429,7 +429,6 @@ impl Command {
 pub enum ErrorCode {
 	ScreenPermission,
 	StreamStopped,
-	NoDisplay,
 	MirrorWrite,
 	NoGameFolder,
 	/// The LAN API could not listen (the port taken, the address gone): the phone and the watch cannot reach it.

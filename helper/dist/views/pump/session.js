@@ -82,9 +82,9 @@ function pressPrimary(stage, e) {
 }
 
 /** What makes a stage new: everything Rust sent of the pump but its busy state, the read-aloud button's state, the
- * countdown's digit, whether its reveal landed and a move's pour as it goes on (its landing, its rewards, its Back),
- * which the stage on screen takes as it stands (so the countdown's Back and read-aloud button keep the focus through
- * its digits, and the pour plays on through its write). */
+ * countdown's digit, whether its reveal landed, the streak goal chosen on its Result and a move's pour as it goes on
+ * (its landing, its rewards, its Back), which the stage on screen takes as it stands (so the countdown's Back and
+ * read-aloud button keep the focus through its digits, and the pour plays on through its write). */
 function keyOf(topic) {
 	const pump = topic.pump;
 	// a move's saved stage is one pour from its plan to Next: its own row's write changes the moves under it, its
@@ -93,8 +93,12 @@ function keyOf(topic) {
 		return JSON.stringify({pump: {id: pump.id, stage: pump.stage, current: pump.current, at: pump.saved?.at},
 			locked: topic.locked_until});
 	}
-	return JSON.stringify({pump: {...pump, busy: false, guide: null, digit: null,
-		reveal: pump.reveal && {...pump.reveal, landed: false}}, locked: topic.locked_until});
+	// a reveal landed is the stage's own to take (`update`): Rust lands it by `landed` and by its `end`, brought to now
+	// the streak day's number and the goals on offer are read live in Rust and taken by the stage as it stands too
+	const day = pump.result?.streak;
+	const result = day ? {...pump.result, streak: {...day, goal: null, steps: null}} : pump.result;
+	return JSON.stringify({pump: {...pump, busy: false, guide: null, digit: null, goal: null, picks: 0, result,
+		reveal: pump.reveal && {...pump.reveal, landed: false, end: null}}, locked: topic.locked_until});
 }
 
 register(COVER, () => {
@@ -106,6 +110,8 @@ register(COVER, () => {
 	let stage = null;
 	let key = null;
 	let shot = null;
+	// the stage on the page is its pump's first here: the one a pump that opened itself came with (`typedOver`)
+	let first = false;
 	// the stage the one on the page came from, by its name (`data-from`)
 	let from = null;
 	let win = null;
@@ -119,6 +125,10 @@ register(COVER, () => {
 		stops: [],
 		primary: () => stage?.primary?.() ?? null,
 		onKey: (e) => stage?.onKey?.(e) || pressPrimary(stage, e),
+		// a pump that opened itself came in front of whatever the player was typing (the topic's `unasked`, on its
+		// first Ready view): the stage it came with takes no key until the typing pauses (lib/keys.js `mounted`); a
+		// stage the player's own step brought (a swap, Back) takes its keys as any does
+		typedOver: () => first && Boolean(topic?.pump?.unasked),
 	};
 
 	const fullscreenWords = (on) => (on ? t("desk.pump.fullscreen.off") : t("desk.pump.fullscreen.on"));
@@ -134,7 +144,7 @@ register(COVER, () => {
 			else if (kind === "swap") win = swap(pump);
 			else if (kind === "move") win = move(pump);
 			else if (kind === "pause") win = pauseMenu(topic, from);
-			else win = leave(pump, null);
+			else win = leave(null);
 		},
 		/** Big view's full-screen toggle: the window's own as it is now, the choice remembered (`pump.fullscreen`). */
 		fullscreen() {
@@ -199,6 +209,7 @@ register(COVER, () => {
 		// card's own motion (resultFloatIn), with no fade of the stage over it
 		const was = shot;
 		shot = shotOf(topic.pump);
+		first = !was || was.id !== shot.id;
 		const moved = !was || was.id !== shot.id || was.move !== shot.move;
 		if (stage.floats || (was && !moved && was.part === shot.part)) {
 			page.replaceChildren(stage.el, veil);

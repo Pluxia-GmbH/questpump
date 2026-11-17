@@ -2,9 +2,9 @@
 //! (and for Node, where the engine's replay runs by hand), no `eval` (the page's CSP allows WebAssembly's compile
 //! alone, its `'wasm-unsafe-eval'`), the heap growing as a fold needs it, the 8 MiB stack the desktop's engine thread
 //! has (Lua recurses through `pcall` and `table.sort` on it), the file system with `IDBFS`, on which the Worker mounts
-//! the desk's data folder in the browser's `IndexedDB` (`FS`, `FS.filesystems.IDBFS`), the functions of the door, and
-//! the host's clock, zone, report, page, keeping and network through `src/imports.js`; and the desktop app's version,
-//! which the browser runs. Nothing on the computer's targets, where the crate is empty.
+//! the desk's data folder in the browser's `IndexedDB` (`FS` and `IDBFS`, both exported to it), the functions of the
+//! door, and the host's clock, zone, report, page, keeping and network through `src/imports.js`; and the desktop app's
+//! version, which the browser runs. Nothing on the computer's targets, where the crate is empty.
 
 use std::error::Error;
 use std::path::PathBuf;
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		"-sALLOW_MEMORY_GROWTH=1",
 		"-sSTACK_SIZE=8MB",
 		"-sEXPORTED_FUNCTIONS=_main,_qp_open,_qp_subscribe,_qp_intent,_qp_due,_qp_look,_qp_answer,_qp_live,_qp_free,_malloc,_free",
-		"-sEXPORTED_RUNTIME_METHODS=stringToNewUTF8,UTF8ToString,FS",
+		"-sEXPORTED_RUNTIME_METHODS=stringToNewUTF8,UTF8ToString,FS,IDBFS",
 	] {
 		println!("cargo::rustc-link-arg-bins={arg}");
 	}

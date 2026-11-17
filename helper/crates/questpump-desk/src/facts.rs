@@ -391,6 +391,10 @@ pub struct Constants {
 	pub ledger_m: [f64; 2],
 	/// The streak's milestone days (the Result's, `StreakBoard.milestone`).
 	pub streak_milestones: Vec<i64>,
+	/// The streak's goal (slice 74): the days a player may pick, and how many the streak's day offers at a time
+	/// (`home::Board::goal_steps`).
+	pub streak_goal_steps: Vec<i64>,
+	pub streak_goal_offer: usize,
 	/// The reminders (`desk::reminders`): the streak reminder's time by default, minutes after local midnight; its
 	/// taper after an absence, in game days; the minutes this run lasts before it shows (2026-10-27); the sitting cue's
 	/// hour, in minutes.
@@ -603,9 +607,7 @@ impl Facts {
 	/// `MoveTips`); none without words.
 	#[must_use]
 	pub fn tips(&self, id: u16) -> Vec<&str> {
-		self.text(id)
-			.map(|text| text.tips.iter().map(String::as_str).chain(text.hint.as_deref()).collect())
-			.unwrap_or_default()
+		self.text(id).map_or_default(|text| text.tips.iter().map(String::as_str).chain(text.hint.as_deref()).collect())
 	}
 
 	/// A move's name; none for a move the book lacks (a newer library's).
