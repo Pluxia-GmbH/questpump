@@ -5,14 +5,10 @@
 //! looking for its helper who answers before its bearer goes out, and every request's `Host` naming the computer
 //! (`host`). The rules live in questpump-core (`seal`, `link`, `body`); this module serves them and asks the helper's
 //! loop, which owns the session, the settings and the body every app device shares, for what only it knows (`Ask`). A
-//! refused connection or request, a pairing request and a hello are logged at most once a minute per peer. The same
-//! routes serve the Bluetooth link (slice 43): `router` is what both listeners call, and the bridge (`blelink`) hands
-//! it each request it opened with the bearer added and its central as the request's `Peer`, which the guard, the
-//! throttle, the refusal log and the sync's transport read in place of an address. It knows nothing of Tauri, so its
-//! tests serve it on the loopback.
+//! refused connection or request, a pairing request and a hello are logged at most once a minute per peer. It knows
+//! nothing of Tauri, so its tests serve it on the loopback.
 
 use std::collections::HashMap;
-use std::fmt;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::task::{Context, Poll};
@@ -23,8 +19,7 @@ use axum::body::Bytes;
 use axum::extract::DefaultBodyLimit;
 use axum::extract::connect_info::Connected;
 use axum::extract::rejection::QueryRejection;
-use axum::extract::{ConnectInfo, FromRequest, FromRequestParts, Query, Request, State};
-use axum::http::request::Parts;
+use axum::extract::{ConnectInfo, FromRequest, Query, Request, State};
 use axum::http::uri::Authority;
 use axum::http::{HeaderMap, HeaderValue, Method, StatusCode, header};
 use axum::middleware::{self, Next};
@@ -35,13 +30,12 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use hyper_util::rt::{TokioExecutor, TokioIo, TokioTimer};
 use hyper_util::server::conn::auto;
 use hyper_util::service::TowerToHyperService;
-use questpump_core::ble;
 use questpump_core::body::Body;
 use questpump_core::link::{
-	self, AccountRequest, AccountResponse, AppRowsPage, AppRowsResponse, Ble, BodyRequest, BodyResponse, Device,
-	Exchange, HelloResponse, HistoryPage, HistoryResponse, Link, PairRequest, PairResponse, PingResponse, Queued,
+	self, AccountRequest, AccountResponse, AppRowsPage, AppRowsResponse, BodyRequest, BodyResponse, Device, Exchange,
+	HelloResponse, HistoryPage, HistoryResponse, Link, PairRequest, PairResponse, PingResponse, Queued,
 	RefusedResponse, Sheet, SheetResponse, SheetsPage, SheetsResponse, Step, Summary, SyncRequest, SyncResponse,
-	Throttle, Transport, UnpairRequest, UnpairResponse, Unreached, Via, Wow,
+	Throttle, UnpairRequest, UnpairResponse, Unreached, Wow,
 };
 use questpump_core::mirror::Sight;
 use questpump_core::pair::is_private;
@@ -78,10 +72,6 @@ const NOTE_EVERY_MS: i64 = 60_000;
 const NOTED_PEERS: usize = 256;
 /// The pairing route, whose every attempt is logged.
 const PAIR: &str = "/v1/pair";
-/// The paged routes (`link::page_size`): over the Bluetooth link their answers go after every other (`is_page`).
-const HISTORY: &str = "/v1/history";
-const SHEETS: &str = "/v1/sheets";
-const APP_ROWS: &str = "/v1/app_rows";
 /// The most of a device's `User-Agent` a link's first line shows.
 const AGENT_CHARS: usize = 120;
 
@@ -134,6 +124,14 @@ impl Links {
 		queued
 	}
 
+	/// Shows the pump on offer again in the mirror of a phone's standing request whose `since` never passed it
+	/// (`Link::reshow`): its sequence when it went back. Nothing is woken: the request that asked reads the mirror
+	/// once the loop's turn for it ends (`sync`).
+	#[must_use]
+	pub fn reshow(&self, offer: Command, since: u64, now: i64) -> Option<u64> {
+		lock(&self.link).reshow(offer, since, now)
+	}
+
 	/// Takes a match's offer off the link (a device or the computer started its pump, the computer card's Later, a move
 	/// done since): whether it still waited there (`Link::withdraw`). One taken off wakes the held requests, as one
 	/// queued does (slice 48's second fix round).
@@ -151,38 +149,10 @@ impl Links {
 		lock(&self.link).holder(now)
 	}
 
-	/// The device that holds the link with its client's tag and transport, for the log (`Link::holder_tag`).
+	/// The device that holds the link with its client's tag, for the log (`Link::holder_tag`).
 	#[must_use]
-	pub fn holder_tag(&self, now: i64) -> Option<(Device, String, Transport)> {
+	pub fn holder_tag(&self, now: i64) -> Option<(Device, String)> {
 		lock(&self.link).holder_tag(now)
-	}
-
-	/// The device that holds the link and its transport, for a pump's log line (`Link::holder_via`).
-	#[must_use]
-	pub fn holder_via(&self, now: i64) -> Option<(Device, Transport)> {
-		lock(&self.link).holder_via(now)
-	}
-
-	/// Whether a client is linked over Bluetooth now (`Link::ble_linked`).
-	#[must_use]
-	pub fn ble_linked(&self, now: i64) -> bool {
-		lock(&self.link).ble_linked(now)
-	}
-
-	/// A held request over Bluetooth is no longer pending (`Link::answered`): `Held`'s drop. Its client's last
-	/// `ALIVE_MS` begins, so the held requests look again: a standing request waits for the moment no device holds the
-	/// link (`Link::lapse_at`).
-	fn answered(&self, device: Device, client: &str, generation: u64) {
-		lock(&self.link).answered(device, client, generation, now_ms());
-		self.bump();
-	}
-
-	/// A Bluetooth central's subscription ended (slice 43): its clients hold the link no more, and the held requests
-	/// look again at once, so the link passes to the next device (`Link::gone`).
-	pub fn gone(&self, central: &str) {
-		if lock(&self.link).gone(central) {
-			self.bump();
-		}
 	}
 
 	/// The statistics of the devices whose sessions ended.
@@ -204,57 +174,27 @@ impl Links {
 	}
 }
 
-/// A held sync over the Bluetooth link pending at the helper (since the review of 2026-10-17): its client holds the link
-/// past `link::ALIVE_MS` while one is. The route puts it on its response, and the bridge (`blelink`) keeps it with the
-/// answer until its last chunk went to the radio; its last copy's drop, there or wherever the call or the answer ends
-/// (a call let go, a central gone), tells the link the request is answered (`Link::answered`).
-#[derive(Clone)]
-pub struct Held {
-	_pending: Arc<Pending>,
-}
-
-struct Pending {
-	links: Links,
-	device: Device,
-	client: String,
-	generation: u64,
-}
-
-impl Held {
-	fn new(links: &Links, req: &SyncRequest, generation: u64) -> Self {
-		let pending = Pending { links: links.clone(), device: req.device, client: req.client.clone(), generation };
-		Self { _pending: Arc::new(pending) }
-	}
-}
-
-impl Drop for Pending {
-	fn drop(&mut self) {
-		self.links.answered(self.device, &self.client, self.generation);
-	}
-}
-
 /// What a route asks the helper's loop.
 pub enum Ask {
 	/// A phone paired: the pairing block, the window.
 	Pair { device: Device, name: String, done: oneshot::Sender<()> },
 	/// A phone unpaired (since 2026-10-09): the pairing ends on the computer, and the Pro grant of its `client` goes.
 	Unpair { device: Device, client: String, done: oneshot::Sender<()> },
-	/// A sync arrived on a transport, the request as it came but for its `events`, which hold only the pump events not
-	/// taken before (`Link::take_events`): the watch's pairing, its heart samples, a catch-up pump's rows, a device's app
-	/// rows (each kept once, whatever the repeats), a match's offer taken, a device's latest game offer and a phone's
-	/// Pro proof; the transport for the counts' `link_ble`.
-	Synced { request: Box<SyncRequest>, transport: Transport, done: oneshot::Sender<SyncAnswer> },
+	/// A sync arrived, the request as it came but for its `events`, which hold only the pump events not taken before
+	/// (`Link::take_events`): the watch's pairing, its heart samples, a catch-up pump's rows, a device's app rows (each
+	/// kept once, whatever the repeats), a match's offer taken, a device's latest game offer and a phone's Pro proof.
+	Synced { request: Box<SyncRequest>, done: oneshot::Sender<SyncAnswer> },
 	/// A phone's body, each field checked (`Body::validate`), into the body every app device shares (slice 35); the
 	/// answer is that body after the merge.
 	Body { body: Box<Body>, done: oneshot::Sender<Body> },
 	/// The unfinished list and count, the held count, the lock and the characters with their sheets.
 	Sheet { done: oneshot::Sender<Sheet> },
-	/// A page of at most `size` rows the helper keeps, with the pumps' proofs from a unix second when asked.
-	History { after: u64, proofs_since: Option<u64>, size: usize, done: oneshot::Sender<HistoryPage> },
-	/// A page of at most `size` sheets the helper has read.
-	Sheets { after: u64, size: usize, done: oneshot::Sender<SheetsPage> },
-	/// A page of at most `size` app rows every phone sent, the helper's copy (slice 28).
-	AppRows { after: u64, size: usize, done: oneshot::Sender<AppRowsPage> },
+	/// A page of the rows the helper keeps, with the pumps' proofs from a unix second when asked.
+	History { after: u64, proofs_since: Option<u64>, done: oneshot::Sender<HistoryPage> },
+	/// A page of the sheets the helper has read.
+	Sheets { after: u64, done: oneshot::Sender<SheetsPage> },
+	/// A page of the app rows every phone sent, the helper's copy (slice 28).
+	AppRows { after: u64, done: oneshot::Sender<AppRowsPage> },
 	/// The desktop app's sync account (slice 60): as it stands (`GET /v1/account`), or after it joined a phone's
 	/// account and R on the player's Add (`PUT /v1/account`); none answers a join the server refused.
 	Account { put: Option<(String, [u8; sync::ROOT])>, done: oneshot::Sender<Option<AccountState>> },
@@ -308,9 +248,8 @@ impl OfferFacts {
 	}
 }
 
-/// The game as a sync response tells it: the helper block's `wow`, `sight` and `step`, `game_asks`, and since slice 43
-/// the block's `ble`, the computer's Bluetooth link, which the phones' pairing window and follow card show too.
-type GameShown = (Option<Wow>, Option<Sight>, Option<Step>, bool, Option<Ble>);
+/// The game as a sync response tells it: the helper block's `wow`, `sight` and `step`, and `game_asks`.
+type GameShown = (Option<Wow>, Option<Sight>, Option<Step>, bool);
 
 /// The offer facts a waiting request answers at once on (`OfferFacts::early`).
 type Early = (Vec<String>, bool, bool, Option<Work>);
@@ -338,7 +277,7 @@ struct Shown {
 
 impl Shown {
 	fn game(&self) -> GameShown {
-		(self.helper.wow, self.helper.sight, self.helper.step, self.asks, self.helper.ble)
+		(self.helper.wow, self.helper.sight, self.helper.step, self.asks)
 	}
 
 	/// What a response tells now that a waiting request answers at once on.
@@ -363,7 +302,7 @@ pub struct Lan {
 	/// guard is gone, and is refused.
 	started: i64,
 	replay: Mutex<Replay>,
-	throttle: Mutex<Throttle<Peer>>,
+	throttle: Mutex<Throttle>,
 	noted: Mutex<Noted>,
 	links: Links,
 	shown: Mutex<Shown>,
@@ -401,9 +340,8 @@ impl Lan {
 		*lock(&self.keys) = Arc::new(Keys::derive(key));
 	}
 
-	/// The current pairing key's bearer, seal, key id and Bluetooth envelopes.
-	#[must_use]
-	pub fn keys(&self) -> Arc<Keys> {
+	/// The current pairing key's bearer, seal and hello key.
+	fn keys(&self) -> Arc<Keys> {
 		lock(&self.keys).clone()
 	}
 
@@ -421,18 +359,17 @@ impl Lan {
 
 	/// What the computer knows of World of Warcraft, what the helper reads of it and the pairing's step (since
 	/// 2026-10-09, the step since 2026-10-13), in every response's helper block from now on, the sight and the step
-	/// only with QuestPump in the game, whether a client with QuestPump runs, in every sync response's `game_asks`, and
-	/// how the computer's Bluetooth link stands (`ble`, since slice 43; none before it is known). A change answers the
-	/// held requests at once (`held`), so a phone's open pairing window shows it and an idle phone hears a game start or
-	/// quit; whether it changed.
+	/// only with QuestPump in the game, and whether a client with QuestPump runs, in every sync response's `game_asks`.
+	/// A change answers the held requests at once (`held`), so a phone's open pairing window shows it and an idle phone
+	/// hears a game start or quit; whether it changed.
 	#[must_use]
-	pub fn set_game(&self, wow: Wow, sight: Sight, step: Step, asks: bool, ble: Option<Ble>) -> bool {
+	pub fn set_game(&self, wow: Wow, sight: Sight, step: Step, asks: bool) -> bool {
 		let addon = wow == Wow::Addon;
-		let game = (Some(wow), addon.then_some(sight), addon.then_some(step), asks, ble);
+		let game = (Some(wow), addon.then_some(sight), addon.then_some(step), asks);
 		let changed = {
 			let mut s = lock(&self.shown);
 			let changed = s.game() != game;
-			(s.helper.wow, s.helper.sight, s.helper.step, s.asks, s.helper.ble) = game;
+			(s.helper.wow, s.helper.sight, s.helper.step, s.asks) = game;
 			changed
 		};
 		if changed {
@@ -488,52 +425,24 @@ impl Lan {
 	}
 
 	/// Logs a line about a peer unless one of the same topic went out within the last minute: a phone that retries an
-	/// old code, a device's sweep or a stranger's scan (or writes over Bluetooth) writes one line a minute, never one a
-	/// request.
-	fn note(&self, peer: &Peer, topic: Topic, line: impl FnOnce() -> String) {
+	/// old code, a device's sweep or a stranger's scan writes one line a minute, never one a request.
+	fn note(&self, peer: IpAddr, topic: Topic, line: impl FnOnce() -> String) {
 		if !lock(&self.noted).first(peer, topic, now_ms()) {
 			return;
 		}
 		match topic {
 			Topic::Refused | Topic::Request => log::warn!("{}", line()),
-			Topic::Pair | Topic::Hello | Topic::Central => log::info!("{}", line()),
+			Topic::Pair | Topic::Hello => log::info!("{}", line()),
 		}
 	}
 
-	/// Whether a peer is refused for its failures (`429` on the LAN; a central's writes ignored), which is noted: an
-	/// address's wrong bearers, a central's dropped messages and envelopes that do not open, `link::THROTTLE_AFTER`
-	/// within a minute.
-	#[must_use]
-	pub fn throttled(&self, peer: &Peer) -> bool {
+	/// Whether a peer is refused for wrong bearers (`429`), which is noted.
+	fn throttled(&self, peer: IpAddr) -> bool {
 		let refused = lock(&self.throttle).refused(peer, now_ms());
 		if refused {
-			self.note(peer, topic(peer), || match peer {
-				// copy-lint: not shown (a log line)
-				Peer::Lan(_) => format!("lan: refused {peer}: ten wrong bearers within a minute (429)"),
-				// copy-lint: not shown (a log line)
-				Peer::Ble(_) => format!("lan: refused {peer}: ten failed messages within a minute, its writes ignored"),
-			});
+			self.note(peer, Topic::Refused, || format!("lan: refused {peer}: ten wrong bearers within a minute (429)"));
 		}
 		refused
-	}
-
-	/// A central's message dropped or envelope that did not open (slice 43, `blelink`): counted toward its throttle and
-	/// noted, with its subscriptions, once a minute (`note_central`).
-	pub fn failed(&self, peer: &Peer, why: &str) {
-		lock(&self.throttle).failed(peer.clone(), now_ms());
-		self.note(peer, topic(peer), || format!("lan: refused {peer}: {why}"));
-	}
-
-	/// A line about a Bluetooth central (its subscription came or went), in the one line a minute each central gets
-	/// with its refusals: a stranger that subscribes and unsubscribes in a loop writes no more.
-	pub fn note_central(&self, peer: &Peer, line: impl FnOnce() -> String) {
-		self.note(peer, topic(peer), line);
-	}
-
-	/// A new pairing code (since the review of 2026-10-17): every Bluetooth central's failures are forgiven, as their
-	/// calls and challenges end.
-	pub fn forgive_centrals(&self) {
-		lock(&self.throttle).retain(|peer| !matches!(peer, Peer::Ble(_)));
 	}
 
 	fn helper(&self) -> link::Helper {
@@ -545,49 +454,6 @@ impl Lan {
 		let (tx, rx) = oneshot::channel();
 		self.asks.send(ask(tx)).ok()?;
 		rx.await.ok()
-	}
-}
-
-/// Who sent a request: an address on the LAN, or a Bluetooth central (slice 43), whose id the bridge puts on each
-/// request it hands the routes. The guard's throttle, the refusal log and the sync's transport read it.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Peer {
-	Lan(IpAddr),
-	/// The Mac's `CBCentral` identifier, Windows' device id.
-	Ble(String),
-}
-
-impl Peer {
-	/// How the request came, for the link (`Link::arrive`).
-	#[must_use]
-	pub fn via(&self) -> Via {
-		match self {
-			Self::Lan(_) => Via::Lan,
-			Self::Ble(central) => Via::Ble(central.clone()),
-		}
-	}
-}
-
-impl fmt::Display for Peer {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		match self {
-			Self::Lan(ip) => write!(f, "{ip}"),
-			Self::Ble(central) => write!(f, "ble {}", ble::central_tag(central)),
-		}
-	}
-}
-
-/// The request's peer: the bridge's `Peer` on a request it hands the routes, else the LAN connection's address
-/// (`ConnectInfo`, IPv4-mapped ones canonicalised). A request with neither is a router served some other way: 500.
-impl<S: Send + Sync> FromRequestParts<S> for Peer {
-	type Rejection = StatusCode;
-
-	fn from_request_parts(parts: &mut Parts, _: &S) -> impl Future<Output = Result<Self, Self::Rejection>> + Send {
-		let peer = parts.extensions.get::<Self>().cloned().or_else(|| {
-			let ConnectInfo(conn) = parts.extensions.get::<ConnectInfo<Conn>>()?;
-			Some(Self::Lan(conn.peer.ip().to_canonical()))
-		});
-		std::future::ready(peer.ok_or(StatusCode::INTERNAL_SERVER_ERROR))
 	}
 }
 
@@ -753,9 +619,6 @@ impl IntoResponse for Refusal {
 enum Topic {
 	/// A connection dropped at accept, a wrong bearer, a throttled peer.
 	Refused,
-	/// A Bluetooth central's subscription, its dropped messages, envelopes that did not open and its throttle (slice
-	/// 43): one line a minute for each central.
-	Central,
 	/// A request with this helper's bearer refused all the same (since 2026-10-14): its body (the seal, its time, a
 	/// replay, its size), its query, or the loop gone.
 	Request,
@@ -764,61 +627,49 @@ enum Topic {
 	Hello,
 }
 
-/// The topic of a peer's refusals: a central's share one line a minute with its subscriptions.
-fn topic(peer: &Peer) -> Topic {
-	match peer {
-		Peer::Lan(_) => Topic::Refused,
-		Peer::Ble(_) => Topic::Central,
-	}
-}
-
-/// Whether a request's path (with its query) is a paged route's, whose answer over the Bluetooth link may run to many
-/// chunks: it goes after every other answer to its central, so a held sync's countdown never waits behind a page.
-#[must_use]
-pub fn is_page(path: &str) -> bool {
-	let path = path.split_once('?').map_or(path, |(path, _)| path);
-	[HISTORY, SHEETS, APP_ROWS].contains(&path)
-}
-
 /// When each peer's last line of each topic went out, kept for a minute.
 #[derive(Default)]
 struct Noted {
-	at: HashMap<(Peer, Topic), i64>,
+	at: HashMap<(IpAddr, Topic), i64>,
 }
 
 impl Noted {
 	/// Whether a line about `peer` on `topic` may go out at `now`: none did within the last minute. It is then
 	/// counted from `now`.
-	fn first(&mut self, peer: &Peer, topic: Topic, now: i64) -> bool {
+	fn first(&mut self, peer: IpAddr, topic: Topic, now: i64) -> bool {
 		self.at.retain(|_, &mut at| now - at < NOTE_EVERY_MS);
-		let key = (peer.clone(), topic);
-		if self.at.contains_key(&key) || self.at.len() >= NOTED_PEERS {
+		if self.at.contains_key(&(peer, topic)) || self.at.len() >= NOTED_PEERS {
 			return false;
 		}
-		self.at.insert(key, now);
+		self.at.insert((peer, topic), now);
 		true
 	}
 }
 
-/// Every sealed route: a peer not refused for its failures, with this helper's bearer (a peer outside the home network
-/// never got a connection, `admit`; the Bluetooth bridge's request carries the bearer the bridge added for an envelope
-/// that opened, and its central as its `Peer`), its answer sealed for its route on the way out (`Unsealed`; a refusal
-/// without one goes bare). A pairing request is noted before its bearer is checked, so an attempt the bearer or the
-/// seal then refuses shows in the log too, and a request the route then refuses (a body that does not open, is stale,
-/// replayed, slow, too large or does not read, a query that does not read, the loop gone) is noted with its status and
-/// why (since 2026-10-14).
-async fn guard(State(lan): State<Arc<Lan>>, peer: Peer, req: Request, next: Next) -> Response {
-	if lan.throttled(&peer) {
+/// Every sealed route: a peer not refused for wrong bearers, with this helper's bearer (a peer outside the home network
+/// never got a connection, `admit`), its answer sealed for its route on the way out (`Unsealed`; a refusal without one
+/// goes bare). A pairing request is noted before its bearer is checked, so an attempt the bearer or the seal then
+/// refuses shows in the log too, and a request the route then refuses (a body that does not open, is stale, replayed,
+/// slow, too large or does not read, a query that does not read, the loop gone) is noted with its status and why (since
+/// 2026-10-14).
+async fn guard(
+	State(lan): State<Arc<Lan>>,
+	ConnectInfo(conn): ConnectInfo<Conn>,
+	req: Request,
+	next: Next,
+) -> Response {
+	let peer = conn.peer();
+	if lan.throttled(peer) {
 		return StatusCode::TOO_MANY_REQUESTS.into_response();
 	}
 	let (method, path): (Method, String) = (req.method().clone(), req.uri().path().to_owned());
 	if path == PAIR {
-		lan.note(&peer, Topic::Pair, || format!("lan: a pairing request from {peer}"));
+		lan.note(peer, Topic::Pair, || format!("lan: a pairing request from {peer}"));
 	}
 	let bearer = req.headers().get(header::AUTHORIZATION).and_then(|v| v.to_str().ok());
 	if !lan.keys().authorizes(bearer) {
-		lock(&lan.throttle).failed(peer.clone(), now_ms());
-		lan.note(&peer, Topic::Refused, || format!("lan: refused {peer} on {path}: not this helper's bearer (401)"));
+		lock(&lan.throttle).failed(peer, now_ms());
+		lan.note(peer, Topic::Refused, || format!("lan: refused {peer} on {path}: not this helper's bearer (401)"));
 		return StatusCode::UNAUTHORIZED.into_response();
 	}
 	let mut response = next.run(req).await;
@@ -829,7 +680,7 @@ async fn guard(State(lan): State<Arc<Lan>>, peer: Peer, req: Request, next: Next
 	}
 	let status = response.status();
 	if status.is_client_error() || status.is_server_error() {
-		lan.note(&peer, Topic::Request, || {
+		lan.note(peer, Topic::Request, || {
 			let why = response
 				.extensions()
 				.get::<Why>()
@@ -850,11 +701,16 @@ struct HelloQuery {
 /// alone (`HelloResponse::of`), so a device looking for its helper checks a candidate before its bearer goes out and
 /// nobody else learns who answered: no id, name or port, and no two answers alike. A `c` that is not 16 bytes of
 /// base64url gets 422. Under the same throttle as every route; noted once a minute per peer.
-async fn hello(State(lan): State<Arc<Lan>>, peer: Peer, query: Result<Query<HelloQuery>, QueryRejection>) -> Response {
-	if lan.throttled(&peer) {
+async fn hello(
+	State(lan): State<Arc<Lan>>,
+	ConnectInfo(conn): ConnectInfo<Conn>,
+	query: Result<Query<HelloQuery>, QueryRejection>,
+) -> Response {
+	let peer = conn.peer();
+	if lan.throttled(peer) {
 		return StatusCode::TOO_MANY_REQUESTS.into_response();
 	}
-	lan.note(&peer, Topic::Hello, || format!("lan: hello from {peer}"));
+	lan.note(peer, Topic::Hello, || format!("lan: hello from {peer}"));
 	let challenge = query.ok().and_then(|Query(q)| URL_SAFE_NO_PAD.decode(q.c).ok());
 	let Some(c) = challenge.and_then(|c| <[u8; link::HELLO_BYTES]>::try_from(c).ok()) else {
 		return StatusCode::UNPROCESSABLE_ENTITY.into_response();
@@ -914,37 +770,27 @@ async fn ping(State(lan): State<Arc<Lan>>, query: Result<Query<PingQuery>, Query
 /// device, when a newer request from the same device arrives, while the game a sync response tells or the offer facts'
 /// early part (an offer taken back, `playing`, `arms`: slice 48's second fix round) differs from what this client last
 /// heard or nothing says what it heard (`Lan::told`), or after the hold from its arrival (`HOLD_MS`, or the holder's
-/// `wait` up to its transport's most: `Link::hold_ms`). Over the Bluetooth link (slice 43) its `wait` may run to
-/// `BLE_WAIT_MAX_MS`, and a held one keeps its client the link's holder while it is pending at the helper: its response
-/// carries a `Held` the bridge drops once the answer went to the radio. A standing request (since the review of
-/// 2026-10-17, `Exchange::Standing`) waits as a held one does but holds nothing, carries no command and answers at once
-/// while no device holds the link, which its answer says (`unheld`: `stand`), and since slice 51 a phone's carries the
-/// game pump's commands queued for the holder as `mirror`, answering at once when one it has not shown waits.
-async fn sync(
-	State(lan): State<Arc<Lan>>,
-	peer: Peer,
-	headers: HeaderMap,
-	Sealed(req): Sealed<SyncRequest>,
-) -> Response {
+/// `wait` up to `WAIT_MAX_MS`: `Link::hold_ms`). A standing request (since the review of 2026-10-17,
+/// `Exchange::Standing`) waits as a held one does but holds nothing, carries no command and answers at once while no
+/// device holds the link, which its answer says (`unheld`: `stand`), and since slice 51 a phone's carries the game
+/// pump's commands queued for the holder as `mirror`, answering at once when one it has not shown waits (the pump's
+/// offer among them again for a phone that never heard it: the loop's turn for the request, `Link::reshow`).
+async fn sync(State(lan): State<Arc<Lan>>, headers: HeaderMap, Sealed(req): Sealed<SyncRequest>) -> Response {
 	let t1 = now_ms();
 	let arrived = tokio::time::Instant::now();
 	// the game and the offer facts' early part as this client last heard them: a change since, made before this request
 	// arrived or during the loop's turn for it, answers it at once, as does none (the app or the helper started again)
 	let told = lan.told(&req);
 	let floor = i64::try_from(lan.hold.as_millis()).unwrap_or(link::HOLD_MS);
-	let via = peer.via();
 	let exchange = req.exchange();
 	let (starts, generation, events, hold) = {
 		let mut link = lock(&lan.links.link);
 		let starts = link.starts(&req);
-		let generation = link.arrive(&req, &via, t1);
-		(starts, generation, link.take_events(&req), link.hold_ms(&req, via.transport(), floor, t1))
+		let generation = link.arrive(&req, t1);
+		(starts, generation, link.take_events(&req), link.hold_ms(&req, floor, t1))
 	};
-	// a held request over Bluetooth stays pending, its client the link's holder, until its answer went to the radio
-	let pending =
-		(exchange == Exchange::Held && matches!(via, Via::Ble(_))).then(|| Held::new(&lan.links, &req, generation));
 	if starts {
-		session_starts(&req, &peer, &headers);
+		session_starts(&req, &headers);
 	}
 	if exchange != Exchange::Plain {
 		lan.links.bump(); // an older held or standing request of this client answers now
@@ -953,8 +799,7 @@ async fn sync(
 	// a game offer dated more than a day past the helper's clock (a device clock set ahead) is left out
 	let game_offer_at = req.game_offer_at.filter(|&at| link::not_ahead(at.saturating_mul(1_000), t1));
 	let request = Box::new(SyncRequest { events, game_offer_at, ..req.clone() });
-	let transport = via.transport();
-	let Some(answer) = lan.ask(|done| Ask::Synced { request, transport, done }).await else {
+	let Some(answer) = lan.ask(|done| Ask::Synced { request, done }).await else {
 		return StatusCode::SERVICE_UNAVAILABLE.into_response();
 	};
 	// the catch-ups held for the game, those just taken and those taken before that came again
@@ -976,7 +821,7 @@ async fn sync(
 	};
 	// the offer facts as the response leaves, after the hold
 	let (helper, game_asks, offers) = lan.tell(&req, next);
-	let mut response = reply(&SyncResponse {
+	reply(&SyncResponse {
 		helper,
 		t0: req.t0,
 		t1,
@@ -994,37 +839,24 @@ async fn sync(
 		unheld,
 		mirror,
 		commands,
-	});
-	if let Some(held) = pending {
-		response.extensions_mut().insert(held);
-	}
-	response
+	})
 }
 
 /// A device's link session starts (since 2026-10-14: `Link::starts`): its kind, the start of its install's id, whether
-/// it holds a request or posts, the transport (since slice 43: `lan`, or `ble` with its central's tag) and what its app
-/// says it is (`QuestPump/<version> (<build>; <platform>)`; one that is not visible ASCII is not shown), so a device
-/// test reads from the log which app came, how and when.
-fn session_starts(req: &SyncRequest, peer: &Peer, headers: &HeaderMap) {
+/// it holds a request or posts and what its app says it is (`QuestPump/<version> (<build>; <platform>)`; one that is
+/// not visible ASCII is not shown), so a device test reads from the log which app came and when.
+fn session_starts(req: &SyncRequest, headers: &HeaderMap) {
 	let agent: String = match headers.get(header::USER_AGENT).map(HeaderValue::to_str) {
 		None => "no agent".to_owned(),                    // copy-lint: not shown (a log line)
 		Some(Err(_)) => "an unreadable agent".to_owned(), // copy-lint: not shown (a log line)
 		Some(Ok(agent)) => agent.chars().take(AGENT_CHARS).collect(),
-	};
-	let via = match peer {
-		Peer::Lan(_) => "lan".to_owned(), // copy-lint: not shown (a log line)
-		Peer::Ble(_) => peer.to_string(),
 	};
 	let exchange = match req.exchange() {
 		Exchange::Held => "held",
 		Exchange::Standing => "standing",
 		Exchange::Plain => "plain",
 	};
-	log::info!(
-		"lan: {} links (client {}, {exchange}, {via}, {agent})",
-		req.device.name(),
-		link::client_tag(&req.client)
-	);
+	log::info!("lan: {} links (client {}, {exchange}, {agent})", req.device.name(), link::client_tag(&req.client));
 }
 
 async fn held(
@@ -1101,39 +933,34 @@ async fn sheet(State(lan): State<Arc<Lan>>) -> Response {
 	}
 }
 
-/// A place, a second or a limit that does not read (a negative number, text) is 422, as every query.
+/// A place or a second that does not read (a negative number, text) is 422, as every query.
 #[derive(Deserialize)]
 struct HistoryQuery {
 	after: Option<u64>,
 	proofs_since: Option<u64>,
-	/// The most rows the page holds (since slice 43: 500 over the Bluetooth link), `link::page_size`.
-	limit: Option<u32>,
 }
 
 async fn history(State(lan): State<Arc<Lan>>, query: Result<Query<HistoryQuery>, QueryRejection>) -> Response {
-	let Ok(Query(HistoryQuery { after, proofs_since, limit })) = query else {
+	let Ok(Query(HistoryQuery { after, proofs_since })) = query else {
 		return StatusCode::UNPROCESSABLE_ENTITY.into_response();
 	};
-	let size = link::page_size(limit, link::HISTORY_PAGE);
-	match lan.ask(|done| Ask::History { after: after.unwrap_or(0), proofs_since, size, done }).await {
+	match lan.ask(|done| Ask::History { after: after.unwrap_or(0), proofs_since, done }).await {
 		Some(page) => reply(&HistoryResponse { helper: lan.helper(), page }),
 		None => StatusCode::SERVICE_UNAVAILABLE.into_response(),
 	}
 }
 
-/// A page's place, the items of the store the device holds already, and its most (since slice 43, `link::page_size`).
+/// A page's place alone: the items of the store the device holds already.
 #[derive(Deserialize)]
 struct PageQuery {
 	after: Option<u64>,
-	limit: Option<u32>,
 }
 
 async fn sheets(State(lan): State<Arc<Lan>>, query: Result<Query<PageQuery>, QueryRejection>) -> Response {
-	let Ok(Query(PageQuery { after, limit })) = query else {
+	let Ok(Query(PageQuery { after })) = query else {
 		return StatusCode::UNPROCESSABLE_ENTITY.into_response();
 	};
-	let size = link::page_size(limit, link::SHEETS_PAGE);
-	match lan.ask(|done| Ask::Sheets { after: after.unwrap_or(0), size, done }).await {
+	match lan.ask(|done| Ask::Sheets { after: after.unwrap_or(0), done }).await {
 		Some(page) => reply(&SheetsResponse::new(lan.helper(), page)),
 		None => StatusCode::SERVICE_UNAVAILABLE.into_response(),
 	}
@@ -1141,11 +968,10 @@ async fn sheets(State(lan): State<Arc<Lan>>, query: Result<Query<PageQuery>, Que
 
 /// The helper's copy of every phone's app rows (slice 28), paged as the history is.
 async fn app_rows(State(lan): State<Arc<Lan>>, query: Result<Query<PageQuery>, QueryRejection>) -> Response {
-	let Ok(Query(PageQuery { after, limit })) = query else {
+	let Ok(Query(PageQuery { after })) = query else {
 		return StatusCode::UNPROCESSABLE_ENTITY.into_response();
 	};
-	let size = link::page_size(limit, link::HISTORY_PAGE);
-	match lan.ask(|done| Ask::AppRows { after: after.unwrap_or(0), size, done }).await {
+	match lan.ask(|done| Ask::AppRows { after: after.unwrap_or(0), done }).await {
 		Some(page) => reply(&AppRowsResponse { helper: lan.helper(), page }),
 		None => StatusCode::SERVICE_UNAVAILABLE.into_response(),
 	}
@@ -1191,8 +1017,8 @@ async fn account_put(State(lan): State<Arc<Lan>>, Sealed(req): Sealed<AccountReq
 }
 
 fn account_response(lan: &Lan, state: AccountState) -> AccountResponse {
-	let AccountState { account, r, devices, email } = state;
-	AccountResponse { helper: lan.helper(), account, r, devices, email }
+	let AccountState { account, r, devices, email, pushes } = state;
+	AccountResponse { helper: lan.helper(), account, r, devices, email, pushes }
 }
 
 /// A LAN connection: the peer's address and the computer's it reached (`serve`), which every request on it carries
@@ -1201,6 +1027,13 @@ fn account_response(lan: &Lan, state: AccountState) -> AccountResponse {
 struct Conn {
 	peer: SocketAddr,
 	local: SocketAddr,
+}
+
+impl Conn {
+	/// The peer's address, an IPv4-mapped one as IPv4: who the throttle counts and the log's lines name.
+	fn peer(self) -> IpAddr {
+		self.peer.ip().to_canonical()
+	}
 }
 
 impl Connected<Self> for Conn {
@@ -1229,33 +1062,32 @@ fn names_this_computer(host: &str, port: u16, mdns: Option<&str>) -> bool {
 /// Every request on the LAN's listeners (since the release security review of 2026-10-31): one whose `Host` does not
 /// name the computer at the port its connection reached (`names_this_computer`) is refused 421 with no body before any
 /// route sees it, the hello's included, so a web page whose name an attacker points at the computer's address (DNS
-/// rebinding) reaches nothing; noted once a minute per peer. The Bluetooth bridge calls `router` without it: no `Host`
-/// travels there.
+/// rebinding) reaches nothing; noted once a minute per peer.
 async fn host(State(lan): State<Arc<Lan>>, ConnectInfo(conn): ConnectInfo<Conn>, req: Request, next: Next) -> Response {
 	let mdns = lan.helper().mdns;
 	let named = |value: &str| names_this_computer(value, conn.local.port(), mdns.as_deref());
 	let header = req.headers().get(header::HOST).and_then(|v| v.to_str().ok());
 	let authority = req.uri().authority().map(Authority::as_str);
 	if !header.is_some_and(named) || !authority.is_none_or(named) {
-		let peer = Peer::Lan(conn.peer.ip().to_canonical());
-		lan.note(&peer, Topic::Refused, || format!("lan: refused {peer}: a Host that names another computer (421)"));
+		let peer = conn.peer();
+		lan.note(peer, Topic::Refused, || format!("lan: refused {peer}: a Host that names another computer (421)"));
 		return StatusCode::MISDIRECTED_REQUEST.into_response();
 	}
 	next.run(req).await
 }
 
-/// The sealed routes behind the guard, then the open hello, which `route_layer` leaves out: what the LAN's listeners
-/// serve behind `host` and the Bluetooth bridge calls (`blelink`), each request with its `Peer`.
-pub fn router(lan: Arc<Lan>) -> Router {
+/// The sealed routes behind the guard, then the open hello, which `route_layer` leaves out: what the listeners serve
+/// behind `host`.
+fn router(lan: Arc<Lan>) -> Router {
 	Router::new()
 		.route(PAIR, post(pair))
 		.route("/v1/unpair", post(unpair))
 		.route("/v1/ping", get(ping))
 		.route("/v1/sync", post(sync))
 		.route("/v1/sheet", get(sheet))
-		.route(HISTORY, get(history))
-		.route(SHEETS, get(sheets))
-		.route(APP_ROWS, get(app_rows))
+		.route("/v1/history", get(history))
+		.route("/v1/sheets", get(sheets))
+		.route("/v1/app_rows", get(app_rows))
 		.route("/v1/body", post(body))
 		.route("/v1/account", get(account).put(account_put))
 		.route_layer(middleware::from_fn_with_state(lan.clone(), guard))
@@ -1418,7 +1250,7 @@ pub async fn serve(listeners: Vec<TcpListener>, lan: Arc<Lan>, mut shutdown: wat
 		let slot = match admit(ip, local.ip().to_canonical(), &permits, &peers) {
 			Ok(slot) => slot,
 			Err(why) => {
-				lan.note(&Peer::Lan(ip), Topic::Refused, || format!("lan: dropped {ip}: {why}"));
+				lan.note(ip, Topic::Refused, || format!("lan: dropped {ip}: {why}"));
 				continue; // the connection closes
 			}
 		};
@@ -1439,7 +1271,7 @@ mod tests {
 
 	use tokio::sync::Semaphore;
 
-	use super::{NOTE_EVERY_MS, NOTED_PEERS, Noted, Peer, Topic, admit, names_this_computer};
+	use super::{NOTE_EVERY_MS, NOTED_PEERS, Noted, Topic, admit, names_this_computer};
 
 	#[test]
 	fn only_a_host_that_names_this_computer_at_its_port_is_served() {
@@ -1492,15 +1324,14 @@ mod tests {
 	fn many_peers_never_grow_the_refusal_log_past_its_cap() {
 		let mut noted = Noted::default();
 		for n in 0..u32::try_from(NOTED_PEERS + 10).unwrap_or(u32::MAX) {
-			noted.first(&Peer::Lan(IpAddr::from((10_u32 << 24 | n).to_be_bytes())), Topic::Refused, 0);
+			noted.first(IpAddr::from((10_u32 << 24 | n).to_be_bytes()), Topic::Refused, 0);
 		}
 		assert_eq!(noted.at.len(), NOTED_PEERS);
 	}
 
 	#[test]
 	fn a_peer_gets_one_line_a_minute_per_topic_and_another_peer_its_own() {
-		let (phone, stranger) =
-			(&Peer::Lan(IpAddr::from([192, 168, 1, 23])), &Peer::Lan(IpAddr::from([192, 168, 1, 31])));
+		let (phone, stranger) = (IpAddr::from([192, 168, 1, 23]), IpAddr::from([192, 168, 1, 31]));
 		let mut noted = Noted::default();
 		assert!(noted.first(phone, Topic::Refused, 0), "the first refusal is logged");
 		assert!(!noted.first(phone, Topic::Refused, 1_000), "a retry within the minute is not");

@@ -62,6 +62,7 @@ export const NAMES = {
 	warcraft: "links.name.warcraft",
 	eldenring: "links.name.eldenring",
 	nightreign: "links.name.nightreign",
+	teamfighttactics: "links.name.teamfighttactics",
 };
 
 /** A game's name (a tile's, the Now card's game's, the pause's game's): its own (a found game's, a program the player

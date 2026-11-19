@@ -22,6 +22,7 @@ use questpump_core::work::Hold;
 use serde::Serialize;
 use serde_json::Value;
 
+use crate::activity::Told;
 use crate::audio::Channel;
 use crate::home::Board;
 use crate::saga::ReelTune;
@@ -230,6 +231,12 @@ pub trait Platform: 'static {
 
 	/// The live socket closed by the desk: no end comes back for it.
 	fn live_close(&mut self);
+
+	/// A word of the game's pump answered (`Desk::tell`, slice 76): what became of it, for the platform that paces the
+	/// posts (the desktop app's `runtime/sync.rs`). A browser, which has no game, tells none and hears none.
+	fn told(&mut self, told: Told) {
+		let _ = told;
+	}
 
 	/// Whether the sync's calls can go at all (the desktop app's HTTPS client built).
 	fn sync_reachable(&self) -> bool {

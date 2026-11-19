@@ -6,16 +6,11 @@
 // (`quiet`); the step left in the game whenever Rust names one (`next`: This computer's `gameStep`, or the Screen
 // Recording grant); when QuestPump's settings did not read at its start, a line that the pairing ended and the code
 // must be scanned again; when its secrets did not read at this start, no code and the address line saying pairing waits
-// for the next start; and the Bluetooth link's row (slice 43): its switch, on by default, and its line by the helper's
-// `ble` (`ble.line`: a link, an ask or a problem; none while it serves or stands switched off). From the `menu.phones`
-// topic (helper/src-tauri/src/ui.rs `Phones`). The pairing code with its firewall card and address (`pairingCode`; on
-// Windows without the firewall rule the code shows beside the card) is also the pairing window (`pairWindow`) of the
-// first five minutes, Pump home's card and Pro's page, which counts as this page and shows the Bluetooth row's line
-// under the code (since the review of 2026-10-17). Rust hears whether this page or the window is open and whether a
-// code shows anywhere (`phones_shown`): the Bluetooth link advertises while the code shows or can show, and asks
-// macOS's Bluetooth grant there alone.
+// for the next start. From the `menu.phones` topic (helper/src-tauri/src/ui.rs `Phones`). The pairing code with its
+// firewall card and address (`pairingCode`) is also the pairing window (`pairWindow`) of the first five minutes, Pump
+// home's card and Pro's page.
 
-import {call, get, subscribe} from "../../lib/bridge.js";
+import {call, subscribe} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
 import {register} from "../../lib/router.js";
 import {h} from "../../kit/element.js";
@@ -26,47 +21,11 @@ import {adminNote, gameStep, stepCard} from "./computer.js";
 /** How long New pairing code waits for its second press. */
 const ARMED_MS = 5000;
 
-/** The Phones page and the pairing window open (one of each at most) and the pairing codes in sight, each by its
- * `pairingCode()`, as Rust last heard them (`phones_shown`). */
-let pagesOpen = 0;
-const codesShown = new Set();
-let told = null;
-
-/** Tells Rust whether the Phones page or the pairing window is open and a pairing code shows, when that changed. */
-function tellShown() {
-	const now = {page: pagesOpen > 0, code: codesShown.size > 0};
-	if (told && told.page === now.page && told.code === now.code) return;
-	told = now;
-	call("phones_shown", now).catch(console.error);
-}
-
-// a page loaded anew (the window's web content restarted) shows no code until one is drawn
-tellShown();
-
-/** The Bluetooth row's line by the helper's state (`ui.rs` `BleLine`): a link, an ask or a problem; none while it
- * serves with no phone linked by it or stands switched off, which its switch shows. */
-function bleLines(line) {
-	if (!line) return [];
-	const windows = get("shell")?.platform === "windows";
-	switch (line.state) {
-		case "linked": return [t("desk.menu.phones.ble.linked", {phone: line.phone})];
-		case "ask": return [t("desk.menu.phones.ble.ask")];
-		case "refused": return [t(windows ? "desk.menu.phones.ble.refused.windows" : "desk.menu.phones.ble.refused")];
-		case "off": return [t("desk.menu.phones.ble.off")];
-		case "no_peripheral": return [t("desk.menu.phones.ble.noperipheral")];
-		case "none": return [t("desk.menu.phones.ble.none")];
-		case "failed": return [t("desk.menu.phones.ble.failed")];
-		case "lost": return [t("desk.menu.phones.ble.lost")];
-		default: return [];
-	}
-}
-
 function addressLine(address) {
 	if (!address) return "";
 	switch (address.state) {
 		case "ready": return t("desk.menu.phones.address", address);
 		case "firewall": return t("desk.menu.phones.address.firewall", address);
-		case "ble": return t("desk.menu.phones.address.ble", address);
 		case "none": return t("desk.menu.phones.address.none", address);
 		case "unread": return t("desk.menu.phones.address.unread", address);
 		default: return address.host ? t("desk.menu.phones.address.lan.host", address)
@@ -107,7 +66,6 @@ export function pairingCode() {
 	});
 	const code = h("qp-card", {class: "qp-pair"}, well, renew);
 	const address = words("", "meta");
-	const token = Symbol("code");
 	return {firewall, code, address, well,
 		draw(p, shown) {
 			firewall.hidden = p.firewall === "open";
@@ -118,15 +76,8 @@ export function pairingCode() {
 			well.code = p.qr;
 			code.hidden = !p.qr || !shown;
 			address.textContent = addressLine(p.address);
-			if (code.hidden) codesShown.delete(token);
-			else codesShown.add(token);
-			tellShown();
 		},
-		stop: () => {
-			clearTimeout(armed);
-			codesShown.delete(token);
-			tellShown();
-		},
+		stop: () => clearTimeout(armed),
 	};
 }
 
@@ -134,29 +85,20 @@ export function pairingCode() {
 let pairing = null;
 
 /** The pairing code in a window over the page that asks for it (the first five minutes, Pump home's card, Pro's page):
- * this page's own code with its firewall card and address and, under them, the Bluetooth row's line; it counts as this
- * page, so the Bluetooth link starts there and macOS's grant is asked in context. Closed once a phone pairs; a second
- * ask while it stands opens no second one. Returns its close. */
+ * this page's own code with its firewall card and address, closed once a phone pairs; a second ask while it stands
+ * opens no second one. Returns its close. */
 export function pairWindow() {
 	if (pairing) return pairing;
 	const code = pairingCode();
-	const ble = words("", "meta");
 	let win = null;
-	pagesOpen += 1;
-	tellShown();
 	const stop = subscribe("menu.phones", (p) => {
 		code.draw(p, true);
-		const lines = bleLines(p.ble.line);
-		ble.textContent = lines.join(" ");
-		ble.hidden = lines.length === 0;
 		if (p.phone.name) win?.close();
 	});
 	win = openWindow({heading: t("desk.menu.phones.pair")},
-		(content) => content.append(code.firewall, code.code, code.address, ble), () => {
+		(content) => content.append(code.firewall, code.code, code.address), () => {
 			stop();
 			code.stop();
-			pagesOpen -= 1;
-			tellShown();
 			pairing = null;
 		});
 	pairing = () => win.close();
@@ -173,18 +115,8 @@ register("desk.menu.phones", () => {
 	const next = h("p", {class: "qp-type-body-strong qp-next", role: "status"});
 	let showCode = false;
 	const another = h("qp-quiet-button", {label: t("desk.menu.phones.another")});
-	// the Bluetooth link's switch moves when the topic brings its state (Toggle's contract), never before
-	const ble = h("qp-row", {heading: t("desk.menu.phones.ble.title"), glyph: "mark_link", trailing: "toggle"});
-	ble.addEventListener("qp-change", (e) => call("set_ble_link", {on: e.detail}).catch(console.error));
 
-	view.body.append(code.firewall, heading, paired, unread, quiet, next, h("qp-card", {rows: true}, ble),
-		code.code, code.address, another);
-	pagesOpen += 1;
-	tellShown();
-	view.stops.push(() => {
-		pagesOpen -= 1;
-		tellShown();
-	});
+	view.body.append(code.firewall, heading, paired, unread, quiet, next, code.code, code.address, another);
 
 	const draw = (p) => {
 		const name = p.phone.name;
@@ -198,8 +130,6 @@ register("desk.menu.phones", () => {
 		next.hidden = !step;
 		code.draw(p, !name || showCode || p.quiet);
 		another.hidden = !p.qr || !name || showCode || p.quiet;
-		ble.checked = p.ble.on;
-		ble.lines = bleLines(p.ble.line);
 	};
 	let shown = null;
 	another.addEventListener("click", () => {

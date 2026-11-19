@@ -5,11 +5,10 @@
 //! `reel_make` (the Share window's order, its id once its job started), `reel_cancel`, `save_video` (the made reel copied
 //! where the player picks) and `copy_video` (its file on the clipboard), and the Menu pages' own,
 //! each an ask to the loop: the grant's button and the restart that applies it, Open Applications, a new pairing code,
-//! the Bluetooth link's switch and whether the Phones page and the pairing code show, the strap, the walking pad, the
-//! game folder's picker, the two elevated steps on Windows, start with the computer, Copy a report for help (the report
-//! for the clipboard) and Send feedback (how the message went); `secret_shown`, whether the page in front draws a code
-//! that opens the player's account; and `page_error`, a page's uncaught error or unhandled rejection into `helper.log`
-//! (never sent; contract/crash-api.yaml, "Kept alive").
+//! the strap, the walking pad, the game folder's picker, the two elevated steps on Windows, start with the computer,
+//! Copy a report for help (the report for the clipboard) and Send feedback (how the message went); `secret_shown`,
+//! whether the page in front draws a code that opens the player's account; and `page_error`, a page's uncaught error
+//! or unhandled rejection into `helper.log` (never sent; contract/crash-api.yaml, "Kept alive").
 
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
@@ -200,14 +199,6 @@ pub fn set_pad(on: bool, state: State<'_, Shared>) {
 	state.ask(WindowAsk::Pad(on));
 }
 
-/// Phones' Bluetooth link switch (slice 43): on serves the phones over Bluetooth too (macOS asks for Bluetooth on this
-/// page the first time), off stops it.
-#[tauri::command]
-#[expect(clippy::needless_pass_by_value, reason = "Tauri hands a command its state by value")]
-pub fn set_ble_link(on: bool, state: State<'_, Shared>) {
-	state.ask(WindowAsk::BleLink(on));
-}
-
 /// Whether the page in front draws a code that opens the player's account (the restore code, the one typed to
 /// restore, Link a device's code, Email's request code), each held behind Show code until the player presses it
 /// (views/page.js `heldCode`; lib/router.js `reveal` awaits this answer before the code draws, and asks it off only
@@ -216,8 +207,8 @@ pub fn set_ble_link(on: bool, state: State<'_, Shared>) {
 /// (`WDA_EXCLUDEFROMCAPTURE`; before Windows 10 2004 it shows black); macOS's `NSWindowSharingNone` keeps it from the
 /// window list and the screenshots that read it, while an app that captures through ScreenCaptureKit still sees it
 /// (Electron's `setContentProtection` says the same), so on a Mac the press is what keeps the code out of a stream. The
-/// pairing code is no such code: it opens this computer's own network and Bluetooth link alone, and Pump home shows it
-/// to every player without a phone.
+/// pairing code is no such code: it opens this computer's own network alone, and Pump home shows it to every player
+/// without a phone.
 ///
 /// # Errors
 /// The window refused the change.
@@ -234,14 +225,6 @@ pub fn secret_shown(on: bool, webview: Webview) -> Result<(), String> {
 		log::info!("window: {} seen by screen captures again", webview.label());
 	}
 	Ok(())
-}
-
-/// Whether the Phones page is open and the pairing code shows (there or in the pairing window): the Bluetooth link
-/// advertises while the code shows, and asks for macOS's Bluetooth grant on the Phones page alone (slice 43).
-#[tauri::command]
-#[expect(clippy::needless_pass_by_value, reason = "Tauri hands a command its state by value")]
-pub fn phones_shown(page: bool, code: bool, state: State<'_, Shared>) {
-	state.ask(WindowAsk::PhonesShown { page, code });
 }
 
 /// This computer's Change… beside the game folder: the system's folder picker on the main window (macOS would

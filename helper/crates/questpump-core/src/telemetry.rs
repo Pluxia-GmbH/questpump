@@ -401,8 +401,6 @@ pub struct Facts {
 	pub away: Option<i64>,
 	/// `link_day`'s state: what the link did that day.
 	pub link: Option<String>,
-	/// `link_ble`'s blobs (slice 43): the Bluetooth link on a game day a phone was paired.
-	pub link_ble: Option<LinkBle>,
 	pub capture: Option<CaptureDay>,
 	/// The features used, `feature_day`'s and `fitness_feature_day`'s (`feature_point`).
 	pub features: BTreeSet<String>,
@@ -433,37 +431,6 @@ impl Facts {
 		if self.link.as_deref() != Some("ok") {
 			self.link = Some(state.to_owned());
 		}
-	}
-}
-
-/// `link_ble`'s facts of one game day a phone was paired (slice 43; contract/telemetry-api.yaml): the computer's
-/// Bluetooth link as the helper last said it that day, and the transports a phone's or a watch's sync came on. The
-/// desktop app's `link` is `linked` once a sync came over Bluetooth that day, else `unlinked`; never a time or a count
-/// of what went over it.
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
-#[serde(default)]
-pub struct LinkBle {
-	/// `Helper.ble`'s word as last said that day; none: `unknown`.
-	pub ble: Option<String>,
-	/// A sync came on the LAN that day.
-	pub lan: bool,
-	/// A sync came over Bluetooth that day.
-	pub over_ble: bool,
-}
-
-impl LinkBle {
-	/// The day's `link_ble` point.
-	#[must_use]
-	pub fn point(&self) -> Option<Point> {
-		let transport = match (self.lan, self.over_ble) {
-			(true, true) => "both",
-			(true, false) => "lan",
-			(false, true) => "ble",
-			(false, false) => "none",
-		};
-		let link = if self.over_ble { "linked" } else { "unlinked" };
-		let ble = self.ble.as_deref().unwrap_or("unknown");
-		Point::new("link_ble", &[("ble", ble), ("link", link), ("transport", transport)], &[])
 	}
 }
 

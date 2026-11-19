@@ -499,7 +499,7 @@ pub enum AdminNote {
 }
 
 /// Phones: the pairing code, the address under it, the paired phone, the step left in the game, on Windows the
-/// firewall's card, whether the pairing ended because the settings did not read, and the Bluetooth link's row.
+/// firewall's card, and whether the pairing ended because the settings did not read.
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct Phones {
 	/// The pair link's QR code; none without a home network, before the firewall lets the phone in or in a run whose
@@ -519,41 +519,6 @@ pub struct Phones {
 	pub unread: bool,
 	/// The paired phone has not linked for two weeks (since 2026-10-09): the page shows the code again, with why.
 	pub quiet: bool,
-	/// The Bluetooth link's switch and its line (slice 43).
-	pub ble: BleRow,
-}
-
-/// The Phones page's Bluetooth row (slice 43): the link's switch, on by default, and its line.
-#[derive(Serialize, Debug, Clone, Default, PartialEq, Eq)]
-pub struct BleRow {
-	pub on: bool,
-	/// None while the link has not said how it stands, serves with no phone linked by it or the switch is off (since
-	/// 2026-10-22: the switch says those alone).
-	pub line: Option<BleLine>,
-}
-
-/// The Bluetooth row's line: the helper block's `ble` in the page's words, a linked phone's name, or that it could not
-/// start or stopped on an error.
-#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
-#[serde(tag = "state", rename_all = "snake_case")]
-pub enum BleLine {
-	/// A phone links by it now: the paired phone's name.
-	Linked { phone: String },
-	/// macOS has yet to answer the Bluetooth grant, which this page asks.
-	Ask,
-	/// The grant is refused.
-	Refused,
-	/// The computer's Bluetooth is off.
-	Off,
-	/// The adapter cannot serve phones (Windows).
-	NoPeripheral,
-	/// The computer has no Bluetooth.
-	#[serde(rename = "none")]
-	Missing,
-	/// It could not start (the system's why stays in `helper.log`): the switch off and on tries once more.
-	Failed,
-	/// It served, then stopped on an error: the switch off and on starts it once more.
-	Lost,
 }
 
 /// The line under the pairing code.
@@ -566,12 +531,6 @@ pub enum AddressLine {
 	},
 	/// Windows: the code shows once the firewall rule lets the phone in.
 	Firewall {
-		name: String,
-		host: String,
-	},
-	/// Windows without the firewall rule while the Bluetooth link serves (since the review of 2026-10-17): the code
-	/// shows beside the firewall card, and a phone pairs by Bluetooth now and on Wi-Fi once it can reach the PC.
-	Ble {
 		name: String,
 		host: String,
 	},
@@ -790,12 +749,6 @@ pub enum WindowAsk {
 	Strap(bool),
 	/// The walking pad on or off.
 	Pad(bool),
-	/// The Phones page's Bluetooth link switch (slice 43).
-	BleLink(bool),
-	/// The Phones page is open (`page`), and the pairing code shows there or in the pairing window (`code`): the
-	/// Bluetooth link advertises while the code shows, and on macOS asks for the Bluetooth grant on the page (slice
-	/// 43).
-	PhonesShown { page: bool, code: bool },
 	/// The folder the player picked for the game.
 	Folder(PathBuf),
 	/// Windows: the one-time elevated firewall rule that lets the phone reach QuestPump.

@@ -552,7 +552,7 @@
   "films/steep_doorframe_row.mp4": "425118dcba81384a3a2ecfc7fda25815754e38e9c6f7a300185cb0df0caa8b54",
   "films/step_back_burpee.mp4": "63cf411915fe7fbe095712c7bc1de4293cafe4dc85b17e7ddc0846ded4864142",
   "films/step_downs.mp4": "b083276bb0f9ea9debab5b26113836247914277e73ed1d13b39b56f05f4076fc",
-  "films/step_jacks.mp4": "f5baf0aa91b52a67975da6aa2f91ca303f7d3ce0116c48af33240d117e0f5e32",
+  "films/step_jacks.mp4": "40c7496afde443ead9567a73f161681675db631391a4839e98508172f01ca609",
   "films/step_over.mp4": "e8b5f3eb13a1a296820c4b2d439eeb0f32c9e00b921f0f509fac1681ea2fd12e",
   "films/step_pushup.mp4": "3462b5d31e4f88fc70f4423db7ccb0f28bcf008f7583c511413e4a4ab96954ab",
   "films/step_ups.mp4": "82e5aa6951b565ba1072d6dc9294eaff157b00db1c967a24a55d85a0a0af2db1",
@@ -1177,7 +1177,7 @@
   "loops/steep_doorframe_row.mp4": "1c79ed79749e21492a5650b6c0b28871089877a81e7693adf89e8b0166dd181b",
   "loops/step_back_burpee.mp4": "1c694cd7ff071f985f0390950663b8a335f70840f6e221047cf95320f825cbc5",
   "loops/step_downs.mp4": "284c9ebdb660523a0ca8476c2e16ff08a2bda11d8b2f6672556a14317c133b76",
-  "loops/step_jacks.mp4": "5a5a91dd3c7842547043600a82a3fb557f57b708f74614e711d728638c9d4175",
+  "loops/step_jacks.mp4": "f10bfe6e6e3111f0b7c921db09bce12259e9f1a107f91c10e94e8741339a84d9",
   "loops/step_over.mp4": "de554c00db19c0a95ed61f56e959e1e14af35a649a8dc5c4b2526a42825d1f41",
   "loops/step_pushup.mp4": "ca766ea3a1c3ac156881dd79d27986f514266066813ccca1df09cf5172bd969f",
   "loops/step_ups.mp4": "11e2e878d8bfe172f58c9db9465673b33a37d90f9f4d9964b22e9684193026de",
@@ -3963,8 +3963,8 @@
   "stills/step_back_burpee.t.png": "18ef2fb6063d4c82748887db451988506edbd2b64dc319df3faa09b35b982504",
   "stills/step_downs.png": "587bb17c6d9ff9b78e82604322004fed5f0eb1ffb6f9e89d2f693ebec3b071af",
   "stills/step_downs.t.png": "644c6e97b987ba84b685b6b5de5f3bfe29ebfb169a8a7a78b9b683ac71d9bd83",
-  "stills/step_jacks.png": "7551851cecb35828104fe851cf812cb138ee4ebeee8e0611fcb9f9f88c71d20c",
-  "stills/step_jacks.t.png": "cb7e2cc2b1acd17cf8abeb0bc49b9d568a99fe8c3955440795d8772bc80720a3",
+  "stills/step_jacks.png": "3c82084fbd9e19890a829ae865ea79838dce5ecc4159e01d86aa893b93e791f7",
+  "stills/step_jacks.t.png": "635e8855da7891e2fe60b3dd0be36ec0dc38b4b126b673e39e5b8b48c43b2f4d",
   "stills/step_over.png": "e45706898b2acf7ac1726e13c39f05f2e3736676a8c0407c763b49ec2b8c7c34",
   "stills/step_over.t.png": "4acad835128b2ca922aec88cd2c976a0cb09b090349b3fea18a4aeb7e2d942c2",
   "stills/step_pushup.png": "75681d851bc678e8c3fad7f104d6789d41e4bc6e73eb310140a568283f82c9b0",
@@ -4162,7 +4162,7 @@
   "side": 480,
   "tint": 512
  },
- "films_digest": "2d0044f051de0c74",
+ "films_digest": "242b81ef44b46c4d",
  "moves": {
   "adv_tuck_fl_row": {
    "fault": "back_rounds",
@@ -7184,7 +7184,7 @@
    "owner": "step_downs"
   },
   "step_jacks": {
-   "key": 0.5833,
+   "key": 0.5667,
    "mirror": false,
    "owner": "step_jacks"
   },
@@ -17786,7 +17786,7 @@
   },
   "step_jacks": {
    "box": [
-    0.0792,
+    0.0667,
     0.0146,
     0.9333,
     0.9417

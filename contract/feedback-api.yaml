@@ -32,8 +32,8 @@ info:
       beside Safety and about, opens the page; the app counts its numbers and posts the message itself, with its
       Firebase App Check token in the header `X-Firebase-AppCheck` when App Check gives it one, and without the header
       when it gives none (a phone that fails its device check, a build without the Firebase config) or is not asked
-      (no purpose reads on: telemetry-api.yaml, "Firebase starts only for a purpose that reads on"), while its coach
-      reports never go without one (coach-api.yaml);
+      (no purpose reads on: telemetry-api.yaml, "Firebase starts only for a purpose that reads on"), as its coach
+      reports go (coach-api.yaml);
     - the desktop app, QuestPump on this computer (`helper`, the source's name since slice 24): "Send feedback" on its
       Feedback page beside "Copy a report for help" (slice 35; "Copy diagnostics" until 2026-10-08, a word the content
       lint bars); its tick, "Add my system details", adds the helper's `diagnostics` (the OS and the capture's state,
@@ -111,7 +111,7 @@ info:
     stored or mailed); 20 a minute for all feedback together; then the report Worker's 400 mails a UTC day for its
     routes but the crash reports' (since 2026-10-31), past which a message waits as past a minute's limit (429). A
     phone's message without a token is no 401: anyone can post as the helper without one on the same limit, so
-    refusing it would guard nothing (the coach report still requires its token, coach-api.yaml).
+    refusing it would guard nothing (the coach report's route takes the same rule, coach-api.yaml).
 
     **The mail.** Its subject, in ASCII alone: "Feedback from <source> <version>, written <at>", the source as "the
     game", "the iPhone app", "the Android app" or "the helper" and `at` in UTC as `5 Oct 2026 23:12 UTC` ("Feedback

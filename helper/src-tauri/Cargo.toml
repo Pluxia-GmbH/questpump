@@ -1,6 +1,6 @@
 [package]
 name = "questpump-helper"
-version = "1.2.0"
+version = "1.3.0"
 description = "QuestPump for Mac and Windows (the helper): reads the addon's status strip, keeps your progress for the game and pairs your phone"
 edition.workspace = true
 rust-version.workspace = true
@@ -86,28 +86,8 @@ objc2-core-graphics = { version = "0.3", features = ["CGWindow", "CGEventSource"
 # the window list's entries (games/procs.rs: the front window's owner, a game window's bounds, the program picker),
 # already in the graph through objc2-core-graphics
 objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFArray", "CFDictionary", "CFNumber", "CFString", "CFCGTypes"] }
-# the Bluetooth grant's state (bluetooth.rs, blelink/mac.rs), and the Bluetooth link's peripheral (blelink/mac.rs, slice
-# 43): the manager, its delegate's centrals and requests, the advertisement's keys, the service and its characteristics,
-# their UUIDs, the ATT results, and the dispatch queue its callbacks come on
-objc2-core-bluetooth = { version = "0.3", default-features = false, features = [
-	"std",
-	"bitflags",
-	"dispatch2",
-	"CBAdvertisementData",
-	"CBATTRequest",
-	"CBAttribute",
-	"CBCentral",
-	"CBCharacteristic",
-	"CBError",
-	"CBManager",
-	"CBPeer",
-	"CBPeripheralManager",
-	"CBService",
-	"CBUUID",
-] }
-# the Bluetooth link's own serial queue for CBPeripheralManager's callbacks (blelink/mac.rs), already in the graph
-# through objc2-core-bluetooth
-dispatch2 = { version = "0.3", default-features = false, features = ["std", "objc2"] }
+# the Bluetooth grant's state, which says a refused strap or pad apart from one not found (bluetooth.rs)
+objc2-core-bluetooth = { version = "0.3", default-features = false, features = ["std", "CBManager"] }
 libproc = "0.15"
 # a running app's Info.plist, read for its games category or Game Mode (games/detect.rs, slice 48), already in the graph
 # through Tauri
@@ -121,7 +101,7 @@ objc2-service-management = { version = "0.3", default-features = false, features
 # launch Apple event that tells a start at login (desk/launch.rs), and the activity that keeps the Mac awake while a
 # pump runs (desk/awake.rs)
 objc2 = { version = "0.6", features = ["exception"] }
-objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSAppleEventDescriptor", "NSAppleEventManager", "NSArray", "NSData", "NSDictionary", "NSError", "NSLocale", "NSObject", "NSProcessInfo", "NSString", "NSURL", "NSUUID", "NSValue"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSAppleEventDescriptor", "NSAppleEventManager", "NSArray", "NSData", "NSDictionary", "NSError", "NSLocale", "NSObject", "NSProcessInfo", "NSString", "NSURL", "NSValue"] }
 # whether VoiceOver runs (desk/audio.rs: a pump's lines go to the page's live region then), already in the graph
 # through Tauri's windowing; a game's icon (games/icons.rs, slice 56): `NSWorkspace`'s image of its app drawn into a
 # bitmap and written as PNG
@@ -148,16 +128,12 @@ webview2-com = "0.39"
 # installer ships no symbols, and std's backtrace prints such a frame as <unknown>)
 backtrace = "0.3.76"
 windows = { version = "0.62", features = [
-	"Devices_Bluetooth", # the Bluetooth link's peripheral (blelink/win.rs, slice 43): the adapter, its roles, the device
-	"Devices_Bluetooth_GenericAttributeProfile", # the GATT server: the provider, its characteristics, the clients
-	"Devices_Radios", # the adapter's radio, off or on
-	"Foundation_Collections", # the subscribed clients' list
 	"Foundation_Metadata",
 	"Graphics_Capture",
 	"Graphics_Imaging", # the band ELDEN RING's boss banners hand Windows' OCR, as a SoftwareBitmap (capture/win/banner.rs)
 	"Media_Ocr", # Windows' own OCR, which reads ELDEN RING's boss banners' words (capture/win/banner.rs)
 	"Security_Authorization_AppCapabilityAccess",
-	"Storage_Streams", # the Bluetooth link's values as buffers (blelink/win.rs), and the OCR's band (capture/win/banner.rs)
+	"Storage_Streams", # the OCR's band as a buffer (capture/win/banner.rs)
 	"Win32_Devices_Display",
 	"Win32_Foundation",
 	"Win32_Globalization",

@@ -10,14 +10,17 @@
 //! `hero.charts`), the Book (`book.rs`: `book`, `book.words`, `book.correct`), the Saga and the Log (`log.rs`,
 //! `saga.rs`, `history.rs`: `log`), Your setup and its places (`menu_pages/setup.rs`, `places.rs`: `menu.setup`,
 //! `places`), the first five minutes (`menu_pages/welcome.rs`: `welcome`), the pump's cue policy with the Sound and
-//! voice page's switches (`audio.rs`: `sound.*` intents) and the sync with Email, Restore code and Link a device
-//! (`sync.rs`: `menu.sync`, `menu.email`, `menu.restore`, `menu.linkdevice`; `sync.*`, `email.*`, `restore.*`). The addon's own engine answers through one ordered door
+//! voice page's switches (`audio.rs`: `sound.*` intents), the sync with Email, Restore code and Link a device
+//! (`sync.rs`: `menu.sync`, `menu.email`, `menu.restore`, `menu.linkdevice`; `sync.*`, `email.*`, `restore.*`) and the
+//! game's pump as an iPhone's Live Activity shows it, which the sync tells the account (`activity.rs`, slice 76; no
+//! topic and no intent). The addon's own engine answers through one ordered door
 //! (`engine.rs`); what one area asks of another goes through its seam (`seams.rs`); the contract's files every area
 //! reads are built in once (`facts.rs`); the settings every area keeps are `settings.rs`'s. An intent (`{"type":
 //! "<area>.<what>", ...}`) reaches its area through [`Desk::intent`].
 
 #![forbid(unsafe_code)]
 
+pub mod activity;
 pub mod audio;
 pub mod book;
 pub mod engine;

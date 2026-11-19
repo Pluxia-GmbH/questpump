@@ -19,16 +19,15 @@
 //! (`app.jsonl`) and reach every mirror beside the game's, and every paired phone reads them back (`GET /v1/app_rows`,
 //! slice 28). The LAN API (`lan.rs`) serves the phone and the watch on every address of the computer, bound once; the
 //! computer's name, LAN address and `.local` name are read again every minute for the pairing code, every response's
-//! helper block and, on Windows, the Bonjour record (`dnssd.rs`). The Bluetooth link serves the phones the same routes
-//! while its switch is on and a phone is paired or the pairing code shows (`runtime/ble_link.rs`, `blelink`, slice 43).
-//! The commands the strip's events make are queued for the device that holds the link, and the routes ask the loop for
-//! what the session knows. The heart rate comes from a watch's syncs and, once the player turns it on, a Bluetooth
-//! strap; every second the session gives out the heart-rate verdicts that are due. A walking pad the player turns on is
-//! read on the same Bluetooth task (`bluetooth.rs`): its distance goes into each stretch row (`Session::pad`), its
-//! readings and events onto the socket, which may set its speed or stop it; it never changes a pump. On Windows the LAN
-//! API listens only once the firewall lets the phone in (`runtime/firewall.rs`), and a game folder Windows will not let
-//! the helper write into gets the window's card (`runtime/folder.rs`, which also shows the folder, takes the one the
-//! player picks and reads the move figures' state). A downloaded update installs once the game is closed
+//! helper block and, on Windows, the Bonjour record (`dnssd.rs`). The commands the strip's events make are queued for
+//! the device that holds the link, and the routes ask the loop for what the session knows. The heart rate comes from a
+//! watch's syncs and, once the player turns it on, a Bluetooth strap; every second the session gives out the heart-rate
+//! verdicts that are due. A walking pad the player turns on is read on the same Bluetooth task (`bluetooth.rs`): its
+//! distance goes into each stretch row (`Session::pad`), its readings and events onto the socket, which may set its
+//! speed or stop it; it never changes a pump. On Windows the LAN API listens only once the firewall lets the phone in
+//! (`runtime/firewall.rs`), and a game folder Windows will not let the helper write into gets the window's card
+//! (`runtime/folder.rs`, which also shows the folder, takes the one the player picks and reads the move figures'
+//! state). A downloaded update installs once the game is closed
 //! (`runtime/updates.rs`). A feedback message from the game or the window goes into its outbox and out to questpump.com
 //! (`runtime/feedback.rs`), and so do the desktop app's crash reports while the player's switch lets them
 //! (`runtime/crash.rs`, whose sweep runs first in the start, `sweep`) and its anonymous counts while Usage statistics
@@ -55,7 +54,7 @@ use questpump_core::body::Kept;
 use questpump_core::codes::STRIP_VERSION;
 use questpump_core::far::{self, FarRows};
 use questpump_core::gatt::{MachineStatus, Treadmill};
-use questpump_core::link::{self, Device, Sheet, Step, SyncRequest, Transport, Wow, WristEvent};
+use questpump_core::link::{self, Device, Sheet, Step, SyncRequest, Wow, WristEvent};
 use questpump_core::mirror::{self, Sight, State};
 use questpump_core::offers::{self, Standing};
 use questpump_core::pair;
@@ -73,7 +72,6 @@ use questpump_engine::Clock;
 use tauri::{AppHandle, Manager as _};
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 
-use crate::blelink::Heard;
 use crate::bluetooth::{self, Ble, Kind, PadCommand, Want};
 use crate::capture::{Capture, Event};
 use crate::desk::audio::Audio;
@@ -97,7 +95,6 @@ use crate::ui::{
 use crate::{autostart, copy, dnssd, feeds, install, pairing, socket, units, update};
 
 mod addon;
-mod ble_link;
 mod counts;
 mod crash;
 mod feedback;
@@ -113,7 +110,6 @@ mod usage;
 mod work;
 
 use addon::AddonState;
-use ble_link::BleLinkState;
 use counts::CountsState;
 use crash::Crash;
 use feedback::Feedback;
@@ -121,7 +117,7 @@ use firewall::Firewall;
 use folder::Access;
 pub(crate) use matches::arms_game;
 pub(crate) use pro::{Pro, ProState};
-use sync::SyncLink;
+use sync::{SyncLink, Telling};
 
 const DEBOUNCE: Duration = Duration::from_secs(2);
 /// A batch that never pauses (a long hub) is written at the latest this long after its first row.
@@ -431,8 +427,8 @@ pub(crate) struct Helper {
 	/// The desk: its areas' state, the stores and the settings, on the desktop app as its platform (`desk::shell`).
 	pub(crate) desk: questpump_desk::Desk<Shell>,
 	/// Whether this run's secrets reach the next start (`secrets::Keeper::run`): a run whose store could not be read
-	/// while settings.json held none (`RunSecrets::Unread`) shows no pairing code, answers no phone (no LAN listener, no
-	/// Bluetooth link) and refuses Sync and every way into an account (`Helper::secrets_unread`).
+	/// while settings.json held none (`RunSecrets::Unread`) shows no pairing code, answers no phone (no LAN listener)
+	/// and refuses Sync and every way into an account (`Helper::secrets_unread`).
 	pub(crate) secrets: RunSecrets,
 	pub(crate) queue: Links,
 	/// The routes' state.
@@ -441,9 +437,8 @@ pub(crate) struct Helper {
 	pub(crate) lan_error: Option<String>,
 	/// The device that held the link at the last look, for the window.
 	pub(crate) linked: Option<Device>,
-	/// The device, client tag and transport that held the link at the last look, for the log's holder line
-	/// (`on_link_tick`).
-	pub(crate) holding: Option<(Device, String, Transport)>,
+	/// The device and client tag that held the link at the last look, for the log's holder line (`on_link_tick`).
+	pub(crate) holding: Option<(Device, String)>,
 	/// The computer's name, LAN address and `.local` name at the last look.
 	pub(crate) address: Address,
 	/// The Bonjour record (Windows) while the LAN API listens.
@@ -504,8 +499,8 @@ pub(crate) struct Helper {
 	pub(crate) bles: mpsc::UnboundedSender<Ble>,
 	/// The walking pad the task reads now, for the window's line; none while it is not connected.
 	pub(crate) pad_read: Option<PadRead>,
-	/// The Bluetooth link to the phones (slice 43).
-	pub(crate) ble_link: BleLinkState,
+	/// The pump push: the game's pump as the account hears it (slice 76, `runtime/sync.rs`).
+	pub(crate) telling: Telling,
 	/// Whether the LAN API may listen (Windows: once the firewall lets the phone in).
 	pub(crate) firewall: Firewall,
 	/// Why Windows refused the last mirror write, for the window's card.
@@ -653,7 +648,10 @@ impl Helper {
 			self.emit(line);
 		}
 		for command in fx.commands {
-			if let Some(queued) = self.queue.queue(command, lan::now_ms()) {
+			let now = lan::now_ms();
+			if let Some(queued) = self.queue.queue(command, now) {
+				// the game's pump as an iPhone's Live Activity shows it, with the holder as a pump is offered (slice 76)
+				self.telling.command(&queued.command, now, self.queue.holder(now).is_some());
 				self.emit(&Line::Command { command: queued });
 			}
 		}
@@ -669,16 +667,11 @@ impl Helper {
 		for e in &fx.blob_errors {
 			log::warn!("a strip payload did not decode or check out: {e}");
 		}
-		// where the pump's commands went: the device that held the link as they were queued and its transport (since
-		// 2026-10-14; the transport since slice 43), `→ ios (ble)`
+		// where the pump's commands went: the device that held the link as they were queued (since 2026-10-14)
 		if let Some(line) = &fx.offered {
-			let to = self.queue.holder_via(lan::now_ms()).map_or_else(
-				|| "no device holds the link".to_owned(), // copy-lint: not shown (a log line)
-				|(device, transport)| format!("{} ({})", device.name(), transport.name()),
-			);
+			// copy-lint: not shown (a log line)
+			let to = self.queue.holder(lan::now_ms()).map_or("no device holds the link", Device::name);
 			log::info!("{line} → {to}");
-			// a pump runs: the Bluetooth link's centrals at low latency
-			self.ble_busy();
 		}
 		if let Some(message) = &fx.feedback {
 			self.game_feedback(message);
@@ -960,6 +953,25 @@ impl Helper {
 		}
 	}
 
+	/// The pump on offer again, before a sync is answered, for who never heard it. A device that holds the link
+	/// without having heard it (it took the link after another device, or started again mid-pump) gets it queued
+	/// ahead of its countdown (`Link::reoffer`). A phone that begins to mirror the pump after its offer left the
+	/// mirror (`mirror_since`: the `since` of a phone's standing request) gets it first in that request's answer
+	/// (`Link::reshow`), after the holder's turn, whose new offer the mirror shows by itself.
+	fn offer_again(&mut self, mirror_since: Option<u64>) {
+		let Some(offer) = self.desk.session.offered() else { return };
+		let now = lan::now_ms();
+		if let Some(queued) = self.queue.reoffer(offer.clone(), now) {
+			log::info!("lan: the pump on offer again for the device that holds the link (seq {})", queued.seq);
+			self.emit(&Line::Command { command: queued });
+		}
+		if let Some(since) = mirror_since
+			&& let Some(seq) = self.queue.reshow(offer, since, now)
+		{
+			log::info!("lan: the pump on offer again in a phone's mirror (seq {seq})");
+		}
+	}
+
 	/// What a LAN route asks the loop.
 	fn on_ask(&mut self, ask: Ask) {
 		match ask {
@@ -973,7 +985,9 @@ impl Helper {
 				self.phone_unpaired(device, &client);
 				let _ = done.send(());
 			}
-			Ask::Synced { request, transport, done } => {
+			Ask::Synced { request, done } => {
+				// a phone's standing request reads the game's pump as a mirror, from its `since` on
+				let mirror_since = link::mirrors(&request).then_some(request.since);
 				let SyncRequest {
 					device,
 					client,
@@ -991,7 +1005,6 @@ impl Helper {
 				if let Some(work) = &work {
 					self.desk.work_heard(work);
 				}
-				self.counts_transport(transport);
 				// a watch's 5-s windows are a heart-rate source even without a reading (the stream dropped); a phone has
 				// no heart rate of its own
 				if device.is_watch() {
@@ -1027,14 +1040,7 @@ impl Helper {
 				if let Some(offer) = &offer_taken {
 					self.offer_taken(offer);
 				}
-				// a device that holds the link without having heard the pump on offer (it took the link after another
-				// device, or started again mid-pump) gets it before this sync is answered, ahead of its countdown
-				if let Some(offer) = self.desk.session.offered()
-					&& let Some(queued) = self.queue.reoffer(offer, lan::now_ms())
-				{
-					log::info!("lan: the pump on offer again for the device that holds the link (seq {})", queued.seq);
-					self.emit(&Line::Command { command: queued });
-				}
+				self.offer_again(mirror_since);
 				// a phone's Pro proof (slice 35): checked here, never a reason to fail the sync; none from a phone that
 				// unpaired, whose grant went with it
 				if let Some(proof) = pro_proof.filter(|_| !self.unpaired.contains(&client)) {
@@ -1062,14 +1068,14 @@ impl Helper {
 				self.desk.serve_shown(&mut sheet);
 				let _ = done.send(sheet);
 			}
-			Ask::History { after, proofs_since, size, done } => {
-				let _ = done.send(self.desk.session.history(after, proofs_since, size));
+			Ask::History { after, proofs_since, done } => {
+				let _ = done.send(self.desk.session.history(after, proofs_since));
 			}
-			Ask::Sheets { after, size, done } => {
-				let _ = done.send(self.desk.session.sheet_log().page(after, size));
+			Ask::Sheets { after, done } => {
+				let _ = done.send(self.desk.session.sheet_log().page(after));
 			}
-			Ask::AppRows { after, size, done } => {
-				let _ = done.send(self.desk.session.app_rows().page(after, size));
+			Ask::AppRows { after, done } => {
+				let _ = done.send(self.desk.session.app_rows().page(after));
 			}
 			Ask::Account { put: None, done } => {
 				let _ = done.send(Some(self.desk.account_state()));
@@ -1157,10 +1163,9 @@ impl Helper {
 	}
 
 	/// The pairing block changed: saved, shown, and in the game at its next `/reload`; Pro's state on the computer
-	/// follows the paired phone, and the Bluetooth link runs while one is paired.
+	/// follows the paired phone.
 	fn paired(&mut self) {
 		self.desk.save_settings();
-		self.ble_link_sync();
 		self.show_phone();
 		self.show_grant();
 		self.due_by(Instant::now());
@@ -1485,12 +1490,11 @@ impl Helper {
 			FoundGame::Installed => Wow::NoAddon,
 			FoundGame::Unfound => Wow::Unfound,
 		};
-		let (sight, step, asks, ble) = (self.sight(), self.step(), self.desk.wow_with_addon(), self.ble_word());
-		if self.lan.set_game(wow, sight, step, asks, ble) {
+		let (sight, step, asks) = (self.sight(), self.step(), self.desk.wow_with_addon());
+		if self.lan.set_game(wow, sight, step, asks) {
 			let read = if wow == Wow::Addon { format!(", {sight:?}, step {step:?}") } else { String::new() };
 			let runs = if asks { ", running" } else { "" };
-			let ble = ble.map_or("unknown", link::Ble::word);
-			log::info!("lan: the devices hear the game as {wow:?}{read}{runs}, Bluetooth {ble}");
+			log::info!("lan: the devices hear the game as {wow:?}{read}{runs}");
 		}
 		self.show_next(step);
 		// the offer facts as this turn left them, in the next response (a change of the ids taken back, `playing` or
@@ -1566,7 +1570,6 @@ impl Helper {
 		self.clear_pro();
 		self.paired();
 		self.lan.rekey(&self.desk.settings.key);
-		self.ble_rekeyed(); // every central goes, and the service is published again with the new code's hellos
 		self.show_pair();
 	}
 
@@ -1575,19 +1578,17 @@ impl Helper {
 		self.secrets == RunSecrets::Unread
 	}
 
-	/// The pair link's address and QR code: none without a home network, nor while the firewall keeps the phone out
-	/// unless the Bluetooth link serves (a phone pairs by it then, slice 43), nor in a run whose secrets did not read.
+	/// The pair link's address and QR code: none without a home network, nor before the firewall lets the phone in,
+	/// nor in a run whose secrets did not read.
 	fn show_pair(&self) {
 		let Address { name, host, mdns } = &self.address;
 		let name = name.clone();
-		let open = self.firewall == Firewall::Open;
 		let (address, qr) = match *host {
 			_ if self.secrets_unread() => (AddressLine::Unread { name }, None),
-			Some(host) if open || self.ble_serves() => {
+			Some(host) if self.firewall == Firewall::Open => {
 				let (_, qr) =
 					pairing::link_and_qr(host, self.desk.settings.key, &name, mdns.as_deref(), self.desk.settings.hid);
-				let host = host.to_string();
-				(if open { AddressLine::Ready { name, host } } else { AddressLine::Ble { name, host } }, qr)
+				(AddressLine::Ready { name, host: host.to_string() }, qr)
 			}
 			Some(host) => (AddressLine::Firewall { name, host: host.to_string() }, None),
 			None => (AddressLine::None { name }, None),
@@ -1605,8 +1606,6 @@ impl Helper {
 			WindowAsk::NewPairing => self.renew_pairing(),
 			WindowAsk::Strap(on) => self.set_strap(on),
 			WindowAsk::Pad(on) => self.set_pad(on),
-			WindowAsk::BleLink(on) => self.set_ble_link(on),
-			WindowAsk::PhonesShown { page, code } => self.phones_shown(page, code),
 			WindowAsk::Folder(path) => self.picked(&path),
 			WindowAsk::AllowNetwork => self.allow_network(),
 			WindowAsk::AllowFolder => self.allow_folder(),
@@ -1714,7 +1713,6 @@ impl Helper {
 		self.set_strap(self.desk.settings.strap);
 		self.set_pad(self.desk.settings.pad);
 		self.serve_lan().await;
-		self.ble_link_sync();
 		self.start_at_login(unmoved);
 		// the counts after the stores are read and the switches answered: the finished game days go
 		self.counts_start(crashed);
@@ -1797,15 +1795,13 @@ impl Helper {
 		}
 		// the log names the client that holds the link, the window only its kind
 		let holding = self.queue.holder_tag(now);
-		let linked = holding.as_ref().map(|&(device, _, _)| device);
+		let linked = holding.as_ref().map(|&(device, _)| device);
 		if linked.is_some() {
 			self.note_linked(now.div_euclid(1000));
 		}
 		if holding != self.holding {
 			match &holding {
-				Some((device, tag, via)) => {
-					log::info!("lan: {} holds the link (client {tag}, {})", device.name(), via.name());
-				}
+				Some((device, tag)) => log::info!("lan: {} holds the link (client {tag})", device.name()),
 				None => log::info!("lan: no device holds the link"),
 			}
 			self.holding = holding;
@@ -1815,7 +1811,6 @@ impl Helper {
 			self.show_phone();
 		}
 		self.counts_link();
-		self.ble_tick();
 		self.desk.places_tick();
 	}
 
@@ -1836,20 +1831,15 @@ impl Helper {
 	/// it got late, after a wait for a device to hold it (since 2026-10-14).
 	fn summary(&self, s: link::Summary) {
 		let ms = |v: Option<i64>| v.map_or_else(|| "none".to_owned(), |ms| format!("{ms} ms"));
-		let rate = |b: Option<f64>| b.map_or_else(|| "none".to_owned(), |b| format!("{b:.1} %/h"));
 		log::info!(
-			"lan: {} session (client {}): {} commands, delivery p50 {}, p95 {}, late {}, transport {}, battery {} (lan {}, \
-			 ble {})",
+			"lan: {} session (client {}): {} commands, delivery p50 {}, p95 {}, late {}, battery {}",
 			s.device.name(),
 			link::client_tag(&s.client),
 			s.commands,
 			ms(s.p50_ms),
 			ms(s.p95_ms),
 			s.late,
-			s.transport.map_or("none", link::Transports::name),
-			rate(s.battery_per_hour),
-			rate(s.battery_lan_per_hour),
-			rate(s.battery_ble_per_hour)
+			s.battery_per_hour.map_or_else(|| "none".to_owned(), |b| format!("{b:.1} %/h"))
 		);
 		self.emit(&Line::Link(s));
 	}
@@ -2323,7 +2313,6 @@ impl Helper {
 		self.desk.recent_seen(now().unix);
 		self.desk.settings.runs = self.desk.p.games.as_ref().map(|g| g.watcher.keep(lan::now_ms()));
 		self.sitting_keep(now().unix);
-		self.ble_stop();
 		self.advert.stop().await;
 		let summaries = self.queue.summaries();
 		let said = !summaries.is_empty();
@@ -2523,7 +2512,6 @@ fn lan_state(settings: &Settings, queue: &Links, asks: mpsc::UnboundedSender<Ask
 		wow: None,
 		sight: None,
 		step: None,
-		ble: None,
 	};
 	Lan::new(&settings.key, queue.clone(), helper, asks, Duration::from_millis(link::HOLD_MS.unsigned_abs()))
 }
@@ -2676,7 +2664,6 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 	let (elevated_tx, elevated) = mpsc::unbounded_channel::<Elevated>();
 	let (updates_tx, updates) = mpsc::unbounded_channel::<update::Found>();
 	let (bles_tx, bles) = mpsc::unbounded_channel::<Ble>();
-	let (ble_tx, ble) = mpsc::unbounded_channel::<Heard>();
 	let feedback = Feedback::new(&dir, client.clone(), posts_tx.clone());
 	let counts = CountsState::new(&dir, client.clone(), posts_tx);
 	let (addon_state, addon) = AddonState::new();
@@ -2761,7 +2748,7 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		ble: None,
 		bles: bles_tx,
 		pad_read: None,
-		ble_link: BleLinkState::new(ble_tx),
+		telling: Telling::default(),
 		firewall: Firewall::at_start(),
 		access: Access::Fine,
 		shown_folder: None,
@@ -2778,23 +2765,8 @@ async fn run(app: AppHandle, launch: Launch, swept: Swept) -> anyhow::Result<()>
 		addon: addon_state,
 		backup: menu_pages::backup::State::default(),
 	};
-	let inbox = Inbox {
-		events,
-		cmds,
-		asks,
-		written,
-		quits,
-		window,
-		elevated,
-		updates,
-		bles,
-		ble,
-		posts,
-		heard,
-		feeds,
-		sync,
-		addon,
-	};
+	let inbox =
+		Inbox { events, cmds, asks, written, quits, window, elevated, updates, bles, posts, heard, feeds, sync, addon };
 	Box::pin(serve(helper, inbox, Started { loaded, launch, crashed, far_lost }, updates_tx, capture, display)).await
 }
 
@@ -2819,8 +2791,6 @@ struct Inbox {
 	elevated: mpsc::UnboundedReceiver<Elevated>,
 	updates: mpsc::UnboundedReceiver<update::Found>,
 	bles: mpsc::UnboundedReceiver<Ble>,
-	/// What the Bluetooth link's bridge says (slice 43).
-	ble: mpsc::UnboundedReceiver<Heard>,
 	/// What the outboxes' batches report.
 	posts: mpsc::UnboundedReceiver<outbox::News>,
 	heard: mpsc::UnboundedReceiver<games::Heard>,
@@ -2861,7 +2831,6 @@ async fn serve(
 			Some(done) = inbox.elevated.recv() => helper.on_elevated(done).await,
 			Some(found) = inbox.updates.recv() => helper.on_update(found),
 			Some(event) = inbox.bles.recv() => helper.on_ble(event),
-			Some(heard) = inbox.ble.recv() => helper.on_ble_heard(heard),
 			_ = ticks.game.tick() => helper.on_look(&capture).await,
 			_ = ticks.mirror.tick() => {
 				helper.on_mirror_tick();
@@ -2892,5 +2861,7 @@ async fn serve(
 		helper.drain();
 		// the game as the computer knows it now, in the next response to a phone or a watch
 		helper.tell_devices();
+		// and its pump to the account, for the iPhones that follow it asleep (runtime/sync.rs)
+		helper.tell();
 	}
 }

@@ -66,10 +66,6 @@ pub struct Settings {
 	/// The walking pad is turned on (the window's button): the helper reads it from its start on.
 	#[serde(default)]
 	pub pad: bool,
-	/// The Phones page's Bluetooth link switch (slice 43), on by default: while it is on and a phone is paired or the
-	/// Phones page shows the code, the computer serves the phones over Bluetooth too (`blelink`).
-	#[serde(default = "on")]
-	pub ble_link: bool,
 	/// The program start at login was last turned on for: a new one (a new build, the helper moved to Applications)
 	/// is turned on again at its start.
 	#[serde(default)]
@@ -217,7 +213,6 @@ impl Default for Settings {
 			addons: None,
 			strap: false,
 			pad: false,
-			ble_link: on(),
 			autostart_for: None,
 			autostart_off: false,
 			games: GamesSettings::default(),

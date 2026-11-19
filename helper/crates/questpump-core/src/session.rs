@@ -1853,10 +1853,10 @@ impl Session {
 	/// rows as the character it stands for). The game's rows and the catch-up rows only: every phone's app rows come
 	/// apart, in `GET /v1/app_rows` (`AppRows::page`). With `proofs_since` (unix seconds) also every proof of a pump
 	/// dated at or after it: a verdict comes about a minute after the go, so a phone that read the pump row before it
-	/// asks again for the last day's. At most `size` rows (`link::page_size`: `HISTORY_PAGE`, or the request's limit).
+	/// asks again for the last day's. At most `link::HISTORY_PAGE` rows.
 	#[must_use]
-	pub fn history(&self, after: u64, proofs_since: Option<u64>, size: usize) -> HistoryPage {
-		let (at, next, more) = link::page_bounds(self.store.records().len(), after, size);
+	pub fn history(&self, after: u64, proofs_since: Option<u64>) -> HistoryPage {
+		let (at, next, more) = link::page_bounds(self.store.records().len(), after, link::HISTORY_PAGE);
 		let mut rows: Vec<RowRecord> = self.history_rows(at.start).take(at.len()).collect();
 		for r in &mut rows {
 			let pump = kind::is_pump(r.kind) && r.outcome == outcome::OFFERED;

@@ -3,11 +3,9 @@
 //! `questpump bearer v1`, 32 bytes, base64url without padding), the key that seals every body with AES-256-GCM (info
 //! `questpump seal v1`, 32 bytes) as nonce (12 bytes), ciphertext, tag (16 bytes), its associated data the body's
 //! route (`Route`, since the release security review of 2026-10-31, L1), and the hello key (info
-//! `questpump hello v1`, 32 bytes), which keys the hellos' proofs of the key (`link::HelloResponse`, `crate::ble`'s
-//! hello): one-way, so a device tells the key it holds from a new pairing code before its bearer goes out, and nobody
-//! learns the key or follows the computer by its hello. `contract/fixtures/seal.json` pins all three; the fourth, the
-//! key that seals the Bluetooth link's envelopes (info `questpump ble v1`, slice 43), is `crate::ble`'s and
-//! `contract/fixtures/ble.json`'s.
+//! `questpump hello v1`, 32 bytes), which keys the hello's proof of the key (`link::HelloResponse`): one-way, so a
+//! device tells the key it holds from a new pairing code before its bearer goes out, and nobody learns the key or
+//! follows the computer by its hello. `contract/fixtures/seal.json` pins all three.
 
 use std::collections::{HashSet, VecDeque};
 
@@ -19,8 +17,6 @@ use hkdf::Hkdf;
 use hkdf::hmac::{Hmac, Mac as _};
 use sha2::Sha256;
 use subtle::ConstantTimeEq as _;
-
-use crate::ble::BleKeys;
 
 pub const NONCE: usize = 12;
 pub const TAG: usize = 16;
@@ -51,14 +47,7 @@ pub(crate) fn derive<const N: usize>(key: &[u8], info: &[u8]) -> [u8; N] {
 	out
 }
 
-/// The hello key of a pairing key, which keys both hellos' proofs of the key (`Keys::hello`).
-#[must_use]
-pub fn hello_key(key: &[u8; 32]) -> [u8; 32] {
-	derive(key, HELLO_INFO)
-}
-
-/// A hello's proof: the first `PROOF_BYTES` of HMAC-SHA256 under `key` over the parts (the LAN's
-/// `link::HelloResponse`, the Bluetooth hello's `k`).
+/// A hello's proof: the first `PROOF_BYTES` of HMAC-SHA256 under `key` over the parts (`link::HelloResponse`).
 pub(crate) fn proof(key: &[u8], parts: &[&[u8]]) -> [u8; PROOF_BYTES] {
 	let mut out = [0; PROOF_BYTES];
 	// HMAC takes a key of any length, so a hello key or an install's id always makes one
@@ -70,17 +59,14 @@ pub(crate) fn proof(key: &[u8], parts: &[&[u8]]) -> [u8; PROOF_BYTES] {
 	out
 }
 
-/// What a pairing key gives the link: the bearer, the route-bound seal, the hello key and the Bluetooth link's
-/// envelopes.
+/// What a pairing key gives the link: the bearer, the route-bound seal and the hello key.
 #[derive(Clone)]
 pub struct Keys {
 	/// What `Authorization: Bearer` carries.
 	pub bearer: String,
 	pub seal: RouteSeal,
-	/// What the hellos' proofs of the key are keyed with ([`hello_key`]).
+	/// What the hello's proof of the key is keyed with.
 	pub hello: [u8; 32],
-	/// The Bluetooth link's envelopes (slice 43, `crate::ble::key`).
-	pub ble: BleKeys,
 }
 
 impl Keys {
@@ -89,8 +75,7 @@ impl Keys {
 		Self {
 			bearer: URL_SAFE_NO_PAD.encode(derive::<32>(key, BEARER_INFO)),
 			seal: RouteSeal(Sealer::new(&derive(key, SEAL_INFO))),
-			hello: hello_key(key),
-			ble: BleKeys::new(&crate::ble::key(key)),
+			hello: derive(key, HELLO_INFO),
 		}
 	}
 

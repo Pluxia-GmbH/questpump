@@ -19,12 +19,16 @@ set -eu
 [ $# -gt 0 ] || set -- QuestPump $(python3 -B tools/addon_packs.py list)
 total=0
 
+# Whether a line of the zip's list matches grep's arguments. grep reads the whole list: with -q it leaves at its first
+# match, and echo then fails on the closed pipe ("echo: I/O error" in a run's log for a pack's long list).
+listed() { echo "$list" | grep "$@" > /dev/null; }
+
 # Each <Script file> and <Include file> of an XML in the zip, relative to that XML's folder, and the XMLs they include.
 check_xml() {
 	xml_dir=$(dirname "$1")
 	for g in $(unzip -p "$zip" "$1" | tr -d '\r' | grep -oE "<(Script|Include)[^>]*file=['\"][^'\"]+['\"]" |
 		sed -E "s/.*file=['\"]([^'\"]+)['\"].*/\1/" | tr '\\' '/'); do
-		echo "$list" | grep -qxF "$xml_dir/$g" || { echo "$xml_dir/$g, loaded by $1, is not in $zip" >&2; exit 1; }
+		listed -xF "$xml_dir/$g" || { echo "$xml_dir/$g, loaded by $1, is not in $zip" >&2; exit 1; }
 		case $g in *.xml) (check_xml "$xml_dir/$g") || exit 1 ;; esac
 	done
 }
@@ -46,18 +50,18 @@ for name in "$@"; do
 	for dir in $dirs; do
 		toc=$dir/$dir.toc
 		[ "$dir" = QuestPump ] && toc=QuestPump.toc
-		echo "$list" | grep -qxF "$dir/$dir.toc" || { echo "no $dir/ in $zip" >&2; exit 1; }
+		listed -xF "$dir/$dir.toc" || { echo "no $dir/ in $zip" >&2; exit 1; }
 		for f in $(grep -vE '^[[:space:]]*(#|$)' "$toc" | tr '\\' '/' | tr -d '\r'); do
-			echo "$list" | grep -qxF "$dir/$f" || { echo "$dir/$f, listed in $toc, is not in $zip" >&2; exit 1; }
+			listed -xF "$dir/$f" || { echo "$dir/$f, listed in $toc, is not in $zip" >&2; exit 1; }
 			case $f in *.xml) check_xml "$dir/$f" ;; esac
 		done
 	done
 	if [ -n "$media" ]; then
-		echo "$list" | grep -qE "$media" || { echo "$zip holds none of its media ($media)" >&2; exit 1; }
-	elif echo "$list" | grep -qE '\.ogg$'; then
+		listed -E "$media" || { echo "$zip holds none of its media ($media)" >&2; exit 1; }
+	elif listed -E '\.ogg$'; then
 		echo "$zip holds voice takes: they ship in QuestPump_Voice" >&2; exit 1
 	fi
-	if echo "$list" | grep -q 'pack.json'; then echo "pack.json is in $zip" >&2; exit 1; fi
+	if listed 'pack.json'; then echo "pack.json is in $zip" >&2; exit 1; fi
 	[ "$bytes" -le 104857600 ] || echo "note: $zip is over 100 MiB: Wago may refuse it (it is known to take 97 MiB)"
 	echo "package check: $zip, $bytes bytes"
 	total=$((total + bytes))

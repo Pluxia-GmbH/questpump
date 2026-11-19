@@ -3,8 +3,10 @@
 //! random 16-byte id and a random 16-byte root secret R, which only the player's devices hold. From R, HKDF-SHA256 with
 //! an empty salt gives the seal key (info `questpump sync seal v1`, 32 bytes), the auth key the server keeps the SHA-256
 //! of (`questpump sync auth v1`, 32 bytes, base64url without padding), the key id every pushed batch names
-//! (`questpump sync id v1`, 8 bytes, base64url without padding) and the key each device's own key has its MAC under
-//! (`questpump sync device v1`, 32 bytes) (`SyncKeys`); the seal is the LAN's (`seal::Sealer`). A batch's plain text is
+//! (`questpump sync id v1`, 8 bytes, base64url without padding), the key each device's own key has its MAC under
+//! (`questpump sync device v1`, 32 bytes) and, since slice 76, the live key (`questpump sync live v1`, 32 bytes), which
+//! seals each state of the game's pump for the pump push (`LivePump`, `seal_live`: never compressed, in standard base64)
+//! (`SyncKeys`); the seal is the LAN's (`seal::Sealer`). A batch's plain text is
 //! JSON, `{"v","account","device","seq","made_at","kind","body"}`, compressed with raw DEFLATE and sealed, at most
 //! `MAX_SEALED` (`Batch`, `seal_batch`, `open_batch`); its body is a backup file's (`RowsBody`) or the device's own
 //! (`DeviceBody`). R travels only sealed or in the player's hands: the restore code (`restore_code`, `read_restore`),
@@ -24,7 +26,7 @@ use std::fmt;
 use std::io::{Read as _, Write as _};
 
 use base64::Engine as _;
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
 use flate2::Compression;
 use flate2::read::DeflateDecoder;
 use flate2::write::DeflateEncoder;
@@ -68,6 +70,13 @@ const KID: usize = 8;
 const LINK_INFO: &[u8] = b"questpump link v2";
 const CHECK_INFO: &[u8] = b"questpump link check";
 const DEVICE_INFO: &[u8] = b"questpump sync device v1";
+const LIVE_INFO: &[u8] = b"questpump sync live v1";
+/// The version of a state of the pump push this build writes (`LivePump`'s `v`).
+const LIVE_VERSION: u32 = 1;
+/// The most names of a pump's moves a state of the pump push holds (contract/sync-api.yaml `LivePump.moves`).
+pub const LIVE_NAMES: usize = 12;
+/// The most Unicode scalars of a name in a state of the pump push: a move's and the computer's (`live_name`).
+const LIVE_NAME: usize = 32;
 const REKEY_INFO: &[u8] = b"questpump sync rekey v1";
 /// The check code's numbers: six digits.
 const CHECK_RANGE: u32 = 1_000_000;
@@ -89,11 +98,14 @@ const CHECK: &[u8; 37] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ*~$=U";
 /// The restore code's symbols before its check symbol: 128 bits and two zero bits.
 const SYMBOLS: usize = 26;
 
-/// What R gives the sync: the seal, the auth key, the key id and the key each device's own key has its MAC under. No
-/// `Debug`: it holds keys.
+/// What R gives the sync: the seal, the live key's seal, the auth key, the key id and the key each device's own key has
+/// its MAC under. No `Debug`: it holds keys.
 #[derive(Clone)]
 pub struct SyncKeys {
 	pub seal: Sealer,
+	/// The live key's seal, HKDF-SHA256 of R, info `questpump sync live v1`: what a state of the pump push is sealed
+	/// under (`seal_live`), named by `kid` as a batch's seal is.
+	pub live: Sealer,
 	/// What `POST /api/sync/v1/accounts` and `POST /api/sync/v1/session` carry (base64url without padding).
 	pub auth: String,
 	/// What every pushed batch names (base64url without padding).
@@ -107,6 +119,7 @@ impl SyncKeys {
 	pub fn derive(r: &[u8; ROOT]) -> Self {
 		Self {
 			seal: Sealer::new(&seal::derive(r, SEAL_INFO)),
+			live: Sealer::new(&seal::derive(r, LIVE_INFO)),
 			auth: URL_SAFE_NO_PAD.encode(seal::derive::<32>(r, AUTH_INFO)),
 			kid: URL_SAFE_NO_PAD.encode(seal::derive::<KID>(r, ID_INFO)),
 			device: seal::derive(r, DEVICE_INFO),
@@ -483,6 +496,82 @@ pub fn inflate(deflated: &[u8]) -> Result<Vec<u8>, OpenError> {
 /// A body that does not write as JSON (none of the bodies here fail).
 pub fn seal_batch(keys: &SyncKeys, batch: &Batch) -> serde_json::Result<Vec<u8>> {
 	Ok(keys.seal.seal(&deflate(&serde_json::to_vec(batch)?)))
+}
+
+/// A name as a state of the pump push carries it (a move's, the computer's): its first 32 Unicode scalars.
+#[must_use]
+pub fn live_name(name: &str) -> String {
+	name.chars().take(LIVE_NAME).collect()
+}
+
+/// The plain text of a sealed state of the pump push (docs/plan.md slice 76; contract/sync-api.yaml `LivePump`,
+/// seal.json's `sync.live`): what an iPhone's Live Activity shows of the game's pump while the phone sleeps. Written
+/// with `v` 1 first and its keys in the contract's order; only the iPhone reads one.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LivePump {
+	/// Between pumps: the following itself, with the computer's name (`link::Helper::name`, cut by `live_name`).
+	Following(String),
+	/// A pump with the move on screen.
+	Pump(LiveMoves),
+}
+
+/// A pump as a state of the pump push holds it, its keys in the contract's order.
+#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
+pub struct LiveMoves {
+	/// The game pump's id, as its commands carry it.
+	pub pump_id: String,
+	/// The names of the pump's first `LIVE_NAMES` moves in its order, each cut by `live_name`.
+	pub moves: Vec<String>,
+	/// The pump's moves, every one.
+	pub total: u16,
+	/// The moves done: run, or counted.
+	pub done: u16,
+	/// The move on screen, its place among all the pump's moves from 0; -1 for none.
+	pub current: i16,
+	/// That move's name, cut by `live_name`; empty for none.
+	pub name: String,
+	/// A rep move's count to reach; none for a hold, a timed move and a max set.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub goal: Option<u16>,
+	/// A first max set of reps or of a hold, which has no number; never beside `goal`. Written only when true.
+	#[serde(skip_serializing_if = "std::ops::Not::not")]
+	pub max_set: bool,
+	/// Unix seconds on the account's clock: the go of a timed move, a hold or a kept move, from which its clock counts.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub started_at: Option<i64>,
+	/// Unix seconds on the account's clock: when a timed move ends; none for a clock that counts up.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub ends_at: Option<i64>,
+	/// The next move's name, cut by `live_name`; none after the last.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub next: Option<String>,
+}
+
+impl Serialize for LivePump {
+	fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+		#[derive(Serialize)]
+		struct Text<'a> {
+			v: u32,
+			#[serde(skip_serializing_if = "Option::is_none")]
+			following: Option<&'a str>,
+			#[serde(flatten)]
+			pump: Option<&'a LiveMoves>,
+		}
+		let (following, pump) = match self {
+			Self::Following(name) => (Some(name.as_str()), None),
+			Self::Pump(pump) => (None, Some(pump)),
+		};
+		Text { v: LIVE_VERSION, following, pump }.serialize(serializer)
+	}
+}
+
+/// A state of the pump push sealed as `ActivityState.sealed` carries it: its JSON as it stands (never compressed,
+/// unlike a batch), sealed under the live key with a fresh nonce, in standard base64 with padding.
+///
+/// # Errors
+/// A state that does not write as JSON (none fails).
+pub fn seal_live(keys: &SyncKeys, state: &LivePump) -> serde_json::Result<String> {
+	Ok(STANDARD.encode(keys.live.seal(&serde_json::to_vec(state)?)))
 }
 
 /// What a fetched batch is.

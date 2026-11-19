@@ -116,8 +116,14 @@ a render, each reference's films coming out byte for byte the committed ones aga
 desktop films, 0.42 MB of stills and 0.72 MB of pairs (byte copies, one blob each in git). Each owner's `loop` is its
 film's length in seconds, the samples' durations summed over the track's timescale (its frames / 30), never the `mdhd`
 duration, which the H.264 muxer lengthens by its B-frame delay on 12 of the desktop films. 104 films, all of them of an
-odd-ticked run table, hold one frame more than their pack entry's ticks (the concat listing at 30 fps; the cause is not
-traced), so an app counts by `loop`, the film it shows, never by the pack's ticks.
+odd-ticked run table, hold one frame more than their pack entry's ticks, so an app counts by `loop`, the film it shows,
+never by the pack's ticks. The cause (traced 2026-11-18): the concat listing's `duration` a tick was rounded into the
+images' 1/25 s time base, where every sixth tick's stamp fell on its neighbour's. So a film encoded before that day
+shows tick 6k + 3's frame at tick 6k + 2 too and never tick 6k + 2's own, a stall five times a second, and one of 6k + 3
+ticks ends a frame late. `build.encode` now has ffmpeg stamp the images itself at 30 a second: a film then holds its
+ticks' frames and no more (16 to 573 ticks tried), and step jacks' films, each frame matched to its stored frame, play
+their run table tick for tick. A film keeps the old stamps until it is built again (`figures.py films` where its entry
+stands), and one of 6k + 3 ticks then loses its extra frame, its `loop` a tick shorter.
 
 A loop that shows more than one rep (a dead bug's two sides, a squat to punch's two punches, a monster walk's two
 steps) names the phases whose end finishes one, `rep_ends` in its motion file (2026-10-09). The pack entry then carries
@@ -248,9 +254,13 @@ one run of 3 a dwell inside the tolerance, 2026-10-23), high knees 0.6, sprint 0
 (2026-10-10); wall climbers 0.4 (at 1 it kept 5 of its 31 frames, held one for up to 6 ticks while the pose moved 11 px,
 then jumped, and showed the near leg's frames on the far leg's drive; at 0.4 it keeps 15, its two runs of 3 the knee's
 own stop at the wall, inside 1.5 px), mountain climbers 0.4, jumping jacks 0.6, skater hops 0.55, squat thrusts 0.55,
-sprawl 0.65, shadow boxing 0.5, quick steps 0.6 (2026-10-23), punch and duck 0.45, step jacks 0.6, stairs all out 0.85,
+sprawl 0.65, shadow boxing 0.5, quick steps 0.6 (2026-10-23), punch and duck 0.45, stairs all out 0.85,
 backpack squat drives 0.25, which its vest figure takes with the rest of its motion (2026-10-15; David: "The animation
-for wall climbers is broken. stutters"). No `fast_phase` shortens a dwell inside the 1.5 px pose tolerance, where every
+for wall climbers is broken. stutters"). A move with two mirrored sides is read for a frame of the wrong side too, a
+cell that moving ticks of both sides share: step jacks at 0.6 showed the far leg's lift for one tick of the near leg's
+step (ticks 6 and 28: the arms' sweep allowed 8.9 px there and the other side's frame lay 8.3 px off), so it takes
+0.4, the largest value at which the tolerance admits no frame of one step for a moving tick of the other (Rapha,
+2026-11-18: "leg moves out then one frame back in then out and feels like a jump"). No `fast_phase` shortens a dwell inside the 1.5 px pose tolerance, where every
 part slows at once: an `out` ease into a pose met by an `in` ease out of it, or a short `hold` between them. Change the
 motion there: pogo hops lost its ground hold and bounces on `linear` contact steps, and shadow skip's rope arms, which
 stopped at each eased pose, turn on `linear` steps, its flight's arc drawn by a pose each way (`rise`, `fall`). A limb

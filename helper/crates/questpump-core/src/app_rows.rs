@@ -201,10 +201,10 @@ impl AppRows {
 
 	/// `GET /v1/app_rows` (slice 28): the page after the `after` rows a device holds, in the order the helper took
 	/// them, each row's text as the store keeps it (stamped: `char` 0, the app bit and its device's) with its copy
-	/// number; at most `size` rows (`link::page_size`: `HISTORY_PAGE`, or the request's limit).
+	/// number; at most `link::HISTORY_PAGE` rows.
 	#[must_use]
-	pub fn page(&self, after: u64, size: usize) -> AppRowsPage {
-		let (records, next, more) = link::page(&self.records, after, size);
+	pub fn page(&self, after: u64) -> AppRowsPage {
+		let (records, next, more) = link::page(&self.records, after, link::HISTORY_PAGE);
 		// every kept record has its copy number (`add`, `open`)
 		let rows = records.iter().filter_map(|r| Some(AppRow { row: r.row().to_string(), n: r.copy? })).collect();
 		AppRowsPage { store: self.id(), next, more, rows }

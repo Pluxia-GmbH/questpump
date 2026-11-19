@@ -29,10 +29,10 @@ pub(crate) fn save_now(settings: &Settings, dir: &Path, keeper: &mut Keeper) {
 /// Reads the settings, making a pairing key and an install id when there are none, switching Room to move on once
 /// in a place kept before it was on by default (`space_on`), dropping once a window's place kept at the old first
 /// size (`window_grown`) and turning a game found before this build named it into the named game
-/// (`games::drop_named`); the helper's version is always its own. The secrets come from their store
-/// (`Keeper::open`, which every later save goes through), into a file that is gone or does not read as well, so
-/// neither ends the pairing or the account the store still holds. A file that does not read whole is kept aside and
-/// logged, never silently replaced.
+/// (`games::drop_named`, and `games::name_played` for its place among the games played); the helper's version is
+/// always its own. The secrets come from their store (`Keeper::open`, which every later save goes through), into a
+/// file that is gone or does not read as well, so neither ends the pairing or the account the store still holds. A
+/// file that does not read whole is kept aside and logged, never silently replaced.
 pub(crate) fn load(dir: &Path) -> (Settings, Loaded, Keeper) {
 	let file =
 		mirror::read_data(dir, FILE, |b| serde_json::from_slice::<Map<String, Value>>(b).map_err(|e| e.to_string()));
@@ -68,6 +68,7 @@ pub(crate) fn load(dir: &Path) -> (Settings, Loaded, Keeper) {
 	}
 	// a game found before this build named it is the named game now (the start's own save keeps it)
 	crate::games::drop_named(&mut s.games);
+	crate::games::name_played(&mut s.desk.played);
 	if !s.window_grown {
 		// the start's own save keeps the mark, as `space_on`'s
 		if s.window.as_ref().is_some_and(crate::desk::place::never_resized) {

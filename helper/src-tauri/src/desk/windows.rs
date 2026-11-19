@@ -344,8 +344,6 @@ fn on_event(app: &AppHandle, event: &WindowEvent) {
 		}
 		WindowEvent::Destroyed => {
 			app.state::<Desk>().publisher.forget(MAIN);
-			// its pages went with it: the Phones page and the pairing code show nowhere (the Bluetooth link, slice 43)
-			app.state::<Shared>().ask(WindowAsk::PhonesShown { page: false, code: false });
 			// a day reel being made goes with the window that asked for it (slice 45)
 			super::reel::cancel(app);
 			// and the Book's move pages, whose sets the Book carried for Correct a count (slice 44)

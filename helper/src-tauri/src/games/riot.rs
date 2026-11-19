@@ -1,12 +1,14 @@
-//! Where the Riot Client installed League of Legends (with Teamfight Tactics), Legends of Runeterra and, since
-//! 2026-10-29, VALORANT (docs/computer-games.md §6.1 and §6.5): on Windows its own record of each product,
+//! Where the Riot Client installed League of Legends, Teamfight Tactics, Legends of Runeterra and, since 2026-10-29,
+//! VALORANT (docs/computer-games.md §6.1 and §6.5): on Windows its own record of each product,
 //! `%ProgramData%\Riot Games\Metadata\<id>.live\<id>.live.product_settings.yaml` (`league_of_legends`, `bacon`,
-//! `valorant`, this one unverified), whose
+//! `valorant` and `teamfighttactics`, these two unverified on Windows), whose
 //! `product_install_full_path` line names the install's folder wherever the player put it (read on Rapha's PC on
 //! 2026-10-26, whose League sits outside the default folder: `product_install_full_path: "C:/Games/Riot Games/..."`);
-//! else the folder the Riot Client uses by default. On macOS no such record has been read on a Mac yet, so League is
-//! looked for at its default place alone. A read of the record, bounded to `SETTINGS_BYTES`, never a write, and nothing
-//! of it is kept but the folder.
+//! else the folder the Riot Client uses by default, where one is known. On macOS the same record lies under
+//! `/Users/Shared/Riot Games/Metadata` (read on a Mac on 2026-11-18: League's names `/Applications/League of
+//! Legends.app`, Teamfight Tactics' `/Applications/Teamfight Tactics.app`), and it is not read: the registrations Riot
+//! holds name the Windows record alone, so a Mac's games are looked for at their default places. A read of the record,
+//! bounded to `SETTINGS_BYTES`, never a write, and nothing of it is kept but the folder.
 
 use std::io::Read as _;
 use std::path::PathBuf;
@@ -18,6 +20,11 @@ use questpump_core::games::Watched;
 const LEAGUE: &str = r"C:\Riot Games\League of Legends"; // copy-lint: not shown (a path)
 #[cfg(not(windows))]
 const LEAGUE: &str = "/Applications/League of Legends.app"; // copy-lint: not shown (a path)
+/// Teamfight Tactics' own client's: its Mac app; on Windows its record alone names it (no default folder is known).
+#[cfg(windows)]
+const TFT: Option<&str> = None;
+#[cfg(not(windows))]
+const TFT: Option<&str> = Some("/Applications/Teamfight Tactics.app"); // copy-lint: not shown (a path)
 /// Legends of Runeterra's (a Windows game).
 #[cfg(windows)]
 const RUNETERRA: Option<&str> = Some(r"C:\Riot Games\LoR"); // copy-lint: not shown (a path)
@@ -39,6 +46,7 @@ const FULL_PATH: &str = "product_install_full_path:";
 pub(super) fn install(watched: &Watched) -> Option<PathBuf> {
 	let (id, default) = match watched {
 		Watched::League => ("league_of_legends", Some(LEAGUE)),
+		Watched::TeamfightTactics => ("teamfighttactics", TFT),
 		Watched::Runeterra => ("bacon", RUNETERRA),
 		Watched::Valorant => ("valorant", VALORANT),
 		_ => return None,
@@ -48,7 +56,7 @@ pub(super) fn install(watched: &Watched) -> Option<PathBuf> {
 }
 
 /// The install folder the Riot Client's record of the product `id`'s live patchline names; none outside Windows, where
-/// the record is unverified, or when it is missing or names none.
+/// the record is not read, or when it is missing or names none.
 fn recorded(id: &str) -> Option<PathBuf> {
 	if !cfg!(windows) {
 		return None;

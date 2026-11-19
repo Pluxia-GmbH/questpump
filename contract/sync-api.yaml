@@ -18,8 +18,10 @@ info:
     - this file: the routes, the bodies, the answers, the limits, the batch and the link codes;
     - `contract/fixtures/seal.json`, its `sync` block: the account's root secret R, the three values derived from it,
       a sealed batch and a sealed link answer, which the three security tests replay (`cargo test`, `swift test`,
-      `./gradlew :core:test`); its `rekey` block: a device's key and MAC, a new R, its wrap to that key and the old R
-      sealed under it (below, "The account's new key");
+      `./gradlew :core:test`), and since slice 76 the live key with a sealed pump state and its refusals
+      (`live_key_hex`, `live`; below, "The pump push"), which `cargo test` seals and `swift test` opens (Android's core
+      holds no live key and reads past them); its `rekey` block: a device's key and MAC, a new R, its wrap to that key
+      and the old R sealed under it (below, "The account's new key");
     - `contract/fixtures/backup.json`: the body a `rows` batch carries (a backup file's body);
     - `contract/store.json`: the store facts a Pro proof is checked against, and its `web` block, Paddle's environment
       and prices and the Pro token's public keys; `contract/companion-api.yaml` `ProProof`: a phone's proof;
@@ -32,7 +34,9 @@ info:
     (info `questpump sync seal v1`, 32 bytes), the auth key (`questpump sync auth v1`, 32 bytes) and the key id (`kid`,
     `questpump sync id v1`, 8 bytes, base64url without padding). The seal is the LAN's (contract/companion-api.yaml):
     AES-256-GCM, a fresh random 12-byte nonce, then the ciphertext, then the 16-byte tag, no associated data. The server
-    keeps the SHA-256 of the auth key and never R, the seal key or a row's plain text.
+    keeps the SHA-256 of the auth key and never R, the seal key or a row's plain text. Since slice 76 R also gives the
+    live key (info `questpump sync live v1`, 32 bytes), which seals the states of the pump push alone (below, "The pump
+    push"); the server never holds it either.
 
     **Tokens.** Every route but the account's creation, the session, the email's codes, the sign-in, the two web
     deletions, the link answer's read, Paddle's webhook and the App Store's notifications takes a device token, 32
@@ -59,8 +63,12 @@ info:
     limits.
 
     **Limits.** Every route has a rate limit per address (an IPv6 address by its /64): 60 requests a minute with an App
-    Check token, 20 without; the link answer's `GET`, which a computer without a token repeats every 2 s, is counted on
-    its own, 30 a minute; account creation 10 an hour an address. The code routes count the asking network by its
+    Check token, 20 without; two requests a device repeats by design are each counted on a limit of their own, in
+    place of those two: the link answer's `GET`, which a computer without a token repeats every 2 s, 30 a minute, and
+    `POST /api/sync/v1/activity`, a desktop app's word of its game's pump (below, "The pump push"), which it sends up
+    to once a second, 60 a minute for the computers at an address together (`PER_ADDRESS_ACTIVITY`: a desktop app has
+    no App Check token, and on the shared 20 a pump's states would leave its other requests no room); account creation
+    10 an hour an address. The code routes count the asking network by its
     peppered hash (an IPv4 address whole, an IPv6 address by its /48, the most an end site is usually given, RFC 6177):
     10 codes an hour and 20 a UTC day a network (every email together); per email hash 3 codes an hour an asker (the
     asking device's account for `link` and `change`, else the asking network) and 10 an hour for all its askers, one
@@ -72,8 +80,10 @@ info:
     signature checked first; nor have the App Store's notifications from Apple's own addresses (`17.0.0.0/8`, which
     Apple names for them); from any other address both take the 20 a minute. An account holds at most 64 MiB of batches
     and takes at most 5,000 a day; a batch is at most 256 KiB sealed. An account holds at most 100 devices (a join past
-    them answers 409 `devices`) and takes at most 10 rekeys a UTC day (below, "The account's new key"). Past a limit:
-    429 with `Retry-After` in seconds; the device waits that long, and its line says `menu.sync.failed`.
+    them answers 409 `devices`) and takes at most 10 rekeys a UTC day (below, "The account's new key"). An account's
+    desktop apps' words of their games' pumps are also counted together, at most 1,200 in a clock hour (below, "The pump
+    push"). Past a limit: 429 with `Retry-After` in seconds (60 past an address limit of a minute; past the account's
+    1,200 words the seconds to the next clock hour); the device waits that long, and its line says `menu.sync.failed`.
 
     **The batch.** What a device pushes: the plain text is JSON, UTF-8, snake_case,
     `{"v":1,"account":<id>,"device":<id>,"seq":<int>,"made_at":<unix ms>,"kind":"rows"|"device"|"work","body":{...}}`,
@@ -133,14 +143,27 @@ info:
 
     **Live.** `GET /api/sync/v1/live` upgrades to a WebSocket (the Durable Object's hibernation API). The device sends
     its token as the first message, `{"token":<token>}`, within 10 s, or the socket closes with 4401; afterwards the
-    server sends `{"cursor":<int>,"pro":<int>,"keys":<int>}` at once and again whenever the account's cursor, its Pro or
-    its keys move, and nothing else: `cursor` the account's cursor, on which the device pulls; `pro` the count of the
-    changes of the account's Pro (below, "Every device reads it"), 0 for an account that never had one; `keys` the
-    account's key generation (below, "The account's new key"), on whose change the device pulls as on the cursor's, the
-    page carrying the keys' news. A device asks `GET /api/sync/v1/pro` when a message's `pro` differs from the last it
-    saw on that connection (the first message after a connect counts as different), and besides at its start, after a
-    session and every 24 hours; never on every message. A message without `pro` (a server before slice 64's) asks
-    nothing, and one without `keys` (a server before the new key's) pulls on nothing more.
+    server sends `{"cursor":<int>,"pro":<int>,"keys":<int>,"follow":[...]}` at once and again whenever the account's
+    cursor, its Pro, its keys or its `follow` move, and nothing else: `cursor` the account's cursor, on which the
+    device pulls; `pro` the count of the changes of the account's Pro (below, "Every device reads it"), 0 for an
+    account that never had one; `keys` the account's key generation (below, "The account's new key"), on whose change
+    the device pulls as on the cursor's, the page carrying the keys' news; and since slice 76 `follow`, the computers
+    that iPhones of the account follow now (below, "The pump push"): an array of
+    `{"hid":<the computer's install id>,"since":<unix ms>}`, each computer once, sorted by `hid` as text, `since` the
+    moment the newest of the asks the server keeps for that computer came, and `[]` while no iPhone follows one. A
+    device asks `GET /api/sync/v1/pro` when a message's `pro` differs from the last it saw on that connection (the
+    first message after a connect counts as different), and besides at its start, after a session and every 24 hours;
+    never on every message. Only a desktop app reads `follow`, for its own `hid`; every other device reads past it. A
+    message without `pro` (a server before slice 64's) asks nothing, one without `keys` (a server before the new
+    key's) pulls on nothing more, and one without `follow` (a server before slice 76's) names no computer. The
+    server's platform answers a WebSocket ping frame with a pong, without waking the account's object. The desktop
+    app sends one every 30 s and takes a socket that sent nothing since the ping before it as closed, then opens the
+    next after 5 s: `follow` comes on this socket alone, and a connection that died without a close (the computer
+    slept, its network changed) would otherwise stay silent for good. The server lists at most 4 sockets a device
+    (`LIVE_MAX_A_DEVICE`): a device listens on one, so a fifth closes the one listed first with 4401, never the one
+    that just came, and a socket whose connection died without a close gives way to the ones after it. A device takes
+    a 4401 alike on every socket: it pulls, which answers 401 for a token that went, and while its token stands it
+    opens its next socket, after a wait that grows with each 4401 in a row.
 
     **The wake** (docs/plan.md slice 73; David, 2026-11-12: "Silent wake push"). The live socket reaches a phone only
     while its app is in front, and an iPhone runs no code when a local notification it planned comes: a streak reminder
@@ -169,12 +192,230 @@ info:
       is and is woken by the next rows.
     - *What the server keeps.* Beside the device: the push token, `sandbox`, `from`, when rows for it first and last
       came since, and when it was last sent a push; all gone with `DELETE`, the device or the account, and a token
-      Apple answers as no longer registered is deleted at once. Apple receives the token and an empty push.
+      Apple answers as gone (its reasons `BadDeviceToken`, `Unregistered`, `DeviceTokenNotForTopic` and, since slice
+      76, `ExpiredToken`) is deleted at once. Apple receives the token and an empty push.
     - *What it does not do.* Apple does not promise a background push: it may hold one back, and it sends none to an
       app the player force-quit until the app is opened again, so a reminder can still come after a pump elsewhere. No
       device but an iPhone is woken. Without the Worker's push key no push is sent, and every device behaves as before
       slice 73. A device, an app or a server from before it needs no change: a batch's shape and every answer are as
       they were.
+
+    **The pump push** (docs/plan.md slice 76; David, 2026-11-16, decided that day in docs/companion.md). A locked
+    iPhone runs no code of the app, so no request of its reaches the computer whose game it follows. An update to a
+    running Live Activity needs none: Apple's push service hands the state to the system, which draws it. So the
+    desktop app tells the account each state of the game's pump, sealed, and the server pushes it to the Live Activity
+    of every iPhone of the account that follows that computer. The player starts the following, and with it the
+    activity: Follow the game (the button, its control, a shortcut), or QuestPump in front while the game runs. Nothing
+    starts one by push, a following the push alone carries never begins by itself in the background, and no
+    push-to-start token is asked for or sent. The values are seal.json's `sync` block (`live_key_hex`, `live`).
+
+    - *Asking.* While an iPhone follows the game and the push can carry it (the phone paired, its Sync on, and the
+      computer in the phone's account and telling it: contract/companion-api.yaml `AccountResponse`, its `account` the
+      phone's own and its `pushes` true), it keeps `PUT /api/sync/v1/devices/self/activity` current (`ActivityAsk`):
+      `apns`, the update token ActivityKit gave the evening's activity, in lower-case hex; `sandbox`, as the wake's;
+      `computer`, the paired desktop app's install id (the pair link's `hid`, 16 bytes in base64url's one spelling: 400
+      for any other, as for a post's `hid` and `kid` below); and the alert's own names in that build, `title` and
+      `body`, two keys of the app's strings (this build's `pump.notice.title` and `pump.ready.game`), and `sound`, a
+      sound file of the app's bundle (this build's `call.caf`) or `default`. The server holds the three names to a
+      pattern and a length (a key's grammar, a file's name), never to the app's own list: a name the app's bundle lacks
+      reaches only the asking phone's own alert, which may show it as text. No ask stands while the phone's own play
+      session hears its computer (the session runs and its link's last request came back): the phone then writes the
+      activity itself and keeps both lapses, as before the push, so nothing of the game leaves the computer for it and
+      no lapse of the account's ends an activity the phone keeps right. The ask goes once that session's link has gone
+      20 s without an answer, the session keeping the app running for it, and is taken back when the link answers again;
+      while neither is settled (a session about to run, a link that starts or missed one answer) the ask stays as it
+      stands. The phone sends the ask again when ActivityKit hands it a new token, when another field changes and, while
+      it follows, at a run of the app that finds its last send older than 5 minutes: the server keeps a same ask's
+      moments, and where it had forgotten the ask (a lapse whose end push never landed) that begins a new following. A
+      new Follow the game over a standing ask takes it back and asks anew in one step, so the server's 30 minutes count
+      from the same press as the phone's. It takes the ask back (`DELETE`) at Stop, whose own run waits up to 5 s for
+      it, at the following's end, when Sync goes off, at an unpairing and when the push carries no more. An ask or a
+      take-back that did not go through is tried again in the same run, after 3 s and after 10 s more, off screen too (a
+      player locks the phone right after Follow the game); a take-back still owed then, or an ask whose answer never
+      came, is taken back at the app's next pass, with Sync off too. A device that leaves the account sends none: its
+      ask goes with it, and the server ends its Live Activity (below). An ask takes the place of the one the device left
+      before, and another device's ask with the same token goes. An account keeps at most 8 asks (`ACTIVITY_MAX_ASKS`):
+      a `PUT` that would make a ninth drops the oldest of the other devices' by its moment, with no push, and `follow`
+      moves as for any ask that goes. An ask with a token or a computer the device's last one did not name is a new
+      following: its moment is the server's clock at that `PUT`, and no word of the computer counts for it yet; the same
+      token and computer again keep both. Only a device of kind `ios` asks (400 for another), and a body past 2,048
+      bytes answers 413.
+    - *Telling.* The live socket's message names the computers the account's iPhones follow (`follow`, above, "Live").
+      While its Sync is on and `follow` names its own `hid`, the desktop app tells the account each state of the
+      game's pump with `POST /api/sync/v1/activity` (`ActivityState`): its `hid`, the `event` and the sealed state
+      (`kid`, `sealed`). It makes the state from the commands it queues for the link (contract/companion-api.yaml
+      `Command`: `pump_offered`, `countdown`, `keep`, `move_end`, `pump_done`), by the rule the iPhone has for a pump
+      of its own (the move on screen by its kind), whichever device holds the link, or none:
+      - `offer`, a pump's offer (`pump_offered`, the pump's first): the pump at its first move, with the moves' names
+        and the first move's name and goal. With it `alert`: true when no device holds the computer's link as the pump
+        is offered (a device holds it for 25 s after its last held request), so that nothing alerts twice.
+      - `start`, a move's Start (`countdown`, a side move's second one too; `keep`): the move with its clock from the
+        go, a timed move's to its end (`started_at` the go, `ends_at` the go plus its seconds), a hold's and a kept
+        move's counting up (`started_at` the go alone), a rep move's goal alone. One state for the countdown and the
+        run together, where the iPhone's own rule writes two.
+      - `rest`, a move's end (`move_end`; with `cancelled`, back to that move), a pump composed again (a later
+        `pump_offered` of the same pump), a pump's end (`pump_done`), a game with QuestPump starting, and a phone that
+        began to follow while such a game runs (its `since` in `follow` later than the last one the desktop app told
+        a state for in this run): the state as it then stands, a pump with the move on screen (its goal alone at its
+        Ready, its clock while it runs) or, between pumps, the following itself with the computer's name.
+      - `alive`, 4 minutes after the last post the server answered while a game with QuestPump runs
+        (contract/companion-api.yaml `game_asks`): no state (`kid`, `sealed` and `alert` left out) and no push; the
+        word that keeps a following (below). One the server did not take goes again after the wait, as a state does
+        (`Retry-After`, else a minute).
+
+      It posts one state at a time and at most one a second, the newest in the place of one that waits, and but for a
+      phone that began to follow only a state that differs from the last it posted (a `move_counted` or a `verdict`
+      changes nothing the activity shows). A computer nobody follows, one with Sync off and one where no game with
+      QuestPump runs post nothing: nothing of a pump leaves it, and a game that quit says no word. The answer is
+      `{"t":<unix ms>}` (`ActivityAnswer`), the server's clock as it took the post, the same whether an iPhone follows
+      that `hid` or none does. The server cannot check a `hid` (a computer's travels sealed in its batches) and takes
+      it as said: a state reaches only iPhones of the poster's own account that asked for that `hid`. Only a device of
+      kind `desktop` posts (400 for another). The server reads no state, but it holds a post to its shape: `hid` and
+      `kid` each in base64url's one spelling (16 and 8 bytes; no padding, no stray low bits) and `sealed` in standard
+      base64's one spelling with padding, at least 28 bytes decoded (the nonce and the tag), else 400; a body past
+      2,560 bytes or a `sealed` past 2,048 characters answers 413; one under another `kid` than the account's, once
+      a rekey named one, answers 409 `kid` as a batch's does, and the desktop app takes its wrap first and seals the
+      state as it then stands under the new R; past 1,200 posts the server took from the account's desktop apps in a
+      clock hour, 429 with `Retry-After` the seconds to the next clock hour (a refused post counts for none; the address
+      limit's 429
+      says 60: above, "Limits"). A post that failed or was refused is never sent again as it was: once it may post
+      again, the desktop app tells the state as it then stands, where it differs from the last the server took. No
+      post changes a line of the Sync page.
+    - *The state.* The sealed plain text is `LivePump`: JSON, UTF-8, snake_case, sealed as it stands (never
+      compressed, unlike a batch). Its `v` is 1. Between pumps it holds `following` alone, the computer's name as its
+      `Helper.name` says it. For a pump it holds the pump as the activity's state holds it: `pump_id` (the commands'),
+      `moves` (the names of the pump's first 12 moves in its order), `total` (the count of all its moves), `done` (the
+      moves run or counted), `current` (the move on screen, its place among all the moves from 0, or -1 for none),
+      `name` (that move's name) and, where they apply, `goal` (a rep move's count to reach, a number), `max_set`
+      (true for a first max set of reps or of a hold, which has no number), `started_at`, `ends_at` and `next` (the
+      next move's name). The names are the computer's (its move book, `contract/moves.json`, which knows every move
+      its game asks), each cut to its first 32 Unicode scalars, as `following` is; every other word is made on the
+      phone from the activity's own strings (`kit.goal.value` from `goal`, `kit.maxset` from `max_set`, `live.next`
+      and the rest), so no interface word is made on another device. A game's pump never ends in a state: its end is
+      the following. `started_at` and `ends_at` are unix seconds on the account's clock, the server's: the desktop
+      app keeps the offset of its own clock from each post's answer by `ClockOffset`'s rule
+      (contract/companion-api.yaml: the offset of the smallest round trip among its exchanges of the last 60 s, here
+      `t` against the middle of the post's send and its answer's arrival; its own clock until the first answer) and
+      rounds each moment to the nearest second, so a computer whose clock is off still draws the right second. A
+      reader takes the fields in any order and reads past one it does not know. With the move book's names (ASCII, 40
+      characters at most) a state is under 800 bytes and its sealed text under 1,100 characters.
+    - *The seal.* The live key is HKDF-SHA256 of the account's root secret R with an empty salt and the info
+      `questpump sync live v1`, 32 bytes, named by that R's `kid`. The desktop app seals a state as the sync seals a
+      batch: AES-256-GCM, a fresh random 12-byte nonce, then the ciphertext, then the 16-byte tag, no associated
+      data, in standard base64 with padding. The iPhone app keeps the live key, its `kid` and whether Pro's next-move
+      line shows where its widget extension reads them, written as the ask goes to the account, again when the
+      account's key or Pro changes, and deleted with the ask. The extension opens a pushed state before it draws, and
+      without Pro drops `next`. One it cannot open (no key kept, another `kid`, a changed byte, a text shorter than
+      the nonce and the tag, a plain text that does not read or whose `v` it does not know) draws as the following
+      between pumps ("Following the game", `live.following`), never as an error.
+    - *Pushing.* For each ask of the account whose `computer` is the post's `hid`, the server notes the word and, for
+      an event with a state, sends one ActivityKit update through Apple's push service, under the wake's provider
+      token: `apns-push-type: liveactivity`, `apns-topic: ai.pluxia.questpump.push-type.liveactivity`,
+      `apns-priority: 10` for an `offer` and a `start` (Apple counts it toward an hourly budget) and `5` for a `rest`
+      (it does not), `apns-expiration` 10 minutes after the send, and the body
+      `{"aps":{"timestamp":<unix s>,"event":"update","content-state":{"kid":<kid>,"sealed":<sealed>}}}`, the post's
+      `kid` and `sealed` as they came. For an `offer` whose `alert` is true, `aps` also holds
+      `"alert":{"title":{"loc-key":<title>},"body":{"loc-key":<body>},"sound":<sound>}` with the names of that
+      phone's ask. `timestamp` is the whole unix second of the moment the server took the word (the answer's `t`),
+      and at least one more than the last stamp the account gave any pump push, an end's too: one number for the
+      account, which outlives every ask and token, so no two words' pushes carry the same stamp and a later word's
+      never an older one, whatever became of an ask between them. The pushes of one word, to each phone that follows,
+      share its stamp. Apple says of `timestamp` only that it lets the system "always display the most recent
+      ActivityKit push update", and nothing of two equal ones: the rule leaves it none to choose between. A stamp runs
+      ahead of the clock by the words past one a second and the steps that end asks, and the clock passes it again
+      once fewer come. The server
+      answers the post before it sends the pushes, so `t` waits for none of them. It reads no state (it cannot) and
+      keeps none. Apple keeps a state for a phone it cannot reach until the expiry, one at a time.
+    - *Two writers.* An iPhone that runs (in front, in its play session, woken by its watch) still writes the activity
+      itself from its link, at once and exactly. Under a play session whose link answers it is the only writer, since no
+      ask stands (above); elsewhere the push is the net under it, and the only writer while the app sleeps. The app's
+      own write carries no timestamp (`Activity.update(_:alertConfiguration:)`, for which Apple names no time); of a
+      stamped update Apple says the system ignores one "older than a previous update or push payload". Not seen on a
+      device: how the system orders the app's own write against a push whose stamp runs ahead of the phone's clock. The
+      app is built never to write over a pushed state with an older word of its own. While the account holds its ask,
+      the app writes the game's state only as its link says it now: a game pump once a command of it came since the
+      phone took up its link (by its hold or as a mirror), and the following between pumps once its held request was
+      answered, or a mirror's command came, and the game ended the last pump the phone heard of. What it knew before it
+      slept, a pump it kept and that pump's own timers stay unwritten, at a launch, a wake and a return to the front
+      alike. It writes a word only where it differs from what the activity shows, a pushed state included. The
+      following's own start and end are written at once, over any state the app alone wrote; the watch's own pump (a
+      catch-up or an app pump on the wrist) is the app's word too, drawn while the phone follows; and the activity's
+      Stop always ends it, whatever pump the phone still keeps. So a pushed state the phone cannot better stays until
+      the next push: after an offer it heard and an end it slept through, a lost `rest` is put right by the next state
+      alone. One older word still gets through: a phone that takes up its link after a pump's Start hears that pump's
+      offer queued again with the moves alone (contract/companion-api.yaml), shows it at Ready and writes that over the
+      pushed move until the pump's next command or push. The offer alerts once: by the app where the phone holds the
+      link, by the push where no device does (`alert`). Two windows at a change of hands are left: an offer made while
+      no device held the link, which a phone then hears waiting for it, alerts by the push and again by the app; and an
+      offer made within the 25 s after the last held request of a phone that has gone to sleep alerts by neither, its
+      state shown all the same.
+    - *The lapses and the end.* A sleeping phone cannot hear whether the game still runs, so the server keeps the
+      phone's two lapses: a following that no word of its computer reached within 30 minutes of its ask ends, and one
+      whose computer has said no word for 10 minutes ends. A state and an `alive` are both words. The server ends a
+      following with one push, as an update's but `apns-priority: 5`, `apns-expiration` 4 hours after the send and
+      the body
+      `{"aps":{"timestamp":<unix s>,"event":"end","dismissal-date":<unix s>,"content-state":{"kid":"","sealed":""}}}`
+      (Apple asks an end for a final state, and the server can seal none), and forgets the ask. The end's `timestamp`
+      follows the states' rule, the whole second of the moment the server ends the following and at least one more than
+      the account's last stamp, taken as the ask is forgotten. Its `dismissal-date` is the whole second of the send by
+      the server's clock, never the stamp, which may run ahead: Apple takes an ended activity off the Lock Screen at
+      once only for a date in the past. An app that runs on reads an activity it finds ended as the following's lapse; a
+      new launch that finds none follows on only by its own kept word of the game, and one that finds the activity up
+      with its ask at the account follows on, whatever it shows. The phone applies no lapse of its own while its
+      activity runs by the push, until its own link, in front or under its play session, says the game does not run or
+      that it quit: from the first such word the phone counts the game's 10 minutes itself (Follow the game's wait ends
+      no sooner), ends the following and takes the ask back, so a phone that listens never waits on an end push. A
+      background run's lone such word counts nothing. A phone that takes its ask back while it follows on (its session
+      hears the computer again) counts both lapses itself from that moment. An ask that goes with its device or with the
+      account (a device removed, signed out, left out of a new key or idle 730 days; the account deleted) gets the same
+      end push under the same stamp rule, in the step that forgets it: the phone may sleep, or be lost, and would
+      otherwise show the last pump for the activity's hours. Nothing is told apart, so a phone that left by itself and
+      ended its own activity is sent an end too, which Apple or the phone drops. An ask also goes, with no push, 8 hours
+      after its moment (an activity's active hours, Apple's), at once when Apple answers a push with a reason that says
+      its token is gone (the wake's four: `BadDeviceToken`, `Unregistered`, `ExpiredToken`, `DeviceTokenNotForTopic`),
+      and when a ninth ask takes its place. A push that fails for any other reason leaves the ask as it is, and the next
+      state is its retry. A `DELETE` of the ask sends no push: the app ends its own activity.
+    - *What the server keeps.* Beside the iPhone's device: the token, `sandbox`, `computer`, the three names, the
+      ask's moment and when the computer last said a word; all gone as the ask goes (above). Beside the account: one
+      number, the `timestamp` of its last pump push (a whole unix second, for the next push's stamp: above), kept past
+      every ask and gone with the account; and one row for the hour's posts, the clock hour and a number, how many
+      words the server took from the account's desktop apps in that hour (a count, never a list of their moments,
+      and no device): a post in a later hour writes over it, and it goes with the account. It keeps no state, no `kid`
+      and no list of those moments, and its log names a failure's reason alone, never a token. Apple receives the token,
+      each sealed state and, on an
+      alerting offer, the three names. Readable at the server and at Apple: the token, that a push went and when, its
+      kind (an update or the end, its priority, whether it alerts) and its size. So a pump's timing reaches both, the
+      moments the game offered a pump and each of its moves started and ended; no move, name, count, goal, clock,
+      record or heart rate does, and the alert's words are the same for every pump.
+    - *What it does not do.* Apple promises no delivery and no time: a late state shows the pump late and the next
+      one corrects it, and a Start that comes late still draws the right second, since the state carries the go. It
+      starts no activity: a player whose iPhone does not follow the game, or who dismissed the activity, gets no push. A
+      match's offer (`match_end`) and work mode's asks are not pushed. Android and the watches get none (Android
+      follows through its own service; the Apple Watch shows the iPhone's activity). A development build's token is
+      the sandbox's (`sandbox` true), which the Worker's production key does not serve, as with the wake: each push
+      for it fails at Apple's sandbox host and the ask stays, as after any push that failed, so that following runs
+      and ends as any other with no state shown by a push. After a rekey a sleeping iPhone opens no state until its
+      app has run once and taken the new key. Without the Worker's push key no push is sent. A desktop app from
+      before slice 76 reads past `follow` and posts nothing, and its `/v1/account` answer says no `pushes`, so an
+      iPhone asks nothing for it and follows as before.
+
+    | Constant | Value | Where |
+    |---|---|---|
+    | `ACTIVITY_WAIT_MS` | 30 min from the ask, while no word came | the server |
+    | `ACTIVITY_LAPSE_MS` | 10 min after the computer's last word | the server |
+    | `ACTIVITY_MAX_MS` | 8 h from the ask | the server |
+    | `ACTIVITY_KEEP_MS`, `ACTIVITY_END_KEEP_MS` | 10 min, 4 h | the server's `apns-expiration`, a state's, the end's |
+    | `ACTIVITY_MAX_SEALED` | 2,048 characters | `ActivityState.sealed`: a push with its alert under Apple's 4 KB |
+    | a state's `sealed`, decoded | at least 28 bytes, the nonce and the tag | the server (400 under it) |
+    | a post's body, an ask's body | 2,560 bytes (`ACTIVITY_MAX_SEALED` and 512), 2,048 bytes | the server (413 past) |
+    | `ACTIVITY_POSTS_AN_HOUR` | 1,200 an account in a clock hour | the server (429 past it, to the next clock hour) |
+    | `ACTIVITY_MAX_ASKS` | 8 asks an account | the server (a ninth drops the oldest, with no push) |
+    | `PER_ADDRESS_ACTIVITY` | 60 posts a minute an address | the address limit of `POST /activity` (429, 60 s) |
+    | a push's `timestamp` | the word's second, at least 1 past the account's last | the server |
+    | the `alive` word | 4 min after the last answered post | the desktop app |
+    | the least time between two posts | 1 s | the desktop app |
+    | the live key's info | `questpump sync live v1` | the desktop app, the iPhone, seal.json |
+    | the names a state keeps | 12, of 32 Unicode scalars each, `total` counting all | `LivePump` |
 
     **Linking a device by a code.** A device with R shows `questpump-link:1:<account>:<R>` (both base64url without
     padding) as a QR; a phone scans it with the pairing's scanner. A device without R and without a camera (a computer)
@@ -294,7 +535,8 @@ info:
       that registered a key (400). Then it keeps the SHA-256 of the new auth key in place of the old, adds the chain's
       link (`kid`, `prev_kid`, `prev`, and the replaced auth key's hash, never answered), keeps the wraps in place of
       any before, sets this device's MAC and kid to the new ones, removes every other device the body brings no wrap for
-      as `DELETE /devices/{device}` removes one (its token answers 401, its socket closes), makes `kid` the account's,
+      as `DELETE /devices/{device}` removes one (its token answers 401, its socket closes, a Live Activity it asked
+      the pump push for is ended), makes `kid` the account's,
       clears `due` and moves the generation. From then on the old auth key finds no account: `POST /session` answers 404
       without `account` and 403 with it, `POST /account/by-restore` deletes nothing, and `POST /accounts` makes a new,
       empty account (the old key's pointer goes after the transaction, or by the account's alarm 10 minutes later when
@@ -449,8 +691,9 @@ info:
     delete the account's batches, its email hash, its devices, its tokens, its pending links, its devices' keys, wraps
     and chain, and its Pro grants with their bindings and their Paddle state at once; an account none of whose devices
     is left and that no email holds is deleted when its last device leaves. Removing a device (`DELETE
-    /devices/{device}`, `DELETE /session`, the 730-day removal) also takes its key, its wrap and its push token (above,
-    "The wake") and makes the new R due
+    /devices/{device}`, `DELETE /session`, the 730-day removal) also takes its key, its wrap, its push token (above,
+    "The wake") and its activity ask, whose Live Activity the server ends by a push (above, "The pump push"), and
+    makes the new R due
     (above, "The account's new key"). A device whose last request (`seen_at`) is 730 days (24 months) old is removed
     as `DELETE /devices/{device}` removes one, its token then answering 401, and the account is deleted the same way,
     whole, once no device is left that way: when its newest device's last request is 730 days old, and for an account an
@@ -484,6 +727,7 @@ paths:
             An account holds this auth key and refuses a device now: a new R is due (`rekey`), or it holds 100 devices
             (`devices`)
           content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "413": { description: "Larger than 2,048 bytes" }
         "429": { description: Too many accounts from this address }
         "503": { description: Accounts cannot be made right now (the server's pepper is missing) }
   /api/sync/v1/session:
@@ -509,6 +753,7 @@ paths:
           description: >-
             A new R is due (`rekey`; above, "The account's new key"), or the account holds 100 devices (`devices`)
           content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "413": { description: "Larger than 2,048 bytes" }
         "429": { description: Too many tries }
     delete:
       summary: Sign out this device
@@ -572,8 +817,8 @@ paths:
     delete:
       summary: Remove another device
       description: >-
-        Revokes its token and drops its `device` and `work` batches, its key, its wrap and its push token; the rows it
-        sent stay. It makes a new R
+        Revokes its token and drops its `device` and `work` batches, its key, its wrap, its push token and its activity
+        ask; the rows it sent stay. It makes a new R
         due (above, "The account's new key"): a device that removed another reads `GET /account/keys` at once (its own
         id signs it out, and the devices left hear it on their sockets).
       security: [{ device: [] }]
@@ -603,6 +848,7 @@ paths:
         "409":
           description: "`kid`: another kid than the account's; the device takes its wrap first"
           content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "413": { description: "Larger than 2,048 bytes" }
   /api/sync/v1/devices/self/push:
     put:
       operationId: putDevicePush
@@ -620,6 +866,7 @@ paths:
         "204": { description: Kept }
         "400": { description: "A body that does not read, a `from` more than 3 days ahead, or a device that is no iPhone" }
         "401": { description: Unknown token }
+        "413": { description: "Larger than 2,048 bytes" }
     delete:
       operationId: deleteDevicePush
       summary: Ask for no wake any more
@@ -628,6 +875,74 @@ paths:
       responses:
         "204": { description: Gone }
         "401": { description: Unknown token }
+  /api/sync/v1/devices/self/activity:
+    put:
+      operationId: putDeviceActivity
+      summary: Ask for the game's pumps on this iPhone's Live Activity
+      description: >-
+        The activity's update token, the computer this iPhone follows and the alert's names, in place of any ask the
+        device left before (above, "The pump push"). A token or a computer its last ask did not name starts a new
+        following; the same two again keep the ask's moment and the computer's last word.
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ActivityAsk" }
+      responses:
+        "204": { description: Kept }
+        "400":
+          description: >-
+            A body that does not read (a `computer` that is not 16 bytes in base64url's one spelling among them), or a
+            device that is no iPhone
+        "401": { description: Unknown token }
+        "413": { description: "Larger than 2,048 bytes" }
+    delete:
+      operationId: deleteDeviceActivity
+      summary: Ask for no pump push any more
+      description: >-
+        The device's ask and what was kept with it go, and no push is sent (the app ends its own activity); 204 too
+        when it left none.
+      security: [{ device: [] }]
+      responses:
+        "204": { description: Gone }
+        "401": { description: Unknown token }
+  /api/sync/v1/activity:
+    post:
+      operationId: postActivity
+      summary: Tell the account a state of the game's pump on this computer
+      description: >-
+        From a desktop app whose `hid` the live socket's `follow` names (above, "The pump push"): the server notes the
+        word for every iPhone of the account that follows that `hid` and, for an event with a state, pushes the state
+        to each one's Live Activity. It reads no state and keeps none, and answers the same whether an iPhone follows
+        that `hid` or none does.
+      security: [{ device: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ActivityState" }
+      responses:
+        "200":
+          description: Taken
+          content: { application/json: { schema: { $ref: "#/components/schemas/ActivityAnswer" } } }
+        "400":
+          description: >-
+            A body that does not read (a state's event without `kid` or `sealed`, an `alive` with one, `alert` on
+            another event than `offer`, a `hid` or a `kid` that is not its 16 or 8 bytes in base64url's one spelling,
+            a `sealed` that is no standard base64 with padding in its one spelling or holds fewer than 28 bytes), or a
+            device that is no desktop app
+        "401": { description: Unknown token }
+        "409":
+          description: >-
+            `kid`: sealed under another kid than the account's; the desktop app takes its wrap first and seals the
+            state as it then stands under the new R (above, "The account's new key")
+          content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "413": { description: "The body is larger than 2,560 bytes, or `sealed` is longer than 2,048 characters" }
+        "429":
+          description: >-
+            Past the account's 1,200 posts in a clock hour (`Retry-After` the seconds to the next clock hour), or past
+            the route's address limit, 60 a minute (`Retry-After: 60`)
   /api/sync/v1/email/code:
     post:
       summary: Mail a code
@@ -645,6 +960,7 @@ paths:
         "400":
           description: Not an address, or one that takes no mail (its domain surely has none, or Email Sending holds it back)
         "401": { description: "`link` or `change` without a known token" }
+        "413": { description: "Larger than 2,048 bytes" }
         "429": { description: "Too many codes for the network, asker or address, a lock, or the day's codes or mails" }
         "503": { description: Mail cannot go right now }
   /api/sync/v1/email:
@@ -662,6 +978,7 @@ paths:
         "403": { description: Wrong code; `tries_left` in the body }
         "409": { description: Another account holds this address (`taken`) }
         "410": { description: "No live code of its purpose, or this asker or the address locked" }
+        "413": { description: "Larger than 2,048 bytes" }
     delete:
       summary: Remove the email; the account stays
       security: [{ device: [] }]
@@ -684,6 +1001,7 @@ paths:
         "200": { description: Found, content: { application/json: { schema: { $ref: "#/components/schemas/Found" } } } }
         "403": { description: Wrong code; `tries_left` in the body }
         "410": { description: "No live code of its purpose, a lock, or no account holds the address" }
+        "413": { description: "Larger than 2,048 bytes" }
   /api/sync/v1/account:
     delete:
       summary: Delete the account from one of its devices
@@ -705,6 +1023,7 @@ paths:
         "204": { description: Deleted }
         "403": { description: Wrong code }
         "410": { description: "No live code of its purpose, or this asker or the address locked" }
+        "413": { description: "Larger than 2,048 bytes" }
   /api/sync/v1/account/by-restore:
     post:
       summary: Delete the account of a restore code (questpump.com/delete)
@@ -722,6 +1041,7 @@ paths:
       responses:
         "204": { description: "Deleted, or no account had this auth key" }
         "400": { description: A body that does not read }
+        "413": { description: "Larger than 2,048 bytes" }
         "429": { description: Too many requests from this address }
   /api/sync/v1/account/rekey:
     post:
@@ -738,14 +1058,15 @@ paths:
         "204": { description: "In: the new auth key, kid and wraps kept, every device without a wrap removed" }
         "400":
           description: >-
-            A body that does not read or is larger than 32 KiB, a kid or auth key the account had, a wrap for this
-            device or for one with no key
+            A body that does not read, a kid or auth key the account had, a wrap for this device or for one with no
+            key
         "401": { description: Unknown token }
         "409":
           description: >-
             `generation`: the generation moved or no rekey is due, so the device reads the keys again; `key`: this
             device registered no key; `kid`: `prev_kid` is not the account's kid
           content: { application/json: { schema: { $ref: "#/components/schemas/Refusal" } } }
+        "413": { description: "Larger than 32 KiB" }
         "429": { description: "The account's 10 rekeys of this UTC day, or too many requests" }
   /api/sync/v1/account/keys:
     get:
@@ -779,6 +1100,7 @@ paths:
         "400": { description: "A body that does not read, or a sealed answer under 93 or over 512 bytes" }
         "401": { description: Unknown token }
         "409": { description: Answered already }
+        "413": { description: "Larger than 2,048 bytes" }
     get:
       summary: Read the answer to this device's link request
       security: []
@@ -1095,6 +1417,149 @@ components:
           type: integer
           minimum: 0
           description: "Unix ms: rows other devices send at or after it wake this phone; at most 3 days ahead"
+    ActivityAsk:
+      type: object
+      required: [apns, sandbox, computer, title, body, sound]
+      additionalProperties: false
+      description: An iPhone's ask for the pump push (above, "The pump push").
+      properties:
+        apns:
+          type: string
+          pattern: "^([0-9a-f]{2}){32,100}$"
+          description: "The update token ActivityKit gave the evening's Live Activity, lower-case hex"
+        sandbox: { type: boolean, description: "A development build's token, which Apple's sandbox host takes" }
+        computer:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{21}[AQgw]$"
+          description: >-
+            The followed desktop app's install id, the pair link's `hid` (contract/companion-api.yaml `Helper.hid`):
+            16 bytes, base64url without padding in its one spelling (22 characters, the last one's four low bits 0)
+        title:
+          type: string
+          maxLength: 64
+          pattern: "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+          description: >-
+            The alert's title as a key of the app's strings (the push's `loc-key`), in the copy catalog's key grammar;
+            `pump.notice.title` in this build
+        body:
+          type: string
+          maxLength: 64
+          pattern: "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+          description: "The alert's body, a key as `title` is; `pump.ready.game` in this build"
+        sound:
+          type: string
+          maxLength: 32
+          pattern: "^(default|[a-z][a-z0-9_]*\\.caf)$"
+          description: "The alert's sound: a sound file of the app's bundle (`call.caf` in this build) or `default`"
+    ActivityState:
+      type: object
+      required: [hid, event]
+      additionalProperties: false
+      description: >-
+        A desktop app's word of the game's pump (above, "The pump push"). An `offer`, a `start` and a `rest` carry
+        `kid` and `sealed`; an `alive` carries neither, and no `alert`.
+      properties:
+        hid:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{21}[AQgw]$"
+          description: >-
+            This desktop app's install id, as its batches' `hid` and an ask's `computer`: 16 bytes, base64url without
+            padding in its one spelling
+        event:
+          type: string
+          enum: [offer, start, rest, alive]
+          description: >-
+            `offer` a pump's offer (priority 10, with the alert when `alert` is true); `start` a move's Start
+            (priority 10); `rest` every other state (priority 5); `alive` no state and no push, the word that keeps a
+            following
+        alert:
+          type: boolean
+          description: >-
+            An `offer`'s alone (400 on another event): true when no device holds the computer's link as the pump is
+            offered, so the push carries the alert; false or left out when one does, which alerts itself
+        kid:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{10}[AEIMQUYcgkosw048]$"
+          description: >-
+            The kid of the R whose live key sealed the state: 8 bytes, base64url without padding in its one spelling
+            (11 characters, the last one's two low bits 0)
+        sealed:
+          type: string
+          minLength: 40
+          maxLength: 2048
+          description: >-
+            A `LivePump` sealed under the live key: the 12-byte nonce, the ciphertext, the 16-byte tag, in standard
+            base64 with padding in its one spelling; at least 28 bytes decoded (40 characters) and at most 2,048
+            characters (`ACTIVITY_MAX_SEALED`)
+    ActivityAnswer:
+      type: object
+      required: [t]
+      properties:
+        t:
+          type: integer
+          format: int64
+          description: "Unix ms: the server's clock as it took the post, from which the desktop app keeps its offset"
+    LivePump:
+      type: object
+      required: [v]
+      description: >-
+        The plain text of a sealed state (above, "The state"): JSON, UTF-8, never compressed; it travels only sealed,
+        in `ActivityState.sealed` and in the push's content state. Between pumps `v` and `following` alone; for a pump
+        `v`, `pump_id`, `moves`, `total`, `done`, `current` and `name`, with `goal`, `max_set`, `started_at`, `ends_at`
+        and `next` where they apply, and never `following`. A reader takes the fields in any order, reads past one it
+        does not know, and draws a `v` it does not know as the following between pumps.
+      properties:
+        v: { type: integer, const: 1 }
+        following:
+          type: string
+          maxLength: 32
+          description: >-
+            Between pumps: the computer's name (contract/companion-api.yaml `Helper.name`), cut to its first 32 Unicode
+            scalars
+        pump_id: { type: string, description: "The game pump's id, as its commands carry it: g-<load>-<offered unix s>" }
+        moves:
+          type: array
+          maxItems: 12
+          items: { type: string, maxLength: 32 }
+          description: >-
+            The names of the pump's first 12 moves in its order, from the computer's move book (contract/moves.json),
+            each cut to its first 32 Unicode scalars
+        total: { type: integer, minimum: 1, maximum: 256, description: "The pump's moves, every one" }
+        done: { type: integer, minimum: 0, maximum: 256, description: "The moves done: run, or counted" }
+        current:
+          type: integer
+          minimum: -1
+          maximum: 255
+          description: "The move on screen, its place among all the pump's moves from 0; -1 for none"
+        name: { type: string, maxLength: 32, description: "The name of the move on screen, cut as `moves`' are; empty for none" }
+        goal:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          description: >-
+            A rep move's count to reach, which the phone writes with `kit.goal.value` ("16+"); left out for a hold, a
+            timed move and a max set
+        max_set:
+          type: boolean
+          description: >-
+            Present and true for a first max set of reps or of a hold (`OfferedMove.target` 0), which the phone writes
+            with `kit.maxset`; never beside `goal`
+        started_at:
+          type: integer
+          format: int64
+          description: >-
+            Unix seconds on the account's clock: the go of a timed move, a hold or a kept move, from which its clock
+            counts (it may lie ahead: a `start` is told as the countdown begins); left out otherwise
+        ends_at:
+          type: integer
+          format: int64
+          description: >-
+            Unix seconds on the account's clock: when a timed move ends, the go plus its seconds; left out for a hold
+            and a kept move, whose clocks count up, and otherwise
+        next:
+          type: string
+          maxLength: 32
+          description: "The next move's name, cut as `moves`' are (Pro's line: a phone without Pro drops it); left out after the last"
     Rekey:
       type: object
       required: [generation, auth, kid, mac, prev_kid, prev, wraps]

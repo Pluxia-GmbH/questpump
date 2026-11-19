@@ -65,9 +65,10 @@ The helper does these things:
   their matches through Valve's Game State Integration, a settings file it puts into the game's own `cfg` folder once
   you tap "Ask after each match", which posts to a listener on 127.0.0.1 only; Rocket League through Psyonix's Stats
   API, which its own `TAStatsAPI.ini` turns on (or yours) after the same tap, read over one connection on 127.0.0.1;
-  League of Legends and Teamfight Tactics, and any program you add, by their process closing. When a match ends it
-  offers a pump on a small card that never takes the focus, and on your phone or watch. It reads only that a match
-  ended: never your name, a Steam ID, a score or a match id, and it never sends a game a key, a click or a command.
+  League of Legends by its game process closing after each match, Teamfight Tactics and any program you add when you
+  close them. When a match ends it offers a pump on a small card that never takes the focus, and on your phone or
+  watch. It reads only that a match ended: never your name, a Steam ID, a score or a match id, and it never sends a
+  game a key, a click or a command.
 - **It reads a heart-rate strap** over Bluetooth, only after you turn it on in its window.
 - **It reads a walking pad** over Bluetooth, only after you turn it on in its window: the distance a pad that speaks
   the Fitness Machine standard counts while you play, kept with the quests you turn in. A program on this computer
@@ -275,8 +276,7 @@ check, with `python3 tools/notices.py --check` after a `Cargo.lock` change. Wind
 
 The tests are the security tests, the one exception to no automated tests (2026-10-03). In
 `crates/questpump-core/tests/`: the pairing key's derived bearer, seal key and id, the AES-GCM seal, the wire bodies and
-the held link's command queue (`link.rs`), the pair link (`pair.rs`), and the Bluetooth link's key, envelope and frames
-with the holder over Bluetooth (`ble.rs`, `contract/fixtures/ble.json`, slice 43). In `src-tauri/`: the sealed LAN
+the held link's command queue (`link.rs`) and the pair link (`pair.rs`). In `src-tauri/`: the sealed LAN
 routes over the loopback (`tests/lan.rs`) and the inline checks of the pair link's host (`src/pairing.rs`), the LAN's
 admission (`src/lan.rs`) and the elevated steps' command lines (`src/elevate.rs`). After a change to `Bridge.lua`, the
 row writer or the lifecycle, run `make fixtures` at the repo root, then `cargo test`. The engine crate has no test: a

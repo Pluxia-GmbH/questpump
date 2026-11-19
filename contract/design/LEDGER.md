@@ -1722,7 +1722,6 @@ Each piece ships as code, never as a file: `tools/art.py` writes it into `apple/
 | `contract/design/art/mark_search.svg` | 2026-11-04 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `60598df4abf5d31b0cfae663b096d305a0656a3466ef0040e43a79bd85b65cfa` |
 | `contract/design/art/mark_share.svg` | 2026-10-03 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `78807fa3a52641eb94fc0af6783b6a5f08d7266cfb41fb07ce0ed73069b8427a` |
 | `contract/design/art/mark_tree.svg` | 2026-10-16 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `a41ba543b8c7795b763be6a9547cb36a7483d4f1b0a2f9859b628988faa43bde` |
-| `contract/design/art/picker_computer.svg` | 2026-10-16 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `d1ddc0056ef9f711820e6b5775b640e4411bb143b4eeb6ed7d7f63624bd0dd4f` |
 | `contract/design/art/place_bars.svg` | 2026-10-21 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `31a5e3b28750b55751780eb00dbde52457b8f6717ba84b9353a1411ec44d6419` |
 | `contract/design/art/place_bed.svg` | 2026-10-21 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `48dc4d1618b8923325feedf5a48361630d430e5f4ba4b16dc1f590d55f2a4aa3` |
 | `contract/design/art/place_desk.svg` | 2026-10-21 | Claude for Pluxia GmbH | LicenseRef-Pluxia | `e9338cb304b3fd7deab9914dbcb8d67d64ab919af337933497c174a31922bf2d` |

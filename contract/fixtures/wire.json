@@ -1,5 +1,5 @@
 {
- "about": "Every plaintext body of the link (contract/companion-api.yaml), as JSON before sealing: every app decodes each body it receives or sends and writes it back to the same JSON value (the order of keys aside; an absent optional field stays absent). Sequence numbers start at the helper's start time in milliseconds, so they have 13 digits. Instants are integer milliseconds on the helper's wall clock, except t0 (the device's clock), locked_until, game_offer_at and history's proofs_since (unix seconds), a body field's changed_at (milliseconds on the clock of the device that changed it), the history rows and the app rows and the sheets (rows.jsonl's and sheets.jsonl's own units). The JWS, the purchase text and the signatures of the Pro proofs are synthetic stand-ins, never a real one. hello_response is the one body that travels as plain JSON, never sealed (it names nothing of the computer, no id, name or port: n, h and k are proofs over the request's challenge, find.json; on Bluetooth the hello characteristic's {v, k, c} is plain too, k an hourly proof of the key and c the connection's challenge: contract/fixtures/ble.json). Every body travels the same on Bluetooth, sealed again whole in its envelope (slice 43).",
+ "about": "Every plaintext body of the link (contract/companion-api.yaml), as JSON before sealing: every app decodes each body it receives or sends and writes it back to the same JSON value (the order of keys aside; an absent optional field stays absent). Sequence numbers start at the helper's start time in milliseconds, so they have 13 digits. Instants are integer milliseconds on the helper's wall clock, except t0 (the device's clock), locked_until, game_offer_at and history's proofs_since (unix seconds), a body field's changed_at (milliseconds on the clock of the device that changed it), the history rows and the app rows and the sheets (rows.jsonl's and sheets.jsonl's own units). The JWS, the purchase text and the signatures of the Pro proofs are synthetic stand-ins, never a real one. hello_response is the one body that travels as plain JSON, never sealed (it names nothing of the computer, no id, name or port: n, h and k are proofs over the request's challenge, find.json).",
  "bodies": [
   {
    "about": "a phone pairs",
@@ -24,7 +24,7 @@
    }
   },
   {
-   "about": "a pairing answered over Bluetooth once the LAN failed (slice 43): the same body, the helper block with the game's state, the step left (Check again) and its Bluetooth link on",
+   "about": "a pairing answered by a helper that knows the game (2026-10-09): the same body, the helper block with its .local name, its install id, the game's state and the step left (Check again)",
    "kind": "pair_response",
    "json": {
     "helper": {
@@ -37,8 +37,7 @@
      "hid": "AAECAwQFBgcICQoLDA0ODw",
      "wow": "addon",
      "sight": "sees",
-     "step": "check_again",
-     "ble": "on"
+     "step": "check_again"
     }
    }
   },
@@ -77,7 +76,7 @@
    }
   },
   {
-   "about": "a clock round trip with a Windows PC whose Bluetooth adapter cannot serve phones (slice 43): ble no_peripheral, so its phones link on Wi-Fi alone",
+   "about": "a clock round trip with a Windows PC that knows the game: the helper block with its install id, the game's state and no step left",
    "kind": "ping_response",
    "json": {
     "helper": {
@@ -89,8 +88,7 @@
      "hid": "AgICAgICAgICAgICAgICAg",
      "wow": "addon",
      "sight": "sees",
-     "step": "none",
-     "ble": "no_peripheral"
+     "step": "none"
     },
     "t0": 1789999999000,
     "t1": 1790000000500,
@@ -350,7 +348,7 @@
    }
   },
   {
-   "about": "a phone that follows the game over Bluetooth with nothing to send (slice 43): its held request may wait 10 minutes, each answer waking it (contract/fixtures/ble.json seals this body in its sync)",
+   "about": "an iPhone that follows the game in its play session with nothing to send: its held request may wait 15 s, the most a request asks (the Bluetooth link's 10 minutes went with that link, slice 76)",
    "kind": "sync_request",
    "json": {
     "device": "ios",
@@ -358,12 +356,12 @@
     "t0": 1790000000000,
     "sent_at": 1790000000100,
     "since": 1789999980016,
-    "wait": 600000,
+    "wait": 15000,
     "battery": 0.81
    }
   },
   {
-   "about": "a phone that steps back for its watch keeps one standing request over Bluetooth (since the review of 2026-10-17): hold false with a wait, which holds nothing and carries no command back, answered at its wait's end, at a change of the game, when a newer request of the phone arrives, and at once while no device holds the link",
+   "about": "a phone that steps back for its watch keeps one standing request while its app runs (since the review of 2026-10-17; on the LAN since slice 76, over the Bluetooth link alone until then): hold false with a wait, which holds nothing and carries no command back, answered at its wait's end, at a change of the game, when a newer request of the phone arrives, and at once while no device holds the link",
    "kind": "sync_request",
    "json": {
     "device": "ios",
@@ -372,7 +370,7 @@
     "sent_at": 1790000030100,
     "since": 1789999980016,
     "hold": false,
-    "wait": 600000,
+    "wait": 15000,
     "battery": 0.8
    }
   },
@@ -592,7 +590,7 @@
    }
   },
   {
-   "about": "the held answer on Bluetooth as the game's pump comes (slice 43): the turn-in and the pump's moves, as on the LAN, to a phone whose request may have waited minutes; the helper block with the game's state and its Bluetooth link on (contract/fixtures/ble.json seals this body in its last answer)",
+   "about": "a held answer as the game's pump comes: the turn-in and the pump's moves, with the helper block's .local name, install id and the game's state",
    "kind": "sync_response",
    "json": {
     "helper": {
@@ -605,8 +603,7 @@
      "hid": "AAECAwQFBgcICQoLDA0ODw",
      "wow": "addon",
      "sight": "sees",
-     "step": "none",
-     "ble": "on"
+     "step": "none"
     },
     "t0": 1790000000000,
     "t1": 1790000000110,
@@ -645,7 +642,7 @@
    }
   },
   {
-   "about": "the hold ended with nothing for the device, on a Mac whose Bluetooth grant macOS refused (slice 43): ble no_grant, which the phones name as the computer's to fix",
+   "about": "the hold ended with nothing for the device, from a helper that knows its .local name and its install id and says nothing of the game",
    "kind": "sync_response",
    "json": {
     "helper": {
@@ -655,8 +652,7 @@
      "version": "0.1.0",
      "t": 1790000005012,
      "mdns": "Davids-MacBook-Pro.local",
-     "hid": "AAECAwQFBgcICQoLDA0ODw",
-     "ble": "no_grant"
+     "hid": "AAECAwQFBgcICQoLDA0ODw"
     },
     "t0": 1790000000000,
     "t1": 1790000000010,
@@ -679,8 +675,7 @@
      "hid": "AAECAwQFBgcICQoLDA0ODw",
      "wow": "addon",
      "sight": "sees",
-     "step": "none",
-     "ble": "on"
+     "step": "none"
     },
     "t0": 1790000030000,
     "t1": 1790000030110,
@@ -1890,7 +1885,7 @@
    }
   },
   {
-   "about": "GET /v1/account from a desktop app in a sync account (slice 60): its id and R (seal.json's sync block), three devices, an email linked",
+   "about": "GET /v1/account from a desktop app in a sync account (slice 60): its id and R (seal.json's sync block), three devices, an email linked, and since slice 76 pushes: it tells the account the game's pumps for the pump push",
    "kind": "account_response",
    "json": {
     "helper": {
@@ -1903,11 +1898,12 @@
     "account": "ABEiM0RVZneImaq7zN3u_w",
     "r": "oKGio6SlpqeoqaqrrK2urw",
     "devices": 3,
-    "email": true
+    "email": true,
+    "pushes": true
    }
   },
   {
-   "about": "GET /v1/account from a desktop app with its Sync off (slice 60): no account, so a phone with one asks Add",
+   "about": "GET /v1/account from a desktop app with its Sync off (slice 60): no account, so a phone with one asks Add, and pushes false, since it tells no account the game's pumps (slice 76)",
    "kind": "account_response",
    "json": {
     "helper": {
@@ -1920,7 +1916,8 @@
     "account": null,
     "r": null,
     "devices": 0,
-    "email": false
+    "email": false,
+    "pushes": false
    }
   },
   {

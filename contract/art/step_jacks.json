@@ -3,7 +3,7 @@
   "view": "front",
   "camera": {"yaw": 12, "pitch": 5},
   "working": ["thigh", "pauldron"],
-  "fast_phase": 0.6,
+  "fast_phase": 0.4,
   "poses": {
     "in": {
       "pelvis": [0, 94, 0],

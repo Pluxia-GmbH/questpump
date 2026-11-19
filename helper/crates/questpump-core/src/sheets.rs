@@ -135,11 +135,11 @@ impl SheetLog {
 		&self.records
 	}
 
-	/// `GET /v1/sheets`: the page after the `after` sheets a device holds, at most `size` (`link::page_size`:
-	/// `SHEETS_PAGE`, or the request's limit). Its `store` is the first sheet's `ts_helper`, empty while the log is.
+	/// `GET /v1/sheets`: the page after the `after` sheets a device holds, at most `link::SHEETS_PAGE`. Its `store` is
+	/// the first sheet's `ts_helper`, empty while the log is.
 	#[must_use]
-	pub fn page(&self, after: u64, size: usize) -> SheetsPage {
-		let (sheets, next, more) = link::page(&self.records, after, size);
+	pub fn page(&self, after: u64) -> SheetsPage {
+		let (sheets, next, more) = link::page(&self.records, after, link::SHEETS_PAGE);
 		let store = self.records.first().map_or_default(|r| r.ts_helper.clone());
 		SheetsPage { store, next, more, sheets }
 	}

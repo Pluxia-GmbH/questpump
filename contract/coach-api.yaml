@@ -124,7 +124,10 @@ info:
     identity, the time of day or any health data (no heart rate, pain flag, felt-unwell stop, HealthKit or Health
     Connect value); and the calls these take (App Check's attestation, Remote Config's fetch with a random installation
     id). App Check refreshes no token on its own, so without the coach nothing goes. To Pluxia: only a `CoachReport`,
-    when the player sends one, with an App Check token.
+    when the player sends one, with an App Check token when App Check gives the phone one and without one when it
+    gives none or is not asked (no purpose reads on: telemetry-api.yaml, "Firebase starts only for a purpose that
+    reads on"), so a report alone never starts Firebase, never brings a request to Google and never waits for a token
+    (a build cut before the change of 2026-11-19 posts no report without one and keeps it a week at most).
 x-coach:
   description: |
     The coach's numbers and its consent's copy version, which both cores hold under these names (QuestPumpCore
@@ -153,17 +156,31 @@ paths:
       summary: A player reports a coach talk or Chronicle; the site mails it to the support mailbox
       description: |
         A Cloudflare Worker on the questpump.com route `/api/coach-report` (`site/report/`; a Pages Function cannot
-        hold the email binding). It checks the App Check token (RS256 against Firebase's JWKS, issued for the
-        `questpump` project to one of its apps), reads the body (its text at most `report_chars` Unicode scalar values,
-        no other field), and mails the moment, the reason, the model id and the text, nothing else, to the support
-        mailbox, at most one report a minute for a token and 20 a minute for all (per Cloudflare location), within the
-        report Worker's 400 mails a UTC day for its routes but the crash reports' (since 2026-10-31), which a body it
-        refuses takes none of (since 2026-11-01). It keeps nothing (Workers Logs off). Only its verdicts on a report's
-        body are final, 400 and 413: a device keeps every other outcome's report (no network, a 401, a 429, a 5xx, a
-        403, 404 or 405 from what answers while the route is not deployed) and sends it again later with a new token,
-        for a week at most.
+        hold the email binding), checked as the feedback route is (feedback-api.yaml, "The Worker"). It answers 400
+        without reading the body when the request's `Content-Type` is not `application/json` or it carries an `Origin`
+        header (the phones post JSON and no `Origin`; a web page's request is a browser's), reads at most 4,096 bytes
+        of body (its text at most `report_chars` Unicode scalar values, no other field), checks the App Check token
+        when one is present (RS256 against Firebase's JWKS, issued for the `questpump` project to one of its apps; 401
+        when it does not verify, 503 while Firebase's keys cannot be read), and mails the moment, the reason, the model
+        id and the text, nothing else, to the support mailbox. The phones send their token when App Check gives them
+        one and post without the header when it gives none or is not asked (a phone that fails its device check, a
+        build without the Firebase config, no purpose that reads on: telemetry-api.yaml, "Firebase starts only for a
+        purpose that reads on"). A report without a token is no 401 (since 2026-11-19; until then the route refused
+        it, and a phone's build cut before that change posts none without a token: a report made there with the
+        coach's consent withdrawn and both privacy switches off waits a week on the phone and is dropped unsent):
+        anyone can post without one, so the limits bound what reaches the mailbox, not the token. The limits, all per
+        Cloudflare location: one report a minute for an App Check token (the feedback route's limit counts apart); one
+        a minute for a client address when no token comes (an IPv4 address whole, an IPv6 address by its /64; the
+        address is a limiter key, never stored or mailed); 20 a minute for all reports together; then the report
+        Worker's 400 mails a UTC day for its routes but the crash reports' (since 2026-10-31), past which a report
+        waits as past a minute's limit (429). A body it refuses takes none of the day's mails (since 2026-11-01) and
+        none of the minute's limits (since 2026-11-19: the body is read first). It keeps nothing (Workers Logs off).
+        Only its verdicts on a report's body are final, 400 and 413: a device keeps every other outcome's report (no
+        network, a 401, a 429, a 5xx, a 403, 404 or 405 from what answers while the route is not deployed) and sends
+        it again later, with a new token when App Check gives one, for a week at most.
       security:
         - appCheck: []
+        - {}
       requestBody:
         required: true
         content:
@@ -171,11 +188,14 @@ paths:
             schema: { $ref: "#/components/schemas/CoachReport" }
       responses:
         "204": { description: Mailed }
-        "400": { description: "The body does not read as a CoachReport, or breaks its bounds" }
-        "401": { description: "No App Check token, or one that does not verify" }
+        "400":
+          description: |
+            The `Content-Type` is not `application/json` or an `Origin` header is present (both answered before the
+            body is read), or the body does not read as a CoachReport, or breaks its bounds
+        "401": { description: "An App Check token that does not verify (a report without one is no 401)" }
         "405": { description: Not a POST }
         "413": { description: A body larger than 4 KiB }
-        "429": { description: More reports than the route takes a minute }
+        "429": { description: "More reports than the route takes: this token's, this address's or all a minute, or a day" }
         "502": { description: The mail could not be sent }
         "503": { description: "Firebase's keys could not be read (or a new key is fetched within a minute): send it again later" }
 components:

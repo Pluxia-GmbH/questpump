@@ -15,7 +15,7 @@ use questpump_core::codes::{PumpEnd, StripEvent, StripState};
 use questpump_core::link::{
 	self, AccountRequest, AccountResponse, AppRowsResponse, BodyRequest, BodyResponse, Device, EventType,
 	HelloResponse, HistoryResponse, Link, PairRequest, PairResponse, PingResponse, Received, RefusedResponse,
-	SheetResponse, SheetsResponse, SyncRequest, SyncResponse, Throttle, Via, WristEvent,
+	SheetResponse, SheetsResponse, SyncRequest, SyncResponse, Throttle, WristEvent,
 };
 use questpump_core::protocol::{Command, Source};
 use questpump_core::seal::{Keys, Replay, Route, SealError, Way};
@@ -249,6 +249,56 @@ fn the_sync_keys_come_from_r_and_its_batches_codes_and_link_answer_read_as_every
 	}
 }
 
+/// The pump push's seal (seal.json's `sync.live`, slice 76): the live key derived from R, and a state of the game's
+/// pump written as the contract's text and sealed as it stands under the fixture's nonce, byte for byte what the
+/// iPhone opens; the same state under the rekey block's new R is the case the iPhone refuses as another kid's.
+#[test]
+fn the_live_key_comes_from_r_and_seals_a_state_of_the_game_s_pump_as_the_iphone_opens_it() {
+	use questpump_core::sync::{LiveMoves, LivePump};
+	let f = &fixture("seal.json")["sync"];
+	let live = &f["live"];
+	let r: [u8; 16] = unhex(f["R_hex"].as_str().unwrap()).try_into().unwrap();
+	let keys = SyncKeys::derive(&r);
+	let nonce: [u8; 12] = unhex(live["nonce_hex"].as_str().unwrap()).try_into().unwrap();
+	let plain = live["plain"].as_str().unwrap();
+	let sealed = live["sealed_b64"].as_str().unwrap();
+
+	// the state as the desk makes it: a hold's first max set, counting up from its go, the second of three moves
+	let state = LivePump::Pump(LiveMoves {
+		pump_id: "g-513-1790000000".to_owned(),
+		moves: ["Push-up", "Deep squat hold", "Jumping jacks"].map(sync::live_name).to_vec(),
+		total: 3,
+		done: 1,
+		current: 1,
+		name: sync::live_name("Deep squat hold"),
+		goal: None,
+		max_set: true,
+		started_at: Some(1_790_000_042),
+		ends_at: None,
+		next: Some(sync::live_name("Jumping jacks")),
+	});
+	let text = serde_json::to_vec(&state).unwrap();
+	assert_eq!(String::from_utf8(text.clone()).unwrap(), plain, "the state's text, its keys in the contract's order");
+
+	// the live key: what it seals under the nonce is what the fixture's key seals, never compressed
+	let fixture_seal =
+		questpump_core::seal::Sealer::new(&unhex(f["live_key_hex"].as_str().unwrap()).try_into().unwrap());
+	assert_eq!(STANDARD.encode(keys.live.seal_with(nonce, &text)), sealed, "sealed as it stands, standard base64");
+	assert_eq!(STANDARD.encode(fixture_seal.seal_with(nonce, &text)), sealed, "the live key");
+	assert_ne!(STANDARD.encode(keys.seal.seal_with(nonce, &text)), sealed, "never the batches' seal key");
+	// a state sealed for a post, under a fresh nonce, opens to the same text
+	let ours = STANDARD.decode(sync::seal_live(&keys, &state).unwrap()).unwrap();
+	assert_eq!(keys.live.open(&ours).unwrap().0, text);
+
+	// the same state after a rekey: another kid, another live key (the case an iPhone with the old key refuses)
+	let next: [u8; 16] = unhex(fixture("seal.json")["rekey"]["next"]["R_hex"].as_str().unwrap()).try_into().unwrap();
+	let next_keys = SyncKeys::derive(&next);
+	let other = live["refused"].as_array().unwrap().iter().find(|c| c["kid"] != f["kid"]).unwrap();
+	assert_eq!(next_keys.kid, other["kid"].as_str().unwrap());
+	assert_eq!(STANDARD.encode(next_keys.live.seal_with(nonce, &text)), other["sealed_b64"].as_str().unwrap());
+	assert!(keys.live.open(&STANDARD.decode(other["sealed_b64"].as_str().unwrap()).unwrap()).is_err());
+}
+
 /// The account's new key (seal.json's `rekey` block): a device's key and its MAC under R and under the new R, the three
 /// MACs every app refuses, the new R's keys and restore code, the wrap the rekeying device seals with its fresh key and
 /// nonce and the device opens with its own, and the old R sealed under the new one, the chain's link, which only the
@@ -389,7 +439,7 @@ fn turn_in(quest: u32) -> Command {
 #[test]
 fn the_holder_gets_each_command_until_it_acknowledges_it() {
 	let mut link = Link::new(1_000);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 1_000);
+	link.arrive(&held(Device::Watchos, 0), 1_000);
 	let first = link.queue(turn_in(1), 1_010).unwrap();
 	let second = link.queue(turn_in(2), 1_020).unwrap();
 	assert_eq!(
@@ -398,25 +448,25 @@ fn the_holder_gets_each_command_until_it_acknowledges_it() {
 		"the sequence starts at the helper's start"
 	);
 	assert_eq!(link.respond(&held(Device::Watchos, 0), 1_030).0.len(), 2);
-	link.arrive(&held(Device::Watchos, first.seq), &Via::Lan, 1_040);
+	link.arrive(&held(Device::Watchos, first.seq), 1_040);
 	let left: Vec<u64> = link.respond(&held(Device::Watchos, first.seq), 1_040).0.iter().map(|q| q.seq).collect();
 	assert_eq!(left, [second.seq], "the first is acknowledged, the second not yet");
-	link.arrive(&held(Device::Watchos, second.seq), &Via::Lan, 1_050);
+	link.arrive(&held(Device::Watchos, second.seq), 1_050);
 	assert!(link.respond(&held(Device::Watchos, 0), 1_050).0.is_empty(), "acknowledged commands never come back");
 }
 
 #[test]
 fn a_watch_holds_the_link_over_a_phone_and_the_phone_takes_it_when_the_watch_goes_quiet() {
 	let mut link = Link::new(0);
-	link.arrive(&held(Device::Ios, 0), &Via::Lan, 1_000);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 2_000);
+	link.arrive(&held(Device::Ios, 0), 1_000);
+	link.arrive(&held(Device::Watchos, 0), 2_000);
 	let queued = link.queue(turn_in(7), 2_100).unwrap();
 	assert_eq!(link.holder(2_100), Some(Device::Watchos));
 	assert!(
 		link.respond(&held(Device::Ios, 0), 2_100).0.is_empty(),
 		"the phone gets nothing while the watch holds the link"
 	);
-	link.arrive(&held(Device::Ios, 0), &Via::Lan, 20_000);
+	link.arrive(&held(Device::Ios, 0), 20_000);
 	let later = 2_000 + link::ALIVE_MS + 1;
 	assert_eq!(link.holder(later), Some(Device::Ios), "the watch's last request is too old");
 	assert_eq!(
@@ -429,8 +479,8 @@ fn a_watch_holds_the_link_over_a_phone_and_the_phone_takes_it_when_the_watch_goe
 #[test]
 fn a_response_never_lets_a_device_acknowledge_a_command_it_did_not_get() {
 	let mut link = Link::new(0);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 1_000);
-	link.arrive(&held(Device::Ios, 0), &Via::Lan, 1_000);
+	link.arrive(&held(Device::Watchos, 0), 1_000);
+	link.arrive(&held(Device::Ios, 0), 1_000);
 	let queued = link.queue(turn_in(5), 1_100).unwrap();
 	assert_eq!(link.respond(&held(Device::Ios, 0), 1_100), (vec![], 0), "the phone's since comes back as it was");
 	let (commands, next) = link.respond(&held(Device::Watchos, 0), 1_100);
@@ -440,12 +490,12 @@ fn a_response_never_lets_a_device_acknowledge_a_command_it_did_not_get() {
 #[test]
 fn a_command_holds_until_it_expires_and_a_countdown_seen_after_its_window_is_never_queued() {
 	let mut link = Link::new(0);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 0);
+	link.arrive(&held(Device::Watchos, 0), 0);
 	let countdown =
 		|go_at| Command::Countdown { pump_id: "g-1-2".into(), slot: 0, start_at: go_at - 5_000, go_at, ticks: 5 };
 	let queued = link.queue(countdown(10_000), 1_000).unwrap();
 	assert_eq!(queued.expires_at, 10_000 + link::COUNTDOWN_AFTER_GO_MS);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, queued.expires_at - 2); // the watch keeps syncing
+	link.arrive(&held(Device::Watchos, 0), queued.expires_at - 2); // the watch keeps syncing
 	assert_eq!(
 		link.respond(&held(Device::Watchos, 0), queued.expires_at - 1).0.len(),
 		1,
@@ -458,12 +508,12 @@ fn a_command_holds_until_it_expires_and_a_countdown_seen_after_its_window_is_nev
 #[test]
 fn a_second_held_request_from_the_same_device_makes_the_first_answer() {
 	let mut link = Link::new(0);
-	let first = link.arrive(&held(Device::Watchos, 0), &Via::Lan, 1_000);
+	let first = link.arrive(&held(Device::Watchos, 0), 1_000);
 	assert!(link.is_current(&held(Device::Watchos, 0), first));
-	let second = link.arrive(&held(Device::Watchos, 0), &Via::Lan, 1_500);
+	let second = link.arrive(&held(Device::Watchos, 0), 1_500);
 	assert!(!link.is_current(&held(Device::Watchos, 0), first), "the older request answers at once, without commands");
 	assert!(link.is_current(&held(Device::Watchos, 0), second));
-	let phone = link.arrive(&held(Device::Ios, 0), &Via::Lan, 1_600);
+	let phone = link.arrive(&held(Device::Ios, 0), 1_600);
 	assert!(
 		link.is_current(&held(Device::Watchos, 0), second) && link.is_current(&held(Device::Ios, 0), phone),
 		"one request per device"
@@ -475,8 +525,8 @@ fn two_watches_hold_one_at_a_time_without_answering_each_others_requests() {
 	let mut link = Link::new(0);
 	let real = held(Device::Watchos, 0);
 	let dev = SyncRequest { client: "watchos-2".into(), ..held(Device::Watchos, 0) };
-	let first = link.arrive(&real, &Via::Lan, 1_000);
-	let second = link.arrive(&dev, &Via::Lan, 1_100);
+	let first = link.arrive(&real, 1_000);
+	let second = link.arrive(&dev, 1_100);
 	assert!(link.is_current(&real, first) && link.is_current(&dev, second), "each keeps its own hold");
 	let queued = link.queue(turn_in(9), 1_200).unwrap();
 	assert!(link.respond(&real, 1_200).0.is_empty(), "the latest watch holds the link");
@@ -486,14 +536,14 @@ fn two_watches_hold_one_at_a_time_without_answering_each_others_requests() {
 #[test]
 fn a_plain_post_neither_holds_the_link_nor_acknowledges() {
 	let mut link = Link::new(0);
-	let watch = link.arrive(&held(Device::Watchos, 0), &Via::Lan, 1_000);
+	let watch = link.arrive(&held(Device::Watchos, 0), 1_000);
 	let queued = link.queue(turn_in(3), 1_100).unwrap();
 	let last_word = SyncRequest { hold: Some(false), ..held(Device::Watchos, queued.seq) };
-	link.arrive(&last_word, &Via::Lan, 1_200);
+	link.arrive(&last_word, 1_200);
 	assert!(link.is_current(&held(Device::Watchos, 0), watch), "the holder's held request still waits");
 	assert_eq!(link.respond(&held(Device::Watchos, 0), 1_200).0, [queued], "its since acknowledged nothing");
 	let mut alone = Link::new(0);
-	alone.arrive(&SyncRequest { hold: Some(false), ..held(Device::Ios, 0) }, &Via::Lan, 1_000);
+	alone.arrive(&SyncRequest { hold: Some(false), ..held(Device::Ios, 0) }, 1_000);
 	assert_eq!(alone.holder(1_000), None, "a lone phone's plain post takes no link");
 }
 
@@ -545,11 +595,11 @@ fn a_pump_event_sent_again_after_a_lost_response_is_taken_once() {
 #[test]
 fn a_receipt_sent_again_after_a_lost_response_counts_once() {
 	let mut link = Link::new(0);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 0);
+	link.arrive(&held(Device::Watchos, 0), 0);
 	let queued = link.queue(turn_in(1), 1_000).unwrap();
 	let receipt = SyncRequest { received: vec![Received { seq: queued.seq, at: 1_040 }], ..held(Device::Watchos, 0) };
-	link.arrive(&receipt, &Via::Lan, 1_050);
-	link.arrive(&receipt, &Via::Lan, 1_300); // its response was lost: the same receipt again
+	link.arrive(&receipt, 1_050);
+	link.arrive(&receipt, 1_300); // its response was lost: the same receipt again
 	let summaries = link.quiet(1_300 + link::QUIET_MS);
 	assert_eq!((summaries[0].commands, summaries[0].p50_ms), (1, Some(40)));
 }
@@ -557,16 +607,16 @@ fn a_receipt_sent_again_after_a_lost_response_counts_once() {
 #[test]
 fn a_since_from_an_earlier_run_acknowledges_nothing_and_every_command_goes_out() {
 	let mut link = Link::new(5_000);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 5_000);
+	link.arrive(&held(Device::Watchos, 0), 5_000);
 	let queued = link.queue(turn_in(4), 5_010).unwrap();
-	link.arrive(&held(Device::Watchos, 999_999), &Via::Lan, 5_020); // the watch's since from a run whose clock was ahead
+	link.arrive(&held(Device::Watchos, 999_999), 5_020); // the watch's since from a run whose clock was ahead
 	assert_eq!(link.respond(&held(Device::Watchos, 999_999), 5_020).0.first().map(|q| q.seq), Some(queued.seq));
 }
 
 #[test]
 fn a_devices_delivery_times_and_battery_come_out_per_session_once_it_goes_quiet() {
 	let mut link = Link::new(0);
-	link.arrive(&held(Device::Watchos, 0), &Via::Lan, 0);
+	link.arrive(&held(Device::Watchos, 0), 0);
 	let mut seqs = Vec::new();
 	for i in 0..20 {
 		seqs.push(link.queue(turn_in(i), i64::from(i) * 1_000).unwrap().seq);
@@ -574,9 +624,9 @@ fn a_devices_delivery_times_and_battery_come_out_per_session_once_it_goes_quiet(
 	let received: Vec<Received> =
 		seqs.iter().zip(0..).map(|(&seq, i)| Received { seq, at: i * 1_000 + 40 + i }).collect();
 	let first = SyncRequest { received, battery: Some(0.9), ..held(Device::Watchos, *seqs.last().unwrap()) };
-	link.arrive(&first, &Via::Lan, 30_000);
+	link.arrive(&first, 30_000);
 	let last = SyncRequest { battery: Some(0.8), ..held(Device::Watchos, *seqs.last().unwrap()) };
-	link.arrive(&last, &Via::Lan, 30_000 + 3_600_000 / 2);
+	link.arrive(&last, 30_000 + 3_600_000 / 2);
 	assert!(link.quiet(30_000 + 3_600_000 / 2 + 1_000).is_empty(), "still in its session");
 	let summaries = link.quiet(30_000 + 3_600_000 / 2 + link::QUIET_MS);
 	let s = &summaries[0];
@@ -593,10 +643,10 @@ fn ten_wrong_bearers_within_a_minute_refuse_the_address_for_a_minute() {
 	for i in 0..9 {
 		throttle.failed(peer, i * 1_000);
 	}
-	assert!(!throttle.refused(&peer, 9_000));
+	assert!(!throttle.refused(peer, 9_000));
 	throttle.failed(peer, 9_000);
-	assert!(throttle.refused(&peer, 9_001) && !throttle.refused(&other, 9_001));
-	assert!(!throttle.refused(&peer, 9_000 + 60_000), "a minute after the last wrong bearer");
+	assert!(throttle.refused(peer, 9_001) && !throttle.refused(other, 9_001));
+	assert!(!throttle.refused(peer, 9_000 + 60_000), "a minute after the last wrong bearer");
 }
 
 #[test]

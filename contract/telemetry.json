@@ -1,5 +1,5 @@
 {
- "about": "QuestPump's telemetry catalog (contract/telemetry-api.yaml is the design; David, 2026-10-12: \"lets do a full telemetry pass and implementation for questpump\", choosing crash reports, usage analytics like learnclash and anonymous counts). The one source of every name that leaves a device: the purposes and their switches, the Google Analytics events, parameters, values and user properties the phones may log, the screens a screen_view may name, the anonymous count points every app sends to the report Worker, and the crash context words. tools/telemetry.py writes the apps' and the Worker's catalogs from it (make telemetry) and `make check` fails on a stale one and on a parameter, blob or double whose name the never list holds; the apps name events and points only through their catalog's types, and drop a value outside it (a debug build stops on it), as the Worker refuses one. A point grows only at its end, and a double renamed in place keeps its old name in the point's `was` (old name to new, its column unchanged): the Worker reads an older app's point under the new name and fills a double a newer catalog grew at the point's end, which that point lacks, with 0 (slice 42's fix round, 2026-10-17). Every value is from a closed list or a bounded number; nothing here carries a count the player typed, a record, health data, a name or free text.",
+ "about": "QuestPump's telemetry catalog (contract/telemetry-api.yaml is the design; David, 2026-10-12: \"lets do a full telemetry pass and implementation for questpump\", choosing crash reports, usage analytics like learnclash and anonymous counts). The one source of every name that leaves a device: the purposes and their switches, the Google Analytics events, parameters, values and user properties the phones may log, the screens a screen_view may name, the anonymous count points every app sends to the report Worker, and the crash context words. tools/telemetry.py writes the apps' and the Worker's catalogs from it (make telemetry) and `make check` fails on a stale one and on a parameter, blob or double whose name the never list holds; the apps name events and points only through their catalog's types, and drop a value outside it (a debug build stops on it), as the Worker refuses one. A point grows only at its end, and a double renamed in place keeps its old name in the point's `was` (old name to new, its column unchanged): the Worker reads an older app's point under the new name and fills a double a newer catalog grew at the point's end, which that point lacks, with 0 (slice 42's fix round, 2026-10-17). A point that left the catalog keeps its name in `gone`: a build from before it left still sends it, and the Worker leaves that point out of its batch alone and keeps the rest (`link_ble`, the Bluetooth link's day, which went with that link in slice 76). Every value is from a closed list or a bounded number; nothing here carries a count the player typed, a record, health data, a name or free text.",
  "purposes": {
   "crash": {
    "switch": "menu.crash",
@@ -547,42 +547,6 @@
     },
     "doubles": {}
    },
-   "link_ble": {
-    "q": "quality",
-    "fitness": false,
-    "cadence": "day",
-    "sources": [
-     "iphone",
-     "android",
-     "desktop"
-    ],
-    "blobs": {
-     "ble": [
-      "on",
-      "ask",
-      "no_grant",
-      "off",
-      "no_peripheral",
-      "none",
-      "stopped",
-      "unknown"
-     ],
-     "link": [
-      "linked",
-      "away",
-      "unlinked",
-      "denied",
-      "bluetooth_off"
-     ],
-     "transport": [
-      "ble",
-      "lan",
-      "both",
-      "none"
-     ]
-    },
-    "doubles": {}
-   },
    "capture_day": {
     "q": "quality",
     "fitness": false,
@@ -976,6 +940,9 @@
    }
   }
  },
+ "gone": [
+  "link_ble"
+ ],
  "crashContext": {
   "about": "The words a phone's crash report may carry as Crashlytics custom keys and log lines (contract/crash-api.yaml, \"The context a phone report carries\"): each key a closed list, a log line '<key> <value>' or one of the app lines.",
   "keys": {

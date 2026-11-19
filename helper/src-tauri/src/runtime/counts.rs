@@ -3,7 +3,7 @@
 //! statistics reads on (`Helper::usage_on`: the player's answer, else on outside an opt-in region), the app keeps, in
 //! `counts.json`, the facts of each game day (04:00 local, `history::GameDay`) as they happen: the `desktop` source's
 //! (in use: the window, a pump here, the game read or a device served; the build's crash; a pairing of the phone, the
-//! strap or the pad; the link's, the Bluetooth link's (`link_ble`, slice 43) and the capture's day; the features used; the talent trees' cards, starts and refusals,
+//! strap or the pad; the link's and the capture's day; the features used; the talent trees' cards, starts and refusals,
 //! `tree_day`; the match offers; a return after three or more game days away) and the `game` source's (the strip read
 //! or a row of the game's; a return), the unfinished moves skipped (each on the day it was made, which only a skip
 //! taken as it was made, or of a move owed that day, tells) and the moves owed at the day's end, from the rows the
@@ -26,11 +26,10 @@
 use std::collections::BTreeMap;
 
 use questpump_core::codes::{flags, outcome};
-use questpump_core::link::{Ble, Transport};
 use questpump_core::outbox::Answer;
 use questpump_core::protocol::RowRecord;
 use questpump_core::row::Row;
-use questpump_core::telemetry::{self, Counts, DayTally, Facts, LinkBle, Point, Review, Source};
+use questpump_core::telemetry::{self, Counts, DayTally, Facts, Point, Review, Source};
 use questpump_desk::facts::facts;
 use questpump_desk::history::{self, GameDay};
 use questpump_desk::pump::ran_here;
@@ -363,6 +362,7 @@ impl Helper {
 			"counterstrike" => "cs2",
 			"dota" => "dota2",
 			"league" => "lol",
+			"teamfighttactics" => "tft",
 			"rocketleague" => "rocket",
 			"starcraft" => "sc2",
 			"mtgarena" => "mtga",
@@ -443,49 +443,6 @@ impl Helper {
 		if let Some(facts) = self.counts_today(Source::Desktop) {
 			facts.link(state);
 		}
-	}
-
-	/// The Bluetooth link on a game day a phone is paired (`link_ble`, on the link's 5-s tick, slice 43): the helper
-	/// block's `ble` as it stands now, the day keeping the last word said.
-	pub(crate) fn counts_link_ble(&mut self, ble: Option<Ble>) {
-		if self.desk.settings.pairing.phone.is_none() {
-			return;
-		}
-		let word = ble.map(Ble::word);
-		if self.link_ble_today().is_some_and(|day| day.ble.as_deref() == word) {
-			return;
-		}
-		if let Some(facts) = self.counts_today(Source::Desktop) {
-			facts.link_ble.get_or_insert_default().ble = word.map(str::to_owned);
-		}
-	}
-
-	/// A phone's or a watch's sync came on a transport while a phone is paired (`link_ble`'s `transport`, and `link`
-	/// `linked` once one came over Bluetooth): each transport once a day.
-	pub(crate) fn counts_transport(&mut self, transport: Transport) {
-		if self.desk.settings.pairing.phone.is_none() {
-			return;
-		}
-		let seen = |day: &LinkBle| match transport {
-			Transport::Lan => day.lan,
-			Transport::Ble => day.over_ble,
-		};
-		if self.link_ble_today().is_some_and(seen) {
-			return;
-		}
-		if let Some(facts) = self.counts_today(Source::Desktop) {
-			let day = facts.link_ble.get_or_insert_default();
-			match transport {
-				Transport::Lan => day.lan = true,
-				Transport::Ble => day.over_ble = true,
-			}
-		}
-	}
-
-	/// Today's `link_ble` facts as kept, without marking the counts changed.
-	fn link_ble_today(&self) -> Option<&LinkBle> {
-		let today = self.counts_day(now().unix);
-		self.counts.kept.days.get(&today).and_then(|d| d.desktop.link_ble.as_ref())
 	}
 
 	/// The rows the stores took since the last look, each once: a row of the computer's or of the game's dated today
@@ -672,7 +629,6 @@ impl Helper {
 		if let Some(link) = &f.link {
 			points.extend(Point::new("link_day", &[("state", link)], &[]));
 		}
-		points.extend(f.link_ble.as_ref().and_then(LinkBle::point));
 		if let Some(c) = &f.capture {
 			points.extend(Point::new(
 				"capture_day",

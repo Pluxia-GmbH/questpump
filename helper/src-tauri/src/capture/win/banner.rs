@@ -19,6 +19,7 @@ use questpump_core::feeds::banner::{self, Banners, Step};
 use questpump_core::strip::Scrgb;
 use windows::Graphics::Imaging::{BitmapPixelFormat, SoftwareBitmap};
 use windows::Media::Ocr::OcrEngine;
+use windows::Storage::Streams::{DataWriter, IBuffer};
 use windows::Win32::Foundation::HWND;
 use windows_capture::capture::{CaptureControl, Context, GraphicsCaptureApiHandler};
 use windows_capture::frame::Frame;
@@ -299,10 +300,16 @@ fn recognise(ocr: &OcrEngine, rgb: &[u8], width: usize, height: usize) -> window
 		*out = [ink, ink, ink, 255];
 	}
 	let (wide, high) = (i32::try_from(wide).unwrap_or(0), i32::try_from(high).unwrap_or(0));
-	let buffer = crate::blelink::buffer(&bgra)?;
-	let bitmap = SoftwareBitmap::CreateCopyFromBuffer(&buffer, BitmapPixelFormat::Bgra8, wide, high)?;
+	let bitmap = SoftwareBitmap::CreateCopyFromBuffer(&buffer(&bgra)?, BitmapPixelFormat::Bgra8, wide, high)?;
 	let text = ocr.RecognizeAsync(&bitmap)?.join()?.Text()?;
 	Ok(text.to_string_lossy())
+}
+
+/// Bytes as a `WinRT` buffer: the band the OCR reads.
+fn buffer(bytes: &[u8]) -> windows::core::Result<IBuffer> {
+	let writer = DataWriter::new()?;
+	writer.WriteBytes(bytes)?;
+	writer.DetachBuffer()
 }
 
 /// The band's place in a frame of `frame` size: the client area's (at `origin` inside the frame, `size` big) full width,

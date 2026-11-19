@@ -53,14 +53,18 @@ info:
     moment one of them turns so; with both switches off and the coach off nothing starts, so nothing reaches Google
     (FirebaseAnalyticsCore registers a Firebase installation as Firebase starts, whatever its collection says, seen
     2026-10-12 with GoogleAppMeasurement 13.0.1). Until Firebase starts, a crash is not captured and no App Check
-    token is asked: a sync request and a feedback message go without one, and a coach report, which never goes
-    without one, waits. Android's Firebase starts with the app and sends nothing while both switches read off and the
-    coach is off: what it would send by itself is held off in the build and by the switches (below), and the request
-    to Google that a sync request or a feedback message would bring along, the ask for an App Check token (the
-    exchange of the device's attestation), is made only while one of the three reads on, read at each ask. So there
-    too a sync request and a feedback message then go without a token, on their routes' limits for a request without
-    one (sync-api.yaml, "App Check"; feedback-api.yaml), and a coach report waits (since 2026-11-16, in the builds
-    after 3710020; up to that build each sync request and each feedback message asked, whatever the switches said).
+    token is asked: a sync request, a feedback message and a coach report go without one (a report in the builds
+    that hold the change of 2026-11-19; a build cut before it keeps the report waiting for a token, a week at most,
+    and then drops it unsent). Android's
+    Firebase starts with the app and sends nothing while both switches read off and the coach is off: what it would
+    send by itself is held off in the build and by the switches (below), and the request to Google that a sync
+    request, a feedback message or a coach report would bring along, the ask for an App Check token (the exchange of
+    the device's attestation), is made only while one of the three reads on, read at each ask. So there too a sync
+    request, a feedback message and a coach report then go without a token, on their routes' limits for a request
+    without one (sync-api.yaml, "App Check"; feedback-api.yaml; coach-api.yaml): a sync request and a feedback
+    message since 2026-11-16, in the builds after 3710020 (up to that build each asked, whatever the switches said),
+    a coach report in the builds that hold the change of 2026-11-19 (a build cut before it waits for a token, as on
+    the iPhone).
     Seen in an emulator's capture, 2026-10-12 and 2026-11-14, and on 2026-11-16 with Sync on: through a first start
     in an opt-in region, Reject all, a Quick pump and the sync cycles after it, the app's connections went to
     questpump.com and to Play Billing's log alone, none to `firebaseappcheck.googleapis.com`; with Send crash reports
@@ -130,20 +134,6 @@ info:
       bound; a refusal for a pain flag or felt unwell is counted under no name (the cards opened mix those with the
       cards only read, so no difference isolates them); the game's tree is not counted, its starts being asked pumps'
       rows like any other;
-    - `link_ble` (slice 43, the Bluetooth link) says a game day's Bluetooth link as each app saw it: `ble` the
-      computer's state as the helper last said it that day (`Helper.ble` in contract/companion-api.yaml; `unknown`
-      from a helper that says none), `link` the phone's own by one rule on both phones (slice 43's review,
-      2026-10-17): each look at the link gives the first that holds of `linked` (the link is up), `denied` (the phone
-      may not use Bluetooth for it: Android's Nearby devices refused, set up or not; the iPhone's Bluetooth or its
-      accessory's access turned off in Settings), `unlinked` (no link set up: no accessory kept on the iPhone, none set
-      up on Android, a phone below Android 12 too), `bluetooth_off` (set up, the phone's Bluetooth off; never for a
-      phone with no link set up) and `away` (set up, Bluetooth on, out of reach), and the day keeps the best it saw in
-      the order `linked`, `away`, `unlinked`, `denied`, `bluetooth_off`, so `bluetooth_off` stands for a day the set-up
-      link's phone had Bluetooth off all along; from the desktop app `linked` once a phone linked by Bluetooth that
-      day, else `unlinked`) and `transport` the transports that answered the link that day (`ble`, `lan`, `both`,
-      `none`); a phone sends it
-      on each game day it was paired, the desktop app on each game day a phone was paired, never a time or a count of
-      what went over it;
     - `standing` (2026-10-21, Rapha: the share cards' "Only 4% of players ..." line) says where the player stands, once
       a game day the app was used: `streak_best` the best streak the player ever kept, in game days (the streak board's
       best, the one the streak page shows), and `colour_top` the highest colour any ladder's unlocked step reached (the
@@ -161,16 +151,21 @@ info:
     **The Worker.** `POST /api/counts` on the report Worker (`site/report/`), checked as `/api/feedback` is: 400
     without reading the body when the `Content-Type` is not `application/json` or an `Origin` header comes; at most
     16,384 bytes (413); exactly the fields below and, for each point, its catalog's blobs and doubles (the Worker's
-    catalog is generated from telemetry.json), else 400; it reads no token. Three tolerances keep an installed older
+    catalog is generated from telemetry.json), else 400; it reads no token. Four tolerances keep an installed older
     app's batch, which a 400 would drop whole: a double renamed in place is read under its new name from its old one
     (the point's `was` in telemetry.json, the column unchanged), and a point that lacks only the doubles a newer catalog
     grew at its end is taken with those doubles 0 (both slice 42's fix round, 2026-10-17); a point whose blob holds a
     value that left it for another point (the point's `moved` in telemetry.json: `feature_day`'s pump and health
     features, which moved to `fitness_feature_day` on 2026-11-01) is dropped alone and the rest of the batch kept,
     never read as the point the value went to, since an older app sent it without the player's own yes that point may
-    need (2026-11-01, the security review of PR #278); a missing double before the last one sent, an unknown or doubled
-    name, a value in no list and a blob missing stay a 400, so a point grows only at its end, and a new blob on a point
-    older apps send is a new point. Each count point becomes one Analytics
+    need (2026-11-01, the security review of PR #278); and a point that left the catalog (telemetry.json's `gone`:
+    `link_ble`, the Bluetooth link's day, which went with that link in slice 76) is dropped alone and the rest of the
+    batch kept, whatever the batch's source: it holds a point's keys and no other, and nothing of its blobs or doubles
+    is read, checked or stored, so a build from before the slice, which sends it for each game day it was paired,
+    keeps that day's other points. A batch left with no point by the last two is taken as any other (204, or 429 at
+    a limit), and nothing of it waits. A missing double before the last one sent, an unknown name that `gone` does not
+    list, a doubled name, a value in no list and a blob missing stay a 400, so a point grows only at its end, and a new
+    blob on a point older apps send is a new point. Each count point becomes one Analytics
     Engine data point: the index `<point>:<source>` (the sampling key), the blobs `point`, `source`, `version`, `day`,
     then the point's own blobs in the catalog's order (and `country` for `install`), the doubles in the catalog's
     order. Limits: ten batches a minute for a client
@@ -205,7 +200,9 @@ paths:
         "204":
           description: Taken (it waits for the day's flush). The app drops the batch.
         "400":
-          description: Not JSON, an Origin header, or a field or point outside the catalog. The app drops the batch.
+          description: >-
+            Not JSON, an Origin header, or a field or point outside the catalog (a point of its `gone` aside). The app
+            drops the batch.
         "413":
           description: Past 16,384 bytes. The app drops the batch.
         "429":
@@ -244,7 +241,9 @@ components:
       properties:
         name:
           type: string
-          description: A point of telemetry.json counts.points.
+          description: >-
+            A point of telemetry.json counts.points; an older build may still send one of its `gone`, which the Worker
+            drops alone.
         blobs:
           type: object
           additionalProperties:

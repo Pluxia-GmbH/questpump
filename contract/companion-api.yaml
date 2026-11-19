@@ -9,9 +9,7 @@ info:
     The link between the QuestPump helper on the player's computer and the phone or watch app (docs/companion.md,
     "The protocol" and "Countdown sync"; docs/plan.md slice 7). The helper serves it; the apps call it. Every
     implementation replays `contract/fixtures/seal.json` (the keys and the seal) and `contract/fixtures/wire.json`
-    (every body below as the plaintext JSON), and since slice 43 the helper and both phone cores
-    `contract/fixtures/ble.json` (the Bluetooth link below), so the Rust helper, the Swift apps and the Kotlin apps read
-    one another.
+    (every body below as the plaintext JSON), so the Rust helper, the Swift apps and the Kotlin apps read one another.
 
     Plain HTTP on the home network, port 8787. The helper listens on every address of the computer, IPv4 and IPv6, so
     a device reaches it at the address the pair link carries, at its `.local` name's addresses and at whatever address
@@ -29,9 +27,9 @@ info:
       `POST`, `PUT`) and `<path>` its path without the query (`/v1/ping`'s answer is sealed for `/v1/ping` whatever
       its `t0`). So a body opens only as the route and the way it was sealed for: one recorded on a route and posted at
       another, or an answer sent back as a request, opens nowhere (`contract/fixtures/seal.json` `sealed`, `refused`);
-    - the hello key, info `questpump hello v1`, 32 bytes, which keys a hello's proof of the key on the LAN
-      (`GET /v1/hello`) and on Bluetooth (below), so a device tells the key it holds from a new pairing code before its
-      bearer goes out, and a hello tells nobody without the key anything;
+    - the hello key, info `questpump hello v1`, 32 bytes, which keys a hello's proof of the key (`GET /v1/hello`), so
+      a device tells the key it holds from a new pairing code before its bearer goes out, and a hello tells nobody
+      without the key anything;
     - the key's id `kid`, info `questpump id v1`, 8 bytes, base64url without padding: the name a phone keeps for its
       pairing on the device. Nothing sends it since 2026-11-01 (the hello and the Bonjour record showed it).
 
@@ -42,9 +40,9 @@ info:
     web page whose name an attacker points at the computer's address reaches nothing): an IPv4 literal, a bracketed
     IPv6 one (a zone allowed), `localhost` or the computer's own `.local` name (the `helper` block's `mdns`, in any
     case, a trailing dot allowed), each with that port. The phones send the address they hold or the `.local` name
-    they found the computer by, and the Bonjour browse resolves to an address; over Bluetooth no `Host` travels and
-    none is checked. It refuses a wrong bearer (401, no body; ten within a minute from one peer make it
-    answer 429 for a minute), a body larger than 256 KiB (413) or slower than 10 s to arrive (408), a body that fails
+    they found the computer by, and the Bonjour browse resolves to an address. It refuses a wrong bearer (401, no
+    body; ten within a minute from one peer make it answer 429 for a minute),
+    a body larger than 256 KiB (413) or slower than 10 s to arrive (408), a body that fails
     to open, whose `sent_at` lies more than 60 s from the helper's clock or before the helper started, or that repeats
     the nonce of a request of the last two minutes (400), a body that opens but does not read (422), and any request
     while its loop cannot take it (503; the device keeps what it sent). At most 32 connections are open, 8 from one
@@ -91,103 +89,6 @@ info:
     hello proved the pairing's install (`h`; a pairing made before the install id skips it) and the key the phone holds
     (`k`); the pairing's install with another key is the phone's helper with a new pairing code. Its sealed pong
     confirms it, and the pong's `helper.host` moves the pairing. The watch never looks: it asks its phone.
-
-    **The Bluetooth link** (slice 43, docs/plan.md "Slice 43: the Bluetooth link", with its fixes after the review of
-    2026-10-17; `contract/fixtures/ble.json` holds every value named here and the cases the helper and both phone cores
-    replay): a second transport for the same routes, so a phone follows the game with its screen locked and links where
-    the LAN cannot reach it (a guest Wi-Fi, client isolation, mobile data, Local Network refused, a Windows firewall
-    without its rule). The computer is a GATT peripheral and the phones are centrals; the watches keep HTTP, and a phone
-    relays nothing for them. One primary service (`uuids.service`) holds three characteristics: `hello` (read, plain,
-    made for the central that reads it), `rx` (phone to helper: write without response, or write) and `tx` (helper to
-    phone: notify only, each message to the central that asked for it alone). No characteristic asks for encryption and
-    nothing bonds: a fourth value from the pairing key does that work, the ble key (HKDF-SHA256, salt empty, info
-    `questpump ble v1`, 32 bytes).
-
-    The hello (`ble.json` `gatt`) is the compact JSON `{"v":3,"k":…,"c":…}`: `v` the Bluetooth layout's version (3
-    since 2026-11-01; 2 keyed its hashes with the install's id, which the pair link and every answer carry, so anyone
-    who once saw it could follow the computer); `k` the first 8 bytes of HMAC-SHA256 keyed with the hello key over
-    `questpump ble hello key`, the epoch (the UTC hour, floor(unix seconds / 3600)) as 8 bytes big-endian and `c`,
-    base64url without padding, so nothing on the air names the computer and no stranger links one hello to another;
-    and `c` the connection's challenge, 16 random bytes the helper draws
-    whenever a central reads the hello from its start and keeps for that central's connection (a read at a later offset,
-    part of a long read, gets the bytes kept; a read from the start again ends that central's calls as an unsubscribe
-    does). A phone reads the hello once at each connection, after it discovered the service anew and before it
-    subscribes or sends anything, and checks it at the epoch before, the current one and the one after on its own clock:
-    `k` of one epoch the pairing key's, it links; else another computer, the pairing's own with a new pairing code
-    (which nothing on the air tells apart) or a hello it does not read. A read that fails judges nothing (the phone
-    lets the connection go and tries again). The link is up once a sealed ping on that connection answered, so a copied
-    hello that never answers links nothing.
-
-    Each call is the HTTP request the phone would send, sealed again whole: one envelope, AES-256-GCM under the ble key
-    as a body is sealed (nonce, ciphertext, tag), its associated data 36 bytes: the direction's label (`questpump ble v1
-    rx` toward the helper, `questpump ble v1 tx` toward the phone), the message's id (one byte, which the phone picks,
-    0-255, never two of its calls in flight under one id, and the helper's answer repeats) and the connection's
-    challenge. The helper opens a central's writes only under the challenge it keeps for that central and seals each
-    answer under its request's id and challenge, so an envelope opens only on the connection it was sealed for: one
-    captured and written again from another central, or on a later connection, opens nowhere. A request's plain text is
-    its method (1 GET, 2 POST), its path with the query (`/v1/…`, 1-1024 bytes of visible ASCII), its User-Agent (0-255
-    bytes) and its body as the LAN carries it (a POST's sealed under the seal key for its route, a GET's empty); a
-    response's is the HTTP status and the body as the LAN answers it (sealed for its route's answer); an envelope
-    carries no route of its own, since the body inside is the LAN's and opens only for the route its head names. No
-    bearer travels: the helper adds its own and calls the routes the LAN serves, so the held sync, its holder rule, the
-    re-offer, the receipts, `sent_at`'s freshness and the replay window are the LAN's, and the routes answer as they do
-    on the LAN (never `401`). An envelope travels in chunks of at most min(ATT MTU − 3, 512) bytes, each a 4-byte header
-    (the id, then the chunk's index from 0 in 3 bytes, big-endian) and its part, the first part starting with the
-    envelope's length (4 bytes, big-endian).
-
-    Limits (`ble.json` `limits`): an envelope of at most 288 KiB toward the helper and 2 MiB toward the phone, refused
-    at its first chunk; a message's next chunk within 10 s of the one before; 4 messages put together at once by a
-    receiver (a whole message in its first chunk takes no place among them); 4 calls a central at the helper, each from
-    its envelope's opening until its answer's last chunk went to the radio (an answer queued and not yet sent counts), a
-    request that opens beyond them answered `503` with no body under its id, which counts toward no throttle and which a
-    phone takes as the LAN's 503 (it keeps what it sent and tries again); a phone keeps at most 4 calls of its own in
-    flight, a fifth waiting for a free one within its own deadline rather than failing at once. The helper takes a
-    central's writes only while its `tx` subscription stands (another central's chunks call no route) and keeps the
-    LAN's throttle by central: 10 failures within a minute, each an envelope that does not open or a message its
-    reassembly dropped while no envelope of that central had opened on its connection, have its writes ignored until a
-    minute after the last, with one log line a minute for each central, its subscriptions and unsubscriptions included;
-    once an envelope of it opened, its dropped messages count for nothing (the radio loses chunks). The helper answers
-    nothing that does not open (a stranger's writes change nothing), `400` with no body to an envelope that opens but
-    whose head does not read, `500` with no body when an answer's envelope would pass 2 MiB, and `503` as above. A phone
-    drops an answer that does not open or read, or whose id names none of its calls in flight; it reads a call for as
-    long as on the LAN.
-
-    The computer advertises only while its Bluetooth link is on (the switch on its Phones page) and a phone is paired or
-    the pairing code shows (the Phones page, or the pairing window the desktop app opens over a page; either asks
-    macOS's Bluetooth grant in context): a Mac the service UUID and the local name `QuestPump` (`CBPeripheralManager`,
-    which advertises nothing else), a Windows PC the service UUID and the service data `QP` 3 on it
-    (`GattServiceProvider`, where its adapter has the peripheral role); neither carries an id of the computer. On a
-    Windows PC without its firewall rule the code shows beside the firewall card while the Bluetooth link serves, so a
-    phone pairs by Bluetooth. A new pairing code lets every central go (their calls end, their challenges and throttles
-    with them) and publishes the service again, so a connected phone hears its services changed (iOS's
-    `didModifyServices`, Android's `onServiceChanged`), reads the hello again and finds the new code; a phone whose call
-    over Bluetooth heard no chunk by its deadline also reads the hello again before its next call. The `helper` block's
-    `ble` says on every response how the link stands there. An iPhone links through AccessorySetupKit (two display
-    items, the Mac's by the service UUID and the name, the PC's by the service UUID and the service data, so no
-    Bluetooth prompt; the Settings app's Accessories row removes the link), an Android phone inside its foreground
-    service from Android 12 with Nearby devices, never location, and a companion-device association where it can.
-
-    Which way each call goes (one rule in each phone core, `ble.json`'s `route`): the held sync, the plain posts, the
-    ping, the sheet, the body and the unpair go over Bluetooth while it links (connected, `tx` subscribed, the hello
-    judged the pairing's and a sealed ping on that connection answered), else over the LAN; the pages (`/v1/history`,
-    `/v1/sheets`, `/v1/app_rows`) go over the LAN when it answered in the last minute, else over Bluetooth with `limit`
-    (`limits.pages`: 500, 50 and 500), never from a locked iPhone; a pairing goes over the LAN first and over Bluetooth
-    once that failed. A call that fails over Bluetooth fails as itself: it never starts a look for the helper on the
-    LAN. A phone's held request on Bluetooth may wait up to 10 minutes (`wait` up to 600,000, `ble_wait_max_ms`): the
-    helper counts that client alive, and the link's holder, past the LAN's 25 s only while a held request of it is
-    pending at the helper (from its arrival until its answer went to the radio), and for 25 s after its last one was
-    answered; a disconnect or an unsubscribe ends that at once, so the link passes to the next device, and a watch that
-    syncs still holds the link first. A phone that steps back for its watch's play session while linked keeps one
-    standing request over Bluetooth instead (since the review of 2026-10-17: `hold: false` with `wait`, `/v1/sync`),
-    its `tx` on: it holds nothing, and the helper answers it the moment no device holds the link (`unheld`), so a
-    locked phone whose watch app died hears it within the 25 s the watch's link lapses in and takes the link. Bluetooth
-    has no other way to call a request off, so a phone that stops both while linked (the player stopped following, or
-    nothing holds the phone to the computer any more) turns `tx`'s notifications off, which ends its calls at the
-    helper, and on again before its next call; until either runs again they go off whenever no call of it is under
-    way, after each call and on each new connection. A request of either kind ends the other at the helper as it
-    arrives. A client that stays linked for hours has its `link` line written to `helper.log` at least once an hour,
-    not only when it goes quiet. The LAN link stays as it is, and nothing of the game, the strip, the mirror or an
-    exercise rule changes.
 
     The felt-unwell lock reaches every device (docs/plan.md slice 17; `contract/fixtures/lock.json`): the helper's
     `locked_until` in every sync and sheet response, a device's own stop (a catch-up's `pump_done` with `unwell`,
@@ -490,13 +391,7 @@ paths:
         Sets the mirror's `pairing` block (`phone`, `phone_since`), which the addon's setup screen reads at the next
         `/reload`. Calling it again (a second phone, the same phone again) is accepted. A watch never calls it: the
         phone pushes the pair link to the watch, and the watch's first sync while a phone is paired sets
-        `pairing.watch`. Since slice 43 a phone pairs over the LAN first and over Bluetooth once that failed (a guest
-        Wi-Fi, client isolation, mobile data, a Windows PC without its firewall rule): the computer advertises while its
-        pairing code shows (the Phones page or a pairing window), the phone finds it by the service
-        UUID (the iPhone through AccessorySetupKit's picker), reads `hello`, goes on only when it judges it the pair
-        link's computer with its key (`ble.json` `gatt`; a new code since is the stale-code failure, as on the LAN),
-        pings and sends this route in an envelope under that connection's challenge; the answer's `helper` block says
-        the same either way.
+        `pairing.watch`.
       requestBody:
         required: true
         content:
@@ -529,11 +424,7 @@ paths:
         stays: another phone that holds it still links, and its next sync names a phone paired again. A phone sends it
         once, at most 3 s, and forgets the key whatever comes back (a helper out of reach keeps its side until the
         Phones page shows the code again, after 14 days without a link). A watch never calls it, and a `client` longer
-        than 64 characters is no install's id (422 for either). Since slice 43 it goes over Bluetooth while that links,
-        and a phone that unpairs also ends its Bluetooth link (the iPhone's accessory, Android's companion-device
-        association), whatever comes back. The helper answers it over Bluetooth as on the LAN: when the unpairing
-        stops its Bluetooth link (no phone paired and no code showing), the link stops only after this answer went to
-        the radio.
+        than 64 characters is no install's id (422 for either).
       requestBody:
         required: true
         content:
@@ -626,17 +517,18 @@ paths:
         or `playing` changes or an offer is withdrawn, so a device's word of them is never older than its request's
         wait (`SyncResponse.arms`).
 
-        Since the review of 2026-10-17 a request with `hold: false` and a `wait` is a standing request: a phone that
-        steps back for its watch's play session keeps one standing over Bluetooth (`wait` 600000, `ble_wait_max_ms`; its
-        `tx` subscription on), so an answer wakes it while it is locked. It never counts toward holding the link,
-        carries no commands and acknowledges none, as a plain post, and replaces its client's held or standing request
-        as a held one does (the older answers at once; a held request replaces it alike, and a plain post leaves it in
-        place). The helper holds it up to its `wait` whoever holds the link (5000-600000 on Bluetooth, 5000-15000 on the
-        LAN), answers it at once when a newer request of its client arrives or the game it tells changes, as a held
+        Since the review of 2026-10-17 a request with `hold: false` and a `wait` is a standing request, and since slice
+        76 the LAN's (until then a phone sent one over the Bluetooth link alone, which slice 76 retired): a phone that
+        steps back for its watch's play session keeps one standing while its app runs, the iPhone in front or in its
+        own play session, Android inside its foreground service (`wait` 5000-15000, as a held request's). It never
+        counts toward holding the link, carries no commands and acknowledges none, as a plain post, and replaces its
+        client's held or standing request as a held one does (the older answers at once; a held request replaces it
+        alike, and a plain post leaves it in place). The helper holds it up to its `wait` whoever holds the link,
+        answers it at once when a newer request of its client arrives or the game it tells changes, as a held
         request, and at once while no device holds the link: as it arrives, and the moment the holder stops counting (a
-        watch or a LAN phone whose last held request grew older than 25 s, a Bluetooth phone 25 s after its last held
-        answer went, a central gone). That answer says `unheld`. A phone that reads `unheld: true` takes the link at
-        once: it counts its watch's play session as not holding the link until the watch next tells its session (its
+        device whose last held request grew older than 25 s). That answer says `unheld`. A phone that reads
+        `unheld: true` takes the link at once:
+        it counts its watch's play session as not holding the link until the watch next tells its session (its
         application context or message, or its Data Layer item), and sends its held request; it follows any other
         answer with the next standing request while it still steps back, at once but never within a second of the one
         before, so a helper from before this, which answers it at once as a plain post, costs one exchange a second at
@@ -647,26 +539,41 @@ paths:
 
         Since slice 51 a phone that steps back for its watch keeps the game pump on its screen as a mirror: the helper
         answers a standing request from a paired phone (`ios`, `android`) at once whenever a command of a game pump is
-        queued for the holder (`pump_offered`, `countdown`, `move_end`, `move_counted`, `verdict`, `pump_done` and
-        `session_end`), and every standing answer carries those of them whose `seq` is above the request's `since`, in
-        `seq` order, as `mirror` (left out when there is none), with `next` the highest `seq` among them (the request's
-        own `since` when there is none), so the next standing request asks only what came after. The phone shows the
+        queued for the holder (`pump_offered`, `countdown`, `keep` since 2026-11-19, `move_end`, `move_counted`,
+        `verdict`, `pump_done` and `session_end`), and every standing answer carries those of them whose `seq` is above
+        the request's `since`, in `seq` order, as `mirror` (left out when there is none), with `next` the highest `seq`
+        among them (the request's own `since` when there is none), so the next standing request asks only what came
+        after. The helper keeps a `pump_offered` for the mirror 120 s, so since 2026-11-19 a phone that begins to mirror
+        an older pump still on (its `since` is below the `seq` of the pump's latest `pump_offered`) gets that
+        `pump_offered` again, first in its `mirror`: under the same `seq`, as the game has the pump now, with a new
+        `sent_at` and `expires_at`, and never again once its `since` passed that `seq`. The phone shows the
         pump from them as it shows the commands it holds the link for (the moves, the countdown, the move's count with
         the record mark, the verdict, the end) and never acts on them as the holder: it sends no `WristEvent`, starts
         no Health session for them and acknowledges nothing (a standing request never acknowledges the holder's
         commands; the helper keeps each until the holder's own `since` passes it). The step-back no longer ends the
         phone's game pump: a phone that takes the link back (`unheld`) goes on from the mirror's latest state, its
         held request's `since` being the `next` its last standing answer gave, and the helper sends the pump's
-        `pump_offered` again when that `since` is below its latest one, as for any holder. A helper from before this
-        sends no `mirror`, and the phone shows its own last state of the pump, as before.
-
-        Since slice 43 a phone's held and plain syncs go over Bluetooth while it links (the description above): the
-        same bodies, the same rules, a held request's `wait` up to 600,000 there, and its client counted alive as the
-        link's holder past 25 s only while one of its held requests is pending at the helper, and for 25 s after its
-        last was answered (a watch that synced within 25 s still comes first); a disconnect or an unsubscribe hands the
-        link on at once, and a phone that stops its held sync turns `tx`'s notifications off, Bluetooth's only way to
-        call a request off. A phone whose Bluetooth link drops mid-request sends the next over the LAN, and the helper
-        takes an event or a row sent again over the other transport once, as it takes one sent again on the LAN.
+        `pump_offered` again when that `since` is below its latest one, as for any holder. That `since` may lie above a
+        command of a kind the mirror does not carry (`turn_in`, `quest_complete`, `match_end`) that waited for the
+        holder meanwhile and that no response carried to a device: since 2026-11-19 the helper gives such a command a
+        new `seq` as the phone holds the link, so it reaches the phone as any waiting command does and is never
+        acknowledged unseen (until then the phone's `since` acknowledged it, and a match's offer queued as its watch
+        went quiet reached no device). Where no mirror comes (a
+        helper from before this, which sends none, or a link that fails), the phone ends its game pump at the
+        step-back (since slice 76 on both phones; until then it kept its own last state of the pump). On a locked
+        iPhone the Live Activity shows the same pump by the pump push (contract/sync-api.yaml, "The pump push"),
+        whichever device holds the link. Three rules keep the mirror whole on both phones. A phone's `since` moves
+        only by an answer whose `next` differs from the `since` its request carried: a plain post's answer says its
+        own `since` back, and one under way while a standing answer came would set it back and bring the mirrored
+        commands again. After a standing request fails the phone asks `/v1/ping` first and counts the link as back
+        when that answers: its next standing request may wait at the helper longer than the 20 s that let a
+        mirrored pump go. And of a mirrored pump the phone keeps what it ran itself before the mirror's first
+        command, in its history and in Apple Health or Health Connect, written as the mirror begins, and no move
+        the mirror showed, once it holds the link again either (since 2026-11-19; until then the pump's end on the
+        phone kept every move on its screen, and the moves the watch ran counted twice): a move the game started
+        or ended while the phone mirrored stays the watch's, the phone's history lists the moves it ran itself, and
+        what it runs after a move the mirror showed goes to Health as a workout of its own, from the first of those
+        moves' goes to the last one's end.
       requestBody:
         required: true
         content:
@@ -745,17 +652,9 @@ paths:
             verdict comes about a minute after the go, so a device that read the pump row before it asks again from its
             oldest kept pump row without a verdict, at most 14 days and at least one day back)
           schema: { type: integer, format: int64, minimum: 0 }
-        - name: limit
-          in: query
-          required: false
-          description: |
-            Since slice 43: the most rows this page holds (default and most 5,000). A phone asks 500 on Bluetooth
-            (`contract/fixtures/ble.json` `limits.pages`), so a page's envelope stays far under 2 MiB, and none on the
-            LAN; `next` and `more` count as for any page. A helper before it ignores it.
-          schema: { type: integer, minimum: 1, maximum: 5000 }
       responses:
         "200":
-          description: At most `limit` rows (5,000 when absent) after `after`, in the store's order
+          description: At most 5,000 rows after `after`, in the store's order
           content:
             application/octet-stream:
               schema: { $ref: "#/components/schemas/Sealed" }
@@ -792,16 +691,9 @@ paths:
           required: false
           description: The rows of this store the device has read already (default 0)
           schema: { type: integer, format: int64, minimum: 0 }
-        - name: limit
-          in: query
-          required: false
-          description: |
-            Since slice 43: the most app rows this page holds (default and most 5,000); a phone asks 500 on Bluetooth
-            and none on the LAN, as for `/v1/history`. A helper before it ignores it.
-          schema: { type: integer, minimum: 1, maximum: 5000 }
       responses:
         "200":
-          description: At most `limit` app rows (5,000 when absent) after `after`, in the order the helper took them
+          description: At most 5,000 app rows after `after`, in the order the helper took them
           content:
             application/octet-stream:
               schema: { $ref: "#/components/schemas/Sealed" }
@@ -827,6 +719,13 @@ paths:
         null while the desktop app has no account (its Sync off, or no account made yet), and then a phone with one
         asks Add. A watch has no use for it and never calls it; a GET names no device, so the route cannot refuse
         one, and the pairing key a watch holds already opens every body here.
+
+        Since slice 76 the answer also says `pushes`: whether the desktop app tells its account the game's pumps for
+        the pump push (contract/sync-api.yaml, "The pump push"). An iPhone reads it in the same two asks, and again
+        as the app comes forward and at Follow the game off screen; where the answer's `account` is the phone's own
+        and `pushes` is true, the push carries Follow the game on a locked phone, so the phone asks the account for
+        it and needs no Apple Health to follow. It travels sealed, as this answer does, so the plain hello says
+        nothing of it.
       responses:
         "200":
           description: The desktop app's account
@@ -916,17 +815,9 @@ paths:
           required: false
           description: The sheets of this store the device holds already (default 0)
           schema: { type: integer, format: int64, minimum: 0 }
-        - name: limit
-          in: query
-          required: false
-          description: |
-            Since slice 43: the most sheets this page holds (default and most 1,000); a phone asks 50 on Bluetooth,
-            since a sheet summary runs to kilobytes, and none on the LAN, as for `/v1/history`. A helper before it
-            ignores it.
-          schema: { type: integer, minimum: 1, maximum: 1000 }
       responses:
         "200":
-          description: At most `limit` sheets (1,000 when absent) after `after`, in the order the helper read them
+          description: At most 1,000 sheets after `after`, in the order the helper read them
           content:
             application/octet-stream:
               schema: { $ref: "#/components/schemas/Sealed" }
@@ -1037,22 +928,6 @@ components:
             pairing: an addon older than 2026-10-13, or no square read yet). Absent from an older helper; a device
             reads it absent, or a value it does not know, as `grant` while `sight` is `no_grant` and as `either`
             otherwise.
-        ble:
-          type: string
-          enum: ["on", ask, no_grant, "off", no_peripheral, none, stopped]
-          description: |
-            Since slice 43, in every response: how the computer's Bluetooth link stands (the description's "The
-            Bluetooth link"), which the phones' pairing window, follow card and Helper page say and the computer's
-            Phones page shows. `on`: it serves the link (advertising while a phone is paired or the pairing code shows,
-            on the Phones page or in a pairing window); `ask`: macOS has yet to answer QuestPump's
-            Bluetooth grant, which the Phones page or the pairing window asks in context, both before its question
-            shows and while it shows; `no_grant`: the grant is refused (macOS's Privacy & Security, Bluetooth; on
-            Windows, the system's privacy settings or a policy); `off`: the computer's Bluetooth is turned off;
-            `no_peripheral`: its adapter cannot serve phones (a Windows PC without the peripheral role), so phones link
-            on Wi-Fi alone; `none`: the computer has no Bluetooth; `stopped`: the player turned the link off on the
-            Phones page, or it stopped or could not start there (the Phones page says which). Absent
-            from an older helper; a device reads it absent, or a value it does not know, as unknown, and then offers
-            no Bluetooth step and gives no Bluetooth reason.
     HelloResponse:
       type: object
       required: [v, n, h, k]
@@ -1148,22 +1023,20 @@ components:
           type: integer
           format: int64
           minimum: 5000
-          maximum: 600000
+          maximum: 15000
           description: |
             Since 2026-10-13: milliseconds the helper may hold this held request while no command waits for the device
-            (the request is still answered at once when one does). 5000 when absent; the helper clamps it by the
-            transport the request came on: on the LAN to 5000-15000, inside the 25 s in which a held request keeps its
-            client the link's holder, and since slice 43 on Bluetooth to 5000-600000 (`ble_wait_max_ms`), where the
-            request keeps its client the holder while it is pending at the helper. It holds the request of a client
+            (the request is still answered at once when one does). 5000 when absent; the helper clamps it to
+            5000-15000, inside the 25 s in which a held request keeps its client the link's holder (15000 is the most
+            again since slice 76; the Bluetooth link's 600000 went with that link), and holds the request of a client
             that does not hold the link as it arrives 5 s whatever its `wait`, so a phone that takes the link over from
-            a watch that stopped syncing hears its first command within 5 s. A phone sends 15000 on the LAN, and 600000
-            on Bluetooth, while no pump runs on it and it has no window with a heart rate or a pump, no events and no
-            rows to send (and cuts the wait short to send one that comes up meanwhile), so a phone that follows a game
-            in the background asks a third as often on the LAN and once in ten minutes on Bluetooth, where each answer
-            wakes it; a watch never sends it (its 5-s batches carry heart rate). A client reads a held request for its
+            a watch that stopped syncing hears its first command within 5 s. A phone sends 15000 while no pump runs on
+            it and it has no window with a heart rate or a pump, no events and no rows to send (and cuts the wait short
+            to send one that comes up meanwhile), so a phone that follows a game in the background asks a third as
+            often; a watch never sends it (its 5-s batches carry heart rate). A client reads a held request for its
             wait and 10 s more. Since the review of 2026-10-17 a request with `hold: false` and a `wait` is a standing
             request (`/v1/sync`), whose `wait` the helper honours whoever holds the link; a phone that steps back for its
-            watch sends 600000 with it over Bluetooth.
+            watch sends 15000 with it.
         offer_taken:
           type: string
           description: |
@@ -1589,8 +1462,9 @@ components:
             The since to send next: for the device that holds the link, the helper's current sequence (it covers
             exactly the commands this response delivered); for any other device, a superseded request, a plain post and
             a standing request, the request's own since (0 when it belongs to another run of the helper), except a
-            standing answer that carries `mirror` (since slice 51), whose `next` is the highest `seq` among them. The
-            sequence only grows, across the helper's restarts too.
+            standing answer that carries `mirror` (since slice 51), whose `next` is the highest `seq` among them (a
+            waiting command of another kind below it comes under a new `seq` once the phone holds the link,
+            `/v1/sync`). The sequence only grows, across the helper's restarts too.
         locked_until:
           type: integer
           format: int64
@@ -1642,9 +1516,8 @@ components:
             offer's `arms` holds and either its latest sync response is fresh and carried `arms`, or none is fresh
             (away from the computer: the offer's `arms` alone). A response is fresh for 60 s after it arrived, and
             longer while the device's held or standing request sent after it still waits on the same link: then for
-            that request's wait plus 60 s (a held request waits up to 10 minutes on Bluetooth), since the helper
-            answers a waiting request at once when `arms` changes (`/v1/sync`). The computer's own pump rests the arms
-            by the same fact as it starts.
+            that request's wait plus 60 s, since the helper answers a waiting request at once when `arms` changes
+            (`/v1/sync`). The computer's own pump rests the arms by the same fact as it starts.
         game_offer_at:
           type: integer
           format: int64
@@ -1692,9 +1565,10 @@ components:
           items: { $ref: "#/components/schemas/Command" }
           description: |
             Since slice 51, only on a standing request's answer to a paired phone (`hold: false` with `wait`): the game
-            pump's commands queued for the device that holds the link (`pump_offered`, `countdown`, `move_end`,
-            `move_counted`, `verdict`, `pump_done`, `session_end`) whose `seq` is above the request's `since`, in `seq`
-            order, left out when there is none. The phone shows them and never acknowledges or answers them: no
+            pump's commands queued for the device that holds the link (`pump_offered`, `countdown`, `keep`,
+            `move_end`, `move_counted`, `verdict`, `pump_done`, `session_end`) whose `seq` is above the request's
+            `since`, in `seq` order, the pump's `pump_offered` first where the phone never heard it, left out when
+            there is none. The phone shows them and never acknowledges or answers them: no
             `WristEvent`, no `received`, no Health session (`/v1/sync`, "a phone that steps back for its watch keeps
             the game pump on its screen as a mirror"). A device that does not know it ignores it.
         work:
@@ -2111,6 +1985,12 @@ components:
         r: { type: [string, "null"], description: "the account's root secret R, 16 bytes, base64url without padding" }
         devices: { type: integer, minimum: 0, description: "the account's devices as the server last listed them" }
         email: { type: boolean, description: "whether an email is linked to the account" }
+        pushes:
+          type: boolean
+          description: |
+            Since slice 76: true while the desktop app tells its account the game's pumps (its Sync on, in an account:
+            contract/sync-api.yaml, "The pump push"), false while it does not. Absent from an older desktop app, which
+            a phone reads as false.
     AccountRequest:
       type: object
       required: [device, sent_at, account, r]

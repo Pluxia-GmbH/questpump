@@ -4001,21 +4001,6 @@
    ],
    "note": "Under the code: {name} is the computer's name, {host} its address on the home network."
   },
-  "desk.menu.phones.address.ble": {
-   "text": "{name} · {host}: your phone pairs by Bluetooth now, and on Wi-Fi once it can reach this PC (above)",
-   "args": {
-    "name": "string",
-    "host": "string"
-   },
-   "screens": [
-    "desk.menu.phones",
-    "desk.welcome"
-   ],
-   "platforms": [
-    "windows"
-   ],
-   "note": "Under the code on Windows while the firewall card shows and the Bluetooth link serves (ble on): the code shows beside the card, since a phone that cannot reach the PC on Wi-Fi pairs by Bluetooth (2026-10-17)."
-  },
   "desk.menu.phones.address.firewall": {
    "text": "{name} · {host}: pair once your phone can reach this PC (above)",
    "args": {
@@ -4029,7 +4014,7 @@
    "platforms": [
     "windows"
    ],
-   "note": "Under the firewall card on Windows while the Bluetooth link does not serve: the code shows once the rule lets the phone in (desk.menu.phones.address.ble while it serves)."
+   "note": "Under the firewall card on Windows: the code shows once the rule lets the phone in."
   },
   "desk.menu.phones.address.lan": {
    "text": "{name}: the phone cannot reach QuestPump yet ({error}); it tries again each minute",
@@ -4084,84 +4069,6 @@
     "desk.menu.phones"
    ],
    "note": "A button once a phone is paired: it shows the code again."
-  },
-  "desk.menu.phones.ble.ask": {
-   "text": "Waiting for Bluetooth. If macOS asks, allow it.",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "platforms": [
-    "macos"
-   ]
-  },
-  "desk.menu.phones.ble.failed": {
-   "text": "The Bluetooth link could not start. Turn it off and on again to try once more.",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "note": "The Bluetooth row's line when the link never started (2026-10-17: the system's own error stays in helper.log, never on the page)."
-  },
-  "desk.menu.phones.ble.linked": {
-   "text": "{phone} is linked by Bluetooth.",
-   "args": {
-    "phone": "string"
-   },
-   "screens": [
-    "desk.menu.phones"
-   ]
-  },
-  "desk.menu.phones.ble.lost": {
-   "text": "The Bluetooth link stopped. Turn it off and on again to start it once more.",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "note": "The Bluetooth row's line when the link ran and then stopped on an error (2026-10-17; desk.menu.phones.ble.failed when it never started). The system's own error stays in helper.log."
-  },
-  "desk.menu.phones.ble.none": {
-   "text": "This computer has no Bluetooth, so your phone follows the game on Wi-Fi alone.",
-   "screens": [
-    "desk.menu.phones"
-   ]
-  },
-  "desk.menu.phones.ble.noperipheral": {
-   "text": "The Bluetooth in this PC can't link phones, so your phone follows the game on Wi-Fi alone.",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "platforms": [
-    "windows"
-   ]
-  },
-  "desk.menu.phones.ble.off": {
-   "text": "Bluetooth is off: turn it on so your phone can link by Bluetooth.",
-   "screens": [
-    "desk.menu.phones"
-   ]
-  },
-  "desk.menu.phones.ble.refused": {
-   "text": "Bluetooth is not allowed for QuestPump. Allow it in System Settings, Privacy & Security, Bluetooth, so your phone can link by Bluetooth.",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "platforms": [
-    "macos"
-   ]
-  },
-  "desk.menu.phones.ble.refused.windows": {
-   "text": "Bluetooth is not allowed for QuestPump. Allow it in your privacy settings, so your phone can link by Bluetooth.",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "platforms": [
-    "windows"
-   ]
-  },
-  "desk.menu.phones.ble.title": {
-   "text": "Bluetooth link",
-   "screens": [
-    "desk.menu.phones"
-   ],
-   "note": "The Phones page's switch for linking phones by Bluetooth (slice 43)."
   },
   "desk.menu.phones.code": {
    "text": "The pairing code for your phone",
@@ -4523,7 +4430,7 @@
    "note": "The heading of the first start's step that sets the floor moves, room to move and quiet mode on this computer, and of the window that asks it once before the first own pump on a computer that never did."
   },
   "desk.plist.bluetooth": {
-   "text": "QuestPump links your phone by Bluetooth, so it gets each pump with its screen locked, and reads your heart-rate strap and walking pad.",
+   "text": "QuestPump reads your heart-rate strap during your pumps and the distance your walking pad counts while you play.",
    "screens": [
     "system"
    ],
@@ -4534,7 +4441,7 @@
     "file": "helper/src-tauri/Info.plist",
     "key": "NSBluetoothAlwaysUsageDescription"
    },
-   "note": "The Mac's question before the desktop app first uses Bluetooth: on the Phones page while its Bluetooth link is on (slice 43), or once the player turns on a heart-rate strap or a walking pad (helper/src-tauri/Info.plist)."
+   "note": "The Mac's question before the desktop app first uses Bluetooth, once the player turns on a heart-rate strap or a walking pad (helper/src-tauri/Info.plist)."
   },
   "desk.plist.screen": {
    "text": "QuestPump reads the small row of coloured squares the QuestPump addon shows in the corner of World of Warcraft.",
@@ -5939,7 +5846,7 @@
    "screens": [
     "desk.games"
    ],
-   "note": "The switch at the top of a game's window on the Games tab, for a game QuestPump hears only by its program closing (a found or added program; Counter-Strike 2, Dota 2, Rocket League or Hearthstone before Ask after each match): on, its close offers a pump; off, it offers none. It says when, so the window needs no other row for it (Rapha, 2026-10-26: \"make it super precise and clear what things do\"; Offer a pump with an Asks after row until then). The game's line while a step is owed shows under it. {game} is its name (links.name.<key>, a found or picked program's).",
+   "note": "The switch at the top of a game's window on the Games tab, for a game QuestPump hears only by its program closing (a found or added program; Teamfight Tactics, whose own client holds every match; Counter-Strike 2, Dota 2, Rocket League or Hearthstone before Ask after each match): on, its close offers a pump; off, it offers none. It says when, so the window needs no other row for it (Rapha, 2026-10-26: \"make it super precise and clear what things do\"; Offer a pump with an Asks after row until then). The game's line while a step is owed shows under it. {game} is its name (links.name.<key>, a found or picked program's).",
    "args": {
     "game": "string"
    },
@@ -12531,12 +12438,12 @@
    "translate": false
   },
   "links.name.league": {
-   "text": "League of Legends and Teamfight Tactics",
+   "text": "League of Legends",
    "screens": [
     "desk.games"
    ],
    "translate": false,
-   "note": "The two games' own names, as Riot writes them: one switch, since both run in the same game process, which the desktop app hears closing (its offer says League of Legends or TFT)."
+   "note": "The game's own name, as Riot writes it: a game's name on its tile and in its window on the desktop app's Games tab (contract/links.json's computer list: heard by its game process, which runs one match, closing). Until 2026-11-18 League of Legends and Teamfight Tactics, one switch, while Teamfight Tactics ran in the same game process; it has its own client and its own tile since (links.name.teamfighttactics)."
   },
   "links.name.lemans": {
    "text": "Le Mans Ultimate",
@@ -12684,6 +12591,14 @@
     "desk.games"
    ],
    "note": "The game's own name, as its publisher writes it: a game's name on its tile and in its window on the desktop app's Games tab (contract/links.json's computer list, 2026-10-29: heard through its logs as a raid begins and is left).",
+   "translate": false
+  },
+  "links.name.teamfighttactics": {
+   "text": "Teamfight Tactics",
+   "screens": [
+    "desk.games"
+   ],
+   "note": "The game's own name, as Riot writes it: a game's name on its tile and in its window on the desktop app's Games tab (contract/links.json's computer list, 2026-11-18: its own client since Riot's patch 18.6, one program for the lobby and every match, so it is heard when that program closes, never after each match).",
    "translate": false
   },
   "links.name.teamfortress": {
@@ -18249,47 +18164,6 @@
    "max": 24,
    "note": "The follow card's button and the helper page's while Apple Health was never asked: shows Health's own permission sheet (2026-10-14). Apple Health is Apple's app: keep its name."
   },
-  "pump.follow.ble.denied.ios": {
-   "text": "QuestPump may not use Bluetooth on this {device}. Allow it in Settings to follow the game while it's locked.",
-   "args": {
-    "device": "string"
-   },
-   "screens": [
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The iPhone's state ble_denied (2026-10-17): Settings turned off QuestPump's Bluetooth or its accessory's access, while this device's Bluetooth is on. Open Settings goes to QuestPump's page there. {device} is the device's own word, iPhone or iPad (AboutPage.device; 2026-10-19)."
-  },
-  "pump.follow.ble.off.ios": {
-   "text": "Bluetooth is off on this {device}. Turn it on in Control Center to follow the game while it's locked.",
-   "args": {
-    "device": "string"
-   },
-   "screens": [
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "{device} is the device's own word, iPhone or iPad (AboutPage.device; 2026-10-19)."
-  },
-  "pump.follow.ble.start": {
-   "text": "Link {computer} by Bluetooth",
-   "screens": [
-    "pump.tab"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "args": {
-    "computer": "string"
-   },
-   "note": "The follow card's button: links {computer}, the computer's name, by Bluetooth (2026-10-22: no line over it)."
-  },
   "pump.follow.control.about": {
    "text": "Shows each pump from the game on your Lock Screen.",
    "screens": [
@@ -18316,6 +18190,16 @@
    "max": 40,
    "note": "While the phone follows a running game in the background (the helper's game_asks, 2026-10-13): the line of Android's ongoing notification between pumps, its private content (its public version says live.following), and the iPhone's Live Activity between pumps, in the Dynamic Island alone (the Lock Screen's says live.following). {computer} is the computer's name."
   },
+  "pump.follow.later": {
+   "text": "Not now",
+   "screens": [
+    "pump.tab"
+   ],
+   "platforms": [
+    "ios"
+   ],
+   "note": "Apple Health's Not now on Pump home's follow card on the iPhone (Rapha, 2026-11-11; a key of its own since slice 76, setup.pairing.ble.later until then): puts the card's Apple Health reason away for this pairing; a new pairing brings it back."
+  },
   "pump.follow.needs.health": {
    "text": "To follow the game on the Lock Screen, let QuestPump save workouts in Apple Health.",
    "screens": [
@@ -18324,7 +18208,7 @@
    "platforms": [
     "ios"
    ],
-   "note": "Pump home's follow card on the iPhone while Apple Health may not save QuestPump's workouts: the play session that keeps following the game with the phone locked needs it (2026-10-14). Apple Health is Apple's app: keep its name."
+   "note": "Pump home's follow card on the iPhone while Apple Health may not save QuestPump's workouts: the play session that keeps following the game with the phone locked needs it (2026-10-14). Since slice 76 only where no pump push carries the following (the phone's Sync off, the computer in another account, or a desktop app from before that slice): the push needs no session. Apple Health is Apple's app: keep its name."
   },
   "pump.follow.needs.live": {
    "text": "Live Activities are off for QuestPump. Turn them on to see each pump on your Lock Screen.",
@@ -18449,137 +18333,6 @@
    ],
    "note": "{count} is how many owed moves the game puts into its next pump."
   },
-  "pump.helper.ble.ask": {
-   "text": "Open the Phones page of QuestPump on {computer} and allow Bluetooth there.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "pump.tab",
-    "menu.helper",
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The computer has not answered QuestPump's Bluetooth question yet (ble ask)."
-  },
-  "pump.helper.ble.away": {
-   "text": "Linked, out of reach",
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The Bluetooth link row's state: linked, the computer not in Bluetooth range now."
-  },
-  "pump.helper.ble.computeroff": {
-   "text": "Bluetooth is off on {computer}. Turn it on there to link by Bluetooth.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "pump.tab",
-    "menu.helper",
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
-  "pump.helper.ble.linked": {
-   "text": "Linked",
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The Bluetooth link row's state: linked and in reach."
-  },
-  "pump.helper.ble.none": {
-   "text": "{computer} has no Bluetooth, so this phone follows the game on Wi-Fi.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
-  "pump.helper.ble.noperipheral": {
-   "text": "The Bluetooth on {computer} can't link phones, so this phone follows the game on Wi-Fi.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "ble no_peripheral: a Windows PC whose Bluetooth adapter cannot serve phones."
-  },
-  "pump.helper.ble.refused": {
-   "text": "QuestPump on {computer} may not use Bluetooth. Its Phones page there says where to allow it.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "pump.tab",
-    "menu.helper",
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "ble no_grant: the computer refused QuestPump's Bluetooth (macOS's Privacy & Security, or Windows' privacy settings or a policy). The phone cannot tell a Mac from a PC, so the words send the player to the computer's Phones page, which names the place (2026-10-17)."
-  },
-  "pump.helper.ble.remove": {
-   "text": "Remove the Bluetooth link",
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
-  "pump.helper.ble.stopped": {
-   "text": "QuestPump on {computer} has its Bluetooth link off. Its Phones page turns it back on.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "pump.tab",
-    "menu.helper",
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "ble stopped: the player turned the link off on the computer, or it could not start there."
-  },
-  "pump.helper.ble.title": {
-   "text": "Bluetooth link",
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
-  "pump.helper.ble.unlinked": {
-   "text": "Not linked",
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
   "pump.helper.blind": {
    "text": "QuestPump on {computer} can't see the game, so no countdown comes. Its window there says why.",
    "args": {
@@ -18611,18 +18364,6 @@
     "system"
    ],
    "note": "{computer} is the computer's name. Since 2026-10-13 also the line of Android's ongoing notification while the phone follows the game (LinkLine, one owner with the chip)."
-  },
-  "pump.helper.linked.ble": {
-   "text": "Connected to {computer} by Bluetooth",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ]
   },
   "pump.helper.linked.wifi": {
    "text": "Connected to {computer} on Wi-Fi",
@@ -19437,7 +19178,7 @@
    "platforms": [
     "ios"
    ],
-   "note": "The notice a pump from the game posts on a locked iPhone while no Live Activity shows (slice 43)."
+   "note": "The title of the alert a pump from the game brings to an iPhone that is not in front: of the notice the app posts while no Live Activity shows (slice 43), and since slice 76 of the alert the pump push's offer brings to a locked iPhone, which names it by this key (contract/sync-api.yaml, `ActivityAsk.title`). The same words for every pump."
   },
   "pump.objective.heart": {
    "text": "Heart rate counted",
@@ -19841,7 +19582,7 @@
     "surface.live",
     "system"
    ],
-   "note": "Start is a button in the game: keep it as the game names it. Also the body of the alert a game pump brings to a phone not in front (the iPhone's Live Activity or its time-sensitive notice, Android's pop-up; 2026-10-13)."
+   "note": "Start is a button in the game: keep it as the game names it. Also the body of the alert a game pump brings to a phone not in front (the iPhone's Live Activity or its time-sensitive notice, Android's pop-up; 2026-10-13), and since slice 76 of the alert the pump push's offer brings to a locked iPhone, which names it by this key (contract/sync-api.yaml, `ActivityAsk.body`)."
   },
   "pump.ready.game.locked": {
    "text": "You said you felt unwell. Skip this pump: in the game, click Pause and pick I feel unwell.",
@@ -21550,7 +21291,7 @@
     "windows"
    ],
    "max": 90,
-   "note": "The offer's line after a game on the computer ended (slice 35; these words since slice 48's double-check): {link} is the game's name as the match_end command carries it (Counter-Strike 2, Dota 2, League of Legends or TFT, Rocket League). Never a win or a loss. Pump home's offer card on the computer, a phone's notification and a watch's notice on its session screen say it alike; the computer's match-over card names the game alone since 2026-10-22."
+   "note": "The offer's line after a game on the computer ended (slice 35; these words since slice 48's double-check): {link} is the game's name as the match_end command carries it (Counter-Strike 2, Dota 2, League of Legends, Rocket League). Never a win or a loss. Pump home's offer card on the computer, a phone's notification and a watch's notice on its session screen say it alike; the computer's match-over card names the game alone since 2026-10-22."
   },
   "reminders.notify.game.body.match": {
    "text": "You finished a game on {link}. Ready for a pump?",
@@ -22800,18 +22541,6 @@
    ],
    "note": "Title of the first-start page that connects the game through the helper on the computer."
   },
-  "setup.ble.link": {
-   "text": "Connect by Bluetooth",
-   "screens": [
-    "setup.pairing",
-    "pump.tab",
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The button that links this phone to the computer by Bluetooth (the iPhone's accessory picker, Android's Nearby devices and companion-device dialog)."
-  },
   "setup.camera.failed.title": {
    "text": "The camera did not start",
    "screens": [
@@ -22997,107 +22726,6 @@
    ],
    "note": "iPhone only: title of the window before iOS asks for Motion & Fitness, the steps of a pump the phone times."
   },
-  "setup.pairing.ble.done": {
-   "text": "Linked to {computer} by Bluetooth.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
-  "setup.pairing.ble.failed": {
-   "text": "Could not link by Bluetooth. Keep this phone near {computer}, with Bluetooth on there and QuestPump showing its pairing code, then try again.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing",
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The computer advertises while a phone is paired or its pairing code shows (its Phones page or its pairing window), and the pairing code's page asks the Mac's Bluetooth grant in context, so showing the code is the step that always works (2026-10-17)."
-  },
-  "setup.pairing.ble.later": {
-   "text": "Not now",
-   "screens": [
-    "pump.tab",
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "Skips the Bluetooth step; Pump's follow card and the Helper page offer it again. On Pump's follow card (2026-10-19, the program's double-check) it puts away the card's Bluetooth reason (the link, Nearby devices or Bluetooth refused or off, the computer's ask, its Bluetooth refused or off) for this pairing; a new pairing or Link on the Helper page brings it back, and the Helper page still offers the link. On the iPhone it also puts away the card's Apple Health reason for this pairing (Rapha, 2026-11-11); a new pairing brings it back."
-  },
-  "setup.pairing.ble.line.ios": {
-   "text": "Link this {device} to {computer} by Bluetooth. Then each pump shows on your Lock Screen, also while it's locked or away from your Wi-Fi.",
-   "args": {
-    "device": "string",
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The Bluetooth step's line on the iPhone and the iPad; {computer} is the computer's name, {device} the device's own word, iPhone or iPad (AboutPage.device; 2026-10-19)."
-  },
-  "setup.pairing.ble.linking": {
-   "text": "Linking to {computer}…",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing",
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ]
-  },
-  "setup.pairing.ble.other": {
-   "text": "The QuestPump that answered is not {computer} with this pairing code. Try again and pick the other one in the list, or scan its pairing code again.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing",
-    "menu.helper"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The computer picked over Bluetooth is not the one this phone is paired with. The list (the iPhone's accessory picker, Android's companion-device dialog) cannot tell two QuestPump computers apart by name, so the words point to the other entry (2026-10-17). Since 2026-11-01 the Bluetooth hello proves only the key (the release security review of 2026-10-31, L3), so the paired computer with a new pairing code reads as another computer, and the words name both ways out."
-  },
-  "setup.pairing.ble.pick": {
-   "text": "In the list that opens, pick QuestPump on {computer}.",
-   "args": {
-    "computer": "string"
-   },
-   "screens": [
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "Under the line, before the system's accessory picker opens; QuestPump on {computer} is the picker's item (setup.ble.picker)."
-  },
-  "setup.pairing.ble.title": {
-   "text": "Link by Bluetooth",
-   "screens": [
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The pairing window's step after Paired, before the game's step (slice 43): it links this phone to the computer by Bluetooth."
-  },
   "setup.pairing.confirm.again": {
    "text": "Pair again with {name}?",
    "args": {
@@ -23189,19 +22817,6 @@
     "ios"
    ],
    "note": "Under Paired with the computer on the iPhone while the helper's step is none (2026-10-14): the iPhone follows the game only once Follow the game starts it, or once the app is opened while the game runs. Follow the game and Pump are the button's and the tab's own words."
-  },
-  "setup.pairing.next.done.ios.ble": {
-   "text": "All set. Each pump from the game comes to your Lock Screen, also while this {device} is locked.",
-   "args": {
-    "device": "string"
-   },
-   "screens": [
-    "setup.pairing"
-   ],
-   "platforms": [
-    "ios"
-   ],
-   "note": "The pairing window's last step on an iPhone or iPad linked by Bluetooth (setup.pairing.next.done.ios without it). {device} is the device's own word, iPhone or iPad (AboutPage.device; 2026-10-19)."
   },
   "setup.pairing.next.either": {
    "text": "Next, in the game, type /reload, or press Check again if its setup window is open.",

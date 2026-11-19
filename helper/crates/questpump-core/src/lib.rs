@@ -1,16 +1,16 @@
 //! The QuestPump helper's rules, with no platform code (rust-helper `SKILL.md`, rule 2): the pixel strip's decoder, the
 //! row store, the app's rows and the sheet log, the session that turns frames into rows, device commands and mirror
 //! writes, the `QuestPump_Mirror` writer and its reader, the socket protocol, the pair link, the link's seal and command
-//! queue, the Bluetooth link's envelopes and chunks, the body every app device shares, the heart-rate verdict, each
-//! pump's proof, the Bluetooth parsers (the strap's heart rate, the walking pad's treadmill data and control point), the
-//! feedback button's message, the desktop app's crash reports with their opt-in regions, its anonymous counts with the
-//! catalog they keep to, the outbox all three go out through, the games on the computer (Steam's key-values files and
-//! its record of each app's type, the games' state machine, Valve's Game State Integration, Psyonix's Stats API, the
-//! fed games' feeds, the detector's deny lists, the offer after a match and the sitting clock that warms its pump), the
-//! check of a phone's Pro proof with the grants it gives, the backup file the desktop app writes and reads, the
-//! sync's keys, codes and batches with the other computers' game rows it brings (slice 60), and the addon's signed
-//! release feed with its zip, its install record and the folders' swap (the zip read by `zip`), and the places (slice
-//! 51) and work mode's shared state and clock (slice 67). The app crate is the shell around it.
+//! queue, the body every app device shares, the heart-rate verdict, each pump's proof, the Bluetooth parsers (the
+//! strap's heart rate, the walking pad's treadmill data and control point), the feedback button's message, the desktop
+//! app's crash reports with their opt-in regions, its anonymous counts with the catalog they keep to, the outbox all
+//! three go out through, the games on the computer (Steam's key-values files and its record of each app's type, the
+//! games' state machine, Valve's Game State Integration, Psyonix's Stats API, the fed games' feeds, the detector's deny
+//! lists, the offer after a match and the sitting clock that warms its pump), the check of a phone's Pro proof with
+//! the grants it gives, the backup file the desktop app writes and reads, the sync's keys, codes and batches with the
+//! other computers' game rows it brings (slice 60), and the addon's signed release feed with its zip, its install
+//! record and the folders' swap (the zip read by `zip`), and the places (slice 51) and work mode's shared state and
+//! clock (slice 67). The app crate is the shell around it.
 
 #![forbid(unsafe_code)]
 
@@ -28,7 +28,6 @@ pub mod addon;
 pub mod app_rows;
 pub mod appinfo;
 pub mod backup;
-pub mod ble;
 pub mod blob;
 pub mod body;
 pub mod codes;

@@ -651,16 +651,21 @@ ENCODINGS = {
 
 def encode(frames, tick, into):
     """The film of `frames` played by `tick` (each tick's index into `frames`) at P.HZ in FILM_COLOUR, once in each of
-    ENCODINGS, into `into` (a folder of the caller's own): {folder: its file}. Raises when ffmpeg fails."""
+    ENCODINGS, into `into` (a folder of the caller's own): {folder: its file}. Raises when ffmpeg fails.
+
+    The listing names one image a tick and ffmpeg stamps them itself, P.HZ a second (`-r` before the input), never
+    a `duration` a tick: that is rounded into the images' own 1/25 s time base, where every sixth tick's stamp falls
+    on its neighbour's, so the film shows tick 6k + 3's frame at tick 6k + 2 too and never tick 6k + 2's own (step
+    jacks, each film frame matched to its stored frame, 2026-11-18)."""
     listing = os.path.join(into, "list.txt")
     with open(listing, "w") as fh:
         for c in tick:
-            fh.write(f"file '{frames[c]}'\nduration {1 / P.HZ:.6f}\n")
+            fh.write(f"file '{frames[c]}'\n")
     made = {}
     for folder, codec in ENCODINGS.items():
         made[folder] = os.path.join(into, f"{folder}.mp4")
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", listing,
-                        "-vf", f"fps={P.HZ},{FILM_COLOUR}", *codec, made[folder]], check=True)
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-r", str(P.HZ), "-f", "concat", "-safe", "0",
+                        "-i", listing, "-vf", FILM_COLOUR, *codec, made[folder]], check=True)
     return made
 
 

@@ -1,15 +1,13 @@
 //! QuestPump on this computer, the helper (docs/plan.md slices 5, 7, 8, 16, 24, 25 and 35): the shell around
 //! questpump-core with the platform backends (the capture on macOS and Windows), the heart-rate strap and the walking
-//! pad over Bluetooth, the Bluetooth link that serves the phones the LAN's routes (`blelink`), the local socket, the
-//! LAN API the phone and the watch call, the desktop app's window (`desk`), start at login, signed updates of itself
-//! and of the addon in the game (`addon`), the feedback button's post, the crash reports (`crash`, `keep`) and the
-//! anonymous counts (`runtime/counts.rs`). It lives in the menu bar or the tray; the main window opens at a player's
-//! launch, never at login or after an update (`desk::launch`), and while it is open QuestPump is an ordinary app; only
-//! Quit exits (and an update, which starts the new QuestPump, and a crash of a supervised part, which restarts it once:
-//! `keep`).
+//! pad over Bluetooth, the local socket, the LAN API the phone and the watch call, the desktop app's window (`desk`),
+//! start at login, signed updates of itself and of the addon in the game (`addon`), the feedback button's post, the
+//! crash reports (`crash`, `keep`) and the anonymous counts (`runtime/counts.rs`). It lives in the menu bar or the
+//! tray; the main window opens at a player's launch, never at login or after an update (`desk::launch`), and while it
+//! is open QuestPump is an ordinary app; only Quit exits (and an update, which starts the new QuestPump, and a crash of
+//! a supervised part, which restarts it once: `keep`).
 mod addon;
 mod autostart;
-mod blelink;
 mod bluetooth;
 mod capture;
 #[rustfmt::skip]
@@ -154,8 +152,6 @@ pub fn run() {
 			desk::commands::new_pairing,
 			desk::commands::set_strap,
 			desk::commands::set_pad,
-			desk::commands::set_ble_link,
-			desk::commands::phones_shown,
 			desk::commands::secret_shown,
 			desk::commands::pick_folder,
 			desk::commands::allow_network,

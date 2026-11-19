@@ -1,8 +1,9 @@
 //! The games on the computer whose end offers a pump (docs/plan.md slices 35 and 48; contract/links.json's
 //! `computer` list): Counter-Strike 2 and Dota 2 through Valve's Game State Integration (`gsi.rs`), Rocket League
 //! through Psyonix's Stats API (`rocket.rs`), slice 48's fed games through their own feeds (`feeds.rs`, `Fed`),
-//! League of Legends and Teamfight Tactics and any program the player picks or the detector finds by their process
-//! alone. `Watcher` turns their feeds into finishes, one per match: a match's end only after an in-match phase this
+//! League of Legends by its game process, which runs one match, Teamfight Tactics by its own client, which holds
+//! every match of a sitting, and any program the player picks or the detector finds by their process alone.
+//! `Watcher` turns their feeds into finishes, one per match: a match's end only after an in-match phase this
 //! helper saw (CS2 `live` or `intermission`, Dota 2 `GAME_IN_PROGRESS`, Rocket League `RoundStarted`), and a process's
 //! close at the first look it is gone once it ran its floor from its first start (League `match_min_league_s`, every
 //! other game `match_min_s`; slice 48), unless its feed ended a match in that run (slice 56: every named game is heard
@@ -97,9 +98,15 @@ const F1_PORT: u16 = 20_777;
 const FORZA_PORT: u16 = 5_555;
 
 /// The Riot Client's Windows images (its services, its window and the window's renderer) and its Mac bundle: the
-/// launcher League of Legends, Legends of Runeterra and VALORANT start from, one of each game's own programs.
+/// launcher League of Legends, Teamfight Tactics, Legends of Runeterra and VALORANT start from, one of each game's
+/// own programs.
 const RIOT_CLIENT: [&str; 3] = ["RiotClientServices.exe", "RiotClientUx.exe", "RiotClientUxRender.exe"];
 const RIOT_CLIENT_APP: &str = "Riot Client.app";
+
+/// Teamfight Tactics' own Mac app and its executable (read on a Mac on 2026-11-18, the Riot Client's product
+/// `teamfighttactics`: one Unreal program, no game bundle inside it).
+const TFT_APP: &str = "Teamfight Tactics.app";
+const TFT_MAC_IMAGE: &str = "TFTClient-Mac-Shipping";
 
 /// One game of contract/links.json's `computer` list: its key (the `link` a `match_end` carries), the name an offer
 /// shows (none for a picked program: the program's own), the systems it runs on (`windows`, `macos`), how the helper
@@ -200,6 +207,9 @@ pub enum Watched {
 	/// (`feeds::banner`, Windows): neither writes a log or a file at a boss's death.
 	EldenRing,
 	Nightreign,
+	/// Teamfight Tactics in its own client, which Riot moved out of League of Legends' game process with patch 18.6
+	/// (2026-11): one program for the lobby and every match, so nothing but its close is heard (`session`).
+	TeamfightTactics,
 	/// A program the player picked or the detector found: its key (on Windows its image name in lower case, on macOS
 	/// its bundle's or its executable's path; `steam:<app>` for a Steam game) and the name it was picked or found
 	/// under.
@@ -210,7 +220,7 @@ pub enum Watched {
 }
 
 /// Every named game, in links.json's order.
-static ALL: [Watched; 41] = [
+static ALL: [Watched; 42] = [
 	Watched::CounterStrike,
 	Watched::Dota,
 	Watched::League,
@@ -252,6 +262,7 @@ static ALL: [Watched; 41] = [
 	Watched::Warcraft,
 	Watched::EldenRing,
 	Watched::Nightreign,
+	Watched::TeamfightTactics,
 ];
 
 impl Watched {
@@ -312,6 +323,7 @@ impl Watched {
 			Self::Warcraft => "warcraft",
 			Self::EldenRing => "eldenring",
 			Self::Nightreign => "nightreign",
+			Self::TeamfightTactics => "teamfighttactics",
 			Self::Program { .. } => "program",
 		}
 	}
@@ -397,6 +409,7 @@ impl Watched {
 			| Self::Valorant
 			| Self::Osu
 			| Self::Warcraft
+			| Self::TeamfightTactics
 			| Self::Program { .. } => &[],
 		}
 	}
@@ -412,7 +425,8 @@ impl Watched {
 	/// processor has AVX, and Stardew Valley's with SMAPI's, which runs the game in its own process; NARAKA's, Hunt's and
 	/// Le Mans Ultimate's are unverified (Steam hides or names only a launcher), and ELDEN RING's and NIGHTREIGN's,
 	/// which Easy Anti-Cheat's `start_protected_game.exe` runs from the game's `Game` folder, come from players' guides
-	/// alone; none for a program, whose key is its image.
+	/// alone; Teamfight Tactics' is unverified too, Unreal's name for the Windows build of the client whose Mac build
+	/// is `TFTClient-Mac-Shipping`; none for a program, whose key is its image.
 	#[must_use]
 	pub fn windows_images(&self) -> &'static [&'static str] {
 		match self {
@@ -464,6 +478,7 @@ impl Watched {
 			Self::Warcraft => &["Warcraft III.exe"],
 			Self::EldenRing => &["eldenring.exe"],
 			Self::Nightreign => &["nightreign.exe"],
+			Self::TeamfightTactics => &["TFTClient-Win64-Shipping.exe"],
 			Self::Program { .. } => &[],
 		}
 	}
@@ -479,7 +494,7 @@ impl Watched {
 	/// programs Steam's launch options start (Fall Guys' `FallGuys_client.exe`, Dead by Daylight's `DeadByDaylight.exe`,
 	/// Hunt's `hunt.exe`, PUBG's `ExecPubg.exe`, Halo: The Master Chief Collection's `mcclauncher.exe`, rFactor 2's
 	/// `Launch rFactor.exe`), VALORANT's `VALORANT.exe`, which starts its game, and the Riot Client, and Warcraft III's
-	/// launcher.
+	/// launcher; Teamfight Tactics' client starts from the Riot Client too.
 	#[must_use]
 	pub fn is_family_image(&self, image: &str) -> bool {
 		let lower = image.to_ascii_lowercase();
@@ -495,7 +510,7 @@ impl Watched {
 						|| (lower.starts_with("leagueclient")
 							&& Path::new(&lower).extension().is_some_and(|e| e == "exe"))
 				}
-				Self::Runeterra => own(&RIOT_CLIENT),
+				Self::Runeterra | Self::TeamfightTactics => own(&RIOT_CLIENT),
 				Self::IRacing => own(&["iRacingUI.exe"]) || own(&IRACING_SERVICES),
 				Self::Elite => own(&["EDLaunch.exe"]),
 				Self::StarCraft => own(&["SC2Switcher.exe", "SC2Switcher_x64.exe"]),
@@ -518,7 +533,8 @@ impl Watched {
 	}
 
 	/// Whether a macOS image path is one of this game's own programs, its game or its launcher, by its path alone:
-	/// anything inside `League of Legends.app` (the client and the game) or `Riot Client.app`, inside StarCraft II's
+	/// anything inside `League of Legends.app` (the client and the game), `Teamfight Tactics.app` or `Riot Client.app`
+	/// (each Riot game's on a Mac), inside StarCraft II's
 	/// folder, MTG Arena's `MTGA.app`, Hearthstone's folder, Path of Exile's `Path of Exile.app` and
 	/// `PathOfExileClient.app` or Warcraft III's folder (2026-10-29), which a detector never takes for another game and
 	/// the picker shows as the game itself. A Steam game's folder is the desktop app's to tell (its manifest).
@@ -529,6 +545,7 @@ impl Watched {
 		};
 		match self {
 			Self::League => within("League of Legends.app") || within(RIOT_CLIENT_APP),
+			Self::TeamfightTactics => within(TFT_APP) || within(RIOT_CLIENT_APP),
 			Self::StarCraft => within("StarCraft II"),
 			Self::MtgArena => within("MTGA.app"),
 			Self::Hearthstone => within("Hearthstone"),
@@ -543,8 +560,8 @@ impl Watched {
 	/// binary under its Steam folder (`is_dota_path`), Mechabellum's app under its Steam folder (`is_mechabellum_path`,
 	/// unverified on a Mac), Path of Exile's `Path of Exile.app` (its own launcher's copy in Application Support and
 	/// Steam's, unverified on a Mac; Path of Exile 2 has no Mac build yet), since 2026-10-29 Stardew Valley's under its
-	/// Steam folder (`in_steam_bundle`) and Warcraft III's `Warcraft III.app` (both unverified on a Mac); the others run
-	/// on Windows alone.
+	/// Steam folder (`in_steam_bundle`) and Warcraft III's `Warcraft III.app` (both unverified on a Mac), Teamfight
+	/// Tactics' own app's executable (`TFT_APP`); the others run on Windows alone.
 	#[must_use]
 	pub fn is_mac_image(&self, path: &Path) -> bool {
 		match self {
@@ -559,6 +576,7 @@ impl Watched {
 			Self::PathOfExile => bundle_image(path, "Path of Exile.app", "Path of Exile"),
 			Self::Stardew => in_steam_bundle(path, "Stardew Valley"),
 			Self::Warcraft => bundle_image(path, "Warcraft III.app", "Warcraft III"),
+			Self::TeamfightTactics => bundle_image(path, TFT_APP, TFT_MAC_IMAGE),
 			_ => false,
 		}
 	}
@@ -575,11 +593,19 @@ impl Watched {
 		}
 	}
 
-	/// Whether it is a Riot game (League of Legends and TFT, Legends of Runeterra, since 2026-10-29 VALORANT): Riot's
-	/// line shows wherever one is listed (slice 56). Since 2026-10-28 it is watched once found, as every named game is.
+	/// Whether it is a Riot game (League of Legends, Teamfight Tactics, Legends of Runeterra, since 2026-10-29
+	/// VALORANT): Riot's line shows wherever one is listed (slice 56). Since 2026-10-28 it is watched once found, as
+	/// every named game is.
 	#[must_use]
 	pub fn riot(&self) -> bool {
-		matches!(self, Self::League | Self::Runeterra | Self::Valorant)
+		matches!(self, Self::League | Self::TeamfightTactics | Self::Runeterra | Self::Valorant)
+	}
+
+	/// Whether its close is all it tells, whatever its setup: one program holds its lobby and every match (Teamfight
+	/// Tactics' own client; a picked or found program), so its offer comes when it closes, never after each match.
+	#[must_use]
+	pub fn session(&self) -> bool {
+		matches!(self, Self::TeamfightTactics | Self::Program { .. })
 	}
 
 	/// Whether its feed needs a file of QuestPump's in the game's own files (CS2's and Dota 2's Game State Integration
@@ -1260,8 +1286,8 @@ impl Watcher {
 	}
 
 	/// Whether a match runs now, as the sitting clock counts a game as input whatever window is in front: a fed game
-	/// between its start and its end, or League of Legends' game process, which runs one match; a found or picked
-	/// program's run is a session, which counts only while its window is in front.
+	/// between its start and its end, or League of Legends' game process, which runs one match; a session's run
+	/// (`Watched::session`: Teamfight Tactics' client, a program) counts only while its window is in front.
 	#[must_use]
 	pub fn match_runs(&self) -> bool {
 		self.feeds_in_match() || self.runs.get(&Watched::League).is_some_and(|r| r.closed.is_none())
@@ -1377,7 +1403,7 @@ impl Watcher {
 			| Watched::Nightreign => {
 				self.fed.remove(watched);
 			}
-			Watched::League | Watched::Program { .. } => {}
+			Watched::League | Watched::TeamfightTactics | Watched::Program { .. } => {}
 		}
 	}
 

@@ -48,22 +48,24 @@ regexTarget = "secret"
 regexes = ['''^ey[A-Za-z0-9_-]+\.ey[A-Za-z0-9_-]+\.c3ludGhldGljIHNpZ25hdHVyZSwgbmV2ZXIgYSByZWFsIG9uZTogcnx8cy4uLi4uLi4uLi4uLi4uLi4uLi4uLg$''']
 
 # The pairing's security-test vectors (2026-10-09: 1 generic-api-key hit each in contract/fixtures/seal.json and the
-# phones' PairLinkTest.kt and PairLinkTests.swift; 2026-10-16: 1 in contract/fixtures/ble.json): the pairing key is the
-# bytes 00 to 1f (base64url AAECAwQF...Hh8 in the pair link tests), seal_key_hex its HKDF seal key and ble_key_hex its
-# HKDF Bluetooth key (slice 43); 2026-10-30, slice 60 (4 hits in seal.json's sync block): the sync root secret is the
-# bytes a0 to af, seal_key_hex and auth its HKDF seal and auth keys, auth_sha256_hex the auth key's SHA-256 and
-# link_key_hex the link answer's HKDF key; 2026-10-31, the release security review (1 hit in seal.json's sync block):
-# link_key_hex is now the HKDF key of the link answer's ECDH secret, the request's P-256 secret the bytes 40 to 5f and
-# the answerer's the bytes 60 to 7f (info questpump link v2), in place of the HKDF key of the old request's T;
-# 2026-11-01, the account's new key (10 hits in seal.json's rekey block): device_key the P-256 public key of the
-# secret bytes 80 to 9f (also as the refused MACs' key) and another public key of the bytes e0 to ff, mac_key_hex the
-# MAC's HKDF key under the sync root secret, the new root secret's (the bytes b0 to bf) seal_key_hex, auth,
+# phones' PairLinkTest.kt and PairLinkTests.swift): the pairing key is the bytes 00 to 1f (base64url AAECAwQF...Hh8 in
+# the pair link tests) and seal_key_hex its HKDF seal key; 2026-10-30, slice 60 (4 hits in seal.json's sync block): the
+# sync root secret is the bytes a0 to af, seal_key_hex and auth its HKDF seal and auth keys, auth_sha256_hex the auth
+# key's SHA-256 and link_key_hex the link answer's HKDF key; 2026-10-31, the release security review (1 hit in
+# seal.json's sync block): link_key_hex is now the HKDF key of the link answer's ECDH secret, the request's P-256 secret
+# the bytes 40 to 5f and the answerer's the bytes 60 to 7f (info questpump link v2), in place of the HKDF key of the old
+# request's T; 2026-11-01, the account's new key (10 hits in seal.json's rekey block): device_key the P-256 public key
+# of the secret bytes 80 to 9f (also as the refused MACs' key) and another public key of the bytes e0 to ff, mac_key_hex
+# the MAC's HKDF key under the sync root secret, the new root secret's (the bytes b0 to bf) seal_key_hex, auth,
 # auth_sha256_hex and mac_key_hex, and wrap_key_hex the wrap's HKDF key of the ECDH secret with the ephemeral bytes c0
-# to df; 2026-11-01, the release security review's L3 (1 hit in seal.json, 19 in ble.json's gatt cases):
-# hello_key_hex is the HKDF hello key (info questpump hello v1) of the pairing key 00 to 1f, and of 32 bytes of 7, the
-# cases' new pairing code; 2026-11-01, the store token (1 hit in seal.json's sync block): store_token the UUID from
-# HKDF of the sync block's account id (info questpump store account v1), a name and no secret. Only these eighteen
-# values, in the fixtures and the two phone cores' test trees, are quiet.
+# to df; 2026-11-01, the release security review's L3 (1 hit in seal.json): hello_key_hex is the HKDF hello key (info
+# questpump hello v1) of the pairing key 00 to 1f; 2026-11-01, the store token (1 hit in seal.json's sync block):
+# store_token the UUID from HKDF of the sync block's account id (info questpump store account v1), a name and no secret;
+# 2026-11-18, slice 76 (1 hit in seal.json's sync block): live_key_hex is the HKDF live key (info questpump sync live
+# v1) of the sync root secret, which seals the pump push's states; the two values contract/fixtures/ble.json alone held
+# went with that file and the Bluetooth link (ble_key_hex, the pairing key's HKDF Bluetooth key, 2026-10-16, and the
+# hello key of 32 bytes of 7, its gatt cases' pairing code, 2026-11-01). Only these seventeen values, in the fixtures
+# and the two phone cores' test trees, are quiet.
 [[allowlists]]
 description = "Pairing test vectors in the security tests"
 targetRules = ["generic-api-key"]
@@ -77,11 +79,11 @@ regexTarget = "secret"
 regexes = [
   '''^AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8$''',
   '''^342d27dab92a76c7c3fb936619389193bc0bdbe17c47261c91521e3d3ea5a0b6$''',
-  '''^eaf55d468f0ddcf3b0baeef556217e764c4d0e77bba9c485f5d7cb351e899b31$''',
   '''^526f3a6f72be69b46da85ac9fb85634219bfc195d247c77050bd9bc7569f9295$''',
   '''^RIP3novx32biaw4GCvbBGynvkFvqyFR250d21fE6uZc$''',
   '''^3fc0c44a25a0a855f9b01b15e815d993e82f9e27892076c2d401ea26d34dcb15$''',
   '''^e2797050a877c2b3ad9d4bdfed95a96019422aaa7faf0d448af7c4a118630f05$''',
+  '''^df6dbd0e4ca5e283b0b68910a0da7e6fb5fa5814661c9c39b2779b2ac3dce0b0$''',
   '''^BBNQM4lDbDjIyxo4FWnXLcsBuzuZ0QXYH_vbDioV9xoNsV_C1s4crj805b8ha6shoEgqZ08xNyO026B2_I4ByZI$''',
   '''^e6c65bf358d6c3ceeecd4645b20ebce9b1551a015321185d87d4d82ca7acfafa$''',
   '''^BDVOA1AWl6kSnJub0mI5dZRULmyLwiVDaO9fw-sBj32xIlnt10OUEvm8T31_zD3VxvxrhllAxy_Ko8ZzCDdn9O8$''',
@@ -91,7 +93,6 @@ regexes = [
   '''^c33b1180bcb6dc7dac8e43f6c23bdf1c7c020cc51a7b342ba19d32565e157b63$''',
   '''^4c0fae5621a713f5dae210bdda0333de01289d19cc78b76d84922483655097bf$''',
   '''^473b363991f335b114a75f8de1aae849effe1927409b25786b2b4599463a7325$''',
-  '''^10ead35c28ca344c1ec73c4789da66f6c87c576b49cb9d06a41d44cdbe990b23$''',
   '''^cbf59766-d03e-84ab-b654-a33b1fd73897$''',
 ]
 

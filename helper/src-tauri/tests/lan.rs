@@ -122,7 +122,6 @@ fn serve_on(listeners: Vec<tokio::net::TcpListener>, locked: bool, looping: bool
 		wow: None,
 		sight: None,
 		step: None,
-		ble: None,
 	};
 	let lan = Lan::new(&key(), queue.clone(), helper, asks_tx, HOLD);
 	let asked = Arc::new(Mutex::new(Asked::default()));
@@ -142,7 +141,7 @@ fn serve_on(listeners: Vec<tokio::net::TcpListener>, locked: bool, looping: bool
 					Ask::Unpair { done, .. } => {
 						let _ = done.send(());
 					}
-					Ask::Synced { request, done, .. } => {
+					Ask::Synced { request, done } => {
 						let SyncRequest { device, samples, events, offer_taken, game_offer_at, pro_proof, .. } =
 							*request;
 						let mut seen = seen.lock().unwrap();
@@ -185,14 +184,14 @@ fn serve_on(listeners: Vec<tokio::net::TcpListener>, locked: bool, looping: bool
 						};
 						let _ = done.send(sheet);
 					}
-					Ask::History { after, proofs_since, size, done } => {
-						let _ = done.send(kept.lock().unwrap().history(after, proofs_since, size));
+					Ask::History { after, proofs_since, done } => {
+						let _ = done.send(kept.lock().unwrap().history(after, proofs_since));
 					}
-					Ask::Sheets { after, size, done } => {
-						let _ = done.send(kept.lock().unwrap().sheet_log().page(after, size));
+					Ask::Sheets { after, done } => {
+						let _ = done.send(kept.lock().unwrap().sheet_log().page(after));
 					}
-					Ask::AppRows { after, size, done } => {
-						let _ = done.send(kept.lock().unwrap().app_rows().page(after, size));
+					Ask::AppRows { after, done } => {
+						let _ = done.send(kept.lock().unwrap().app_rows().page(after));
 					}
 					Ask::Account { done, .. } => {
 						let _ = done.send(None);

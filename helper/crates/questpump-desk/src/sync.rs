@@ -52,8 +52,15 @@
 //!   reads the keys first. One rekey is out at a time (`SyncState::rekey_out`), and no reset or join lets a call or a
 //!   read's news beside it.
 //! - **Live**: one WebSocket while the device runs (`Platform::live_open`), its token as the first message, which says
-//!   only that the cursor moved, by its `pro` counter that the account's Pro changed, or by its `keys` that the
-//!   account's keys moved.
+//!   only that the cursor moved, by its `pro` counter that the account's Pro changed, by its `keys` that the
+//!   account's keys moved, or by its `follow` which computers the account's iPhones follow.
+//! - **The pump push** (slice 76; contract/sync-api.yaml, "The pump push"): while Sync is on in an account and a live
+//!   message's `follow` names this computer's install id (`Desk::followed`), the platform tells the account each
+//!   state of the game's pump (`Desk::tell`: `POST activity`, the state sealed under the live key, beside the
+//!   queue's one call), made by `crate::activity::GamePump`; the answer goes back to the platform
+//!   (`Platform::told`), which paces the posts (the desktop app's `runtime/sync.rs`). A 401 removes this computer, a
+//!   409 `kid` reads the account's new key first, and no answer changes the Sync card's line. The browser has no game
+//!   and tells nothing.
 //! - **The browser** (slice 63; `Platform::WIPES_ON_SIGN_OUT`): Sign out sends what waits first (`leave_drive`), then
 //!   forgets the account here, sends `DELETE /session` and has the platform wipe its data on any answer or none
 //!   (`leave_now`, `Platform::signed_out`); a removal or a 403 on joining its account again wipes it the same way;
@@ -103,13 +110,14 @@ use questpump_core::protocol::{RowRecord, Source};
 use questpump_core::row::Row;
 use questpump_core::session;
 use questpump_core::sync::{
-	self, Batch, DeviceBody, GameRows, KeyPair, Kind, LinkCode, MAX_SEALED, Opened, RowsBody, Sent, SyncKeys,
+	self, Batch, DeviceBody, GameRows, KeyPair, Kind, LinkCode, LivePump, MAX_SEALED, Opened, RowsBody, Sent, SyncKeys,
 };
 use questpump_core::work::Work;
 use serde::{Deserialize, Serialize};
 use sha2::Digest as _;
 use tokio::sync::oneshot;
 
+use crate::activity::{Told, Word};
 use crate::pump::ran_here;
 use crate::qr::{self, Qr};
 use crate::{Desk, Intent, Platform};
@@ -235,21 +243,33 @@ pub enum News {
 	Email(Mail, Called),
 	/// A link request's answer, with the request's id r.
 	Link([u8; sync::REQUEST_ID], Called),
-	/// A live message: its cursor, whether its `pro` differs from the last this connection heard, and its `keys` (the
-	/// account's key generation; none from a server before the account's new key).
-	Nudge(u64, u64, bool, Option<u64>),
+	/// A live message: its cursor, whether its `pro` differs from the last this connection heard, its `keys` (the
+	/// account's key generation; none from a server before the account's new key) and its `follow` (the computers the
+	/// account's iPhones follow; none from a server before the pump push).
+	Nudge(u64, u64, bool, Option<u64>, Vec<Follow>),
 	/// The account's keys (`GET account/keys`).
 	Keys(u64, Called),
 	/// This computer's key registered (`PUT devices/self/key`), with what it sent.
 	Registered(u64, KeyPut, Called),
 	/// The account's new R posted (`POST account/rekey`), with the keys' generation it was made from.
 	Rekeyed(u64, u64, Called),
-	/// The live socket closed (its close code), and whether it had connected.
+	/// The live socket closed (its close code), and whether it had connected: the server's first message heard on it,
+	/// never its token sent alone, or a socket that ends unanswered would start the waits again each time.
 	LiveEnded(u64, Option<u16>, bool),
 	/// The account's Pro (`GET pro`).
 	Pro(u64, Called),
 	/// Manage Pro's address (`POST pro/portal`).
 	Portal(Called),
+	/// A word of the game's pump (`POST activity`, `Desk::tell`).
+	Told(u64, Called),
+}
+
+/// A computer the account's iPhones follow, as a live message's `follow` names it (contract/sync-api.yaml, "Live"):
+/// its install id, and when the newest of the asks for it came (unix ms on the server's clock).
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Follow {
+	hid: String,
+	since: i64,
 }
 
 /// The account as a paired phone hears it from the desktop app (`GET /v1/account`, slice 60): none of it while its Sync
@@ -261,6 +281,8 @@ pub struct AccountState {
 	/// The account's devices, this computer among them.
 	pub devices: u32,
 	pub email: bool,
+	/// This computer tells the account the game's pumps for the pump push (slice 76): while it is in the account.
+	pub pushes: bool,
 }
 
 /// What became of a batch the server listed.
@@ -484,6 +506,9 @@ pub struct SyncState {
 	live: bool,
 	live_at: Option<Instant>,
 	live_wait: Duration,
+	/// The account's iPhones follow this computer's game, as the live socket last said (`Follow::since` for its
+	/// install id): what the pump push's posts wait for (`Desk::followed`); none once the desk closed the socket.
+	follow: Option<i64>,
 	/// Pages that show a link request or link code: while one does, a request is read.
 	link_wanted: bool,
 	request: Option<Request>,
@@ -562,6 +587,7 @@ impl Default for SyncState {
 			live: false,
 			live_at: None,
 			live_wait: LIVE_FIRST,
+			follow: None,
 			link_wanted: false,
 			request: None,
 			link_busy: false,
@@ -611,9 +637,11 @@ impl SyncState {
 }
 
 /// A live socket's messages as one connection hears them (contract/sync-api.yaml, "Live"; the platform's socket,
-/// `Platform::live_open`): each `{"cursor":n,"pro":k,"keys":g}` the server sends is a nudge, with whether its `pro`
-/// counter differs from the last this connection heard (none heard yet: the first that comes does; a message without
-/// one, an older server's, does not) and its key generation. One a connection, made new at each.
+/// `Platform::live_open`): each `{"cursor":n,"pro":k,"keys":g,"follow":[...]}` the server sends is a nudge, with
+/// whether its `pro` counter differs from the last this connection heard (none heard yet: the first that comes does; a
+/// message without one, an older server's, does not), its key generation and the computers the account's iPhones
+/// follow (a message without them, an older server's, or with a list that does not read names none). One a
+/// connection, made new at each.
 #[derive(Default)]
 pub struct LiveHeard {
 	heard_pro: Option<u64>,
@@ -628,11 +656,13 @@ impl LiveHeard {
 			cursor: u64,
 			pro: Option<u64>,
 			keys: Option<u64>,
+			#[serde(default, deserialize_with = "questpump_core::link::lenient")]
+			follow: Option<Vec<Follow>>,
 		}
-		let Moved { cursor, pro, keys } = serde_json::from_str(text).ok()?;
+		let Moved { cursor, pro, keys, follow } = serde_json::from_str(text).ok()?;
 		let changed = pro.is_some() && pro != self.heard_pro;
 		self.heard_pro = pro.or(self.heard_pro);
-		Some(News::Nudge(generation, cursor, changed, keys))
+		Some(News::Nudge(generation, cursor, changed, keys, follow.unwrap_or_default()))
 	}
 }
 
@@ -946,7 +976,10 @@ impl<P: Platform> Desk<P> {
 		self.p.sync_call(Call { method, path, token, body }, Box::new(news));
 	}
 
+	/// The live socket closed by the desk (Sync off or out of reach, the token gone): nothing says any more who
+	/// follows this computer. One that ended by itself is opened again and keeps what it said last.
 	fn stop_live(&mut self) {
+		self.sync.follow = None;
 		if self.sync.live {
 			self.sync.live = false;
 			self.p.live_close();
@@ -1286,8 +1319,10 @@ impl<P: Platform> Desk<P> {
 			},
 			News::Email(mail, called) => self.on_email(mail, &called),
 			News::Link(id, called) => self.on_link(id, &called),
-			News::Nudge(g, cursor, pro_changed, keys) if current(g, &self.sync) => {
+			News::Nudge(g, cursor, pro_changed, keys, follow) if current(g, &self.sync) => {
 				self.sync.live_wait = LIVE_FIRST;
+				let own = self.settings.hid_text();
+				self.sync.follow = follow.into_iter().find(|f| f.hid == own).map(|f| f.since);
 				let heard = self.sync.heard.as_ref().map(|n| n.generation);
 				if cursor > self.settings.sync.cursor || keys.is_some_and(|k| heard != Some(k)) {
 					self.sync.pull_due = true;
@@ -1298,6 +1333,9 @@ impl<P: Platform> Desk<P> {
 			}
 			News::Pro(g, called) if current(g, &self.sync) => self.on_pro(&called),
 			News::Portal(called) => self.on_portal(&called),
+			News::Told(g, called) if current(g, &self.sync) => self.on_told(&called),
+			// a word of a token gone since: the platform's post is out no more
+			News::Told(..) => self.p.told(Told::Later(None)),
 			News::LiveEnded(g, code, connected) if current(g, &self.sync) => {
 				self.sync.live = false;
 				// a socket that connected and ran starts the waits again; a token it refused does not
@@ -2429,6 +2467,79 @@ impl<P: Platform> Desk<P> {
 		}
 	}
 
+	/// When the newest of the account's iPhones that follow this computer's game began to (unix ms on the server's
+	/// clock, the live socket's `follow` for this install's id), while Sync is on in an account: only then does a word
+	/// of the game's pump go (`tell`); none while nobody follows it, Sync is off or it is in no account.
+	#[must_use]
+	pub fn followed(&self) -> Option<i64> {
+		// as `sync_in` gives the account, without deriving its keys at every look
+		let a = &self.settings.sync;
+		self.sync.follow.filter(|_| a.on && a.held() && a.device.is_some())
+	}
+
+	/// One word of the game's pump to the account (`POST activity`, contract/sync-api.yaml `ActivityState`; slice 76),
+	/// beside the queue's one call: this install's id, the event, an offer's `alert` and, for every word but `alive`,
+	/// `state` sealed under the live key with its kid. False where nothing goes: Sync off or in no account (`sync_in`),
+	/// or a word that needs a state without one. The answer goes back to the platform (`on_told`,
+	/// `Platform::told`), which sends one at a time.
+	pub fn tell(&mut self, word: Word, state: Option<&LivePump>) -> bool {
+		let Some((_, _, token, keys)) = self.sync_in() else { return false };
+		let mut body = serde_json::json!({ "hid": self.settings.hid_text(), "event": word.event() });
+		if let Word::Offer { alert } = word {
+			body["alert"] = alert.into();
+		}
+		if word != Word::Alive {
+			let Some(sealed) = state.and_then(|state| sync::seal_live(&keys, state).ok()) else { return false };
+			(body["kid"], body["sealed"]) = (keys.kid.into(), sealed.into());
+		}
+		let generation = self.sync.generation;
+		let bytes = serde_json::to_vec(&body).unwrap_or_default();
+		self.sync_call(Method::Post, "/activity".to_owned(), Some(token), Some(bytes), move |c| {
+			News::Told(generation, c)
+		});
+		true
+	}
+
+	/// A word of the game's pump answered, told on to the platform (`Platform::told`): taken, with the server's clock
+	/// as it took it (`ActivityAnswer.t`); a 401 removes this computer; a 400 or a 413 refuses what was said; a 409
+	/// `kid` reads the account's new key first, as a batch's does (`on_pushed`), so the state as it then stands goes
+	/// under the new R; that, a 429, any other answer and none leave the word for later. The Sync card's line stays
+	/// as it is, and the log names the answer alone.
+	fn on_told(&mut self, called: &Called) {
+		#[derive(Deserialize)]
+		struct Took {
+			t: i64,
+		}
+		let told = match called {
+			Ok(a) if a.status == 200 => Told::Taken(serde_json::from_slice::<Took>(&a.body).ok().map(|took| took.t)),
+			Ok(a) if a.status == 401 => {
+				self.p.told(Told::Later(None));
+				self.sync_removed();
+				return;
+			}
+			Ok(a) if matches!(a.status, 400 | 413) => {
+				log::info!("sync: a word of the game's pump refused ({})", a.status);
+				Told::Refused
+			}
+			Ok(a) => {
+				if Refusal::of(called).as_deref() == Some("kid") {
+					log::info!(
+						"sync: a word of the game's pump under another key than the account's: its new key first"
+					);
+					(self.sync.keys_due, self.sync.kid_refused) = (true, true);
+				} else {
+					log::info!("sync: a word of the game's pump answered {}", a.status);
+				}
+				Told::Later(a.retry.map(Duration::from_secs))
+			}
+			Err(e) => {
+				log::info!("sync: a word of the game's pump not answered: {e}");
+				Told::Later(None)
+			}
+		};
+		self.p.told(told);
+	}
+
 	/// Manage Pro's call with this device's token; false outside an account, where none goes (the page says the server
 	/// did not answer).
 	pub fn sync_portal(&mut self) -> bool {
@@ -2534,7 +2645,8 @@ impl<P: Platform> Desk<P> {
 		self.email_publish();
 	}
 
-	/// The account as a paired phone hears it (`GET /v1/account`): none while Sync is off.
+	/// The account as a paired phone hears it (`GET /v1/account`): none while Sync is off; in one, this computer tells
+	/// it the game's pumps (`pushes`: an iPhone of that account asks the pump push for it, slice 76).
 	pub fn account_state(&self) -> AccountState {
 		let a = &self.settings.sync;
 		let (account, r) = if a.on && a.token.is_some() { (a.account.clone(), a.r.clone()) } else { (None, None) };
@@ -2545,6 +2657,7 @@ impl<P: Platform> Desk<P> {
 				0
 			},
 			email: account.is_some() && a.email,
+			pushes: account.is_some(),
 			account,
 			r,
 		}

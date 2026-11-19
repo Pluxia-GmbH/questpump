@@ -135,7 +135,7 @@ impl Games {
 			on,
 			riot: w.riot(),
 			running: self.running.iter().any(|r| r == key),
-			ends: if heard || !w.writes_file() { Ends::Match } else { Ends::Close },
+			ends: if w.session() || (w.writes_file() && !heard) { Ends::Close } else { Ends::Match },
 			setup: w.writes_file() && !settings.is_asked(key),
 			status,
 			port: fed::port_of(settings, w),

@@ -136,6 +136,7 @@ impl Feed {
 			| Watched::Dota
 			| Watched::League
 			| Watched::RocketLeague
+			| Watched::TeamfightTactics
 			| Watched::Program { .. } => None,
 		}
 	}
@@ -267,9 +268,12 @@ pub(super) fn install_dir(watched: &Watched, volumes: bool) -> Option<PathBuf> {
 		Watched::Tarkov => tarkov::install(),
 		Watched::Warships => warships::install(),
 		Watched::Siege => siege::install(),
-		Watched::CounterStrike | Watched::Dota | Watched::League | Watched::RocketLeague | Watched::Program { .. } => {
-			None
-		}
+		Watched::CounterStrike
+		| Watched::Dota
+		| Watched::League
+		| Watched::RocketLeague
+		| Watched::TeamfightTactics
+		| Watched::Program { .. } => None,
 	}
 }
 

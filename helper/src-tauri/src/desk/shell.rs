@@ -17,6 +17,7 @@ use questpump_core::sitting::Sitting;
 use questpump_core::sync::DESKTOP;
 use questpump_core::work::Hold;
 use questpump_desk::Platform;
+use questpump_desk::activity::Told;
 use questpump_desk::audio::Channel;
 use questpump_desk::home::Board;
 use questpump_desk::platform::{
@@ -197,6 +198,10 @@ impl Platform for Shell {
 
 	fn live_close(&mut self) {
 		self.sync.live_close();
+	}
+
+	fn told(&mut self, told: Told) {
+		self.out.push(Out::Then(Box::new(move |h| h.on_told(told))));
 	}
 
 	fn sync_reachable(&self) -> bool {

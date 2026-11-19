@@ -21,7 +21,9 @@
 //! with an install (`Records`) are read again every `REFRESH_MS` on a thread of their own, the last ones kept
 //! meanwhile. A found game's name comes from a record, never a window's title: its Steam manifest's, Epic's
 //! `DisplayName`, GOG's `gameName`, its program's version resource (`ProductName`, read from the file), its app's
-//! `CFBundleDisplayName` or `CFBundleName`, else its program's file name. Launchers, shells, browsers, runtimes and
+//! `CFBundleDisplayName`, else its `CFBundleName` unless that only repeats its executable's name (an engine's build
+//! name, `TFTClient-Mac-Shipping`), else the app's own file name, as Finder shows it. Launchers, shells, browsers,
+//! runtimes and
 //! anti-cheat services are never games, nor are the Steam apps that run all day (desktop pets, focus rooms, idle games;
 //! `detect::denied_app`), Roblox is refused (questpump-core's `detect`), and the programs the player picked by hand
 //! stay theirs. A process Steam tracks under its test app (Spacewar, 480, which many games borrow) is a game kept and
@@ -38,8 +40,9 @@
 //! stays off when it is noticed again). "Not a game" moves it to `settings.games.dismissed`, which is never noticed
 //! again until the player puts it back. The log says only that one was noticed, never its name. A found or picked game
 //! kept by its program's key that turns out to be a Steam game takes `steam:<app>` (`migrate`), its run and its off
-//! going on under the new key; one a later build names (Mechabellum, 2026-10-28) leaves its list for the named game,
-//! its off with it (`drop_named`). With noticing off no new game is found (the games found keep offering), and the Steam
+//! going on under the new key; one a later build names (Mechabellum, 2026-10-28; Teamfight Tactics' own client,
+//! 2026-11-18) leaves its list for the named game, its off with it (`drop_named`). With noticing off no new game is
+//! found (the games found keep offering), and the Steam
 //! games watched are still told by Steam's own records alone (`steam_records`: the manifests, and on Windows Steam's
 //! process log), and nothing else is read.
 
@@ -56,7 +59,7 @@ use questpump_core::{appinfo, detect};
 use super::icons::{Source, bundle_source};
 use super::procs::{Pick, Proc, Snapshot};
 use super::{Games, programs, steam};
-use crate::settings::{Detected, GamesSettings};
+use crate::settings::{Detected, GamesSettings, Played};
 
 /// How often the programs with a window are held against the records.
 const EVERY_MS: i64 = 10_000;
@@ -358,7 +361,9 @@ pub(super) fn app_folders() -> Vec<PathBuf> {
 	folders
 }
 
-/// What an app bundle's `Info.plist` says: whether it is a game (a games category, or Game Mode), and its name.
+/// What an app bundle's `Info.plist` says: whether it is a game (a games category, or Game Mode), and its name: the
+/// display name, else the bundle's name unless that only repeats the executable's (a name nobody chose: an Unreal
+/// build's `<Project>-Mac-Shipping`), else the app's own file name, which is what Finder shows the player.
 #[cfg(target_os = "macos")]
 fn read_bundle(bundle: &Path) -> Bundle {
 	let Ok(info) = plist::Value::from_file(bundle.join("Contents").join("Info.plist")) else {
@@ -368,7 +373,9 @@ fn read_bundle(bundle: &Path) -> Bundle {
 	let text = |key: &str| info.get(key).and_then(plist::Value::as_string).filter(|t| !t.trim().is_empty());
 	let game = text("LSApplicationCategoryType").is_some_and(detect::is_game_category)
 		|| info.get("LSSupportsGameMode").and_then(plist::Value::as_boolean) == Some(true);
-	Bundle { game, name: text("CFBundleDisplayName").or_else(|| text("CFBundleName")).map(str::to_owned) }
+	let chosen = text("CFBundleName").filter(|name| Some(*name) != text("CFBundleExecutable"));
+	let name = text("CFBundleDisplayName").or(chosen).map(str::to_owned);
+	Bundle { game, name: name.or_else(|| bundle.file_stem().map(|stem| stem.to_string_lossy().into_owned())) }
 }
 
 /// A program file's name without its extension: the last name a found game may take.
@@ -656,13 +663,18 @@ fn rekey(settings: &mut GamesSettings, from: &str, to: &str) -> bool {
 	changed
 }
 
-/// The named game that a found or picked game's key is one of: its Steam app's key (`steam:<app>`) or, on Windows,
-/// one of its game's image names. A game found before a build named it (Mechabellum, named on 2026-10-28) is that
-/// named game from then on (`drop_named`).
+/// The named game that a found or picked game's key is one of: its Steam app's key (`steam:<app>`), on Windows one of
+/// its game's image names, on macOS a path inside its own app or folder (`Watched::is_mac_family`; never the Riot
+/// Client's, which starts several games and is none of them). A game found before a build named it (Mechabellum,
+/// named on 2026-10-28; Teamfight Tactics' own client, 2026-11-18) is that named game from then on (`drop_named`).
 fn named_program(key: &str) -> Option<&'static Watched> {
+	let app = steam_app(key);
+	let mac = Some(Path::new(key))
+		.filter(|path| !cfg!(windows) && app.is_none() && !questpump_core::games::is_riot_client("", Some(path)));
 	Watched::named().iter().find(|w| {
-		steam_app(key).is_some_and(|app| w.steam_apps().contains(&app))
+		app.is_some_and(|app| w.steam_apps().contains(&app))
 			|| w.windows_images().iter().any(|image| image.eq_ignore_ascii_case(key))
+			|| mac.is_some_and(|path| w.is_mac_family(path))
 	})
 }
 
@@ -693,6 +705,30 @@ pub(crate) fn drop_named(settings: &mut GamesSettings) -> usize {
 		dropped += 1;
 	}
 	dropped
+}
+
+/// Pump home's recent games (settings.json's `desk.played`) follow a game to its named game: an entry kept under a
+/// found or picked game's key that is a named game's (`named_program`) takes that game's key, or joins the entry the
+/// named game has (the later `last`, both entries' pumps and moves), so the game keeps its place and its moves under
+/// its name. At each start (`Settings::load`): a game handed over in a look shows under its name from the next one.
+pub(crate) fn name_played(played: &mut Vec<Played>) {
+	let (named, mut kept): (Vec<Played>, Vec<Played>) =
+		std::mem::take(played).into_iter().partition(|p| named_program(&p.key).is_some());
+	for old in named {
+		let Some(link) = named_program(&old.key).map(Watched::link) else { continue };
+		match kept.iter_mut().find(|p| p.key == link) {
+			Some(p) => {
+				p.last = p.last.max(old.last);
+				p.pumps.extend(old.pumps);
+				p.pumps.sort_unstable();
+				p.pumps.dedup();
+				p.before += old.before;
+			}
+			None => kept.push(Played { key: link.to_owned(), ..old }),
+		}
+		log::info!("games: a game played is {link} now");
+	}
+	*played = kept;
 }
 
 impl Games {

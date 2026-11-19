@@ -22,7 +22,8 @@
 //! of its pumps past that (`Played::before`), `KEPT` games at most besides those with a move, never synced, logged,
 //! counted or sent anywhere. World of Warcraft's moves in all are those of every pump of the game's own the Saga's
 //! build holds. A game shows only while it is a tile on the Games tab (a game put away with Not a game, or a program
-//! removed, does not), or none of them before the first one played.
+//! removed, does not), or none of them before the first one played. An entry kept under a found game's key follows the
+//! game when a later build names it (the desktop app's `games::name_played`, at its start).
 
 use std::collections::HashMap;
 

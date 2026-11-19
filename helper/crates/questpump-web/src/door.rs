@@ -251,7 +251,7 @@ pub unsafe extern "C" fn qp_open(args: *const c_char) -> *mut c_char {
 		let kept = std::fs::read(dir.join(play::FILE)).ok();
 		let play = Play::new(publisher.clone(), kept.as_deref(), args.phones);
 		let mut settings = open_settings(dir);
-		// a browser pairs no phone (no LAN API, no Bluetooth link): no card or step offers the pairing code
+		// a browser pairs no phone (no LAN API): no card or step offers the pairing code
 		settings.pairing.phone_apps = Some(false);
 		// and makes no account in silence: Sync stays off until the player saves, signs in or links (slice 63)
 		if settings.sync.account.is_none() {

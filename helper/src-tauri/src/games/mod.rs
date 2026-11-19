@@ -1,6 +1,6 @@
 //! The games on the computer (docs/plan.md slices 35, 48 and 56; questpump-core `games.rs`): found means watched (slice
-//! 56). Every named game this system runs is watched until the player turns it off, the Riot games (League of Legends
-//! and Teamfight Tactics, Legends of Runeterra) too since 2026-10-28 (until then once the player turned them on); so
+//! 56). Every named game this system runs is watched until the player turns it off, the Riot games (League of Legends,
+//! Teamfight Tactics, Legends of Runeterra) too since 2026-10-28 (until then once the player turned them on); so
 //! are the games the detector finds (`detect.rs`) and the programs the player picks, each until the player turns it off
 //! (`off`). A watched game is heard at its close (its process, seen without a handle, `procs.rs`: one snapshot a look
 //! shared with `game.rs`), and at each match's end where it tells QuestPump: League's game process, the fed games'
@@ -62,7 +62,7 @@ use questpump_core::rocket as rocket_ini;
 use serde::Serialize;
 use tokio::sync::mpsc;
 
-pub(crate) use detect::drop_named;
+pub(crate) use detect::{drop_named, name_played};
 pub use fed::{News, Word};
 pub use gsi::Heard;
 pub use tiles::{Lists, Tile};
@@ -233,25 +233,25 @@ fn denied(e: &std::io::Error) -> bool {
 }
 
 /// Whether a named game is installed on this computer: CS2 and Dota 2 in a Steam library, Rocket League's folder
-/// for its ini (Steam or Epic), League of Legends where the Riot Client's record names it, else at its default place
+/// for its ini (Steam or Epic), a Riot game where the Riot Client's record names it, else at its default place
 /// (`riot::install`), a fed game as its records tell (`fed::installed`). A Steam library on a volume under `/Volumes`
 /// (macOS) is read only for a game the player asked for (`volumes`: `asked`).
 fn installed(watched: &Watched, volumes: bool) -> bool {
 	match watched {
 		Watched::CounterStrike | Watched::Dota => steam::game_dir(watched, volumes).is_some(),
 		Watched::RocketLeague => rocket::config_dir().is_some(),
-		Watched::League => riot::install(watched).is_some(),
+		Watched::League | Watched::TeamfightTactics => riot::install(watched).is_some(),
 		Watched::Program { .. } => false,
 		fed => fed::installed(fed, volumes),
 	}
 }
 
-/// A named game's install folder, where its records name one: a Steam game's in a Steam library, League of Legends'
+/// A named game's install folder, where its records name one: a Steam game's in a Steam library, a Riot game's
 /// as the Riot Client's record names it (`riot::install`), a fed game's as its records tell (`fed::install_dir`);
 /// `volumes` as `installed`'s.
 fn install_dir(watched: &Watched, volumes: bool) -> Option<PathBuf> {
 	match watched {
-		Watched::League => riot::install(watched),
+		Watched::League | Watched::TeamfightTactics => riot::install(watched),
 		Watched::CounterStrike | Watched::Dota | Watched::RocketLeague => steam::game_dir(watched, volumes),
 		Watched::Program { .. } => None,
 		fed => fed::install_dir(fed, volumes),
@@ -584,7 +584,7 @@ impl Games {
 			Watched::CounterStrike => self.place_cfg(Gsi::CounterStrike, settings),
 			Watched::Dota => self.place_cfg(Gsi::Dota, settings),
 			Watched::RocketLeague => self.place_ini(settings),
-			Watched::League | Watched::Program { .. } => {
+			Watched::League | Watched::TeamfightTactics | Watched::Program { .. } => {
 				self.tracks.entry(watched.link()).or_default().status = Status::Ready;
 				false
 			}
@@ -759,6 +759,7 @@ impl Games {
 			Watched::CounterStrike | Watched::RocketLeague => Status::Restart,
 			// the fed games' steps: `check_fed`, and their feeds' own words
 			Watched::League
+			| Watched::TeamfightTactics
 			| Watched::Program { .. }
 			| Watched::StarCraft
 			| Watched::MtgArena

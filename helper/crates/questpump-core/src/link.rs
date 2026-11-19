@@ -1,18 +1,12 @@
 //! The link to the phone and the watch (docs/plan.md slice 7; `contract/companion-api.yaml`, the source of truth for
 //! the routes and bodies): the plaintext bodies, the command queue that answers the held `POST /v1/sync`, which device
 //! holds the link, the acknowledgements, the delivery statistics the latency harness prints per session, and what
-//! became of each pump's commands (`Link::unreached`). Since slice 43 a request comes on the LAN or over the Bluetooth
-//! link (`Via`): a client whose held request came through a central counts alive past `ALIVE_MS` while that request is
-//! pending at the helper (until its answer went to the radio, `Link::answered`) and for `ALIVE_MS` after, its hold may
-//! run to `BLE_WAIT_MAX_MS`, and its central's disconnect or unsubscribe hands the link on at once (`Link::gone`).
-//! Since the fix review of 2026-10-17 a phone that steps back for its watch keeps a standing request
-//! (`Exchange::Standing`), which holds nothing and answers at once while no device holds the link (`Link::unheld`,
-//! `Link::lapse_at`).
-//! No clock, socket or lock here: the app passes the time in (milliseconds on the helper's wall clock) and serves the
-//! routes.
+//! became of each pump's commands (`Link::unreached`). Since the fix review of 2026-10-17 a phone that steps back for
+//! its watch keeps a standing request (`Exchange::Standing`), which holds nothing and answers at once while no device
+//! holds the link (`Link::unheld`, `Link::lapse_at`). No clock, socket or lock here: the app passes the time in
+//! (milliseconds on the helper's wall clock) and serves the routes.
 
 use std::collections::{HashMap, VecDeque};
-use std::hash::Hash;
 use std::net::IpAddr;
 
 use base64::Engine as _;
@@ -34,14 +28,6 @@ pub const HISTORY_PAGE: usize = 5_000;
 /// The most sheets one `GET /v1/sheets` page carries.
 pub const SHEETS_PAGE: usize = 1_000;
 
-/// A paged route's size for the request's `limit` (since slice 43: a phone asks 500 rows and 50 sheets over the
-/// Bluetooth link, so a page's envelope stays far under 2 MiB, and none on the LAN): `most` without one, else the limit
-/// held to 1-`most`.
-#[must_use]
-pub fn page_size(limit: Option<u32>, most: usize) -> usize {
-	limit.map_or(most, |l| usize::try_from(l).unwrap_or(most).clamp(1, most))
-}
-
 /// How long the helper holds a sync request that finds no command, unless the request asks for longer
 /// (`SyncRequest::wait`, at most `WAIT_MAX_MS`, `Link::hold_ms`).
 pub const HOLD_MS: i64 = 5_000;
@@ -62,30 +48,18 @@ pub const ALIVE_MS: i64 = 25_000;
 /// device whose held requests follow each other at once sends one every 15 s at most, inside `ALIVE_MS`, so it keeps
 /// the link.
 pub const WAIT_MAX_MS: i64 = 15_000;
-/// The same over the Bluetooth link (slice 43, `ble_wait_max_ms`): a phone that follows the game with its screen locked
-/// asks once in ten minutes, each answer waking it. Its client counts alive while such a request is pending at the
-/// helper, whatever its age, and for `ALIVE_MS` after its answer went to the radio (`Link::answered`; `Link::gone` ends
-/// it at once), so the hold may outlast `ALIVE_MS`.
-pub const BLE_WAIT_MAX_MS: i64 = 600_000;
-/// The longest a held or standing request waits on `transport` while no command waits for its device
-/// (`SyncRequest::wait`).
-fn wait_max(transport: Transport) -> i64 {
-	match transport {
-		Transport::Lan => WAIT_MAX_MS,
-		Transport::Ble => BLE_WAIT_MAX_MS,
-	}
-}
-
 /// A device silent this long ended its session: its delivery statistics are printed, and its next request starts
 /// another (`Link::starts`).
 pub const QUIET_MS: i64 = 60_000;
 /// A session that goes on has its statistics printed at least this often (since the review of 2026-10-17): a phone
-/// that stays linked by Bluetooth all evening never goes quiet, and the `link` line is what the acceptance reads.
+/// that stays linked all evening never goes quiet, and the `link` line is what a device test reads.
 pub const LINE_EVERY_MS: i64 = 3_600_000;
 /// A countdown stays deliverable this long after its go: a device told later runs the move from the go.
 pub const COUNTDOWN_AFTER_GO_MS: i64 = 30_000;
-/// Wrong bearers from one address (since slice 43 also failures of one Bluetooth central) within `THROTTLE_MS` that
-/// make the helper refuse it for `THROTTLE_MS` after the last.
+/// How long a `pump_offered` holds from when it is queued, or shown again for a phone's mirror (`Link::reshow`).
+const OFFER_MS: i64 = 120_000;
+/// Wrong bearers from one address within `THROTTLE_MS` that make the helper refuse it for `THROTTLE_MS` after the
+/// last.
 pub const THROTTLE_AFTER: usize = 10;
 pub const THROTTLE_MS: i64 = 60_000;
 const MINUTE_MS: i64 = 60_000;
@@ -175,118 +149,6 @@ pub struct Helper {
 	/// helper sends none, and one that does not read is none: a device reads either as `either`.
 	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
 	pub step: Option<Step>,
-	/// How the computer's Bluetooth link stands (since slice 43), in every response. An older helper sends none, and one
-	/// that does not read is none: a device then offers no Bluetooth step and gives no Bluetooth reason.
-	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
-	pub ble: Option<Ble>,
-}
-
-/// How the computer's Bluetooth link stands, as every response's helper block says it (slice 43;
-/// `contract/companion-api.yaml`, `Helper.ble`): the phones' pairing window, follow card and Helper page, and the
-/// computer's Phones page, say it.
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum Ble {
-	/// It serves the link (advertising while a phone is paired or the Phones page shows the code).
-	On,
-	/// macOS has yet to answer QuestPump's Bluetooth grant, which the Phones page asks in context.
-	Ask,
-	/// The grant is refused (macOS's Privacy & Security, Bluetooth; Windows' privacy settings).
-	NoGrant,
-	/// The computer's Bluetooth is turned off.
-	Off,
-	/// Its adapter cannot serve phones (a Windows PC without the peripheral role): phones link on Wi-Fi alone.
-	NoPeripheral,
-	/// The computer has no Bluetooth.
-	#[serde(rename = "none")]
-	Missing,
-	/// The player turned the link off on the Phones page, or it could not start (the Phones page says why).
-	Stopped,
-}
-
-impl Ble {
-	/// The word the wire, the log and the counts use.
-	#[must_use]
-	pub fn word(self) -> &'static str {
-		match self {
-			Self::On => "on",
-			Self::Ask => "ask",
-			Self::NoGrant => "no_grant",
-			Self::Off => "off",
-			Self::NoPeripheral => "no_peripheral",
-			Self::Missing => "none",
-			Self::Stopped => "stopped",
-		}
-	}
-}
-
-/// How a request reached the helper (slice 43): the LAN, or the Bluetooth link through one central (the Mac's
-/// `CBCentral` identifier, Windows' device id).
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Via {
-	Lan,
-	Ble(String),
-}
-
-impl Via {
-	#[must_use]
-	pub fn transport(&self) -> Transport {
-		match self {
-			Self::Lan => Transport::Lan,
-			Self::Ble(_) => Transport::Ble,
-		}
-	}
-}
-
-/// The transport a request came on.
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[serde(rename_all = "lowercase")]
-pub enum Transport {
-	#[default]
-	Lan,
-	Ble,
-}
-
-impl Transport {
-	/// The word the log uses.
-	#[must_use]
-	pub fn name(self) -> &'static str {
-		match self {
-			Self::Lan => "lan",
-			Self::Ble => "ble",
-		}
-	}
-}
-
-/// The transports a client's session came on (`Summary::transport`; the counts' `link_ble`).
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum Transports {
-	Lan,
-	Ble,
-	Both,
-}
-
-impl Transports {
-	/// These and one more.
-	#[must_use]
-	pub fn with(this: Option<Self>, t: Transport) -> Self {
-		match (this, t) {
-			(None | Some(Self::Lan), Transport::Lan) => Self::Lan,
-			(None | Some(Self::Ble), Transport::Ble) => Self::Ble,
-			_ => Self::Both,
-		}
-	}
-
-	/// The word the log and the counts use.
-	#[must_use]
-	pub fn name(self) -> &'static str {
-		match self {
-			Self::Lan => "lan",
-			Self::Ble => "ble",
-			Self::Both => "both",
-		}
-	}
 }
 
 /// What the computer knows of World of Warcraft, as every response's helper block says it (since 2026-10-09; the
@@ -329,7 +191,7 @@ pub enum Step {
 /// `GET /v1/hello`'s body, the one answer without a bearer and without a seal: who answers on this address, so a
 /// device looking for its helper checks a candidate before its bearer goes out. Since the release security review of
 /// 2026-10-31 (L3) it names nothing of the computer, no id, name or port: over the device's challenge `c` and the
-/// answer's own random `n`, `h` proves the install's id and `k` the pairing key (`seal::hello_key`), which only a
+/// answer's own random `n`, `h` proves the install's id and `k` the pairing key (`seal::Keys::hello`), which only a
 /// device holding them can check (`contract/fixtures/find.json`). The pairing's install with another key is the
 /// device's helper with a new code, and answers to one device or to many link nothing; the names reach a paired device
 /// in the sealed answers' `helper` block.
@@ -630,10 +492,10 @@ pub struct SyncRequest {
 	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
 	pub pro_proof: Option<ProProof>,
 	/// How long, in milliseconds, the helper may hold this held request while no command waits for the device (since
-	/// 2026-10-13): a phone sends 15,000 while no pump runs on it and it has nothing to send, 600,000 over the Bluetooth
-	/// link (slice 43). One that does not read is none, `HOLD_MS`; `Link::hold_ms` keeps it between `HOLD_MS` and the
-	/// transport's most (`WAIT_MAX_MS`, `BLE_WAIT_MAX_MS`), and honours it only for the client that holds the link and
-	/// for a standing request (`Exchange::Standing`), which it makes of a request with `hold: false`.
+	/// 2026-10-13): a phone sends 15,000 while no pump runs on it and it has nothing to send. One that does not read is
+	/// none, `HOLD_MS`; `Link::hold_ms` keeps it between `HOLD_MS` and `WAIT_MAX_MS`, and honours it only for the
+	/// client that holds the link and for a standing request (`Exchange::Standing`), which it makes of a request with
+	/// `hold: false`.
 	#[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
 	pub wait: Option<i64>,
 }
@@ -645,11 +507,11 @@ pub enum Exchange {
 	/// game or its hold's end; it makes its client a candidate to hold the link and acknowledges what it saw when its
 	/// client holds it.
 	Held,
-	/// `hold: false` with `wait` (since the review of 2026-10-17): a phone that steps back for its watch keeps one over
-	/// Bluetooth, so an answer wakes it. It never counts toward holding the link and, as a plain post, carries no
-	/// command and acknowledges none; it waits as a held request does, its `wait` honoured whoever holds the link, and
-	/// answers at once while no device holds the link (`Link::unheld`, its answer's `SyncResponse::unheld`), so the
-	/// phone takes the link the moment its watch's link goes quiet.
+	/// `hold: false` with `wait` (since the review of 2026-10-17): a phone that steps back for its watch keeps one
+	/// while its app runs. It never counts toward holding the link and, as a plain post, carries no command and
+	/// acknowledges none; it waits as a held request does, its `wait` honoured whoever holds the link, and answers at
+	/// once while no device holds the link (`Link::unheld`, its answer's `SyncResponse::unheld`), so the phone takes
+	/// the link the moment its watch's link goes quiet.
 	Standing,
 	/// `hold: false` without `wait`: answered at once, no commands, no acknowledgement, and the client's held or
 	/// standing request stays in place.
@@ -727,7 +589,9 @@ pub struct SyncResponse {
 	pub t1: i64,
 	pub t2: i64,
 	/// The since to send next: the holder's the helper's current sequence (`Link::respond`), any other request's its own
-	/// since, except a standing answer that carries `mirror` (slice 51), whose `next` is the highest `seq` among them.
+	/// since, except a standing answer that carries `mirror` (slice 51), whose `next` is the highest `seq` among them
+	/// (a waiting command of a kind the mirror does not carry that it passes is the phone's once it holds the link,
+	/// under a new sequence: `Link::pass_on`).
 	pub next: u64,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub locked_until: Option<i64>,
@@ -772,8 +636,9 @@ pub struct SyncResponse {
 	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
 	pub unheld: bool,
 	/// Since slice 51, only on a standing request's answer to a paired phone: the game pump's commands queued for the
-	/// device that holds the link whose `seq` is above the request's `since`, in `seq` order (`Link::mirror`), which the
-	/// phone shows and never acknowledges or answers; left out when there is none.
+	/// device that holds the link whose `seq` is above the request's `since`, in `seq` order (`Link::mirror`), the
+	/// pump's offer first for a phone that never heard it (`Link::reshow`), which the phone shows and never
+	/// acknowledges or answers; left out when there is none.
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	pub mirror: Vec<Queued>,
 	pub commands: Vec<Queued>,
@@ -946,6 +811,10 @@ pub struct AccountResponse {
 	pub devices: u32,
 	/// Whether an email is linked to the account.
 	pub email: bool,
+	/// Since slice 76: the desktop app tells its account the game's pumps (its Sync on, in an account), so an iPhone
+	/// of that account asks the pump push for this computer (contract/sync-api.yaml, "The pump push").
+	#[serde(default)]
+	pub pushes: bool,
 }
 
 /// `PUT /v1/account` (slice 60): a phone's sync account, handed to the desktop app on the player's Add.
@@ -1006,19 +875,9 @@ pub struct Summary {
 	/// did), counted apart since 2026-10-14: their time was mostly the wait for a device.
 	#[serde(default)]
 	pub late: usize,
-	/// Battery spent per hour of the session, in percent.
+	/// Battery spent per hour of the session, in percent, over at least `BATTERY_HOURS_MIN` of readings.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub battery_per_hour: Option<f64>,
-	/// The transports the session's requests came on (since slice 43).
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub transport: Option<Transports>,
-	/// Battery spent per hour while its requests came on the LAN and over Bluetooth, each over the stretches between
-	/// two readings whose later one came on it, at least `BATTERY_HOURS_MIN` of them (since slice 43): the Bluetooth
-	/// link's cost beside the LAN's play session.
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub battery_lan_per_hour: Option<f64>,
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub battery_ble_per_hour: Option<f64>,
 }
 
 /// Whether a character of an id a device sent may go into a log line: an ASCII letter, digit or hyphen, so no id
@@ -1050,22 +909,6 @@ pub fn pump_tag(pump: &str) -> String {
 /// The least hours of readings a battery rate is given for.
 const BATTERY_HOURS_MIN: f64 = 0.1;
 
-/// Battery spent over stretches of a session: the percent and the milliseconds.
-#[derive(Default, Clone, Copy)]
-struct Spent {
-	level: f64,
-	ms: i64,
-}
-
-impl Spent {
-	/// Percent per hour, once the stretches add up to `BATTERY_HOURS_MIN`.
-	fn per_hour(self) -> Option<f64> {
-		#[expect(clippy::cast_precision_loss, reason = "a session's milliseconds stay far below 2^52")]
-		let hours = self.ms as f64 / 3_600_000.0;
-		(hours >= BATTERY_HOURS_MIN).then(|| self.level * 100.0 / hours)
-	}
-}
-
 /// What the helper knows of one client.
 #[derive(Default)]
 struct Seen {
@@ -1084,66 +927,32 @@ struct Seen {
 	ended: bool,
 	/// The first and the latest battery reading of the session: (time, level).
 	battery: Option<((i64, f64), (i64, f64))>,
-	/// The battery spent between readings, by the transport the later one came on (LAN, Bluetooth).
-	spent: [Spent; 2],
-	/// The transport its last held request came on (slice 43), which the holder's log line names (`Link::holder_tag`).
-	transport: Transport,
-	/// The central its last held request came through, until that central's subscription ends (slice 43, `Link::gone`).
-	central: Option<String>,
-	/// The generations of its held requests through `central` pending at the helper: from their arrival until their
-	/// answer went to the radio, or was dropped (`Link::answered`). While one is, it counts alive whatever its age, and
-	/// its session goes on.
-	pending: Vec<u64>,
-	/// When the answer of its last held request through a central went to the radio: it counts alive `ALIVE_MS` after.
-	answered_at: Option<i64>,
-	/// The end of its standing request's wait (`Exchange::Standing`, since the fix review of 2026-10-17): its session
-	/// goes on until then, as while a held request of it waits over Bluetooth; a held request of it ends it, and so does
-	/// the going of the central it came through (`standing_central`, `Link::gone`); never its answer, since its arrival
-	/// (`last_at`) may be 600 s old then and the next one comes within a second.
-	standing_until: Option<i64>,
-	/// The central its standing request came through; none on the LAN.
-	standing_central: Option<String>,
-	/// The transports its session's requests came on.
-	carried: Option<Transports>,
 	/// When the statistics its next `link` line prints began: the session's start, or its last line (`LINE_EVERY_MS`).
 	line_from: Option<i64>,
 }
 
 impl Seen {
-	/// Whether a held request of it waits at the helper over Bluetooth now.
-	fn waits(&self) -> bool {
-		self.central.is_some() && !self.pending.is_empty()
-	}
-
-	/// Whether its session has ended at `now`: no request for `QUIET_MS`, no held request of it pending over Bluetooth
-	/// and no standing request of it waiting (either may wait `BLE_WAIT_MAX_MS`).
+	/// Whether its session has ended at `now`: no request for `QUIET_MS` (a held or standing request waits
+	/// `WAIT_MAX_MS` at most, so one that waits never outlasts it).
 	fn quiet(&self, now: i64) -> bool {
-		!self.waits() && self.standing_until.is_none_or(|until| now > until) && now - self.last_at >= QUIET_MS
+		now - self.last_at >= QUIET_MS
 	}
 
-	/// Whether it holds a request that counts at `now`: a held request pending over Bluetooth whatever its age, else
-	/// its last held request within `ALIVE_MS` of its arrival or of its answer over Bluetooth; with that request's
-	/// arrival.
+	/// Whether it holds a request that counts at `now`: its last held request within `ALIVE_MS` of its arrival; with
+	/// that arrival.
 	fn alive(&self, now: i64) -> Option<i64> {
 		self.held_at.filter(|_| self.alive_until().is_some_and(|until| now <= until))
 	}
 
-	/// The last instant it counts alive while nothing arrives: none before a held request, `i64::MAX` while one waits
-	/// over Bluetooth (its answer starts the last `ALIVE_MS`, `Link::answered`), else `ALIVE_MS` after its last held
-	/// request's arrival or that request's answer over Bluetooth.
+	/// The last instant it counts alive while nothing arrives: `ALIVE_MS` after its last held request's arrival, none
+	/// before one.
 	fn alive_until(&self) -> Option<i64> {
-		let held = self.held_at?;
-		if self.waits() {
-			return Some(i64::MAX);
-		}
-		Some(self.answered_at.map_or(held, |at| at.max(held)).saturating_add(ALIVE_MS))
+		Some(self.held_at?.saturating_add(ALIVE_MS))
 	}
 
 	/// Its statistics since the last line, taken: `goes_on` keeps the latest battery reading as the next stretch's
 	/// first, for a session whose hourly line this is.
 	fn summary(&mut self, (device, client): &Client, goes_on: bool) -> Option<Summary> {
-		let transport = self.carried.take();
-		let [lan, ble] = std::mem::take(&mut self.spent);
 		let battery = self.battery.take();
 		if goes_on {
 			self.battery = battery.map(|(_, last)| (last, last));
@@ -1153,8 +962,11 @@ impl Seen {
 		}
 		let mut d = std::mem::take(&mut self.delivery);
 		d.sort_unstable();
-		let battery_per_hour =
-			battery.and_then(|((t0, b0), (t1, b1))| Spent { level: b0 - b1, ms: t1 - t0 }.per_hour());
+		let battery_per_hour = battery.and_then(|((t0, b0), (t1, b1))| {
+			#[expect(clippy::cast_precision_loss, reason = "a session's milliseconds stay far below 2^52")]
+			let hours = (t1 - t0) as f64 / 3_600_000.0;
+			(hours >= BATTERY_HOURS_MIN).then(|| (b0 - b1) * 100.0 / hours)
+		});
 		Some(Summary {
 			device: *device,
 			client: client.clone(),
@@ -1163,9 +975,6 @@ impl Seen {
 			p95_ms: crate::percentile(&d, 95),
 			late: std::mem::take(&mut self.late),
 			battery_per_hour,
-			transport,
-			battery_lan_per_hour: lan.per_hour(),
-			battery_ble_per_hour: ble.per_hour(),
 		})
 	}
 }
@@ -1231,6 +1040,12 @@ fn client(req: &SyncRequest) -> Client {
 	(req.device, req.client.clone())
 }
 
+/// Whether a request reads the game's pump as a mirror (slice 51): a phone's standing request, never a watch's.
+#[must_use]
+pub fn mirrors(req: &SyncRequest) -> bool {
+	req.exchange() == Exchange::Standing && !req.device.is_watch()
+}
+
 fn taken_key(req: &SyncRequest, e: &WristEvent) -> Taken {
 	(client(req), e.pump_id.clone(), e.kind, e.slot, e.start_at)
 }
@@ -1252,17 +1067,21 @@ pub struct Link {
 	/// The pumps whose commands are not all settled, or settled with some that reached no device and not told yet
 	/// (`unreached`), in the order their first command came, `REACH_KEPT` at most.
 	reach: VecDeque<Reach>,
-	/// The game pump's commands (`mirrored`) as they were queued, until each expires: a phone's mirror reads them
-	/// here (`Link::mirror`), since the holder's acknowledgement takes them off `queue` at once (slice 51).
+	/// The game pump's commands (`mirrored`) as they were queued, in `seq` order, until each expires: a phone's mirror
+	/// reads them here (`Link::mirror`), since the holder's acknowledgement takes them off `queue` at once (slice 51).
+	/// The pump's offer comes back here for a phone that never heard it (`Link::reshow`).
 	shown: VecDeque<Queued>,
 }
 
-/// A command of the game's pump, which a phone that stepped back for its watch shows as a mirror (slice 51).
+/// A command of the game's pump, which a phone that stepped back for its watch shows as a mirror (slice 51; `keep`
+/// since the review of 2026-11-19: without it a move the game kept going stood at its time's end on that phone). A
+/// command of any other kind reaches a phone only as the holder's (`Link::pass_on`).
 fn mirrored(c: &Command) -> bool {
 	matches!(
 		c,
 		Command::PumpOffered { .. }
 			| Command::Countdown { .. }
+			| Command::Keep { .. }
 			| Command::MoveEnd { .. }
 			| Command::MoveCounted { .. }
 			| Command::Verdict { .. }
@@ -1362,7 +1181,7 @@ impl Link {
 		let expires_at = match &command {
 			Command::Countdown { go_at, .. } => go_at + COUNTDOWN_AFTER_GO_MS,
 			Command::TurnIn { .. } => now + 30_000,
-			Command::PumpOffered { .. } => now + 120_000,
+			Command::PumpOffered { .. } => now + OFFER_MS,
 			Command::QuestComplete { .. }
 			| Command::Keep { .. }
 			| Command::PumpDone { .. }
@@ -1427,9 +1246,51 @@ impl Link {
 		Some(queued)
 	}
 
-	/// The client the commands go to: a watch whose held request came within `ALIVE_MS`, else such a phone, a phone
-	/// whose held request is pending over Bluetooth counting alive whatever its age, and for `ALIVE_MS` after its answer
-	/// went to the radio (slice 43); the latest request wins.
+	/// The pump on offer (`offer`, its `pump_offered` as the session builds it now) shown again for a phone's standing
+	/// request whose `since` never passed it (since the review of 2026-11-19), as `reoffer` queues it again for a
+	/// holder: an offer leaves `shown` as it expires, `OFFER_MS` after it was queued, and a phone that begins to
+	/// mirror an older pump would get its later commands with no moves to show them on. The offer goes back into `shown`
+	/// under the sequence of the pump's latest offer, holding from `now` as a new one does: it comes first among the
+	/// pump's commands in the request's answer (`mirror`), and never again once the phone's `since` passed it. The
+	/// holder's queue and the link's sequence stay as they are. Its sequence when it went back: none while `shown`
+	/// still holds it, for a `since` at or above it, or for a pump the link queued no offer of (`reoffer` queues one
+	/// once a device holds the link).
+	pub fn reshow(&mut self, offer: Command, since: u64, now: i64) -> Option<u64> {
+		let Command::PumpOffered { pump_id, .. } = &offer else { return None };
+		self.expire(now);
+		let since = self.since(since);
+		let seq = self.offered.as_ref().filter(|(id, seq)| id == pump_id && *seq > since).map(|(_, seq)| *seq)?;
+		if self.shown.iter().any(|q| q.seq == seq) {
+			return None;
+		}
+		let at = self.shown.partition_point(|q| q.seq < seq);
+		self.shown.insert(at, Queued { seq, command: offer, sent_at: now, expires_at: now + OFFER_MS });
+		Some(seq)
+	}
+
+	/// Gives a new sequence to each waiting command the holder's `since` passed over unseen (since the review of
+	/// 2026-11-19): one at or below `since` that no response handed to a device and whose kind the mirror does not
+	/// carry (`mirrored`: a `turn_in`, a `quest_complete`, a `match_end`). Only a phone that took the link back from
+	/// its watch holds such a `since`: its standing answers' `next` is the highest mirrored sequence (`mirror`), and a
+	/// match's offer queued in the watch's last `ALIVE_MS` lies below it. Under its new sequence the command waits as
+	/// any other does, through a lost response too, in its place in the queue; its receipt counts as late (`sent`:
+	/// queued while another device held the link). A mirrored command at or below `since` the phone showed, and one a
+	/// response handed went to a device: both leave as reached (`arrive`).
+	fn pass_on(&mut self, since: u64) {
+		for w in &mut self.queue {
+			if w.queued.seq > since || w.handed || mirrored(&w.queued.command) {
+				continue;
+			}
+			self.seq += 1;
+			if let Some(sent) = self.sent.iter_mut().find(|(seq, _, _)| *seq == w.queued.seq) {
+				sent.0 = self.seq;
+			}
+			w.queued.seq = self.seq;
+		}
+	}
+
+	/// The client the commands go to: a watch whose held request came within `ALIVE_MS`, else such a phone; the
+	/// latest request wins.
 	fn holding(&self, now: i64) -> Option<&Client> {
 		self.clients.iter().filter_map(|(c, s)| s.alive(now).map(|t| (c.0.is_watch(), t, c))).max().map(|(_, _, c)| c)
 	}
@@ -1440,21 +1301,11 @@ impl Link {
 		self.holding(now).map(|c| c.0)
 	}
 
-	/// The device that holds the link with its client's tag (`client_tag`) and the transport its last held request came
-	/// on, for the log's holder line: two clients of one kind taking turns, an app installed again, or a phone moving
-	/// between the LAN and Bluetooth change it where `holder` stays.
+	/// The device that holds the link with its client's tag (`client_tag`), for the log's holder line: two clients of
+	/// one kind taking turns, or an app installed again, change it where `holder` stays.
 	#[must_use]
-	pub fn holder_tag(&self, now: i64) -> Option<(Device, String, Transport)> {
-		self.holding(now).map(|c @ (device, client)| {
-			(*device, client_tag(client), self.clients.get(c).map_or(Transport::Lan, |s| s.transport))
-		})
-	}
-
-	/// The device that holds the link and the transport its last held request came on (the pump's log line,
-	/// `→ ios (ble)`).
-	#[must_use]
-	pub fn holder_via(&self, now: i64) -> Option<(Device, Transport)> {
-		self.holder_tag(now).map(|(device, _, transport)| (device, transport))
+	pub fn holder_tag(&self, now: i64) -> Option<(Device, String)> {
+		self.holding(now).map(|(device, client)| (*device, client_tag(client)))
 	}
 
 	/// Whether no device holds the link at `now` (since the review of 2026-10-17): a standing request answers at once
@@ -1465,52 +1316,11 @@ impl Link {
 	}
 
 	/// The first instant after `now` at which a client that counts alive then no longer does with nothing arriving: the
-	/// holder going quiet wakes no held request, so a standing request looks again then. None while each one that counts
-	/// waits over Bluetooth, whose answer wakes the held requests (`Link::answered`, through the app's wake).
+	/// holder going quiet wakes no held request, so a standing request looks again then. None while none counts.
 	#[must_use]
 	pub fn lapse_at(&self, now: i64) -> Option<i64> {
-		let until =
-			self.clients.values().filter_map(Seen::alive_until).filter(|&until| now <= until && until < i64::MAX);
+		let until = self.clients.values().filter_map(Seen::alive_until).filter(|&until| now <= until);
 		until.min().map(|until| until + 1)
-	}
-
-	/// Whether a client is linked over Bluetooth at `now`: its last held request came through a central whose
-	/// subscription stands, and it counts alive (the Phones page's Bluetooth row).
-	#[must_use]
-	pub fn ble_linked(&self, now: i64) -> bool {
-		self.clients.values().any(|s| s.central.is_some() && s.alive(now).is_some())
-	}
-
-	/// A central's subscription ended (it disconnected, unsubscribed, read the hello anew, or the Bluetooth link let it
-	/// go): the clients whose held requests came through it hold the link no more, so it passes to the next device at
-	/// once, and a standing request that came through it went with it, so its client's session ends after its silence
-	/// (`Seen::quiet`). Whether a client held the link through it.
-	pub fn gone(&mut self, central: &str) -> bool {
-		let mut any = false;
-		for s in self.clients.values_mut() {
-			if s.standing_central.as_deref() == Some(central) {
-				s.standing_until = None;
-				s.standing_central = None;
-			}
-			if s.central.as_deref() == Some(central) {
-				s.central = None;
-				s.held_at = None;
-				s.pending.clear();
-				any = true;
-			}
-		}
-		any
-	}
-
-	/// A held request over Bluetooth is no longer pending at `now`: its answer went to the radio, or it was dropped (its
-	/// call ended, its central went). Its client counts alive `ALIVE_MS` from here, while no other of it is pending.
-	pub fn answered(&mut self, device: Device, client: &str, generation: u64, now: i64) {
-		let Some(s) = self.clients.get_mut(&(device, client.to_owned())) else { return };
-		let before = s.pending.len();
-		s.pending.retain(|&g| g != generation);
-		if s.pending.len() != before {
-			s.answered_at = Some(now);
-		}
 	}
 
 	/// Whether a request starts a session of its client's link (since 2026-10-14): a client this run never heard, or
@@ -1521,22 +1331,19 @@ impl Link {
 		self.clients.get(&client(req)).is_none_or(|s| s.ended)
 	}
 
-	/// A request arrived `via` the LAN or a Bluetooth central: its receipts and battery go into the statistics (a
-	/// receipt's delivery time only for a command queued while its client held the link, the rest counted as late; the
-	/// battery spent since the last reading by the transport it came on), a held one makes its client a candidate to
-	/// hold the link (through a central: pending until `answered`) and acknowledges what it saw when it holds it, and a
-	/// held or a standing one is its client's latest, so an older one of either answers at once (`is_current`). Returns
-	/// the client's generation.
-	pub fn arrive(&mut self, req: &SyncRequest, via: &Via, now: i64) -> u64 {
+	/// A request arrived: its receipts and battery go into the statistics (a receipt's delivery time only for a command
+	/// queued while its client held the link, the rest counted as late), a held one makes its client a candidate to
+	/// hold the link and acknowledges what it saw when it holds it (never a command its `since` passed over unseen:
+	/// `pass_on`), and a held or a standing one is its client's latest, so an older one of either answers at once
+	/// (`is_current`). Returns the client's generation.
+	pub fn arrive(&mut self, req: &SyncRequest, now: i64) -> u64 {
 		let key = client(req);
 		// a since beyond this run's sequence belongs to another run and acknowledges nothing
 		let since = self.since(req.since);
-		let transport = via.transport();
 		let seen = self.clients.entry(key.clone()).or_default();
 		seen.last_at = now;
 		seen.ended = false;
 		seen.line_from.get_or_insert(now);
-		seen.carried = Some(Transports::with(seen.carried, transport));
 		for r in &req.received {
 			if let Some(i) = self.sent.iter().position(|(seq, _, _)| *seq == r.seq)
 				&& let Some((_, sent, holder)) = self.sent.remove(i)
@@ -1549,51 +1356,23 @@ impl Link {
 			}
 		}
 		if let Some(level) = req.battery.filter(|b| (0.0..=1.0).contains(b)) {
-			if let Some((_, (at, last))) = seen.battery {
-				let spent = &mut seen.spent[usize::from(transport == Transport::Ble)];
-				spent.level += last - level;
-				spent.ms += now - at;
-			}
 			let first = seen.battery.map_or((now, level), |(first, _)| first);
 			seen.battery = Some((first, (now, level)));
 		}
 		match req.exchange() {
 			Exchange::Plain => return seen.generation,
 			Exchange::Standing => {
-				let wait = req.wait.unwrap_or(HOLD_MS).clamp(HOLD_MS, wait_max(transport));
-				seen.standing_until = Some(now.saturating_add(wait));
-				seen.standing_central = match via {
-					Via::Ble(central) => Some(central.clone()),
-					Via::Lan => None,
-				};
 				seen.generation += 1;
 				return seen.generation;
 			}
-			Exchange::Held => {
-				seen.standing_until = None;
-				seen.standing_central = None;
-			}
+			Exchange::Held => {}
 		}
 		seen.held_at = Some(now);
 		seen.since = since;
 		seen.generation += 1;
-		seen.transport = transport;
-		match via {
-			Via::Ble(central) => {
-				if seen.central.as_ref() != Some(central) {
-					seen.pending.clear();
-				}
-				seen.central = Some(central.clone());
-				seen.pending.push(seen.generation);
-				// a central has at most that many calls at the helper: one more is a lost answer's, which ends nothing
-				if seen.pending.len() > crate::ble::IN_FLIGHT_MAX {
-					seen.pending.remove(0);
-				}
-			}
-			Via::Lan => seen.central = None,
-		}
 		let generation = seen.generation;
 		if self.holding(now) == Some(&key) {
+			self.pass_on(since);
 			let Self { queue, reach, .. } = self;
 			queue.retain(|w| {
 				let keep = w.queued.seq > since;
@@ -1646,18 +1425,17 @@ impl Link {
 		if since > self.seq { 0 } else { since }
 	}
 
-	/// How long a held or standing request that came on `transport` waits while no command waits for its device, after
-	/// its `arrive`: `floor` (`HOLD_MS` in the helper), or the request's `wait` up to its transport's most
-	/// (`WAIT_MAX_MS` on the LAN, `BLE_WAIT_MAX_MS` over Bluetooth since slice 43, `wait_max`) when that is longer and
-	/// its client holds the link, or it is a standing request (`Exchange::Standing`), which holds nothing. Any other client's held request waits
-	/// `floor` alone (since 2026-10-13): the link passes to it when the holder's last held request grows older than
-	/// `ALIVE_MS` or its central goes, which wakes no held request, so it looks again within `floor` (a phone whose
-	/// watch stopped syncing hears the next countdown within 5 s).
+	/// How long a held or standing request waits while no command waits for its device, after its `arrive`: `floor`
+	/// (`HOLD_MS` in the helper), or the request's `wait` up to `WAIT_MAX_MS` when that is longer and its client holds
+	/// the link, or it is a standing request (`Exchange::Standing`), which holds nothing. Any other client's held
+	/// request waits `floor` alone (since 2026-10-13): the link passes to it when the holder's last held request grows
+	/// older than `ALIVE_MS`, which wakes no held request, so it looks again within `floor` (a phone whose watch
+	/// stopped syncing hears the next countdown within 5 s).
 	#[must_use]
-	pub fn hold_ms(&self, req: &SyncRequest, transport: Transport, floor: i64, now: i64) -> i64 {
+	pub fn hold_ms(&self, req: &SyncRequest, floor: i64, now: i64) -> i64 {
 		match req.wait {
 			Some(wait) if req.exchange() == Exchange::Standing || self.holding(now) == Some(&client(req)) => {
-				wait.min(wait_max(transport)).max(floor)
+				wait.min(WAIT_MAX_MS).max(floor)
 			}
 			_ => floor,
 		}
@@ -1672,13 +1450,16 @@ impl Link {
 	/// What a response carries for a device at `now`: the unexpired commands after `since` and the `next` to send,
 	/// read under one borrow so a command queued meanwhile is never acknowledged unseen. The device that holds the
 	/// link gets every waiting command, each marked as handed to a device, and the current sequence; any other gets
-	/// none, and its `since` back, so it never acknowledges what went to the holder when it takes the link over.
+	/// none, and its `since` back, so it never acknowledges what went to the holder when it takes the link over. A
+	/// command the holder's `since` passed over unseen comes with them under a new sequence (`pass_on`), here too
+	/// because the link may pass to a client after its request arrived (the holder's last one aged past `ALIVE_MS`).
 	pub fn respond(&mut self, req: &SyncRequest, now: i64) -> (Vec<Queued>, u64) {
 		self.expire(now);
 		let since = self.since(req.since);
 		if self.holding(now) != Some(&client(req)) {
 			return (Vec::new(), since);
 		}
+		self.pass_on(since);
 		let mut commands = Vec::new();
 		for w in self.queue.iter_mut().filter(|w| w.queued.seq > since) {
 			w.handed = true;
@@ -1689,12 +1470,14 @@ impl Link {
 
 	/// What a standing request from a phone (since slice 51: a phone that stepped back for its watch keeps the game pump
 	/// on its screen) carries at `now`: the game pump's commands waiting for the holder (`pump_offered`, `countdown`,
-	/// `move_end`, `move_counted`, `verdict`, `pump_done`, `session_end`) whose `seq` is above the request's `since`, in
-	/// `seq` order, never marked handed and kept for it until each expires (`shown`), and the `next` to
-	/// send: the highest `seq` among them, else the request's own `since`. None for another kind of request or a watch.
+	/// `keep`, `move_end`, `move_counted`, `verdict`, `pump_done`, `session_end`) whose `seq` is above the request's
+	/// `since`, in `seq` order, never marked handed and kept for it until each expires (`shown`; the pump's offer
+	/// there again for a phone that never heard it, `reshow`), and the `next` to send: the highest `seq` among them,
+	/// else the request's own `since`. That `next` may pass a waiting command of another kind, which the phone gets
+	/// once it holds the link (`pass_on`). None for another kind of request or a watch (`mirrors`).
 	pub fn mirror(&mut self, req: &SyncRequest, now: i64) -> (Vec<Queued>, u64) {
 		let since = self.since(req.since);
-		if req.exchange() != Exchange::Standing || req.device.is_watch() {
+		if !mirrors(req) {
 			return (Vec::new(), since);
 		}
 		self.expire(now);
@@ -1732,41 +1515,29 @@ impl Link {
 	}
 }
 
-/// The peers that failed: an address that sent wrong bearers, and since slice 43 a Bluetooth central whose messages
-/// were dropped or whose envelopes did not open (`ble.json`'s `failed_max` and `failed_window_ms`): `THROTTLE_AFTER`
-/// within `THROTTLE_MS` are refused for `THROTTLE_MS` after the last.
-pub struct Throttle<K = IpAddr> {
-	peers: HashMap<K, VecDeque<i64>>,
+/// The addresses that sent wrong bearers: `THROTTLE_AFTER` within `THROTTLE_MS` are refused for `THROTTLE_MS` after the
+/// last.
+#[derive(Default)]
+pub struct Throttle {
+	peers: HashMap<IpAddr, VecDeque<i64>>,
 }
 
-impl<K> Default for Throttle<K> {
-	fn default() -> Self {
-		Self { peers: HashMap::new() }
-	}
-}
-
-impl<K: Eq + Hash> Throttle<K> {
-	/// Whether a peer is refused at `now`.
+impl Throttle {
+	/// Whether an address is refused at `now`.
 	#[must_use]
-	pub fn refused(&self, peer: &K, now: i64) -> bool {
+	pub fn refused(&self, peer: IpAddr, now: i64) -> bool {
 		self.peers
-			.get(peer)
+			.get(&peer)
 			.is_some_and(|f| f.len() >= THROTTLE_AFTER && f.back().is_some_and(|&t| now - t < THROTTLE_MS))
 	}
 
-	/// A failure of a peer's.
-	pub fn failed(&mut self, peer: K, now: i64) {
+	/// A wrong bearer from an address.
+	pub fn failed(&mut self, peer: IpAddr, now: i64) {
 		self.peers.retain(|_, f| f.back().is_some_and(|&t| now - t < THROTTLE_MS));
 		let failures = self.peers.entry(peer).or_default();
 		failures.push_back(now);
 		while failures.len() > THROTTLE_AFTER || failures.front().is_some_and(|&t| now - t >= THROTTLE_MS) {
 			failures.pop_front();
 		}
-	}
-
-	/// Forgets the failures of every peer `keep` says no to (since the review of 2026-10-17: a new pairing code
-	/// forgives every Bluetooth central).
-	pub fn retain(&mut self, mut keep: impl FnMut(&K) -> bool) {
-		self.peers.retain(|peer, _| keep(peer));
 	}
 }

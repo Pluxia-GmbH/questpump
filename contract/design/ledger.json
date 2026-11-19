@@ -265,7 +265,7 @@
   "title": "The voice's takes",
   "licence": "MIT",
   "madeBy": "ElevenLabs text to speech, a premade voice on a paid ElevenLabs Creator plan, through QuestPump's own key; trimmed, loudness-matched, encoded as Ogg Vorbis, optimised without loss by OptiVorbis (its Ogg packets repacked, the decoded sound unchanged) and checked by transcription by tools/voice/voice.mjs on David's Mac",
-  "terms": "ElevenLabs Terms of Use, last updated 31 March 2026 (https://elevenlabs.io/terms-of-use, read 2026-10-08): \u00a74(c)(ii) \"as between you and ElevenLabs, you retain all rights in and to your Output\"; \u00a71(c) a paid subscriber \"may use the Services for commercial purposes\" (free users only non-commercially); \u00a74(a) downloaded Output may be used outside the Services, subject to the Terms and the Prohibited Use Policy; no credit is asked. The OEM Terms cover bundling, making available or sublicensing the Services themselves, not files of Output, so the addon, the desktop app and the phone apps may ship the takes, and the repository's MIT licence carries them."
+  "terms": "ElevenLabs Terms of Use, last updated 31 March 2026 (https://elevenlabs.io/terms-of-use, read 2026-10-08): §4(c)(ii) \"as between you and ElevenLabs, you retain all rights in and to your Output\"; §1(c) a paid subscriber \"may use the Services for commercial purposes\" (free users only non-commercially); §4(a) downloaded Output may be used outside the Services, subject to the Terms and the Prohibited Use Policy; no credit is asked. The OEM Terms cover bundling, making available or sublicensing the Services themselves, not files of Output, so the addon, the desktop app and the phone apps may ship the takes, and the repository's MIT licence carries them."
  },
  "marks": [
   {
@@ -688,11 +688,6 @@
   },
   {
    "path": "contract/design/art/mark_tree.svg",
-   "added": "2026-10-16",
-   "madeBy": "Claude for Pluxia GmbH"
-  },
-  {
-   "path": "contract/design/art/picker_computer.svg",
    "added": "2026-10-16",
    "madeBy": "Claude for Pluxia GmbH"
   },

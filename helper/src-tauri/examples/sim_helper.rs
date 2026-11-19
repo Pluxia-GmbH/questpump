@@ -54,8 +54,6 @@
 //! curl -s 127.0.0.1:8788/game -d '{"game_asks":true}'           # WoW with QuestPump runs: no catch-up pays
 //! curl -s 127.0.0.1:8788/game -d '{"game_asks":true,"step":"check_again"}'   # the pairing's step too (none,
 //!                                                    # check_again, reload, grant, either; none when left out)
-//! curl -s 127.0.0.1:8788/game -d '{"game_asks":false,"ble":"no_grant"}'  # the computer's Bluetooth link too (on,
-//!                                                    # ask, no_grant, off, no_peripheral, none, stopped; slice 43)
 //! curl -s 127.0.0.1:8788/lock -d '{"locked_until":1790049600}'  # unix seconds; {"locked_until":null} clears it
 //! curl -s 127.0.0.1:8788/owed -d '[{"move":12,"kind":1},{"move":4,"kind":3,"seconds":40,"allout":true}]'
 //! curl -s -X POST 127.0.0.1:8788/quit
@@ -101,7 +99,7 @@ use base64::Engine as _;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use questpump_core::body::Kept;
 use questpump_core::link::{
-	self, AppRow, AppRowsResponse, Ble, Device, Helper, HistoryPage, HistoryResponse, OwedMove, Queued, Sheet,
+	self, AppRow, AppRowsResponse, Device, Helper, HistoryPage, HistoryResponse, OwedMove, Queued, Sheet,
 	SheetResponse, SheetsPage, SheetsResponse, Step, Summary, SyncRequest, Wow, WristEvent,
 };
 use questpump_core::mirror::Sight;
@@ -522,7 +520,7 @@ impl Sim {
 				print_event("unpair", json!({"device": device}));
 				let _ = done.send(());
 			}
-			Ask::Synced { request, done, .. } => {
+			Ask::Synced { request, done } => {
 				let answer = self.world().synced(&request, now);
 				if let Some(id) = &request.offer_taken {
 					let _ = self.links.withdraw(id);
@@ -539,22 +537,22 @@ impl Sim {
 			Ask::Sheet { done } => {
 				let _ = done.send(self.world().sheet(now));
 			}
-			Ask::History { after, proofs_since, size, done } => {
+			Ask::History { after, proofs_since, done } => {
 				let world = self.world();
-				let (rows, next, more) = link::page(&world.history.rows, after, size);
+				let (rows, next, more) = link::page(&world.history.rows, after, link::HISTORY_PAGE);
 				let proofs = proofs_since.map(|since| {
 					let all = world.history.proofs.iter().flatten();
 					all.filter(|p| u64::from(p.row_ts) >= since).cloned().collect()
 				});
 				let _ = done.send(HistoryPage { store: world.history.store.clone(), next, more, proofs, rows });
 			}
-			Ask::Sheets { after, size, done } => {
+			Ask::Sheets { after, done } => {
 				let world = self.world();
-				let (sheets, next, more) = link::page(&world.sheets.sheets, after, size);
+				let (sheets, next, more) = link::page(&world.sheets.sheets, after, link::SHEETS_PAGE);
 				let _ = done.send(SheetsPage { store: world.sheets.store.clone(), next, more, sheets });
 			}
-			Ask::AppRows { after, size, done } => {
-				let _ = done.send(self.world().app.app_rows().page(after, size));
+			Ask::AppRows { after, done } => {
+				let _ = done.send(self.world().app.app_rows().page(after));
 			}
 			Ask::Body { body, done } => {
 				let mut world = self.world();
@@ -570,7 +568,7 @@ impl Sim {
 				}
 				let (account, r) = world.account.clone().unzip();
 				let devices = if account.is_some() { 2 } else { 0 };
-				let _ = done.send(Some(lan::AccountState { account, r, devices, email: false }));
+				let _ = done.send(Some(lan::AccountState { account, r, devices, email: false, pushes: false }));
 			}
 		}
 	}
@@ -699,29 +697,26 @@ async fn playing(State(sim): State<Arc<Sim>>, body: Bytes) -> Response {
 
 /// The game as `/game` sets it: from then on every response's helper block names World of Warcraft with QuestPump
 /// (running while `game_asks`, else found), its sight `no_grant` for `grant` and `sees` otherwise, and the pairing's
-/// step (since 2026-10-13; `none` when left out), the computer's Bluetooth link (`ble`, since slice 43; absent when
-/// left out), and every sync and sheet response says `game_asks`, as the helper's `Lan::set_game` and its sheet do; a
-/// change answers the held requests at once.
+/// step (since 2026-10-13; `none` when left out), and every sync and sheet response says `game_asks`, as the helper's
+/// `Lan::set_game` and its sheet do; a change answers the held requests at once.
 #[derive(Deserialize)]
 struct GameNow {
 	game_asks: bool,
 	#[serde(default)]
 	step: Option<Step>,
-	#[serde(default)]
-	ble: Option<Ble>,
 }
 
 async fn game(State(sim): State<Arc<Sim>>, body: Bytes) -> Response {
-	let GameNow { game_asks, step, ble } = match serde_json::from_slice(&body) {
+	let GameNow { game_asks, step } = match serde_json::from_slice(&body) {
 		Ok(g) => g,
 		Err(e) => return refuse(e),
 	};
 	sim.world().sheet.game_asks = game_asks;
 	let shown = step.unwrap_or(Step::Done);
 	let sight = if shown == Step::Grant { Sight::NoGrant } else { Sight::Sees };
-	let _ = sim.lan.set_game(Wow::Addon, sight, shown, game_asks, ble);
-	print_event("game", json!({"game_asks": game_asks, "step": step, "ble": ble}));
-	reply(StatusCode::OK, &json!({"game_asks": game_asks, "step": step, "ble": ble}))
+	let _ = sim.lan.set_game(Wow::Addon, sight, shown, game_asks);
+	print_event("game", json!({"game_asks": game_asks, "step": step}));
+	reply(StatusCode::OK, &json!({"game_asks": game_asks, "step": step}))
 }
 
 async fn quit(State(sim): State<Arc<Sim>>) -> Response {
@@ -794,7 +789,6 @@ async fn main() -> anyhow::Result<()> {
 		wow: None,
 		sight: None,
 		step: None,
-		ble: None,
 	};
 	let lan = Lan::new(&key, links.clone(), helper, asks_tx, Duration::from_millis(link::HOLD_MS.unsigned_abs()));
 	let pair_link =
