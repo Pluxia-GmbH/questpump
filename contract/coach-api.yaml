@@ -162,7 +162,10 @@ paths:
         of body (its text at most `report_chars` Unicode scalar values, no other field), checks the App Check token
         when one is present (RS256 against Firebase's JWKS, issued for the `questpump` project to one of its apps; 401
         when it does not verify, 503 while Firebase's keys cannot be read), and mails the moment, the reason, the model
-        id and the text, nothing else, to the support mailbox. The phones send their token when App Check gives them
+        id and the text, nothing else of the report, to the support mailbox. Under the model's line the mail says in
+        one line whether a token came and verified (since 2026-11-21: "App Check: verified (a QuestPump phone app's
+        token)", or "App Check: no token (sender not verified)"; the Worker's own word, never the token), so its
+        reader tells a report anyone could post from an app's. The phones send their token when App Check gives them
         one and post without the header when it gives none or is not asked (a phone that fails its device check, a
         build without the Firebase config, no purpose that reads on: telemetry-api.yaml, "Firebase starts only for a
         purpose that reads on"). A report without a token is no 401 (since 2026-11-19; until then the route refused

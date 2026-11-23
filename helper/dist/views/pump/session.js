@@ -120,6 +120,8 @@ register(COVER, () => {
 	const told = new Set();
 	const fullscreens = new Set();
 	const figure = new MoveFigure();
+	// the side the move on screen last ran on: Rust's `side` ends with the run, and its count, ask and pour keep it
+	let ranOn = null;
 	const view = {
 		el: page,
 		stops: [],
@@ -135,6 +137,9 @@ register(COVER, () => {
 	const ctx = {
 		/** The move's one figure, which Ready and Big view hold from Ready through the run (qp-figure-stage `hold`). */
 		figure,
+		/** The side the move's figure stands on: the running side, else the side the same move last ran on, so a side
+		 * move's other side stays mirrored through its count and pour (Rapha, 2026-11-23). */
+		side: (pump) => pump.side ?? (ranOn?.id === pump.id && ranOn.move === pump.current ? ranOn.side : null),
 		/** Opens a stage's window: the "···", Swap's options, How to do it, Pause's menu from its button `from`,
 		 * leaving the pump. */
 		open(kind, from) {
@@ -176,6 +181,7 @@ register(COVER, () => {
 	const render = (next) => {
 		topic = next;
 		if (!topic.pump) return;
+		if (topic.pump.side) ranOn = {id: topic.pump.id, move: topic.pump.current, side: topic.pump.side};
 		const now = keyOf(topic);
 		const trip = topic.pump.expedition;
 		const barred = Boolean(trip) && topic.pump.stage !== "done";

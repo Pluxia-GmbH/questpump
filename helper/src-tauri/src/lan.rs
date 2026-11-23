@@ -149,6 +149,19 @@ impl Links {
 		lock(&self.link).holder(now)
 	}
 
+	/// Whether the pump push calls `pump` now: its call is owed, and no device holds the link or a phone that does
+	/// took nothing of the offer in its wait (`Link::push_calls`).
+	#[must_use]
+	pub fn push_calls(&self, pump: &str, now: i64) -> bool {
+		lock(&self.link).push_calls(pump, now)
+	}
+
+	/// The pump push called `pump`: every device that hears its offer from here hears it with `earlier`
+	/// (`Link::called`). Nothing is woken: an offer that waits goes out with the next request as it is.
+	pub fn called(&self, pump: &str) {
+		lock(&self.link).called(pump);
+	}
+
 	/// The device that holds the link with its client's tag, for the log (`Link::holder_tag`).
 	#[must_use]
 	pub fn holder_tag(&self, now: i64) -> Option<(Device, String)> {

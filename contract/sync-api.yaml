@@ -247,8 +247,17 @@ info:
       `Command`: `pump_offered`, `countdown`, `keep`, `move_end`, `pump_done`), by the rule the iPhone has for a pump
       of its own (the move on screen by its kind), whichever device holds the link, or none:
       - `offer`, a pump's offer (`pump_offered`, the pump's first): the pump at its first move, with the moves' names
-        and the first move's name and goal. With it `alert`: true when no device holds the computer's link as the pump
-        is offered (a device holds it for 25 s after its last held request), so that nothing alerts twice.
+        and the first move's name and goal. With it `alert`: true where the pump's call is the push's to give
+        (contract/companion-api.yaml `Command`, `pump_offered`: a pump's offer is called once, and the desktop app
+        keeps whether it was): while the call is owed and no device holds the computer's link (a device holds it for
+        25 s after its last held request), or a phone holds it that has not taken the offer 3 s after the pump was
+        offered, or after that phone took up the link where that came later (a phone that went to sleep still counts
+        as holding for those 25 s and takes nothing; one awake takes it within a round trip and calls it itself).
+        False otherwise, so that nothing alerts twice: also while a watch holds the link, and for the rest of a pump
+        whose offer a watch took, as before the field (the wrist had its cue with the `turn_in`; the watch gives no
+        call, and a phone that hears the offer afterwards calls it). Once the account took an alerting `offer` the
+        call is given, and every device that hears that pump's offer afterwards hears it with `earlier` and calls
+        nothing.
       - `start`, a move's Start (`countdown`, a side move's second one too; `keep`): the move with its clock from the
         go, a timed move's to its end (`started_at` the go, `ends_at` the go plus its seconds), a hold's and a kept
         move's counting up (`started_at` the go alone), a rep move's goal alone. One state for the countdown and the
@@ -265,7 +274,11 @@ info:
 
       It posts one state at a time and at most one a second, the newest in the place of one that waits, and but for a
       phone that began to follow only a state that differs from the last it posted (a `move_counted` or a `verdict`
-      changes nothing the activity shows). A computer nobody follows, one with Sync off and one where no game with
+      changes nothing the activity shows). One state goes again as it stands: a pump's `offer` with `alert` true,
+      once the call became the push's to give after the offer was told without it (the device that held the link
+      took nothing in its 3 s), and in place of the `rest` for a phone that began to follow while the pump stands at
+      its offer with its call owed; each only within 120 s of the pump's first offer, the life the link gives an
+      offer, and once a pump. A computer nobody follows, one with Sync off and one where no game with
       QuestPump runs post nothing: nothing of a pump leaves it, and a game that quit says no word. The answer is
       `{"t":<unix ms>}` (`ActivityAnswer`), the server's clock as it took the post, the same whether an iPhone follows
       that `hid` or none does. The server cannot check a `hid` (a computer's travels sealed in its batches) and takes
@@ -279,8 +292,10 @@ info:
       clock hour, 429 with `Retry-After` the seconds to the next clock hour (a refused post counts for none; the address
       limit's 429
       says 60: above, "Limits"). A post that failed or was refused is never sent again as it was: once it may post
-      again, the desktop app tells the state as it then stands, where it differs from the last the server took. No
-      post changes a line of the Sync page.
+      again, the desktop app tells the state as it then stands, where it differs from the last the server took or
+      the pump's call is still the push's to give (an alerting `offer` the server refused for what it said is the
+      exception: that pump's call is never pushed again, and stays a device's to give). No post changes a line of
+      the Sync page.
     - *The state.* The sealed plain text is `LivePump`: JSON, UTF-8, snake_case, sealed as it stands (never
       compressed, unlike a batch). Its `v` is 1. Between pumps it holds `following` alone, the computer's name as its
       `Helper.name` says it. For a pump it holds the pump as the activity's state holds it: `pump_id` (the commands'),
@@ -342,13 +357,22 @@ info:
       catch-up or an app pump on the wrist) is the app's word too, drawn while the phone follows; and the activity's
       Stop always ends it, whatever pump the phone still keeps. So a pushed state the phone cannot better stays until
       the next push: after an offer it heard and an end it slept through, a lost `rest` is put right by the next state
-      alone. One older word still gets through: a phone that takes up its link after a pump's Start hears that pump's
-      offer queued again with the moves alone (contract/companion-api.yaml), shows it at Ready and writes that over the
-      pushed move until the pump's next command or push. The offer alerts once: by the app where the phone holds the
-      link, by the push where no device does (`alert`). Two windows at a change of hands are left: an offer made while
-      no device held the link, which a phone then hears waiting for it, alerts by the push and again by the app; and an
-      offer made within the 25 s after the last held request of a phone that has gone to sleep alerts by neither, its
-      state shown all the same.
+      alone. A phone that takes up its link after a pump's Start hears that pump's offer queued again with the moves
+      alone (contract/companion-api.yaml), and since 2026-11-21 with `earlier`: it shows the pump at Ready in the app,
+      takes that for no word of the game's state (as a pump it kept) and never writes it over a pushed state (it opens
+      none, so any is the account's newer word), with the ask at the account or after its take-back, until a command
+      of its link places the pump: a Start it takes, the end of a move it ran, the pump's end or the game's quit. The
+      end or the count of a move the phone never saw start leaves the pump at that Ready and says nothing; where the
+      phone lets the pump go at that offer's expiry, the following in its place stays unwritten over a pushed state
+      too. The offer is called once, and the desktop app keeps whether it was (`alert` above; `earlier`): by the phone
+      that takes the offer, else by the push. So an offer made while no device held the link, which a phone then hears
+      waiting for it, alerts by the push alone (the phone hears it with `earlier`); and one made within the 25 s after
+      the last held request of a phone that has gone to sleep alerts by the push 3 s later. What is left: a phone that
+      takes the offer and calls it but whose next request comes later than those 3 s, or that takes it while the
+      push's alerting post is on its way, alerts by the push too; the push's call counts as given once the server took
+      the post, so one Apple then loses, or one taken as the following ended, is not called again, its state shown by
+      the next push or the phone's next run; and an iPhone build from before the field calls every offer it hears, as
+      it did. No offer is left with no call while a phone or a following can give one: without the word a phone calls.
     - *The lapses and the end.* A sleeping phone cannot hear whether the game still runs, so the server keeps the
       phone's two lapses: a following that no word of its computer reached within 30 minutes of its ask ends, and one
       whose computer has said no word for 10 minutes ends. A state and an `alive` are both words. The server ends a
@@ -1475,8 +1499,10 @@ components:
         alert:
           type: boolean
           description: >-
-            An `offer`'s alone (400 on another event): true when no device holds the computer's link as the pump is
-            offered, so the push carries the alert; false or left out when one does, which alerts itself
+            An `offer`'s alone (400 on another event): true where the pump's call is the push's to give (no device
+            holds the computer's link, or a phone that does took nothing of the offer in 3 s; never while a watch
+            holds it: "Telling" above), so the push carries the alert; false or left out where a device calls it
+            itself
         kid:
           type: string
           pattern: "^[A-Za-z0-9_-]{10}[AEIMQUYcgkosw048]$"

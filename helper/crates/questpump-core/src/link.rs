@@ -1,10 +1,11 @@
 //! The link to the phone and the watch (docs/plan.md slice 7; `contract/companion-api.yaml`, the source of truth for
 //! the routes and bodies): the plaintext bodies, the command queue that answers the held `POST /v1/sync`, which device
-//! holds the link, the acknowledgements, the delivery statistics the latency harness prints per session, and what
-//! became of each pump's commands (`Link::unreached`). Since the fix review of 2026-10-17 a phone that steps back for
-//! its watch keeps a standing request (`Exchange::Standing`), which holds nothing and answers at once while no device
-//! holds the link (`Link::unheld`, `Link::lapse_at`). No clock, socket or lock here: the app passes the time in
-//! (milliseconds on the helper's wall clock) and serves the routes.
+//! holds the link, the acknowledgements, the delivery statistics the latency harness prints per session, what became
+//! of each pump's commands (`Link::unreached`) and whether a pump's offer was called (`Call`, since 2026-11-21: the
+//! `earlier` a `pump_offered` carries, and when the pump push calls in a device's place). Since the fix review of
+//! 2026-10-17 a phone that steps back for its watch keeps a standing request (`Exchange::Standing`), which holds
+//! nothing and answers at once while no device holds the link (`Link::unheld`, `Link::lapse_at`). No clock, socket or
+//! lock here: the app passes the time in (milliseconds on the helper's wall clock) and serves the routes.
 
 use std::collections::{HashMap, VecDeque};
 use std::net::IpAddr;
@@ -58,6 +59,12 @@ pub const LINE_EVERY_MS: i64 = 3_600_000;
 pub const COUNTDOWN_AFTER_GO_MS: i64 = 30_000;
 /// How long a `pump_offered` holds from when it is queued, or shown again for a phone's mirror (`Link::reshow`).
 const OFFER_MS: i64 = 120_000;
+/// How long a phone that holds the link has to take a pump's offer before the pump push calls the pump in its place
+/// (`Link::push_calls`; contract/sync-api.yaml, "Telling"): from the offer, or from when that phone took up the link
+/// where that came later. A phone whose held requests follow each other at once takes an offer within a round trip
+/// (its next request's `since`); one that went to sleep with its last held request still inside `ALIVE_MS` never does.
+/// A watch that holds the link has no such wait: the push never calls under it.
+pub const CALL_WAIT_MS: i64 = 3_000;
 /// Wrong bearers from one address within `THROTTLE_MS` that make the helper refuse it for `THROTTLE_MS` after the
 /// last.
 pub const THROTTLE_AFTER: usize = 10;
@@ -914,6 +921,10 @@ const BATTERY_HOURS_MIN: f64 = 0.1;
 struct Seen {
 	/// The last held request's arrival; none after a restart until it syncs.
 	held_at: Option<i64>,
+	/// The arrival of the held request that began its current stretch of held requests: the one that found it not
+	/// counting (`alive`). A phone that just took up the link has `CALL_WAIT_MS` from here to take an offer made
+	/// before (`Link::push_calls`).
+	held_from: Option<i64>,
 	/// The last held request's `since`, as this run reads it: the sequence the device has seen up to.
 	since: u64,
 	/// The last request of any kind.
@@ -1050,6 +1061,44 @@ fn taken_key(req: &SyncRequest, e: &WristEvent) -> Taken {
 	(client(req), e.pump_id.clone(), e.kind, e.slot, e.start_at)
 }
 
+/// A pump's call: the alert a phone gives for its offer, once (contract/companion-api.yaml `Command`, `earlier`), the
+/// phone that takes the offer by itself, else the pump push (contract/sync-api.yaml, "Telling", `alert`). Only the
+/// link knows whether it was given, so it says so on every `pump_offered` of the pump it hands out afterwards.
+struct Call {
+	pump: String,
+	/// When the pump was first offered.
+	at: i64,
+	/// A phone took the offer as the news of the pump (`Link::took`), the pump push alerted for it (`Link::called`),
+	/// or the game went on with the pump or quit (`Link::tally`): nothing calls it any more.
+	given: bool,
+	/// A watch took the offer (`Link::took`). The wrist calls nothing at an offer, its cue came with the `turn_in`,
+	/// so the call stays a phone's to give: one that hears the offer, by its mirror or as the link passes to it,
+	/// calls it. The pump push calls this pump no more, as it never did for a pump offered under a watch that holds
+	/// the link (`Link::push_calls`).
+	wrist: bool,
+	/// The offers of the pump a response handed out without `earlier`, each with the client it went to (`hand`): a
+	/// client whose `since` reaches one took it (`Link::took`). A `since` may also pass an offer its device never
+	/// got (one another device acknowledged first), which is no take.
+	bare: Vec<(Client, u64)>,
+}
+
+/// A command as a response hands it to `to`: a `pump_offered` says `earlier` once its pump's call is given, and so
+/// does one of a pump the game has offered another since (the game went on past it); one that goes out without the
+/// word is noted with its client, whose take of it gives the call (`Call::bare`).
+fn hand(queued: &Queued, call: Option<&mut Call>, to: &Client) -> Queued {
+	let mut out = queued.clone();
+	if let Command::PumpOffered { pump_id, earlier, .. } = &mut out.command
+		&& let Some(call) = call
+	{
+		if call.given || call.pump != *pump_id {
+			*earlier = true;
+		} else if !call.bare.iter().any(|(client, seq)| client == to && *seq == queued.seq) {
+			call.bare.push((to.clone(), queued.seq));
+		}
+	}
+	out
+}
+
 /// The command queue and the clients.
 pub struct Link {
 	seq: u64,
@@ -1071,6 +1120,8 @@ pub struct Link {
 	/// reads them here (`Link::mirror`), since the holder's acknowledgement takes them off `queue` at once (slice 51).
 	/// The pump's offer comes back here for a phone that never heard it (`Link::reshow`).
 	shown: VecDeque<Queued>,
+	/// The call of the latest pump offered, owed until it is given (`Call`).
+	call: Option<Call>,
 }
 
 /// A command of the game's pump, which a phone that stepped back for its watch shows as a mirror (slice 51; `keep`
@@ -1105,6 +1156,7 @@ impl Link {
 			offer_runs: false,
 			reach: VecDeque::new(),
 			shown: VecDeque::new(),
+			call: None,
 		}
 	}
 
@@ -1125,19 +1177,38 @@ impl Link {
 		self.shown.retain(|q| q.expires_at > now);
 	}
 
-	/// What the link keeps of a command it queues under the current sequence: a `pump_offered` names the pump on offer,
-	/// which a `pump_done` of it or the game's `session_end` ends, and a command of a pump joins that pump's tally.
-	fn tally(&mut self, command: &Command) {
+	/// What the link keeps of a command it queues at `now` under the current sequence: a `pump_offered` names the pump
+	/// on offer, which a `pump_done` of it or the game's `session_end` ends, and a command of a pump joins that pump's
+	/// tally. A pump's first offer owes its call (`Call`), which any other command of the pump and the game's quit
+	/// give: the game went on with it, so nothing calls it any more.
+	fn tally(&mut self, command: &Command, now: i64) {
 		match command {
 			Command::PumpOffered { pump_id, .. } => {
 				self.offered = Some((pump_id.clone(), self.seq));
 				self.offer_runs = true;
+				if self.call.as_ref().is_none_or(|c| c.pump != *pump_id) {
+					self.call =
+						Some(Call { pump: pump_id.clone(), at: now, given: false, wrist: false, bare: Vec::new() });
+				}
 			}
 			Command::PumpDone { pump_id, .. } if self.offered.as_ref().is_some_and(|(id, _)| id == pump_id) => {
 				self.offer_runs = false;
 			}
 			Command::SessionEnd => self.offer_runs = false,
 			_ => {}
+		}
+		match command {
+			Command::PumpOffered { .. } => {}
+			Command::SessionEnd => {
+				if let Some(call) = &mut self.call {
+					call.given = true;
+				}
+			}
+			other => {
+				if let Some(pump) = other.pump_id() {
+					self.called(pump);
+				}
+			}
 		}
 		let Some(pump) = command.pump_id() else { return };
 		let i = self.reach.iter().position(|r| r.pump == pump).unwrap_or_else(|| {
@@ -1203,7 +1274,7 @@ impl Link {
 			self.queue.retain(|w| !matches!(w.queued.command, Command::MatchEnd { .. }));
 		}
 		self.seq += 1;
-		self.tally(&command);
+		self.tally(&command, now);
 		let queued = Queued { seq: self.seq, command, sent_at: now, expires_at };
 		self.queue.push_back(Waiting { queued: queued.clone(), handed: false });
 		if mirrored(&queued.command) {
@@ -1266,6 +1337,48 @@ impl Link {
 		let at = self.shown.partition_point(|q| q.seq < seq);
 		self.shown.insert(at, Queued { seq, command: offer, sent_at: now, expires_at: now + OFFER_MS });
 		Some(seq)
+	}
+
+	/// The call of `pump` is given (`Call`): the account took the pump push's alerting offer of it (the helper's loop
+	/// says so), or the game went on with it (`tally`). Every `pump_offered` of it handed out from here says `earlier`
+	/// (`respond`, `mirror`). Nothing for another pump than the latest offered.
+	pub fn called(&mut self, pump: &str) {
+		if let Some(call) = self.call.as_mut().filter(|c| c.pump == pump) {
+			call.given = true;
+		}
+	}
+
+	/// A request of `who` with `since`, the sequence its device has seen up to: where that reaches an offer of the
+	/// pump on offer a response handed it without `earlier` (`Call::bare`), the device took the offer as the pump's
+	/// news. A phone then calls the pump itself, so the call is given; a watch only keeps the push from calling
+	/// (`Call::wrist`).
+	fn took(&mut self, who: &Client, since: u64) {
+		let Some(call) = &mut self.call else { return };
+		if call.bare.iter().any(|(client, seq)| client == who && *seq <= since) {
+			if who.0.is_watch() {
+				call.wrist = true;
+			} else {
+				call.given = true;
+			}
+		}
+	}
+
+	/// Whether the pump push calls `pump` at `now` (contract/sync-api.yaml, "Telling", `alert`): its call is owed, no
+	/// watch took the offer, its first offer is younger than `OFFER_MS`, and no device holds the link, or a phone
+	/// holds it that has not taken the offer `CALL_WAIT_MS` after it was made, or after that phone took up the link
+	/// where that came later. A phone that went to sleep counts as holding for `ALIVE_MS` and takes nothing: the push
+	/// calls in its place. Never while a watch holds the link: the wrist has its cue, and is not lit again by the
+	/// phone (docs/plan.md slice 76, design call 4).
+	#[must_use]
+	pub fn push_calls(&self, pump: &str, now: i64) -> bool {
+		let Some(call) = self.call.as_ref().filter(|c| c.pump == pump && !c.given && !c.wrist) else { return false };
+		if now >= call.at + OFFER_MS {
+			return false;
+		}
+		let Some((holder, seen)) = self.holding(now).and_then(|c| Some((c, self.clients.get(c)?))) else {
+			return true;
+		};
+		!holder.0.is_watch() && now >= seen.held_from.map_or(call.at, |from| from.max(call.at)) + CALL_WAIT_MS
 	}
 
 	/// Gives a new sequence to each waiting command the holder's `since` passed over unseen (since the review of
@@ -1363,14 +1476,24 @@ impl Link {
 			Exchange::Plain => return seen.generation,
 			Exchange::Standing => {
 				seen.generation += 1;
-				return seen.generation;
+				let generation = seen.generation;
+				// a phone whose mirror showed the pump's offer calls it as a phone that holds the link does
+				if mirrors(req) {
+					self.took(&key, since);
+				}
+				return generation;
 			}
 			Exchange::Held => {}
+		}
+		if seen.alive(now).is_none() {
+			seen.held_from = Some(now);
 		}
 		seen.held_at = Some(now);
 		seen.since = since;
 		seen.generation += 1;
 		let generation = seen.generation;
+		// whoever holds the link now: a device that got an offer and lost the link before this request took it too
+		self.took(&key, since);
 		if self.holding(now) == Some(&key) {
 			self.pass_on(since);
 			let Self { queue, reach, .. } = self;
@@ -1453,6 +1576,8 @@ impl Link {
 	/// none, and its `since` back, so it never acknowledges what went to the holder when it takes the link over. A
 	/// command the holder's `since` passed over unseen comes with them under a new sequence (`pass_on`), here too
 	/// because the link may pass to a client after its request arrived (the holder's last one aged past `ALIVE_MS`).
+	/// A `pump_offered` of the pump whose call is given goes out with `earlier` (`Call`, `hand`); the queue keeps it
+	/// without, so one handed while the call is owed and again after it was given says so only then.
 	pub fn respond(&mut self, req: &SyncRequest, now: i64) -> (Vec<Queued>, u64) {
 		self.expire(now);
 		let since = self.since(req.since);
@@ -1460,12 +1585,14 @@ impl Link {
 			return (Vec::new(), since);
 		}
 		self.pass_on(since);
+		let to = client(req);
+		let Self { queue, call, seq, .. } = self;
 		let mut commands = Vec::new();
-		for w in self.queue.iter_mut().filter(|w| w.queued.seq > since) {
+		for w in queue.iter_mut().filter(|w| w.queued.seq > since) {
 			w.handed = true;
-			commands.push(w.queued.clone());
+			commands.push(hand(&w.queued, call.as_mut(), &to));
 		}
-		(commands, self.seq)
+		(commands, *seq)
 	}
 
 	/// What a standing request from a phone (since slice 51: a phone that stepped back for its watch keeps the game pump
@@ -1474,7 +1601,8 @@ impl Link {
 	/// `since`, in `seq` order, never marked handed and kept for it until each expires (`shown`; the pump's offer
 	/// there again for a phone that never heard it, `reshow`), and the `next` to send: the highest `seq` among them,
 	/// else the request's own `since`. That `next` may pass a waiting command of another kind, which the phone gets
-	/// once it holds the link (`pass_on`). None for another kind of request or a watch (`mirrors`).
+	/// once it holds the link (`pass_on`). A `pump_offered` among them says `earlier` as the holder's does (`respond`).
+	/// None for another kind of request or a watch (`mirrors`).
 	pub fn mirror(&mut self, req: &SyncRequest, now: i64) -> (Vec<Queued>, u64) {
 		let since = self.since(req.since);
 		if !mirrors(req) {
@@ -1482,7 +1610,9 @@ impl Link {
 		}
 		self.expire(now);
 		// in `seq` order as queued; kept until each expires, whatever the holder acknowledged
-		let mirror: Vec<Queued> = self.shown.iter().filter(|q| q.seq > since).cloned().collect();
+		let to = client(req);
+		let Self { shown, call, .. } = self;
+		let mirror: Vec<Queued> = shown.iter().filter(|q| q.seq > since).map(|q| hand(q, call.as_mut(), &to)).collect();
 		let next = mirror.last().map_or(since, |q| q.seq);
 		(mirror, next)
 	}

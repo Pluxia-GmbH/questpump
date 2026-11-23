@@ -1,14 +1,14 @@
 // WorkCard: work mode's card on Pump home (docs/plan.md slice 67; screens.json WorkCard, design B: Start and Stop;
 // Android's ui/WorkCard.kt is its twin), drawn from the `work` topic (helper/crates/questpump-desk/src/work.rs
-// `WorkView`, its `work` property), one layout in every state: off, a compact row of Work mode and a trailing Start;
-// on, the ring with the whole minutes left in it beside Work mode, and Stop under the title in stop; held, the ring
-// dimmed and the hold's words between the title and Stop ("On a call"); due (the ask stands: its pump opens itself as
-// the block comes due, so this state shows only where it could not, nobody there or a start that went nowhere), the
-// ring full with a check, and under
-// the block the gold Pump now and Later side by side; a Later refused says why under them. No dots and no count of
-// pumps: work mode runs until Stop. Start fires qp-start, Pump now qp-now, Later qp-later and Stop qp-stop; a focused
-// button a state change hides hands the focus to the card's title, never to another button (a second Enter on Stop
-// would end work mode).
+// `WorkView`, its `work` property): off, no card but the desk glyph's chip "Start work mode", centred (Rapha,
+// 2026-11-23: the full-width card read too loud), and nothing where the Work mode page's switch hides it (`button`);
+// on, the card: the ring with the whole minutes left in it beside Work mode, and Stop under the title in stop; held,
+// the ring dimmed and the hold's words between the title and Stop ("On a call"); due (the ask stands: its pump opens
+// itself as the block comes due, so this state shows only where it could not, nobody there or a start that went
+// nowhere), the ring full with a check, and under the block the gold Pump now and Later side by side; a Later refused
+// says why under them. No dots and no count of pumps: work mode runs until Stop. Start fires qp-start, Pump now
+// qp-now, Later qp-later and Stop qp-stop; a focused button a state change hides hands the focus to the card's title
+// (the Start once work mode is off), never to another button (a second Enter on Stop would end work mode).
 
 import {t} from "../lib/copy.js";
 import {KitElement, define, emit, h, token} from "./element.js";
@@ -65,7 +65,7 @@ class QpWorkCard extends KitElement {
 			h("div", {class: "qp-work-face"}, this.minutes, this.check));
 		// the focus a hidden button held lands here, out of the Tab order
 		this.head = h("h2", {class: "qp-type-heading", text: t("work.title"), tabindex: "-1"});
-		this.start = h("qp-secondary-button", {label: t("work.start"), compact: true,
+		this.start = h("qp-chip", {class: "qp-work-start", button: true, glyph: "place_desk", label: t("work.start.mode"),
 			"on:click": () => emit(this, "qp-start")});
 		this.holdLine = h("p", {class: "qp-type-body-strong qp-work-hold"});
 		this.stop = h("qp-quiet-button", {class: "qp-destructive qp-work-stop", label: t("work.stop"),
@@ -76,11 +76,11 @@ class QpWorkCard extends KitElement {
 			"on:click": () => emit(this, "qp-later")});
 		this.buttons = h("div", {class: "qp-work-buttons"}, this.now, this.later);
 		this.refused = h("p", {class: "qp-type-meta qp-work-refused"});
-		this.append(h("qp-card", {},
+		this.card = h("qp-card", {},
 			h("div", {class: "qp-work-top"}, this.ring,
-				h("div", {class: "qp-work-words"}, h("div", {class: "qp-work-title"}, this.head, this.start),
-					this.holdLine, this.stop)),
-			this.buttons, this.refused));
+				h("div", {class: "qp-work-words"}, this.head, this.holdLine, this.stop)),
+			this.buttons, this.refused);
+		this.append(this.start, this.card);
 		this.shown ??= null;
 	}
 
@@ -114,15 +114,18 @@ class QpWorkCard extends KitElement {
 			this.minutes.textContent = full ? "" : String(left);
 			this.ring.setAttribute("aria-label", full ? t("work.due") : t("work.next", {minutes: left}));
 		}
-		this.start.hidden = on;
+		// off, the Start alone (where the Work mode page's switch keeps it) and no card; on, the card
+		this.start.hidden = on || !w?.button;
+		this.card.hidden = !on;
 		this.stop.hidden = !on;
 		this.buttons.hidden = !due;
 		const refused = refusedWords(w?.refused);
 		this.refused.hidden = !refused;
 		this.refused.textContent = refused;
-		// the focus a button this state hides held goes to the card's title, never to the page's body or another button
+		// the focus a button this state hides held goes to the card's title, or to the Start where work mode went off,
+		// never to the page's body or another button
 		const shows = (b) => !b.hidden && !(this.buttons.hidden && this.buttons.contains(b));
-		if (focused && !shows(focused)) this.head.focus();
+		if (focused && !shows(focused)) (on ? this.head : this.start.querySelector("button"))?.focus();
 	}
 }
 

@@ -44,7 +44,11 @@
   "words",
   "lat",
   "lon",
-  "location"
+  "location",
+  "minor",
+  "adult",
+  "child",
+  "teen"
  ],
  "analytics": {
   "events": {

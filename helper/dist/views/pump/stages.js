@@ -252,7 +252,7 @@ export function resting(pump) {
 function bigMiddle(pump, ctx) {
 	const m = pump.moves[pump.current];
 	const name = h("h1", {class: "qp-big-name", text: sideName(m, pump.side)});
-	const figure = h("qp-figure-stage", {class: "qp-big-figure", fill: true, move: figureName(m), side: pump.side,
+	const figure = h("qp-figure-stage", {class: "qp-big-figure", fill: true, move: figureName(m), side: ctx.side(pump),
 		beat: m.beat, from: pump.go ?? pump.start});
 	figure.hold(ctx.figure);
 	const ring = h("qp-timer-ring");
@@ -518,8 +518,8 @@ export function pacing(pump, topic, ctx) {
 	const answer = (code) => settled(() => heard(intent("pump.pace", {answer: code})));
 	const rows = PACES.map(([code, words], i) => h("qp-row", {step: i + 1, heading: t(words), trailing: "action",
 		"on:click": answer(code)}));
-	const body = [h("qp-figure-stage", {move: figureName(m), still: true, class: "qp-pump-figure"}), heading,
-		h("qp-card", {rows: true}, ...rows)];
+	const figure = h("qp-figure-stage", {move: figureName(m), side: ctx.side(pump), still: true, class: "qp-pump-figure"});
+	const body = [figure, heading, h("qp-card", {rows: true}, ...rows)];
 	const {el} = frame({head: steps(pump, ctx), body, foot: [back(pump)]});
 	return {
 		el,

@@ -36,7 +36,8 @@ pub enum Change {
 /// keeps a following while nothing changes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Word {
-	/// A pump's offer; `alert` while no device holds the computer's link as the pump is offered, so the push alerts.
+	/// A pump's offer; `alert` where the pump's call is the push's to give (`questpump_core::link::Link::push_calls`:
+	/// no device took the offer), so the push alerts.
 	Offer {
 		alert: bool,
 	},
@@ -48,13 +49,24 @@ pub enum Word {
 }
 
 impl Word {
-	/// The word of a change; an offer's with whether a device holds the link.
+	/// The word of a change; an offer's without its alert, which the post that calls the pump adds.
 	#[must_use]
-	pub fn of(change: Change, held: bool) -> Self {
+	pub fn of(change: Change) -> Self {
 		match change {
-			Change::Offer => Self::Offer { alert: !held },
+			Change::Offer => Self::Offer { alert: false },
 			Change::Start => Self::Start,
 			Change::Rest => Self::Rest,
+		}
+	}
+
+	/// The change a word told; none for the word that tells no state.
+	#[must_use]
+	pub fn change(self) -> Option<Change> {
+		match self {
+			Self::Offer { .. } => Some(Change::Offer),
+			Self::Start => Some(Change::Start),
+			Self::Rest => Some(Change::Rest),
+			Self::Alive => None,
 		}
 	}
 

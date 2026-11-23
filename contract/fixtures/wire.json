@@ -1977,6 +1977,46 @@
      }
     }
    }
+  },
+  {
+   "about": "a held answer to a phone that takes up its link after the pump's offer was called (since 2026-11-21; docs/plan.md slice 76, Decided in the build, 15): the pump's offer again, with earlier, so the phone calls nothing for it and takes the pump's Ready for no word of where the game has it",
+   "kind": "sync_response",
+   "json": {
+    "helper": {
+     "name": "David's MacBook Pro",
+     "host": "192.168.1.20",
+     "port": 8787,
+     "version": "0.1.0",
+     "t": 1790000031210
+    },
+    "t0": 1790000031100,
+    "t1": 1790000031200,
+    "t2": 1790000031210,
+    "next": 1789999980031,
+    "commands": [
+     {
+      "seq": 1789999980031,
+      "type": "pump_offered",
+      "sent_at": 1790000031200,
+      "expires_at": 1790000151200,
+      "pump_id": "g-513-1790000012",
+      "moves": [
+       {
+        "slot": 0,
+        "move": 12,
+        "target": 22
+       },
+       {
+        "slot": 1,
+        "move": 95,
+        "target": 45
+       }
+      ],
+      "streak": 6,
+      "earlier": true
+     }
+    ]
+   }
   }
  ]
 }

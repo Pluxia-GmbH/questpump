@@ -176,8 +176,9 @@ pub enum Phase {
 /// (`started`: a Start then turns work mode on at once), where the clock stands with the whole minutes left (rounded
 /// up) and what holds it, the id of the ask while the block is due (`ask`, which its Pump now and Later send back),
 /// whether a work pump stands on this device (`pump`: no other starts beside it, so the tray greys its Pump now, and
-/// the browser's page shows its notification while the one that opened itself stands), Every, and the last Later's
-/// refusal (`work.later.reset`, `work.later.unwell`).
+/// the browser's page shows its notification while the one that opened itself stands), Every, the last Later's
+/// refusal (`work.later.reset`, `work.later.unwell`) and whether Pump home shows the Start while work mode is off
+/// (`button`, the Work mode page's switch).
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 #[expect(
 	clippy::struct_excessive_bools,
@@ -198,6 +199,7 @@ pub struct WorkView {
 	pub every: u16,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub refused: Option<&'static str>,
+	pub button: bool,
 }
 
 /// The `menu.work` topic: the Work mode page's choices (Every among its choices, Moves per block, work mode's own
@@ -234,6 +236,12 @@ impl<P: Platform> Desk<P> {
 			"work.later" => self.work_later(ask),
 			"work.now" => self.work_now(outside, ask),
 			"work.set" => {
+				// Pump home's Start is this computer's own choice, never work mode's shared state
+				if let Some(on) = intent.arg("button").and_then(Value::as_bool) {
+					self.settings.work_button = on;
+					self.save_settings();
+					self.work_publish();
+				}
 				self.work_choose(intent, &t);
 				Ok(())
 			}
@@ -774,6 +782,7 @@ impl<P: Platform> Desk<P> {
 			pump: self.work.pump.is_some(),
 			every: w.every_min,
 			refused: self.work.refused,
+			button: self.settings.work_button,
 		};
 		let moves = work::pump_moves(&w.pace);
 		let menu = MenuWork {

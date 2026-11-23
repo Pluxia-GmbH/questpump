@@ -9,7 +9,9 @@
 //! account each state of the game's pump (`Helper::tell`, every turn), one post at a time and at most one a second,
 //! the newest in the place of one that waits, and only a state that differs from the last the account took; 4 minutes
 //! after the last post the account answered it says the `alive` word, which keeps the following, and one the account
-//! did not take goes again after the wait. The state is the desk's
+//! did not take goes again after the wait. A pump's offer goes with its alert, again as the state stands too, where
+//! the pump's call is the push's to give (`Links::push_calls`: no device took the offer), and the link hears once
+//! the account took it (`Links::called`). The state is the desk's
 //! (`questpump_desk::activity::GamePump`, fed each command the loop queues for the link) and the post the sync's
 //! (`Desk::tell`); each answer gives the account's clock (`AccountClock`), on which a state's moments are written.
 //! The log names each word by its event, never a state's content.
@@ -19,7 +21,7 @@ use std::time::{Duration, Instant};
 use futures_util::{SinkExt as _, StreamExt as _};
 use questpump_core::protocol::Command;
 use questpump_core::sync::LivePump;
-use questpump_desk::activity::{GamePump, Told, Word};
+use questpump_desk::activity::{Change, GamePump, Told, Word};
 use questpump_desk::sync::{ANSWER_MOST, Answer, Call, Called, LiveHeard, Method, News, Then, live_hello};
 use tokio::sync::mpsc;
 
@@ -157,8 +159,8 @@ struct Post {
 #[derive(Default)]
 pub(crate) struct Telling {
 	pump: GamePump,
-	/// The newest change no post told yet, as its word: the state as it then stands goes with it.
-	due: Option<Word>,
+	/// The newest change no post told yet: the state as it then stands goes with its word.
+	due: Option<Change>,
 	/// The post that is out, until its answer (one at a time).
 	out: Option<Post>,
 	/// The state the account took last, as the computer's own clock dates it: only one that differs goes. None while
@@ -175,17 +177,27 @@ pub(crate) struct Telling {
 	answered: Option<Instant>,
 	/// No post before this: the wait after one the account did not take.
 	wait_until: Option<Instant>,
+	/// The pump a state of which the account refused for what it said: the push calls it no more (the same state
+	/// never goes again, with its alert either), and its call stays a phone's to give.
+	uncalled: Option<String>,
 	clock: AccountClock,
 }
 
 impl Telling {
-	/// A command the loop queued for the link at `now` (ms on the computer's clock), `held` while a device holds the
-	/// link: what it changes of the game's pump is due as its word (an offer's alert only while no device holds the
-	/// link, which alerts itself).
-	pub(crate) fn command(&mut self, command: &Command, now: i64, held: bool) {
+	/// A command the loop queued for the link at `now` (ms on the computer's clock): what it changes of the game's pump
+	/// is due as its word.
+	pub(crate) fn command(&mut self, command: &Command, now: i64) {
 		if let Some(change) = self.pump.command(command, now) {
-			self.due = Some(Word::of(change, held));
+			self.due = Some(change);
 		}
+	}
+}
+
+/// The pump a state shows; none for the following between pumps.
+fn pump_of(state: &LivePump) -> Option<&str> {
+	match state {
+		LivePump::Pump(pump) => Some(&pump.pump_id),
+		LivePump::Following(_) => None,
 	}
 }
 
@@ -193,8 +205,11 @@ impl Helper {
 	/// The pump push's next post, looked at every turn of the loop: none while one is out, within a second of the
 	/// last or in the wait after one the account did not take; then the state as it stands where it differs from the
 	/// last the account took or a phone began to follow, with the word of the newest change (`rest` without one), else
-	/// the `alive` word 4 minutes after the last post the account answered. A computer nobody follows, one with Sync
-	/// off and one where no game with QuestPump runs post nothing and forget what was told.
+	/// the `alive` word 4 minutes after the last post the account answered. A pump at its offer whose call is the
+	/// push's to give (`Links::push_calls`: its call owed, and no device holds the link or the one that does took
+	/// nothing in its wait) goes as an alerting offer, where the state stands as the account has it too: the offer
+	/// told without its alert a moment before, or the state a phone that began to follow hears. A computer nobody
+	/// follows, one with Sync off and one where no game with QuestPump runs post nothing and forget what was told.
 	pub(crate) fn tell(&mut self) {
 		let t = &mut self.telling;
 		let Some(since) = self.desk.followed().filter(|_| self.desk.wow_with_addon()) else {
@@ -211,8 +226,12 @@ impl Helper {
 		let name = &self.address.name;
 		let own = t.pump.state(name, 0);
 		let began = t.told_since.is_none_or(|told| since > told);
-		let (word, state) = if began || t.told.as_ref() != Some(&own) {
-			(t.due.unwrap_or(Word::Rest), Some(own))
+		let calls = pump_of(&own)
+			.is_some_and(|pump| t.uncalled.as_deref() != Some(pump) && self.queue.push_calls(pump, lan::now_ms()));
+		let (word, state) = if calls {
+			(Word::Offer { alert: true }, Some(own))
+		} else if began || t.told.as_ref() != Some(&own) {
+			(Word::of(t.due.unwrap_or(Change::Rest)), Some(own))
 		} else {
 			// the newest change left the state as the account has it
 			t.due = None;
@@ -229,28 +248,37 @@ impl Helper {
 	}
 
 	/// The post that is out answered (`Platform::told`): taken, its state is the last the account took and its answer
-	/// the account's clock; refused for what it said, the same state never goes again; not taken, a state's word stays
-	/// due unless a newer change took its place, and the state as it then stands, or the `alive` word, goes after the
-	/// wait.
+	/// the account's clock, and an alerting offer gave its pump's call (`Links::called`); refused for what it said, the
+	/// same state never goes again, nor that pump's call by the push; not taken, a state's change stays due unless a
+	/// newer one took its place, and the state as it then stands, or the `alive` word, goes after the wait, an offer's
+	/// alert with it only where the call is still the push's to give then.
 	pub(crate) fn on_told(&mut self, told: Told) {
 		let t = &mut self.telling;
 		let Some(Post { word, state, since, sent }) = t.out.take() else { return };
+		let called = state.as_ref().and_then(pump_of).filter(|_| word == (Word::Offer { alert: true }));
 		match told {
 			Told::Taken(at) => {
 				if let Some(at) = at {
 					t.clock.add(sent, at, lan::now_ms());
 				}
 				if word != Word::Alive {
-					let alerts = if word == (Word::Offer { alert: true }) { ", alerting" } else { "" };
+					let alerts = if called.is_some() { ", alerting" } else { "" };
 					log::info!("pump push: {} told{alerts}", word.event());
 				}
+				if let Some(pump) = called {
+					self.queue.called(pump);
+				}
 			}
-			Told::Refused => {}
+			Told::Refused => {
+				if let Some(pump) = state.as_ref().and_then(pump_of) {
+					t.uncalled = Some(pump.to_owned());
+				}
+			}
 			Told::Later(wait) => {
 				// `answered` stays: an `alive` that did not go through is due again after the wait
 				t.wait_until = Some(Instant::now() + wait.unwrap_or(TELL_RETRY));
-				if word != Word::Alive {
-					t.due.get_or_insert(word);
+				if let Some(change) = word.change() {
+					t.due.get_or_insert(change);
 				}
 				return;
 			}

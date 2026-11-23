@@ -85,14 +85,25 @@ info:
       wait unsent, sends them; turning it off stores off and calls `deleteUnsentReports()`.
     - A build without the Firebase config (an Android build without `google-services.json`) has no Crashlytics, no
       switch and no window.
-    - **The start comes first.** The iPhone configures Firebase (with App Check's factory) only for a purpose that
-      reads on (telemetry-api.yaml, "Firebase starts only for a purpose that reads on"): at the top of the app
-      delegate's `init`, before it builds anything else, when one reads on at launch (a switch, or the coach's kept
-      consent), so a crash anywhere in the start is caught, else the moment one turns on (until then a crash is not
-      captured); Android's
-      Crashlytics starts in its own provider before `onCreate`, and the app's crash reports start first in `onCreate`.
-      With the switch on and a report waiting from a run that ended within 10 s of its start (a start that crashes
-      again and again), the app calls `sendUnsentReports()` before the rest of its start and waits up to 2 s for it.
+    - **The start comes first.** After the age gate: the iPhone configures Firebase (with App Check's factory) only
+      for a purpose that reads on (telemetry-api.yaml, "Firebase starts only for a purpose that reads on"), and since
+      slice 77 only once the age gate is open (telemetry-api.yaml, "The store's age range never leaves"). On iOS
+      26.0 and 26.1, where the system tells of no law, that is the top of the app delegate's `init`, before it
+      builds anything else, when a purpose reads on at launch (a switch, or the coach's kept consent), so a crash
+      anywhere in the start is caught. On iOS 26.2 and later it is the moment the system said whether a law has the
+      app ask the store's age range here (2 s at most) and, where one does, the range was answered: the switches
+      are read then, Firebase starts, and the rest of the start (every part's follower) runs after it, so a crash in
+      those parts is caught, while one before it (the app delegate's `init`, the launch itself) is not captured on
+      that run; App Store Connect's diagnostics and Xcode's Organizer show those. Otherwise Firebase starts the
+      moment a purpose turns on (until then a crash is not captured). Android's Crashlytics starts in its own
+      provider before `onCreate` and catches a crash from there on, and the app's crash reports start first in
+      `onCreate`, after the age gate is made: collection held off and Crashlytics asked once whether reports wait,
+      which are sent, deleted or asked about only once the age gate opened, and not at all in a run it closes.
+    - **The launch-loop rule**, on the iPhone: with the switch on and a report waiting from a run that ended within
+      10 s of its start (a start that crashes again and again), the app calls `sendUnsentReports()` before the rest
+      of its start and waits up to 2 s for it. Android had the rule until slice 77 (a blocking send first in
+      `onCreate`): the age gate's answer comes after `onCreate` returned, so no report can go before the rest of the
+      start, and a start that crashes again and again before the gate opened sends none; Play's vitals show it.
     - **The context a phone report carries** (telemetry.json `crashContext`): Crashlytics custom keys `screen`,
       `pump`, `link`, `watch` and `demo`, each from its closed list, set when they change, and a log line for each
       change (`<key> <value>`) and for the app's own moments (`app foreground`, `app background`, `memory warning`).

@@ -26,8 +26,10 @@
 // rate that makes it last one beat and shows ((now - from) mod beat) of it: through the countdown its frame 0 comes
 // with the go (no jump at the go), and the voice's count n (Rust's, at the loop's n-th rep end after the go) comes as
 // the figure finishes rep n. Each frame it is put back in phase where it drifted more than `DRIFT` (a loop's wrap, a
-// stall), aimed ahead by what the last seek took to land (`seekCost`: a seek decodes from the film's one key frame),
-// and so it is as it plays again after anything stopped it (off screen, the window hidden), never starting over.
+// stall): before the go by its rate, steered so the loop it played on the Ready view comes into phase by the go with no
+// jump, else by a seek aimed ahead by what the last seek took to land (`seekCost`: a seek decodes from the film's one
+// key frame), and so it is as it plays again after anything stopped it (off screen, the window hidden), never starting
+// over.
 // Under Reduce Motion it stands on its key pose as every figure does; the count runs on the clock all the same.
 
 import {get, subscribe} from "./bridge.js";
@@ -42,6 +44,11 @@ const KEPT = 24;
 const DRIFT = 0.06;
 /** The most a phase seek aims ahead of the clock for its own decoding (seconds). */
 const SEEK_LEAD_MAX = 0.5;
+/** The most a phased film's rate is steered off its own before the go to be in phase at it (a share of the rate): a
+ * film further out of phase than that allows takes the seek. */
+const STEER_MOST = 0.35;
+/** The least change of a film's rate worth setting (each setting may cost the decoder a frame). */
+const RATE_STEP = 0.005;
 
 let table = get("figures") ?? null;
 const live = new Set();
@@ -332,9 +339,11 @@ export class MoveFigure {
 		return ((((now - from) % beat) + beat) % beat) / beat * duration;
 	}
 
-	/** Puts a phased film back in phase where it is more than `DRIFT` from the clock, either way round the loop's wrap,
-	 * aimed where the clock will be once the seek lands (`seekCost`, the last seek's); nothing while it seeks or is
-	 * not phased. */
+	/** Puts a phased film back in phase where it is more than `DRIFT` from the clock, either way round the loop's wrap:
+	 * before the go by playing a little faster or slower so it is in phase at the go (at most `STEER_MOST` off its
+	 * rate), so the loop the Ready view played goes on into the countdown with no jump (Rapha, 2026-11-23: the seek
+	 * there showed the move start over); else by a seek aimed where the clock will be once it lands (`seekCost`, the
+	 * last seek's). Nothing while it seeks or is not phased. */
 	phase() {
 		const video = this.video;
 		const now = Date.now();
@@ -342,7 +351,15 @@ export class MoveFigure {
 		if (at === null || video.seeking) return;
 		const length = video.duration;
 		const off = (((video.currentTime - at) % length) + length * 1.5) % length - length / 2;
-		if (Math.abs(off) > DRIFT) this.seek(this.phaseAt(now + this.seekCost * 1000));
+		// a phased film lasts one beat (its own length, but for the beat's whole milliseconds)
+		const rate = length / (this.wanted.beat / 1000);
+		const lead = (this.wanted.from - now) / 1000;
+		const steered = lead > 0 && Math.abs(off) > DRIFT / 2 ? rate - off / lead : rate;
+		const steers = Math.abs(steered - rate) <= rate * STEER_MOST;
+		const plays = steers ? steered : rate;
+		if (Math.abs(video.playbackRate - plays) > RATE_STEP) video.playbackRate = plays;
+		if ((steers && steered !== rate) || Math.abs(off) <= DRIFT) return;
+		this.seek(this.phaseAt(now + this.seekCost * 1000));
 	}
 
 	/** Seeks the film to `at` seconds, timed until it lands (`seekCost`). */
@@ -435,7 +452,7 @@ export class MoveFigure {
 		this.video = null;
 		this.ready = false;
 		this.framed = false;
-		this.filmSize = null;
+		this.filmDrawn = false;
 		if (!video) return;
 		video.pause();
 		video.removeAttribute("src");
@@ -451,12 +468,15 @@ export class MoveFigure {
 	/** Draws the film's frame where it shows its key pose or plays, else the still, then fades the cut edges. */
 	paint() {
 		const shown = this.shown;
-		if (!shown || !fit(this.canvas)) return;
-		const ctx = this.ctx, W = this.canvas.width, H = this.canvas.height;
+		if (!shown) return;
 		const filmShows = this.video && this.framed && this.video.readyState >= 2;
-		// mid-seek (a re-phase past DRIFT, the loop's wrap) the film's last frame stays on the canvas: the key-pose
-		// still drawn for that one paint flashed the move's key pose, a push-up's lowest point (Rapha, 2026-10-26)
-		if (!filmShows && this.filmSize === `${W}x${H}`) return;
+		// mid-seek (a re-phase past DRIFT, the loop's wrap) the film's last frame stays on the canvas, at the size it was
+		// drawn at where the figure's room changed meanwhile (the canvas scales it): the key-pose still drawn there
+		// flashed the move's key pose, a push-up's lowest point (Rapha, 2026-10-26), and over a whole seek as the
+		// countdown took the figure from Ready's room into Big view's (2026-11-23)
+		if (!filmShows && this.filmDrawn) return;
+		if (!fit(this.canvas)) return;
+		const ctx = this.ctx, W = this.canvas.width, H = this.canvas.height;
 		if (!filmShows && !this.still) return;
 		this.clear();
 		ctx.save();
@@ -467,10 +487,10 @@ export class MoveFigure {
 			const {side, tint} = table.film;
 			ctx.drawImage(this.video, 0, 0, side, side, 0, 0, W, H);
 			addTint(ctx, this.off, this.video, [0, tint, side, side], [0, 0, W, H], colourOf(shown.hex));
-			this.filmSize = `${W}x${H}`;
+			this.filmDrawn = true;
 		} else {
 			ctx.drawImage(this.still, 0, 0, W, H);
-			this.filmSize = null;
+			this.filmDrawn = false;
 		}
 		ctx.restore();
 		fadeEdges(ctx, shown.fade, [0, 0, W, H], this.fraction);

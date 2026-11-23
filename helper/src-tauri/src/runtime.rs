@@ -650,8 +650,8 @@ impl Helper {
 		for command in fx.commands {
 			let now = lan::now_ms();
 			if let Some(queued) = self.queue.queue(command, now) {
-				// the game's pump as an iPhone's Live Activity shows it, with the holder as a pump is offered (slice 76)
-				self.telling.command(&queued.command, now, self.queue.holder(now).is_some());
+				// the game's pump as an iPhone's Live Activity shows it (slice 76)
+				self.telling.command(&queued.command, now);
 				self.emit(&Line::Command { command: queued });
 			}
 		}

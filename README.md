@@ -37,19 +37,17 @@ QuestPump on your computer and the phone app are free and strongly recommended. 
 - **QuestPump for Mac and Windows** adds the add-on to the game and keeps both up to date. It keeps a copy of your
   progress and runs pumps on your screen when the game is closed. It never presses a key, never reads the game's memory
   and never sends input into the game. Get it at questpump.com.
-- **The phone and watch app**, for iPhone and Apple Watch or Android and Wear OS, comes later. It counts down each pump
-  on your phone or your wrist.
+- **The phone and watch app**, for iPhone and Apple Watch or Android and Wear OS, counts down each pump on your phone or
+  your wrist. Get it at questpump.com.
 
-With a Bluetooth heart-rate strap on your computer, each pump gets a heart-rate check mark. Once the phone app is out,
-a watch gives the check mark too.
+With a watch, or a Bluetooth heart-rate strap on your computer, each pump gets a heart-rate check mark.
 
-At your first login the add-on shows a setup screen. Until the phone app is out, it asks only for QuestPump on your
-computer. Install it and open it, then press Check again, and the step gets its tick.
+At your first login the add-on shows a setup screen. Install QuestPump on your computer and open it, then scan the QR
+code in its window with the phone app. Press Check again, and each step gets its tick.
 
-You can play without it. The add-on alone runs every pump, with records, XP and the sheet. QuestPump on your computer
-adds a copy of your progress, the check mark with a strap, and pumps on your screen when the game is closed. The phone
-app will add the countdown on your phone or wrist and catch-up pumps on the phone. Type /qp setup to see the setup
-screen again.
+You can play without them. The add-on alone runs every pump, with records, XP and the sheet. QuestPump on your computer
+adds a copy of your progress and pumps on your screen when the game is closed. The phone app adds the countdown on your
+phone or wrist and catch-up pumps on the phone. Type /qp setup to see the setup screen again.
 
 ## Saving your progress on Forever
 

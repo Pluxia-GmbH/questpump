@@ -179,6 +179,10 @@ pub struct Settings {
 	/// Work mode was started here once: the first Start's sheet is shown no more (`work.sheet`).
 	#[serde(default)]
 	pub work_started: bool,
+	/// Pump home shows work mode's Start while work mode is off (the Work mode page's switch, this computer's alone;
+	/// Rapha, 2026-11-23): on by default.
+	#[serde(default = "on")]
+	pub work_button: bool,
 	/// The block due on this device, kept so a restart or a reload starts its work clock due (`Clock::due_from`): the
 	/// anchor it came due after (unix ms) and the moment it came due (unix seconds); none while the block counts.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
@@ -242,6 +246,7 @@ impl Default for Settings {
 			sync: questpump_core::sync::Account::default(),
 			work: questpump_core::work::Work::default(),
 			work_started: false,
+			work_button: on(),
 			work_due: None,
 		}
 	}

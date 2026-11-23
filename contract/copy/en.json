@@ -18,6 +18,20 @@
    "legal": true,
    "note": "Legal text: Riot Games' required boilerplate (developer.riotgames.com/policies/general, updated 2025-05-29), word for word with QuestPump as the product, readily visible wherever a surface can name League of Legends or, since slice 48, Legends of Runeterra: the desktop app's Games tab and About on both phones and the desktop app (on the phones, Safety and about under the not-a-medical-device line; never on the watches, which have no About page: decided 2026-10-08). Never translated or shortened."
   },
+  "age.closed.body": {
+   "text": "QuestPump is not for this account.",
+   "screens": [
+    "age.closed"
+   ],
+   "note": "The one sentence under the title of the closed screen. It names no age and no reason."
+  },
+  "age.closed.title": {
+   "text": "Not available",
+   "screens": [
+    "age.closed"
+   ],
+   "note": "Title of the screen that stands in the app's place where a law has the app ask the store for the account's age range and the answer closes the app. No button follows."
+  },
   "app.name": {
    "text": "QuestPump",
    "screens": [
@@ -25581,6 +25595,20 @@
    ],
    "note": "Work mode (docs/plan.md slice 67): the ask once a work pump is due: the door's and the shield's title, the wrist's and the notification's; in the browser the title of the notification that says a work pump opened while the tab is hidden (the desktop app opens the pump in front and asks nothing)."
   },
+  "work.button": {
+   "text": "Start button on Pump",
+   "screens": [
+    "menu.work",
+    "desk.menu.work"
+   ],
+   "platforms": [
+    "android",
+    "macos",
+    "windows",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the Work mode page's switch that shows or hides the Start work mode button on Pump home while work mode is off (on by default; this device's own choice). Pump is the home tab's name."
+  },
   "work.control.about": {
    "text": "Starts and stops work mode.",
    "screens": [
@@ -25904,6 +25932,19 @@
     "web"
    ],
    "note": "Work mode (docs/plan.md slice 67): the button that turns work mode on (the work card while off, the first Start's sheet, gold), and the ask's Start where it runs the work pump: the wrist's ask and the notification's action (the iPhone without Screen Time)."
+  },
+  "work.start.mode": {
+   "text": "Start work mode",
+   "screens": [
+    "WorkCard"
+   ],
+   "platforms": [
+    "android",
+    "macos",
+    "windows",
+    "web"
+   ],
+   "note": "Work mode (docs/plan.md slice 67): the compact button with the desk glyph that turns work mode on, on Pump home while work mode is off (Rapha, 2026-11-23: the full-width card was too prominent)."
   },
   "work.stop": {
    "text": "Stop",

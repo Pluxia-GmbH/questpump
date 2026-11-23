@@ -118,14 +118,17 @@ info:
     from the iPhone app 0.1.0, written 5 Oct 2026 23:12 UTC"), so two messages rarely share a subject and a mail
     reader keeps each apart. Its text: the heading "Message"; the player's text, its line ends made LF, every control
     character but LF and TAB (U+0000-U+0008, U+000B, U+000C, U+000E-U+001F, U+007F-U+009F) replaced by U+FFFD and the
-    bidi controls U+202A-U+202E and U+2066-U+2069 removed; a blank line; "Written: 5 Oct 2026, 23:12 UTC" (`at`); then,
-    after a blank line, with numbers "Numbers (as the player saw them)" and the window's lines in its words
-    (contract/copy/en.json `feedback.numbers.*`): "Days since you started", "Unfinished moves now", "In the last 14
-    days:" and under it, indented two spaces, "Pumps finished", "Pumps banked", "Max sets on one ladder on a usual play
-    day" (0, 3 or 2.5) and "Easier picks and early stops, by move:", under which, indented four, each move's line by
-    its id ("split_squat_slow: easier pick 2, stopped early 0") or "None"; with diagnostics "System details" and its
-    "OS:" and "Capture:" lines. `at` dates the message and never refuses it inside its bounds: a wrong clock is
-    written as it came.
+    bidi controls U+202A-U+202E and U+2066-U+2069 removed; a blank line; "Written: 5 Oct 2026, 23:12 UTC" (`at`); under
+    it one line that says whether the request's App Check token verified (since 2026-11-21: "App Check: verified (a
+    QuestPump phone app's token)", or "App Check: no token (sender not verified)" for a message without one, as every
+    helper's and game's is; the Worker's own word, never the token), so its reader tells a message anyone could post
+    from an app's; then, after a blank line, with numbers "Numbers (as the player saw them)" and the window's lines in
+    its words (contract/copy/en.json `feedback.numbers.*`): "Days since you started", "Unfinished moves now", "In the
+    last 14 days:" and under it, indented two spaces, "Pumps finished", "Pumps banked", "Max sets on one ladder on a
+    usual play day" (0, 3 or 2.5) and "Easier picks and early stops, by move:", under which, indented four, each
+    move's line by its id ("split_squat_slow: easier pick 2, stopped early 0") or "None"; with diagnostics "System
+    details" and its "System:" and "Screen reading:" lines. `at` dates the message and never refuses it inside its
+    bounds: a wrong clock is written as it came.
 
     **The counting rules.** The game and each phone count their numbers from the rows they hold, by these rules, so the
     addon and both phones count alike; the helper's own window counts nothing (its tick adds its diagnostics).

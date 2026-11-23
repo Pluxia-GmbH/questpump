@@ -321,6 +321,12 @@ pub enum Command {
 		/// still carry it, though no device reads it since the coach's countdown line went (2026-10-09).
 		#[serde(default, skip_serializing_if = "Option::is_none")]
 		streak: Option<u16>,
+		/// The pump's offer was called before this telling of it (since 2026-11-21; the contract's `Command`): a device
+		/// calls nothing for it and takes the pump's Ready for no word of where the game has it. The session never says
+		/// it: the link does as it hands the offer out, for a pump whose call is given (`link::Link::respond`,
+		/// `Link::mirror`). Present only when true.
+		#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+		earlier: bool,
 	},
 	PumpDone {
 		pump_id: String,

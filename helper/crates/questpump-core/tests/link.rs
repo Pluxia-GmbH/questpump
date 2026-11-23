@@ -551,7 +551,13 @@ fn a_plain_post_neither_holds_the_link_nor_acknowledges() {
 fn each_command_expires_after_its_own_time() {
 	let mut link = Link::new(0);
 	let at = 1_000;
-	let offered = Command::PumpOffered { pump_id: "g-1-2".into(), quest_id: Some(7), moves: vec![], streak: None };
+	let offered = Command::PumpOffered {
+		pump_id: "g-1-2".into(),
+		quest_id: Some(7),
+		moves: vec![],
+		streak: None,
+		earlier: false,
+	};
 	let cases = [
 		(turn_in(1), 30_000),
 		(offered, 120_000),

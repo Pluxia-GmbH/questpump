@@ -3,7 +3,7 @@
   "view": "side",
   "camera": {"yaw": 24, "pitch": 8},
   "working": ["thigh_near", "thigh_far"],
-  "fast_phase": 0.6,
+  "fast_phase": 0.45,
   "poses": {
     "stand": {
       "pelvis": [-2, 94.4, 0],

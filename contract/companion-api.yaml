@@ -546,7 +546,8 @@ paths:
         after. The helper keeps a `pump_offered` for the mirror 120 s, so since 2026-11-19 a phone that begins to mirror
         an older pump still on (its `since` is below the `seq` of the pump's latest `pump_offered`) gets that
         `pump_offered` again, first in its `mirror`: under the same `seq`, as the game has the pump now, with a new
-        `sent_at` and `expires_at`, and never again once its `since` passed that `seq`. The phone shows the
+        `sent_at` and `expires_at`, and never again once its `since` passed that `seq`. A mirror's `pump_offered` says
+        `earlier` as a holder's does (`Command`). The phone shows the
         pump from them as it shows the commands it holds the link for (the moves, the countdown, the move's count with
         the record mark, the verdict, the end) and never acts on them as the holder: it sends no `WristEvent`, starts
         no Health session for them and acknowledges nothing (a standing request never acknowledges the holder's
@@ -1608,6 +1609,27 @@ components:
           that `seq`) and none waits for it (it went to another device or expired, or the device started again
           mid-pump), so a `countdown` of the pump always reaches the device after its moves. A device takes a repeat
           for the same pump as the pump composed again.
+          A pump's offer is called once: the alert a phone gives for it off screen (the iPhone's Live Activity alert
+          or the notice that stands in for it, Android's pop-up), or the pump push's (contract/sync-api.yaml,
+          "Telling", `alert`). Only the helper knows whether it was, so it says so (since 2026-11-21; docs/plan.md
+          slice 76, "Decided in the build", 15). The call is given once a phone took an offer of the pump the helper
+          handed it without `earlier` (a later request's `since` reaching that `seq`: a held request's for an offer a
+          held answer carried, a standing request's for one its `mirror` carried; a `since` that passes an offer the
+          phone was never handed takes nothing), once the account took the pump push's alerting `offer`, or once the
+          game went on with the pump (its `countdown`, `keep`, `move_end`, `move_counted`, `verdict` or `pump_done`,
+          or the game's `session_end`). A watch gives none: the wrist's cue came with the `turn_in`, and a phone that
+          hears the offer after a watch took it still calls it. From then every `pump_offered` of that pump the helper
+          hands out carries `earlier`: true, the first one still waiting, one sent again, a pump composed again and a
+          mirror's alike, and so does one of an older pump still waiting once the game offered another; until then
+          none does, and the phone that hears it calls it, so no offer is left with no call. A device calls no pump
+          whose offer says `earlier`. A pump such an offer brings onto a device's screen stands there as the offer
+          leaves it, at its Ready with the moves alone, and that is not the helper's word of where the game has the
+          pump now: an iPhone never writes it, or the following in its place once the phone let it go at the offer's
+          expiry, over a pushed state on its Live Activity, which stays until a command places the pump on that phone
+          (a `countdown` it takes, the `move_end` of a move it ran, the `pump_done`, the game's `session_end`; a
+          `move_end`, `move_counted` or `verdict` of a move it never saw start places nothing) or the next push
+          (contract/sync-api.yaml, "Two writers"). On a pump the device shows already, `earlier` changes nothing. A
+          device from before the field ignores it and calls as before; a helper from before it sends none.
         - `move_end`: one move of the pump ended (`pump_id`, `slot`). With `cancelled` the game went back to that
           move's Ready (Escape, a popup, the game menu, combat, its Back) and the move never counts: a device drops it,
           counting down or running, and since 2026-10-05 also after a `move_end` without `cancelled`, when the game's
@@ -1722,6 +1744,7 @@ components:
         arms: { type: boolean, description: "match_end only (slice 48): present and true while a game marked aim in contract/links.json, whose aim switch the player left on (its window on the desktop app's Games tab since slice 56, the Games page until then), ran at the match's end" }
         moves: { type: array, items: { $ref: "#/components/schemas/OfferedMove" } }
         streak: { type: integer, minimum: 0, maximum: 65535, description: "pump_offered only: days in a row, from the sheet" }
+        earlier: { type: boolean, description: "pump_offered only (since 2026-11-21): present and true when the pump's offer was called before this telling of it, by a phone that took it, by the pump push, or because the game went on with the pump; a device then calls nothing for it" }
         reps: { type: integer, minimum: 0, maximum: 65535, description: "move_counted only: the move row's reps (0 on a hold)" }
         seconds:
           type: integer

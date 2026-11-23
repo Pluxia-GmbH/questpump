@@ -3101,6 +3101,7 @@ fn offer(load_id: u16, p: &Pump, people: &People, install: &str) -> Option<Comma
 		quest_id: first.map(|f| f.quest_id),
 		moves: moves.collect(),
 		streak,
+		earlier: false,
 	})
 }
 

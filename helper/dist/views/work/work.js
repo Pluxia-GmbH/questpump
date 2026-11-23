@@ -11,10 +11,11 @@
 //   moves and its minutes by the game's estimate of a move (`menu.work`'s `moves` and `minutes`), the fourth what this
 //   computer waits for (the browser's: quiet hours alone);
 // - the Work mode page (desk.menu.work), the Menu's Work mode row in Your pumps, which the place button and the place
-//   rows open while work mode runs: the (i) on its bar, Every and Moves per block (each a `work.set`), then work mode's
-//   own equipment as a place's window draws a setup (Where you train's switches, each a `work.set`, and Equipment's
-//   chips in their groups with their Tooltips, each a `work.gear`), every answer the topic brings; no switch and no
-//   hours (Start and Stop are the work card's and the tray's).
+//   rows open while work mode runs: the (i) on its bar, Every and Moves per block (each a `work.set`), the switch for
+//   Pump home's Start (`work.set {button}`, the `work` topic's `button`), then work mode's own equipment as a place's
+//   window draws a setup (Where you train's switches, each a `work.set`, and Equipment's chips in their groups with
+//   their Tooltips, each a `work.gear`), every answer the topic brings; no hours (Start and Stop are the work card's
+//   and the tray's).
 
 import {get, intent, subscribe} from "../../lib/bridge.js";
 import {t} from "../../lib/copy.js";
@@ -121,8 +122,11 @@ register("desk.menu.work", () => {
 		"on:qp-change": (e) => heard(set({every: Number(e.detail)}))});
 	const pace = h("qp-segmented", {label: t("work.pace"), "on:qp-change": (e) => heard(set({pace: e.detail}))});
 	pace.options = PACES.map((p) => ({value: p.value, label: p.label()}));
+	// Pump home's Start while work mode is off, this computer's own choice
+	const button = h("qp-row", {heading: t("work.button"), glyph: "action_pump", trailing: "toggle",
+		"on:qp-change": (e) => heard(set({button: e.detail}))});
 	view.body.append(h("qp-section-label", {label: t("work.every")}), every,
-		h("qp-section-label", {label: t("work.pace")}), pace);
+		h("qp-section-label", {label: t("work.pace")}), pace, h("qp-card", {rows: true}, button));
 	const tooltip = pageTooltip(view);
 	let equipment = null;
 	let shown = null;
@@ -145,6 +149,9 @@ register("desk.menu.work", () => {
 		draw();
 	});
 	watch(view, "places", draw);
+	watch(view, "work", (w) => {
+		button.checked = w.button;
+	});
 	view.primary = () => every;
 	return view;
 });

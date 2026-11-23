@@ -12,7 +12,8 @@
 //! dot.
 //! An area's items join the menu through `TrayLines::show` at their place, as the note does, and their events through
 //! `on_menu`'s match (one line per area). The one tray icon is built here, never by a `trayIcon` key in tauri.conf.json,
-//! which would make a second.
+//! which would make a second. A left click opens the menu in macOS's menu bar; in Windows' notification area a right
+//! click does, and a double click opens QuestPump's window.
 //!
 //! Work mode (slice 67) leads the menu: off, Start work mode; on, its state line (Next pump in {n} min, the hold such
 //! as On a call, or Pump ready), Pump now and Stop work mode (`draw_work`, from the `work` topic's view the desk hands
@@ -29,7 +30,7 @@ use questpump_desk::work::{Phase, WorkView};
 use serde::Serialize;
 use tauri::image::Image;
 use tauri::menu::{IsMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
-use tauri::tray::TrayIconBuilder;
+use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager as _};
 
 use super::offers::{self, TrayItems};
@@ -499,11 +500,18 @@ pub(crate) fn build(app: &tauri::App) -> tauri::Result<()> {
 	let menu = Menu::with_items(app, &[&state, &phone, &line, &open, &quit])?;
 	let offers = offers::tray_items(app)?;
 	app.manage(TrayLines { menu: menu.clone(), state, phone, note, note_shown: AtomicBool::new(false), offers });
+	// the menu on a left click in the macOS menu bar; on Windows on a right click, and a double click opens the window
+	// as a notification-area icon's does (Rapha, 2026-11-23: the menu a left click opened took the double click)
 	let mut tray = TrayIconBuilder::with_id(TRAY)
 		.tooltip(tooltip(&now))
 		.menu(&menu)
-		.show_menu_on_left_click(true)
-		.on_menu_event(|app, event| on_menu(app, &event));
+		.show_menu_on_left_click(!cfg!(windows))
+		.on_menu_event(|app, event| on_menu(app, &event))
+		.on_tray_icon_event(|tray, event| {
+			if cfg!(windows) && matches!(event, TrayIconEvent::DoubleClick { button: MouseButton::Left, .. }) {
+				windows::open_main(tray.app_handle(), Landing::Here);
+			}
+		});
 	if let Some(icon) = dot_icon(dot, None) {
 		tray = tray.icon(icon);
 	}

@@ -3,11 +3,12 @@
 // seconds}: the label `{ladder} · step {n}` (`step {n}` without a ladder), the range from 0 to the step's top (`range`)
 // over 86 % of the track and a spill past it for the count beyond, and posts with their words at the goal, at the
 // record before this set (none once it stands at the top or past it) and at the top, each lit once the count passes
-// it, in the move's unit (`seconds`: m:ss, else the number of reps); `held` the count in it. `slot(n)` is where the nth
-// unit lands (the window's px, for its grain), `flash()` the track's flash with its sparks at the top, and `roll(next)`
-// turns it over to the next step's bar after a step-up (`turn(next)` at once). The fill follows the count over
-// motion.pourFill, so a short set's few grains fill it in one run, never in steps. Decoration: the pour's words and
-// the rows say it.
+// it, in the move's unit (`seconds`: m:ss, else the number of reps), a post past the range at the top's place and two
+// words that would meet parted (`part`), the full range ending square on the top's post; `held` the count in it.
+// `slot(n)` is where the nth unit lands (the window's px, for its grain), `flash()` the track's flash with its sparks at
+// the top, and `roll(next)` turns it over to the next step's bar after a step-up (`turn(next)` at once). The fill
+// follows the count over motion.pourFill, so a short set's few grains fill it in one run, never in steps. Decoration:
+// the pour's words and the rows say it.
 
 import {t} from "../lib/copy.js";
 import {clock, LOCALE} from "../lib/format.js";
@@ -65,6 +66,9 @@ class QpCountBar extends KitElement {
 		this.setAttribute("aria-hidden", "true");
 		this.append(this.body);
 		this.heldValue ??= 0;
+		// a new width, or a word's font arriving, parts the words again
+		this.sized = new ResizeObserver(() => this.part());
+		this.sized.observe(this);
 	}
 
 	set bar(value) {
@@ -103,11 +107,15 @@ class QpCountBar extends KitElement {
 				: t("pump.saved.bar.step", {n: b.step ?? 0});
 			this.label.hidden = b.step == null;
 			const value = (n) => (b.seconds ? clock(n) : NUMBER.format(n));
+			// a post past the range (a goal past the step's top) stands at the top's place, as the phones' do
 			const post = (n, key, side) => n == null ? null : styled(h("i", {class: "qp-count-post", "data-value": n,
 				"data-side": side}, h("span", {class: "qp-type-meta", text: t(key, {value: value(n)})})),
-			{"--qp-at": this.at(n)});
+			{"--qp-at": this.at(Math.min(n, Math.max(1, b.range)))});
+			for (const p of this.posts.children) this.sized.unobserve(p.firstChild);
 			this.posts.replaceChildren(...[post(b.goal, "pump.saved.bar.goal", "down"),
 				post(b.best, "pump.saved.bar.best", "up"), post(b.top, "pump.saved.bar.top", "down")].filter(Boolean));
+			for (const p of this.posts.children) this.sized.observe(p.firstChild);
+			this.part();
 		}
 		const held = Math.max(0, this.heldValue);
 		const range = Math.max(1, b.range);
@@ -118,6 +126,43 @@ class QpCountBar extends KitElement {
 			p.toggleAttribute("data-hit", p.dataset.side === "up" ? held > n : held >= n);
 		}
 		this.toggleAttribute("data-full", b.top != null && held >= b.top);
+	}
+
+	/** Parts the posts' words on each side of the track (the phones' `PostWords`): each centred on its post, two whose
+	 * posts stand too close for both (a goal at or past the step's top, whose post stands at the top's) side by side
+	 * about their middle, the lower count's first, a space8 apart, and all kept inside the bar. */
+	part() {
+		const wide = this.posts.clientWidth;
+		if (!wide) return;
+		const gap = token(this, "--qp-layout-space8") || 0;
+		const range = Math.max(1, this.barData?.range ?? 1);
+		for (const side of ["up", "down"]) {
+			const words = [...this.posts.children].filter((p) => p.dataset.side === side).map((p) => {
+				const n = Number(p.dataset.value);
+				const word = p.firstChild;
+				const centre = this.at(Math.min(n, range)) * wide;
+				return {word, n, centre, width: word.offsetWidth, x: centre - word.offsetWidth / 2};
+			}).sort((a, b) => Math.min(a.n, range) - Math.min(b.n, range) || a.n - b.n);
+			for (let k = 1; k < words.length; k += 1) {
+				const [a, b] = [words[k - 1], words[k]];
+				const over = a.x + a.width + gap - b.x;
+				if (over > 0) {
+					a.x -= over / 2;
+					b.x += over / 2;
+				}
+			}
+			let most = wide;
+			for (const w of words.toReversed()) {
+				w.x = Math.min(w.x, most - w.width);
+				most = w.x - gap;
+			}
+			let least = 0;
+			for (const w of words) {
+				w.x = Math.max(w.x, least);
+				least = w.x + w.width + gap;
+				styled(w.word, {"--qp-shift": w.x - (w.centre - w.width / 2)});
+			}
+		}
 	}
 
 	/** The window's px of the middle of unit `n`'s place on the track (past the range, in the spill). */

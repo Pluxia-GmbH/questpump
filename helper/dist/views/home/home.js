@@ -10,8 +10,9 @@
 // computer for it and the game's window on the Games tab for the others; nothing before the first game played); the
 // standing figure taking the room the blocks leave, the streak (from the least of `streak_milestones`, a 7-day streak,
 // with its round Share, which opens the Share window on the streak card as it stands; slice 45; the whole board opens
-// the streak page since slice 51), work mode's card under it (slice 67, kit/qp-work-card.js: Start, the ring and
-// Stop, or Pump now and Later while a work pump is due, the foot's primary quiet meanwhile), under Up next
+// the streak page since slice 51), work mode's card under it (slice 67, kit/qp-work-card.js: off, its Start chip
+// unless the Work mode page hides it; on, the ring and Stop, or Pump now and Later while a work pump is due, the
+// foot's primary quiet meanwhile), under Up next
 // (2026-11-03) the embers row (slice 55: Cardio moves today 2 of 3 with
 // the cardio step's move's tile and three marks, the phones' pump.tab's, starting that move at once, the step's card
 // where Rust refuses the start; until 2026-11-03 it opened the card) and the step-up closest to done of all the ladders
@@ -579,10 +580,11 @@ register("pump", () => {
 		save.hidden = p.offer !== "home";
 	});
 
-	/** The work card from the last `work` and whether pumps rest. */
+	/** The work card from the last `work` and whether pumps rest: while work mode is off its Start alone, where the
+	 * Work mode page's switch keeps it. */
 	const drawWork = () => {
 		workCard.work = work;
-		workCard.hidden = !work || (locked && !work.on);
+		workCard.hidden = !work || (!work.on && (locked || !work.button));
 	};
 	watch(view, "work", (value) => {
 		work = value;

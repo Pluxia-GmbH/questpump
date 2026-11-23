@@ -1,6 +1,6 @@
 [package]
 name = "questpump-helper"
-version = "1.3.0"
+version = "1.4.0"
 description = "QuestPump for Mac and Windows (the helper): reads the addon's status strip, keeps your progress for the game and pairs your phone"
 edition.workspace = true
 rust-version.workspace = true

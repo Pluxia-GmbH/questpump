@@ -38,8 +38,9 @@ info:
     `zip` to the add-on's zip, `QuestPump-addon-v2.zip` since 1.1.0 (`QuestPump-addon.zip`, 1.0.1's, until then; all
     four on the helper-updater release of the public repository,
     `https://github.com/Pluxia-GmbH/questpump/releases/download/helper-updater/`, under fixed names each new version
-    replaces). `ios`, `android` and `phone` have no address until the phone apps are in the stores (the site's
-    `PHONES` switch, `site/src/launch.ts`), `curseforge` to the add-on's CurseForge page,
+    replaces). `ios` goes to the App Store's page, `https://apps.apple.com/app/id6817906234`, and `android` to Google
+    Play's, `https://play.google.com/store/apps/details?id=ai.pluxia.questpump` (since 2026-11-23, once both stores
+    offered the phone apps: the site's `PHONES` switch, `site/src/launch.ts`), `curseforge` to the add-on's CurseForge page,
     `https://www.curseforge.com/wow/addons/questpump` (since 2026-11-06, its `CURSEFORGE` switch), `wago` to its
     Wago page, `https://addons.wago.io/addons/questpump` (since 2026-11-12, its `WAGO` switch), and
     `discord` none until the community opens (the public release, docs/tasks.md); each goes to
