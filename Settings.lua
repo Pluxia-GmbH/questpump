@@ -1809,7 +1809,8 @@ function Settings_.RenderGeneral()
 	for _, row in ipairs(f.rows) do
 		if row ~= f.companions then renderRow(row) end
 	end
-	-- the companions the setup asks for (Setup.AsksPhone: the helper alone while the phone apps are not in the stores)
+	-- the companions the setup asks for (Setup.AsksPhone: the helper alone while its feed says the phone apps are not
+	-- in the stores)
 	local helper, phone = ns.Setup.Steps()
 	local asks = ns.Setup.AsksPhone()
 	local done = L["settings.companions.done"]:format((helper and 1 or 0) + (asks and phone and 1 or 0), asks and 2 or 1)
@@ -2643,7 +2644,8 @@ local function sendable(f)
 end
 
 -- Why Send is off, by ns.HelperState (the setup screen's step for each state, ui.setup.step1.*, with /reload for its
--- Check again); nothing while the helper carries the message.
+-- Check again); nothing while the helper carries the message. After it the card names the other ways to send
+-- feedback, the phone app among them only while the setup asks for it (Setup.AsksPhone).
 local FEEDBACK_OFF = { none = "status.feedback.none", off = "status.feedback.off", blind = "status.feedback.blind",
 	stopped = "status.feedback.stopped", disabled = "status.feedback.disabled", outdated = "status.feedback.outdated" }
 
@@ -2660,7 +2662,8 @@ function Settings_.RenderFeedback()
 	if why then
 		local card = f.card
 		card.state:SetText(L["ui.setup.step1.state." .. state])
-		card.how:SetText(L[why])
+		local other = ns.Setup.AsksPhone() and "status.feedback.other" or "status.feedback.other.one"
+		card.how:SetText(L[why] .. " " .. L[other])
 		card:SetHeight(12 + FEEDBACK_SCREEN[2] + 10 + card.how:GetStringHeight() + 14)
 		Kit.At(card, v, y)
 		y = y + card:GetHeight() + 16

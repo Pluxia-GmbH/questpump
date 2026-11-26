@@ -4151,8 +4151,8 @@ SU.PHONE = "pushup"
 -- it was never set up, and under them the remedy for a state that has one; the details in its tooltip; gold edged once
 -- done), what they give as four chips (the long words in their tooltip), and the bar's Check again and Play without.
 -- The cards and the chips are no buttons: nothing on them answers a click (2026-10-15). While the setup asks for no
--- phone (Setup.AsksPhone: no helper yet, or the phone apps are not in the stores) the page is the helper's alone: its
--- card centred, the title and the chips' words in the singular, and only the chips the helper gives
+-- phone (Setup.AsksPhone: the helper's feed says the phone apps are not in the stores) the page is the helper's alone:
+-- its card centred, the title and the chips' words in the singular, and only the chips the helper gives
 -- (SU.RenderCompanions).
 function SU.Companions(s)
 	local v = Kit.Page(s, L["ui.setup.welcome"])

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.1] - 2026-11-27
+
+### Changed
+
+- The setup screen asks for the phone app again from your first login. Before, it showed QuestPump on your computer
+  alone until that had run once.
+- When Send is off on the Feedback page, the page now names the phone app as one more way to send your feedback.
+
+### Fixed
+
+- The figures of the step jacks, the lunge knee drives and the skater hops no longer flick to the other side for one
+  frame. QuestPump Figures comes as a new download for it.
+
 ## [1.2.0] - 2026-11-18
 
 ### Added

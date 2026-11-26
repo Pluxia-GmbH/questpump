@@ -35,7 +35,8 @@ L["chat.locked"] = "No pumps today: you felt unwell. Banked moves wait for the n
 L["chat.notnow"] = "Not now: finish what you are doing, then try again."
 L["chat.busy"] = "Finish the current pump first."
 L["ui.setup.first"] = "First the setup: set up QuestPump on this computer and the phone app, or play without them."
--- the same while the setup asks for no phone (Setup.AsksPhone: the phone apps are not in the stores yet)
+-- the same while the setup asks for no phone (Setup.AsksPhone: the helper's feed says the phone apps are not in the
+-- stores)
 L["ui.setup.first.one"] = "First the setup: set up QuestPump on this computer, or play without it."
 L["chat.toolarge"] = "Your saved data is too large: the game may not save it at the next logout."
 -- a failed migration of the save (DB.lua): the save from before the update is the backup
@@ -228,7 +229,8 @@ L["cmd.status.setup"] = "Setup: waiting for your choice: set up QuestPump on thi
 L["cmd.status.setup.yours"] = "Setup: waiting for Your setup: answer the few questions in the setup window, or close "
 	.. "it to start. No pump runs until then."
 L["cmd.status.setup.how"] = "Both are strongly recommended: /qp setup shows how to set them up."
--- the two lines above while the setup asks for no phone (Setup.AsksPhone: the phone apps are not in the stores yet)
+-- the two lines above while the setup asks for no phone (Setup.AsksPhone: the helper's feed says the phone apps are
+-- not in the stores)
 L["cmd.status.setup.one"] = "Setup: waiting for your choice: set up QuestPump on this computer, or play without it. No "
 	.. "pump runs until then."
 L["cmd.status.setup.how.one"] = "It is strongly recommended: /qp setup shows how to set it up."
@@ -760,8 +762,9 @@ L["theme.ride"] = "Ride"
 -- the phone app, strongly recommended (the companions' page's title); no URL, QR code, price, store, Pro or coach
 L["ui.setup.title"] = "QuestPump"
 L["ui.setup.welcome"] = "Strongly recommended companions"
--- while the setup asks for no phone (Setup.AsksPhone: the phone apps are not in the stores yet), the page is the
--- helper's alone: its title, its card's tooltip, the chips' head and tooltip and the way out in the singular
+-- while the setup asks for no phone (Setup.AsksPhone: the helper's feed says the phone apps are not in the stores),
+-- the page is the helper's alone: its title, its card's tooltip, the chips' head and tooltip and the way out in the
+-- singular
 L["ui.setup.welcome.one"] = "Strongly recommended companion"
 L["ui.setup.step1"] = "QuestPump on this computer"
 L["ui.setup.step1.tip"] = "Download it from the addon's page, where you got QuestPump. Open it, and choose Pair your "
@@ -11952,20 +11955,22 @@ L["ui.feedback.goes"] = "What goes"
 -- at the top while Send is off, by ns.HelperState (the setup screen's step for each, with /reload for Check again):
 -- never set up, not running at this load, running blind, the mirror folder turned off or out of date
 L["status.feedback.none"] = "The game sends feedback through it. Download it from the addon's page, open it, then "
-	.. "type /reload. Or send your feedback on the addon's page."
-L["status.feedback.off"] = "Send is off until it runs. Open it, then type /reload. Or send your feedback on the "
-	.. "addon's page."
+	.. "type /reload."
+L["status.feedback.off"] = "Send is off until it runs. Open it, then type /reload."
 L["status.feedback.blind"] = "Send is off until it can see the game. In its window, press Allow screen reading, turn "
-	.. "it on, restart it, then type /reload. Or send your feedback on the addon's page."
-L["status.feedback.stopped"] = "Send is off until it can read the game. Open its window, then type /reload. Or send "
-	.. "your feedback on the addon's page."
+	.. "it on, restart it, then type /reload."
+L["status.feedback.stopped"] = "Send is off until it can read the game. Open its window, then type /reload."
+-- after each of the six, the other ways to send it: the phone app while the setup asks for it (Setup.AsksPhone), and
+-- the addon's page
+L["status.feedback.other"] = "Or send your feedback from the phone app or on the addon's page."
+L["status.feedback.other.one"] = "Or send your feedback on the addon's page."
 -- Send's tooltip, and its red reason while QuestPump on this computer does not run at this load
 L["status.feedback.sendTip"] = "Hands your words to QuestPump on this computer, which sends them."
 L["status.feedback.sendOff"] = "Send needs QuestPump on this computer running."
 L["status.feedback.disabled"] = "Send is off: QuestPump Mirror is turned off in the AddOns list. Turn it on there, "
-	.. "then type /reload. Or send your feedback on the addon's page."
+	.. "then type /reload."
 L["status.feedback.outdated"] = "Send is off: QuestPump Mirror is out of date for this game version. Open QuestPump "
-	.. "on this computer so it updates it, then type /reload. Or send your feedback on the addon's page."
+	.. "on this computer so it updates it, then type /reload."
 -- beside Send after it is pressed, while the message is still going onto the strip, and once it is on it (also in
 -- chat): handed to the helper, never "sent", since nothing reaches a running addon
 L["status.feedback.pending"] = "Passing your feedback to QuestPump on this computer. Wait a few seconds before you "

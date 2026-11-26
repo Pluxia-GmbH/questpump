@@ -42,9 +42,10 @@ info:
     - the game (`game`): a "Send feedback" button on the Settings' General page and `/qp feedback` open the window. The
       addon has no network, so Send hands the message to the helper over the pixel strip (below, "The game's message
       through the helper"), and the helper posts it with `source` `game`, no token. Without the helper running at this
-      load (`ns.HelperState()` is not `on`) the window says the helper sends feedback, or that the
-      addon's page takes it, and Send stays off. The game names no URL (the legal minimum), and its line after Send
-      says it handed the message to the helper, never that it arrived: nothing reaches a running addon.
+      load (`ns.HelperState()` is not `on`) the window says the helper sends feedback, or that the phone app or the
+      addon's page takes it (the phone app only while the setup asks for it, `Setup.AsksPhone`), and Send stays off.
+      The game names no URL (the legal minimum), and its line after Send says it handed the message to the helper,
+      never that it arrived: nothing reaches a running addon.
 
     **What a message holds, and all it holds.** The source, that part's version, the moment the player pressed Send
     (`at`, unix seconds on the sending device's clock) and the player's text, trimmed, 1 to `feedback_max_chars` (500)

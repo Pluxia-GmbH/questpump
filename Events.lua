@@ -1903,14 +1903,13 @@ end
 
 -- Setup ----------------------------------------------------------------------------------------------------------
 
--- Whether the setup asks for the phone app. A phone pairs only through the helper's code and no store offers the apps
--- yet, so not with no pairing block (no helper ever ran here) and not while the helper's signed feed says the apps are
--- not in the stores (the block's phone_apps false): a helper that reads the game is the whole setup then. A paired
--- phone keeps its card (a tester's); a block with no word (an older helper, a feed it could not read) or the feed's
--- yes asks for it.
+-- Whether the setup asks for the phone app: yes, except while the helper's signed feed says the phone apps are not in
+-- the stores (the pairing block's phone_apps false) and no phone is paired; a helper that reads the game is the whole
+-- setup then. No pairing block (no helper ever ran here), a block with no word (an older helper, a feed it could not
+-- read) and the feed's yes all ask for it, since both stores offer the apps; a paired phone keeps its card.
 function Setup.AsksPhone()
 	local p = ns.Pairing()
-	return ns.IsPaired() or (p ~= nil and p.phone_apps ~= false)
+	return ns.IsPaired() or not (p ~= nil and p.phone_apps == false)
 end
 
 -- Each companion's step as this load found it: the helper reads the game, and a phone is paired and has reached the
@@ -3043,7 +3042,7 @@ ns.AddCommand("dev", function(arg)
 		end
 		ns.Emit("Clock")
 	elseif cmd == "pair" then
-		-- `/qp dev pair nophone`: a helper whose feed says the phone apps are not in the stores yet, and no phone
+		-- `/qp dev pair nophone`: a helper whose feed says the phone apps are not in the stores, and no phone
 		ns.devPairing = rest == "nophone" and { helper = "dev", phone_apps = false, seen_at = ns.now() }
 			or { helper = "dev", phone = "ios", phone_since = ns.now(), seen_at = ns.now() }
 		Setup.Evaluate()

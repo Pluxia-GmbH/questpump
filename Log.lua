@@ -127,7 +127,7 @@ local function setupState()
 		return ("paired (helper %s, phone %s)"):format(tostring(pairing.helper), tostring(pairing.phone))
 	end
 	local where = ns.Lifecycle.TrialBegun() and "playing without the companions" or "at the setup screen"
-	-- the setup asks for the helper alone (Setup.AsksPhone)
+	-- the setup asks for the helper alone (Setup.AsksPhone: its feed says the phone apps are not in the stores)
 	return ns.Setup.AsksPhone() and where or where .. ", no phone asked"
 end
 

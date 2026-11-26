@@ -25601,12 +25601,6 @@
     "menu.work",
     "desk.menu.work"
    ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
-   ],
    "note": "Work mode (docs/plan.md slice 67): the Work mode page's switch that shows or hides the Start work mode button on Pump home while work mode is off (on by default; this device's own choice). Pump is the home tab's name."
   },
   "work.control.about": {
@@ -25916,7 +25910,6 @@
    "text": "Start",
    "max": 12,
    "screens": [
-    "WorkCard",
     "work.sheet",
     "desk.work.sheet",
     "watch.work",
@@ -25931,18 +25924,12 @@
     "windows",
     "web"
    ],
-   "note": "Work mode (docs/plan.md slice 67): the button that turns work mode on (the work card while off, the first Start's sheet, gold), and the ask's Start where it runs the work pump: the wrist's ask and the notification's action (the iPhone without Screen Time)."
+   "note": "Work mode (docs/plan.md slice 67): the button that turns work mode on on the first Start's sheet (gold; Pump home's own is work.start.mode since 2026-11-23), and the ask's Start where it runs the work pump: the wrist's ask and the notification's action (the iPhone without Screen Time)."
   },
   "work.start.mode": {
    "text": "Start work mode",
    "screens": [
     "WorkCard"
-   ],
-   "platforms": [
-    "android",
-    "macos",
-    "windows",
-    "web"
    ],
    "note": "Work mode (docs/plan.md slice 67): the compact button with the desk glyph that turns work mode on, on Pump home while work mode is off (Rapha, 2026-11-23: the full-width card was too prominent)."
   },

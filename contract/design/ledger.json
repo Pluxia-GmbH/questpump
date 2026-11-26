@@ -270,6 +270,7 @@
  "marks": [
   {
    "title": "GitHub's Invertocat logo, white",
+   "kind": "logo",
    "author": "GitHub, Inc.",
    "page": "https://brand.github.com/foundations/logo",
    "download": "https://brand.github.com/GitHub_Logos.zip",
@@ -286,6 +287,46 @@
      "path": "site/src/assets/logos/github.svg",
      "sha256": "ccd84c89b1056345608fc3489357f8acc7397e49a3cdc2d418b6c8016911d47b",
      "added": "2026-11-06"
+    }
+   ]
+  },
+  {
+   "title": "Apple's Download on the App Store badge, black, US English",
+   "kind": "store badge",
+   "author": "Apple Inc.",
+   "page": "https://developer.apple.com/app-store/marketing/guidelines/",
+   "download": "https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us",
+   "downloadSha256": "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f",
+   "licence": "LicenseRef-Apple-App-Store-Badge",
+   "retrieved": "2026-11-23",
+   "modification": "unmodified; the site shows the file as an <img> through site/src/components/StoreButtons.astro",
+   "credit": "Apple and the Apple logo are trademarks of Apple Inc., registered in the U.S. and other countries. Once on the site, in the footer (site/src/layouts/Base.astro), while the badge shows.",
+   "note": "Apple's App Store Marketing Guidelines (developer.apple.com/app-store/marketing/guidelines/, read 2026-11-23) license the badge through the App Store Marketing Artwork License Agreement on that page: only for an app that can be downloaded from the App Store, only to a member of the Apple Developer Program, and only as the guidelines say. The black badge wherever another store's badge stands beside it, first in the row, 40 px high or more on a screen, a quarter of its height clear on every side, one a layout, below the page's own message, never modified, angled or animated. Its credit line names Apple and the Apple logo, once on the site, where the legal lines stand. The file is the one App Store Marketing Tools' embed code loads, the same bytes as the badge the guidelines page shows (developer.apple.com/assets/elements/badges/download-on-the-app-store.svg). The site shows it 48 px high, linking /get/ios, only while src/launch.ts's PHONES is live.",
+   "files": [
+    {
+     "path": "site/src/assets/badges/download-on-the-app-store.svg",
+     "sha256": "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f",
+     "added": "2026-11-23"
+    }
+   ]
+  },
+  {
+   "title": "Google Play's Get it on Google Play badge, English",
+   "kind": "store badge",
+   "author": "Google LLC",
+   "page": "https://partnermarketinghub.withgoogle.com/brands/google-play/google-play/lockups-icons-badges/",
+   "download": "https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png",
+   "downloadSha256": "f72611e2df8e88204009fd896d05d5e8e83c77009c63943bbffa169559934849",
+   "licence": "LicenseRef-Google-Play-Badge",
+   "retrieved": "2026-11-23",
+   "modification": "unmodified; the site shows the file as an <img> through site/src/components/StoreButtons.astro",
+   "credit": "none asked",
+   "note": "Google Play's badge rules (partnermarketinghub.withgoogle.com/brands/google-play/google-play/lockups-icons-badges/, read 2026-11-23; play.google.com/intl/en_us/badges/ leads there) allow the badge on marketing that sends people to Google Play: 28 px high or more on a screen, the same size as another store's badge beside it or larger, a quarter of its height clear on every side, on a plain ground it stands out from, the English badge on an English page, its colour and its parts never changed. The page asks for no credit line. The file is the one Google serves for its badge at play.google.com (last modified 2026-09-10): 646 x 250 px, the badge 564 x 168 inside a transparent margin of 41 px. The rules name Partner Marketing Hub's Downloads as the place for the newest artwork; they hand a file over only after the downloader accepts their usage requirements, and that download is unread here. The site shows the badge 48 px high, linking /get/android, only while src/launch.ts's PHONES is live.",
+   "files": [
+    {
+     "path": "site/src/assets/badges/get-it-on-google-play.png",
+     "sha256": "f72611e2df8e88204009fd896d05d5e8e83c77009c63943bbffa169559934849",
+     "added": "2026-11-23"
     }
    ]
   }

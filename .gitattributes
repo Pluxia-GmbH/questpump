@@ -19,5 +19,9 @@ android/shared/src/main/assets/licenses/** -text
 helper/dist/fonts/** -text
 site/public/fonts/** -text
 site/src/assets/fonts/** -text
+# Another owner's mark on the site (a logo, a store's badge) is shown as its file came and held to its download's
+# digest byte for byte (tools/ledger.py, the "marks" rows)
+site/src/assets/logos/** -text
+site/src/assets/badges/** -text
 # The Apple root the helper pins is held to Apple's published SHA-256 byte for byte (questpump-core's pro.rs).
 helper/crates/questpump-core/certs/** -text
